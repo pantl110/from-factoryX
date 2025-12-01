@@ -60,6 +60,9 @@ async def create_refund(request, payload: RefundCreateIn):
         payload.refund_amount if payload.refund_amount is not None else 0
     )
     production_amount = refund_amount - current_stock
+    # 생산 수량은 음수가 되지 않도록 0으로 보정
+    if production_amount < 0:
+        production_amount = 0
 
     if refund_amount <= 0:
         raise HttpError(400, "반품 수량은 0보다 커야 합니다.")
@@ -174,17 +177,18 @@ async def register_production_from_refund_log(
                 delivery_date=await parse_and_validate_date(payload.refund_date),
             )
 
-        # 생산 수량이 0이면 Plan 생성/수정 없이 QuotationProduct만 처리
+        # 생산 수량이 0 이하로 들어오면 0으로 보정 후 Plan 생성/수정 없이 QuotationProduct만 처리
         if payload.production_amount is not None and payload.production_amount <= 0:
+            normalized_production_amount = 0
             # 기존 plan이 있으면 삭제
             if existing_plan:
                 await existing_plan.adelete()
                 refund.plan = None
                 await refund.asave()
             
-            # refund 및 로그만 업데이트
+            # refund 및 로그만 업데이트 (생산 수량 0으로 저장)
             refund.amount = payload.amount
-            refund.production_amount = payload.production_amount
+            refund.production_amount = normalized_production_amount
             refund.refund_date = await parse_and_validate_date(payload.refund_date)
             await refund.asave()
 
@@ -210,6 +214,13 @@ async def register_production_from_refund_log(
         default_equipment = await get_default_equipment(factory_id)
 
         # 4. 생산 계획 생성 또는 수정
+        #    생산 수량은 음수가 되지 않도록 0으로 보정
+        normalized_production_amount = (
+            payload.production_amount if payload.production_amount is not None else 0
+        )
+        if normalized_production_amount < 0:
+            normalized_production_amount = 0
+
         if existing_plan:
             # 기존 plan이 생산 중인지 확인
             plan_status = existing_plan.status
@@ -223,7 +234,7 @@ async def register_production_from_refund_log(
             project_plan = existing_plan
             project_plan.product = quotation_product
             project_plan.equipment = default_equipment
-            project_plan.quantity = payload.production_amount
+            project_plan.quantity = normalized_production_amount
 
             (
                 start_date,
@@ -231,7 +242,7 @@ async def register_production_from_refund_log(
                 avg_production_time,
                 _,
             ) = calculate_plan_schedule(
-                payload.production_amount, refund_product.average_production_time
+                normalized_production_amount, refund_product.average_production_time
             )
 
             project_plan.start_date = start_date
@@ -242,7 +253,7 @@ async def register_production_from_refund_log(
 
             # 6. 기존 refund 정보 수정
             refund.amount = payload.amount
-            refund.production_amount = payload.production_amount
+            refund.production_amount = normalized_production_amount
             refund.refund_date = await parse_and_validate_date(payload.refund_date)
             await refund.asave()
 
@@ -260,7 +271,7 @@ async def register_production_from_refund_log(
                 avg_production_time,
                 _,
             ) = calculate_plan_schedule(
-                payload.production_amount, refund_product.average_production_time
+                normalized_production_amount, refund_product.average_production_time
             )
 
             project_plan = await ProjectPlan.objects.acreate(
@@ -268,7 +279,7 @@ async def register_production_from_refund_log(
                 product=quotation_product,  # 수정된 QuotationProduct 사용
                 equipment=default_equipment,
                 status="가동 대기",
-                quantity=payload.production_amount,
+                quantity=normalized_production_amount,
                 start_date=start_date,
                 end_date=end_date,
                 avg_production_time=avg_production_time,  # 품목의 평균 생산 시간 사용
@@ -279,7 +290,7 @@ async def register_production_from_refund_log(
 
             # 6. 기존 refund 정보 수정
             refund.amount = payload.amount
-            refund.production_amount = payload.production_amount
+            refund.production_amount = normalized_production_amount
             refund.refund_date = await parse_and_validate_date(payload.refund_date)
             await refund.asave()
 
@@ -352,154 +363,154 @@ async def get_refund_detail(request, refund_id: int):
     }
 
 
-# 현재 쓰지 않는 api
-@router.patch(
-    "/{refund_id}",
-    summary="[C] 반품 수정",
-    description="반품 정보를 수정합니다. 반품 수량은 current_stock과 production_amount의 합으로 자동 계산됩니다.",
-    response={200: RefundUpdateOut, 400: dict, 404: dict, 500: dict},
-)
-async def update_refund(request, refund_id: int, payload: RefundUpdateIn):
-    factory_id, user = await validate_factory_and_get_user(request)
-    refund, project = await get_refund_with_project(refund_id, factory_id)
+# # 현재 쓰지 않는 api
+# @router.patch(
+#     "/{refund_id}",
+#     summary="[C] 반품 수정",
+#     description="반품 정보를 수정합니다. 반품 수량은 current_stock과 production_amount의 합으로 자동 계산됩니다.",
+#     response={200: RefundUpdateOut, 400: dict, 404: dict, 500: dict},
+# )
+# async def update_refund(request, refund_id: int, payload: RefundUpdateIn):
+#     factory_id, user = await validate_factory_and_get_user(request)
+#     refund, project = await get_refund_with_project(refund_id, factory_id)
 
-    # 수정할 필드들을 업데이트
-    update_fields = {}
+#     # 수정할 필드들을 업데이트
+#     update_fields = {}
 
-    if payload.refund_date is not None:
-        refund_date = await parse_and_validate_date(payload.refund_date)
-        update_fields["refund_date"] = refund_date
+#     if payload.refund_date is not None:
+#         refund_date = await parse_and_validate_date(payload.refund_date)
+#         update_fields["refund_date"] = refund_date
 
-    # current_stock은 수정 불가, 기존 값 사용
-    current_stock = refund.current_stock
-    production_amount = (
-        payload.production_amount
-        if payload.production_amount is not None
-        else refund.production_amount
-    )
+#     # current_stock은 수정 불가, 기존 값 사용
+#     current_stock = refund.current_stock
+#     production_amount = (
+#         payload.production_amount
+#         if payload.production_amount is not None
+#         else refund.production_amount
+#     )
 
-    # 반품 수량 재계산
-    new_refund_amount = current_stock + production_amount
-    if new_refund_amount <= 0:
-        raise HttpError(400, "반품 수량은 0보다 커야 합니다.")
+#     # 반품 수량 재계산
+#     new_refund_amount = current_stock + production_amount
+#     if new_refund_amount <= 0:
+#         raise HttpError(400, "반품 수량은 0보다 커야 합니다.")
 
-    # 원래 반품 수량 저장 (ProjectPlan 비교용)
-    original_refund_amount = refund.amount
+#     # 원래 반품 수량 저장 (ProjectPlan 비교용)
+#     original_refund_amount = refund.amount
 
-    # 제품 변경 처리 (반품 업데이트 전에 실행)
-    product_changed = False
-    old_product = None
-    if payload.product_id is not None:
-        product_changed = payload.product_id != refund.product.id
-        if product_changed:
-            old_product = refund.product
-            # 새로운 제품으로 업데이트
-            try:
-                new_product = await Product.objects.aget(id=payload.product_id)
-                update_fields["product"] = new_product
-            except Product.DoesNotExist:
-                raise HttpError(404, "해당 제품을 찾을 수 없습니다.")
+#     # 제품 변경 처리 (반품 업데이트 전에 실행)
+#     product_changed = False
+#     old_product = None
+#     if payload.product_id is not None:
+#         product_changed = payload.product_id != refund.product.id
+#         if product_changed:
+#             old_product = refund.product
+#             # 새로운 제품으로 업데이트
+#             try:
+#                 new_product = await Product.objects.aget(id=payload.product_id)
+#                 update_fields["product"] = new_product
+#             except Product.DoesNotExist:
+#                 raise HttpError(404, "해당 제품을 찾을 수 없습니다.")
 
-    update_fields["amount"] = new_refund_amount
-    update_fields["production_amount"] = production_amount
+#     update_fields["amount"] = new_refund_amount
+#     update_fields["production_amount"] = production_amount
 
-    # 반품 정보 업데이트
-    for field, value in update_fields.items():
-        setattr(refund, field, value)
-    await refund.asave()
+#     # 반품 정보 업데이트
+#     for field, value in update_fields.items():
+#         setattr(refund, field, value)
+#     await refund.asave()
 
-    # 프로젝트 로그 내용도 업데이트
-    project_log = await ProjectLog.objects.aget(refund=refund)
-    log_content = f"{refund.product.name} {new_refund_amount}개가 반품되었어요."
-    project_log.content = log_content
-    await project_log.asave()
+#     # 프로젝트 로그 내용도 업데이트
+#     project_log = await ProjectLog.objects.aget(refund=refund)
+#     log_content = f"{refund.product.name} {new_refund_amount}개가 반품되었어요."
+#     project_log.content = log_content
+#     await project_log.asave()
 
-    # 연결된 ProjectPlan이 있는지 확인하고 수정 (생산 등록된 경우만)
-    updated_plans = []
-    deleted_plans = []
-    created_plans = []
+#     # 연결된 ProjectPlan이 있는지 확인하고 수정 (생산 등록된 경우만)
+#     updated_plans = []
+#     deleted_plans = []
+#     created_plans = []
 
-    # refund.plan에 async 접근을 위해 sync_to_async 사용
-    refund_plan = refund.plan
+#     # refund.plan에 async 접근을 위해 sync_to_async 사용
+#     refund_plan = refund.plan
 
-    if refund_plan is not None:  # 생산 등록된 반품인 경우만 처리
-        related_project_plans = await sync_to_async(list)(
-            ProjectPlan.objects.filter(
-                project=project,
-                product__product=refund.product,  # QuotationProduct의 product 필드
-            )
-        )
+#     if refund_plan is not None:  # 생산 등록된 반품인 경우만 처리
+#         related_project_plans = await sync_to_async(list)(
+#             ProjectPlan.objects.filter(
+#                 project=project,
+#                 product__product=refund.product,  # QuotationProduct의 product 필드
+#             )
+#         )
 
-        if product_changed:
-            # 제품이 완전히 바뀐 경우: 기존 제품의 ProjectPlan 삭제
-            old_product_plans = await sync_to_async(list)(
-                ProjectPlan.objects.filter(
-                    project=project, product__product=old_product  # 기존 제품
-                )
-            )
-            for plan in old_product_plans:
-                if plan.quantity == original_refund_amount:
-                    plan_id = plan.id  # 삭제 전에 ID 저장
+#         if product_changed:
+#             # 제품이 완전히 바뀐 경우: 기존 제품의 ProjectPlan 삭제
+#             old_product_plans = await sync_to_async(list)(
+#                 ProjectPlan.objects.filter(
+#                     project=project, product__product=old_product  # 기존 제품
+#                 )
+#             )
+#             for plan in old_product_plans:
+#                 if plan.quantity == original_refund_amount:
+#                     plan_id = plan.id  # 삭제 전에 ID 저장
 
-                    # 연결된 Refund가 CASCADE로 삭제되지 않도록 plan 필드를 None으로 설정
-                    plan_refunds = await sync_to_async(list)(plan.refunds.all())
-                    for plan_refund in plan_refunds:
-                        plan_refund.plan = None
-                        await plan_refund.asave()
+#                     # 연결된 Refund가 CASCADE로 삭제되지 않도록 plan 필드를 None으로 설정
+#                     plan_refunds = await sync_to_async(list)(plan.refunds.all())
+#                     for plan_refund in plan_refunds:
+#                         plan_refund.plan = None
+#                         await plan_refund.asave()
 
-                    await plan.adelete()
-                    deleted_plans.append(plan_id)
+#                     await plan.adelete()
+#                     deleted_plans.append(plan_id)
 
-            # 새로운 제품으로 ProjectPlan 생성
-            try:
-                # 새로운 제품의 QuotationProduct 찾기
-                new_quotation_product = await QuotationProduct.objects.filter(
-                    quotation__project=project,
-                    product=update_fields.get(
-                        "product", refund.product
-                    ),  # 새로운 제품 또는 기존 제품
-                ).afirst()
+#             # 새로운 제품으로 ProjectPlan 생성
+#             try:
+#                 # 새로운 제품의 QuotationProduct 찾기
+#                 new_quotation_product = await QuotationProduct.objects.filter(
+#                     quotation__project=project,
+#                     product=update_fields.get(
+#                         "product", refund.product
+#                     ),  # 새로운 제품 또는 기존 제품
+#                 ).afirst()
 
-                if new_quotation_product:
-                    # 기본 장비 선택
-                    default_equipment = await get_default_equipment(factory_id)
+#                 if new_quotation_product:
+#                     # 기본 장비 선택
+#                     default_equipment = await get_default_equipment(factory_id)
 
-                    (
-                        start_date,
-                        end_date,
-                        avg_production_time,
-                        _,
-                    ) = calculate_plan_schedule(
-                        new_refund_amount, refund.product.average_production_time
-                    )
+#                     (
+#                         start_date,
+#                         end_date,
+#                         avg_production_time,
+#                         _,
+#                     ) = calculate_plan_schedule(
+#                         new_refund_amount, refund.product.average_production_time
+#                     )
 
-                    # 새로운 ProjectPlan 생성
-                    new_project_plan = await ProjectPlan.objects.acreate(
-                        project=project,
-                        product=new_quotation_product,
-                        equipment=default_equipment,
-                        status="가동 대기",
-                        quantity=new_refund_amount,
-                        start_date=start_date,
-                        end_date=end_date,
-                        avg_production_time=avg_production_time,
-                    )
-                    created_plans.append(new_project_plan.id)
-            except Exception:
-                # 새로운 제품의 QuotationProduct가 없는 경우 무시
-                pass
-        else:
-            # 같은 제품인 경우: 수량만 수정
-            for plan in related_project_plans:
-                if plan.quantity == original_refund_amount:
-                    plan.quantity = new_refund_amount
-                    await plan.asave()
-                    updated_plans.append(plan.id)
+#                     # 새로운 ProjectPlan 생성
+#                     new_project_plan = await ProjectPlan.objects.acreate(
+#                         project=project,
+#                         product=new_quotation_product,
+#                         equipment=default_equipment,
+#                         status="가동 대기",
+#                         quantity=new_refund_amount,
+#                         start_date=start_date,
+#                         end_date=end_date,
+#                         avg_production_time=avg_production_time,
+#                     )
+#                     created_plans.append(new_project_plan.id)
+#             except Exception:
+#                 # 새로운 제품의 QuotationProduct가 없는 경우 무시
+#                 pass
+#         else:
+#             # 같은 제품인 경우: 수량만 수정
+#             for plan in related_project_plans:
+#                 if plan.quantity == original_refund_amount:
+#                     plan.quantity = new_refund_amount
+#                     await plan.asave()
+#                     updated_plans.append(plan.id)
 
-    return 200, {
-        "message": "반품이 성공적으로 수정되었습니다.",
-        "refund_id": refund.id,
-        "updated_project_plans": updated_plans,
-        "deleted_project_plans": deleted_plans,
-        "created_project_plans": created_plans,
-    }
+#     return 200, {
+#         "message": "반품이 성공적으로 수정되었습니다.",
+#         "refund_id": refund.id,
+#         "updated_project_plans": updated_plans,
+#         "deleted_project_plans": deleted_plans,
+#         "created_project_plans": created_plans,
+#     }
