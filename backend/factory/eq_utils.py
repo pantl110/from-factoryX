@@ -17,6 +17,7 @@ async def get_equipment_by_id(equipment_id, factory_id):
                         queryset=ProjectPlan.objects.select_related("product__product")
                         .annotate(
                             product_name=F("product__product__name"),
+                            product_unit=F("product__product__unit"),
                         ),
                     )
                 )
