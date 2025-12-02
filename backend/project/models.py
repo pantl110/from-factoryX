@@ -112,6 +112,7 @@ class ProjectLog(BaseModel):
     class LogType(models.TextChoices):
         date = ("date", "생산 일자 변경")
         equipment = ("equipment", "생산 설비 변경")
+        quantity = ("quantity", "생산 수량 변경")
         memo = ("memo", "메모")
         refund = ("refund", "반품")
 

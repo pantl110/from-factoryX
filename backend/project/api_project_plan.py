@@ -209,7 +209,7 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
                 change_message = f"생산 수량이 {old_quantity}개에서 {plan.quantity}개로 변경되었어요"
                 await ProjectLog.objects.acreate(
                     project=plan.project,
-                    type=ProjectLog.LogType.memo,
+                    type=ProjectLog.LogType.quantity,
                     title="생산 수량 변경",
                     content=change_message,
                 )
