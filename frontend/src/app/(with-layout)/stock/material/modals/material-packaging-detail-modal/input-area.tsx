@@ -9,6 +9,7 @@ import {
   useGetMaterialRepackagingDetail,
   useUpdateMaterialRepackaging,
   useCreateMaterialRepackaging,
+  useGetMaterialHistoryDetail,
 } from '@/hooks';
 import { useEffect, useState } from 'react';
 import { convertUTCToKSTDate, isValidDateString } from '@/utils';
@@ -50,6 +51,11 @@ export const InputArea = ({
     repackagingId ?? null
   );
 
+  // create 모드일 때 부모 히스토리 데이터 가져오기
+  const { data: parentHistory } = useGetMaterialHistoryDetail(
+    mode === 'create' ? (parentHistoryId ?? null) : null
+  );
+
   const updateMutation = useUpdateMaterialRepackaging();
   const createMutation = useCreateMaterialRepackaging();
 
@@ -65,7 +71,7 @@ export const InputArea = ({
   const [isQuantityEditing, setIsQuantityEditing] = useState(false);
   const [quantityInputValue, setQuantityInputValue] = useState<string>('');
 
-  // repackaging 데이터가 로드되면 form에 채우기
+  // repackaging 데이터가 로드되면 form에 채우기 (update 모드)
   useEffect(() => {
     if (mode === 'update' && repackaging) {
       reset({
@@ -77,6 +83,19 @@ export const InputArea = ({
       });
     }
   }, [mode, repackaging, reset]);
+
+  // 부모 히스토리 데이터가 로드되면 form에 기본값 채우기 (create 모드)
+  useEffect(() => {
+    if (mode === 'create' && parentHistory) {
+      reset({
+        quantity: '',
+        location: parentHistory.warehouse_location || '',
+        expirationDate: parentHistory.expiration_date
+          ? convertUTCToKSTDate(parentHistory.expiration_date) || ''
+          : '',
+      });
+    }
+  }, [mode, parentHistory, reset]);
 
   const quantityValue = watch('quantity');
 

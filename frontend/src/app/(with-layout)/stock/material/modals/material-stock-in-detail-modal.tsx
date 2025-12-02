@@ -93,6 +93,12 @@ export const MaterialStockInDetailModal = ({
           }),
         });
       }
+      // 부모 히스토리 상세 쿼리도 무효화 (소분하기 모달에서 최신 데이터 사용)
+      if (factoryId && historyId) {
+        await queryClient.invalidateQueries({
+          queryKey: ['material-history-detail', factoryId, historyId],
+        });
+      }
       onUpdateSuccess?.();
       onClose();
     } else {

@@ -49,6 +49,7 @@ const TableHeader = ({
         <CaretUpDown size={21} className="text-sv" />
       </div>
       <p className="w-[150px] text-sv px-3">자재 상태</p>
+      <p className="w-[150px] text-sv px-3">유통기한 상태</p>
     </div>
   );
 };
