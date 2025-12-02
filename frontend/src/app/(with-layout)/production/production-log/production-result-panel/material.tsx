@@ -243,7 +243,7 @@ export const Material = ({
         </h4>
         <div className="flex gap-0">
           <MiniBtn
-            text="추가"
+            text="추가하기"
             height="h-8"
             textColor="text-sv"
             hoverColor="hover:text-primary"

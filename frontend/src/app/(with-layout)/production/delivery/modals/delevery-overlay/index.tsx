@@ -43,7 +43,7 @@ const DeliveryOverlay = ({ onClose, data }: DeliveryOverlayProps) => {
               onClick={onClose}
             />
             <MiniBtn
-              text="출력"
+              text="출력하기"
               textColor="text-wh"
               bgColor="bg-primary"
               hoverColor="hover:bg-primary-hover"

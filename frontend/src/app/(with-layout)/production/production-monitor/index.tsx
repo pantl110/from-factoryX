@@ -96,7 +96,7 @@ const ProductionMonitor = ({
                 {projectStatus !== 'completed' && (
                   <div>
                     <MiniBtn
-                      text="메모 작성"
+                      text="메모 작성하기"
                       textColor="text-dg"
                       borderColor="border-lg"
                       onClick={() => setIsCreateMemoModalOpen(true)}

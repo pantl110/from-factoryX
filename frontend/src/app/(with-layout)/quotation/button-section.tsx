@@ -79,7 +79,7 @@ const ButtonSection = ({
           }}
         >
           <MiniBtn
-            text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
+            text={taxId ? '세금계산서 보기' : '세금계산서 생성하기'}
             variant="whiteOutline"
             disabled={
               !isPartnersSubscription() ||
@@ -115,13 +115,13 @@ const ButtonSection = ({
             )}
         </div>
         <MiniBtn
-          text="출력"
+          text="출력하기"
           variant="whiteOutline"
           onClick={onPrintClick}
           disabled={!hasSubscription()}
         />
         <MiniBtn
-          text="이메일 전송"
+          text="이메일 전송하기"
           variant="whiteOutline"
           onClick={
             hasFactoryName ? onEmailClick : () => setIsNeedInfoModalOpen(true)
@@ -137,7 +137,7 @@ const ButtonSection = ({
         {isOrderStatus ? (
           <>
             <MiniBtn
-              text="생산 시작"
+              text="생산 시작하기"
               variant="primary"
               icon={ArrowRight}
               iconPosition="right"
@@ -170,7 +170,7 @@ const ButtonSection = ({
               }
             />
             <MiniBtn
-              text="주문 확정"
+              text="주문 확정하기"
               variant="primary"
               onClick={async () => {
                 try {

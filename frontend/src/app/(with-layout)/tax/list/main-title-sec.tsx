@@ -30,7 +30,7 @@ const MainTitleSec = ({
         <div className="flex items-center justify-between relative">
           <div className="Heading-1 text-dg">세금계산서 내역</div>
           <MiniBtn
-            text="세금계산서 생성"
+            text="세금계산서 생성하기"
             variant="primary"
             onClick={() => {
               setIsCreatTaxPanelOpen(true);

@@ -246,7 +246,7 @@ const MaterialEnrollmentModal = ({
               )}
             </div>
             <MiniBtn
-              text="직접 추가"
+              text="직접 추가하기"
               textColor="text-dg"
               borderColor="border-lg"
               height="h-12"
@@ -481,7 +481,7 @@ const MaterialEnrollmentModal = ({
           />
         )}
         <MiniBtn
-          text={isSuccessModalOpen ? '확인' : '추가'}
+          text={isSuccessModalOpen ? '확인' : '추가하기'}
           variant="primary"
           disabled={
             isSuccessModalOpen

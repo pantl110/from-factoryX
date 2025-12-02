@@ -164,7 +164,7 @@ const OrderPage = () => {
             <div className="h-2 bg-bg" />
             <div className="px-7 py-8">
               <MoBtn
-                text="주문 확정"
+                text="주문 확정하기"
                 variant="primary"
                 width="w-full"
                 big={true}

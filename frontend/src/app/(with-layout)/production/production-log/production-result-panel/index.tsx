@@ -244,7 +244,7 @@ export const ProductionResultPanel = ({
         onClose={onClose}
         headerButton={
           isDirty ? (
-            <MiniBtn text="저장" variant="secondary" onClick={handleSave} />
+            <MiniBtn text="저장하기" variant="secondary" onClick={handleSave} />
           ) : null
         }
       >

@@ -126,7 +126,7 @@ const ReturnInfo = ({
           <div className="flex gap-2.5">
             {!isEditing && (
               <MiniBtn
-                text="수정"
+                text="수정하기"
                 textColor="text-dg"
                 borderColor="border-lg"
                 hoverColor="hover:bg-bg"
@@ -142,7 +142,7 @@ const ReturnInfo = ({
             )}
 
             <MiniBtn
-              text="생산 등록"
+              text="생산 등록하기"
               hoverColor="hover:bg-primary-hover"
               textColor="text-wh"
               bgColor="bg-primary"

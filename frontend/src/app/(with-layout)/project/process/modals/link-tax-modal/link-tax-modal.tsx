@@ -306,7 +306,7 @@ const LinkTaxModal = ({
             <div className="flex gap-2.5">
               {canCreate && (
                 <MiniBtn
-                  text="세금계산서 생성"
+                  text="세금계산서 생성하기"
                   hoverColor="hover:bg-bg"
                   borderColor="border-lg"
                   textColor="text-dg"
@@ -317,7 +317,7 @@ const LinkTaxModal = ({
                 />
               )}
               <MiniBtn
-                text="내역 연결"
+                text="내역 연결하기"
                 hoverColor="hover:bg-primary-hover"
                 bgColor="bg-primary"
                 textColor="text-wh"

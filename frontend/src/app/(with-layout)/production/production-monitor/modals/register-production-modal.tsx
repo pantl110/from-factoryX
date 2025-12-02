@@ -67,7 +67,7 @@ const RegisterProductionModal = ({
             onClick={onClose}
           />
           <MiniBtn
-            text="생산 시작"
+            text="생산 시작하기"
             hoverColor="hover:bg-primary-hover"
             textColor="text-wh"
             bgColor="bg-primary"

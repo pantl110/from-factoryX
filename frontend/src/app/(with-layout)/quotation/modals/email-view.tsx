@@ -237,7 +237,7 @@ const EmailView = ({
 
               {/* 이메일 전송 버튼 */}
               <MiniBtn
-                text={`${documentTitle} 전송`}
+                text={`${documentTitle} 전송하기`}
                 textColor="text-wh"
                 bgColor="bg-primary"
                 hoverColor="hover:bg-primary-hover"

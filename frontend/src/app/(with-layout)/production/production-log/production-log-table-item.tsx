@@ -230,7 +230,7 @@ const ProductionLogTableItem = ({
         {isEditable && (
           <div className="w-[200px] px-3 flex gap-2">
             <MiniBtn
-              text="저장"
+              text="저장하기"
               variant="whiteOutline"
               height="h-8"
               onClick={onSave}
@@ -243,7 +243,7 @@ const ProductionLogTableItem = ({
                 plan.defective_quantity !== null &&
                 plan.defective_quantity > 0
                   ? '상세 보기'
-                  : '결과 입력'
+                  : '결과 입력하기'
               }
               variant={
                 plan.material_consumed &&

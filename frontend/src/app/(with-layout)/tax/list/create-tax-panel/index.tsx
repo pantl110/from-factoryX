@@ -646,7 +646,7 @@ const CreatTaxPanel = ({
           <div className="flex justify-between items-center w-full relative">
             <h3 className="Heading-3 h-10 items-center flex">주문 제품 정보</h3>
             <MiniBtn
-              text="제품 추가"
+              text="제품 추가하기"
               textColor="text-dg"
               borderColor="border-lg"
               hoverColor="hover:bg-bg"

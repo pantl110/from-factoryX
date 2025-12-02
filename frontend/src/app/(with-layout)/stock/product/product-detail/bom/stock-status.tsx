@@ -99,7 +99,7 @@ const StockStatus = ({
         <NoHistoryBox
           title="이 제품에 연결된 원자재가 아직 없어요."
           text="원자재를 연결하면 이곳에서 재고 상태를 확인할 수 있어요."
-          button="자재 연결"
+          button="자재 연결하기"
           onClick={() => {
             onMaterialModalOpen();
           }}

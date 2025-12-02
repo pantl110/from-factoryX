@@ -163,7 +163,7 @@ export const MaterialPackagingDetailModal = ({
             <div className="flex justify-end gap-2.5 mt-5">
               <MiniBtn text="취소" variant="white" onClick={onClose} />
               <MiniBtn
-                text="소분"
+                text="소분하기"
                 variant="secondary"
                 type="submit"
                 form={formId}
@@ -175,7 +175,7 @@ export const MaterialPackagingDetailModal = ({
             <div className="flex justify-end gap-2.5 mt-5">
               <MiniBtn text="취소" variant="white" onClick={onClose} />
               <MiniBtn
-                text="수정"
+                text="수정하기"
                 variant="secondary"
                 type="submit"
                 form={formId}

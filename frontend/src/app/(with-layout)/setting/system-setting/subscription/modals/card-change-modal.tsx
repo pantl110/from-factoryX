@@ -15,7 +15,11 @@ const CardChangeModal = ({ onClose, onConfirm }: CardChangeModalProps) => {
     >
       <div className="flex justify-end gap-[5px] mt-4">
         <MiniBtn text="취소" variant="white" onClick={onClose} />
-        <MiniBtn text="결제 카드 변경" variant="primary" onClick={onConfirm} />
+        <MiniBtn
+          text="결제 카드 변경하기"
+          variant="primary"
+          onClick={onConfirm}
+        />
       </div>
     </Modal>
   );

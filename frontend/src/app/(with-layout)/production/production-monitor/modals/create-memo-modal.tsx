@@ -86,7 +86,7 @@ const CreateMemoModal = ({ onClose, onSuccess }: CreateMemoModalProps) => {
             type="button"
           />
           <MiniBtn
-            text="메모 생성"
+            text="메모 생성하기"
             textColor="text-wh"
             bgColor="bg-primary"
             hoverColor="hover:bg-primary-hover"

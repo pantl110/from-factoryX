@@ -297,7 +297,7 @@ export const AddUnitModal = ({
         <div className="flex justify-end gap-2.5">
           <MiniBtn text="닫기" variant="white" onClick={onClose} />
           <MiniBtn
-            text="단위 변환"
+            text="단위 변환하기"
             variant="primary"
             onClick={handleSubmit(onSubmit)}
             disabled={createMutation.isPending}

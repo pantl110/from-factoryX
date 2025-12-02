@@ -103,7 +103,7 @@ const Bom = ({
         </div>
         {hasData && (
           <MiniBtn
-            text="연결"
+            text="자재 연결하기"
             variant="whiteOutline"
             onClick={onMaterialModalOpen}
             disabled={isViewer || !hasSubscription()}

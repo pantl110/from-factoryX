@@ -103,7 +103,7 @@ const TopBarContent = ({
     return (
       <div className="flex gap-2">
         <MiniBtn
-          text="진행 상태로 전환"
+          text="진행 상태로 전환하기"
           variant="whiteOutline"
           onClick={() => {
             if (handleChangeStatus) {
@@ -121,7 +121,7 @@ const TopBarContent = ({
       <>
         <div className="relative" {...taxButtonMouseEvents}>
           <MiniBtn
-            text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
+            text={taxId ? '세금계산서 보기' : '세금계산서 생성하기'}
             variant="whiteOutline"
             onClick={() => {
               if (
@@ -175,7 +175,7 @@ const TopBarContent = ({
         <div className="flex gap-2">
           <div className="relative" {...taxButtonMouseEvents}>
             <MiniBtn
-              text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
+              text={taxId ? '세금계산서 보기' : '세금계산서 생성하기'}
               variant="whiteOutline"
               onClick={() => {
                 if (
@@ -238,7 +238,7 @@ const TopBarContent = ({
         <div className="flex gap-2">
           <div className="relative" {...taxButtonMouseEvents}>
             <MiniBtn
-              text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
+              text={taxId ? '세금계산서 보기' : '세금계산서 생성하기'}
               variant="whiteOutline"
               onClick={() => {
                 if (
@@ -305,7 +305,7 @@ const TopBarContent = ({
         <div className="flex gap-2">
           <div className="relative" {...taxButtonMouseEvents}>
             <MiniBtn
-              text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
+              text={taxId ? '세금계산서 보기' : '세금계산서 생성하기'}
               variant="whiteOutline"
               onClick={() => {
                 if (
@@ -334,7 +334,7 @@ const TopBarContent = ({
 
           {isRefund && (
             <MiniBtn
-              text="반품 등록"
+              text="반품 등록하기"
               variant="red"
               onClick={() => setAddReturnModalOpen(true)}
               disabled={isViewer || !hasSubscription()}
@@ -369,7 +369,7 @@ const TopBarContent = ({
         <div className="flex gap-2">
           <div className="relative" {...taxButtonMouseEvents}>
             <MiniBtn
-              text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
+              text={taxId ? '세금계산서 보기' : '세금계산서 생성하기'}
               variant="whiteOutline"
               onClick={() => {
                 if (
@@ -460,7 +460,7 @@ const TopBarContent = ({
         <div className="flex gap-2">
           <div className="relative" {...taxButtonMouseEvents}>
             <MiniBtn
-              text={taxId ? '세금계산서 보기' : '세금계산서 생성'}
+              text={taxId ? '세금계산서 보기' : '세금계산서 생성하기'}
               variant="whiteOutline"
               onClick={() => {
                 if (
@@ -487,14 +487,14 @@ const TopBarContent = ({
             )}
           </div>
           <MiniBtn
-            text="반품 등록"
+            text="반품 등록하기"
             variant="red"
             onClick={() => setAddReturnModalOpen(true)}
             disabled={isViewer || !hasSubscription()}
           />
           {pageStatus === 'delivery' && (
             <MiniBtn
-              text="보관함으로 이동"
+              text="보관함으로 이동하기"
               variant="secondary"
               onClick={onMoveToStorageClick}
               disabled={

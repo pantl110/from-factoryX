@@ -77,7 +77,7 @@ const TodayProductionSchedule = ({
         <div className="flex justify-between items-center">
           <h3 className="Heading-3">오늘의 생산 일정</h3>
           <MiniBtn
-            text="생산지시서 출력"
+            text="생산지시서 출력하기"
             textColor="text-dg"
             borderColor="border-lg"
             onClick={() => {
@@ -116,7 +116,7 @@ const TodayProductionSchedule = ({
                   </div>
                 </div>
                 <MiniBtn
-                  text="생산지시서 출력"
+                  text="생산지시서 출력하기"
                   textColor="text-wh"
                   bgColor="bg-primary"
                   hoverColor="hover:bg-primary-hover"

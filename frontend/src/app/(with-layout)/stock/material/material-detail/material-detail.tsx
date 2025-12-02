@@ -293,14 +293,16 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
               <h3 className="Heading-3 h-10 flex items-center text-dg">
                 원자재가 보관된 창고 위치
               </h3>
-              <MiniBtn
-                text="추가"
-                textColor="text-dg"
-                borderColor="border-lg"
-                hoverColor="hover:bg-bg"
-                onClick={() => setIsUploadModalOpen(true)}
-                disabled={isViewer || !hasSubscription()}
-              />
+              {fields.length > 0 && (
+                <MiniBtn
+                  text="추가하기"
+                  textColor="text-dg"
+                  borderColor="border-lg"
+                  hoverColor="hover:bg-bg"
+                  onClick={() => setIsUploadModalOpen(true)}
+                  disabled={isViewer || !hasSubscription()}
+                />
+              )}
             </div>
 
             <StockLocation
@@ -313,6 +315,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
               locations={locations}
               onDeleteLocation={onDeleteLocation}
               isLoading={isLocationLoading}
+              onAddClick={() => setIsUploadModalOpen(true)}
             />
           </div>
 

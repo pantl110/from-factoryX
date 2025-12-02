@@ -51,7 +51,7 @@ const MainTitleSec = ({
           <MiniBtn
             bgColor="bg-primary"
             textColor="text-white"
-            text="프로젝트 생성"
+            text="프로젝트 생성하기"
             onClick={onNewQuotation}
             hoverColor="hover:bg-primary-hover"
             icon={CaretDown}

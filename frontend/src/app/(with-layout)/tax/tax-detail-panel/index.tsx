@@ -138,7 +138,7 @@ const TaxDetailPanel = ({
               {item && isDraft && (
                 <div className="flex gap-2">
                   <MiniBtn
-                    text="수정"
+                    text="수정하기"
                     textColor="text-dg"
                     borderColor="border-lg"
                     hoverColor="hover:bg-bg"
@@ -147,7 +147,7 @@ const TaxDetailPanel = ({
                     }}
                   />
                   <MiniBtn
-                    text="발행"
+                    text="발행하기"
                     textColor="text-wh"
                     bgColor="bg-primary"
                     hoverColor="hover:bg-primary-hover"

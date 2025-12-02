@@ -185,7 +185,7 @@ const LinkReceiptModal = ({
                   onChange={(value) => setSearchKeyword(value)}
                 />
                 <MiniBtn
-                  text="선택 항목 추가"
+                  text="선택 항목 추가하기"
                   hoverColor="hover:bg-bg"
                   textColor="text-dg"
                   borderColor="border-lg"
@@ -277,7 +277,7 @@ const LinkReceiptModal = ({
             />
             <div className="flex gap-2.5">
               <MiniBtn
-                text="내역 연결"
+                text="내역 연결하기"
                 hoverColor="hover:bg-primary-hover"
                 bgColor="bg-primary"
                 textColor="text-wh"

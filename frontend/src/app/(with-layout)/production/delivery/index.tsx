@@ -249,13 +249,13 @@ const Delivery = ({
         <div className="flex justify-between pb-4">
           <div className="flex gap-2">
             <MiniBtn
-              text="납품표 일괄 출력"
+              text="납품표 일괄 출력하기"
               variant="whiteOutline"
               onClick={() => setIsPrintAllDeliveryOverlayOpen(true)}
               disabled={!hasSubscription()}
             />
             <MiniBtn
-              text="납품표 출력"
+              text="납품표 출력하기"
               variant="whiteOutline"
               onClick={handlePrintDelivery}
               disabled={checkedIds.length === 0 || !hasSubscription()}
@@ -263,7 +263,7 @@ const Delivery = ({
           </div>
           <div className="flex gap-2">
             <MiniBtn
-              text="거래명세서 출력"
+              text="거래명세서 출력하기"
               variant="whiteOutline"
               onClick={() => setIsCreateTransactionOverlayviewOpen(true)}
               disabled={!hasSubscription()}

@@ -55,7 +55,7 @@ const CreateTransactionOverlayview = ({
               hoverColor="hover:bg-bg"
             />
             <MiniBtn
-              text="거래명세서 출력"
+              text="거래명세서 출력하기"
               textColor="text-wh"
               bgColor="bg-primary"
               hoverColor="hover:bg-primary-hover"

@@ -545,7 +545,7 @@ const MasterData = () => {
           <div className="flex gap-2">
             {settingChip === 'equipment' && (
               <MiniBtn
-                text="추가"
+                text="추가하기"
                 variant="whiteOutline"
                 onClick={handleAddBtnClick}
                 disabled={!factoryId || isViewer || !hasSubscription()}

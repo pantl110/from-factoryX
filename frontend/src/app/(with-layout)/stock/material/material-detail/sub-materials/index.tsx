@@ -80,7 +80,7 @@ export const SubMaterials = forwardRef<SubMaterialsRefModel, SubMaterialsProps>(
           <h3 className="Heading-3 text-dg">대체 가능한 원자재</h3>
           {targetMaterials.length > 0 && (
             <MiniBtn
-              text="원자재 연결"
+              text="자재 연결하기"
               variant="whiteOutline"
               disabled={isViewer || !hasSubscription()}
               onClick={() => {
@@ -129,7 +129,7 @@ export const SubMaterials = forwardRef<SubMaterialsRefModel, SubMaterialsProps>(
           <NoHistoryBox
             title="연결된 자재가 없어요."
             text="현재 자재 대신 사용할 수 있는 원자재를 등록할 수 있어요."
-            button="원자재 연결"
+            button="자재 연결하기"
             onClick={() => {
               setIsCreateSubstituteModalOpen(true);
             }}

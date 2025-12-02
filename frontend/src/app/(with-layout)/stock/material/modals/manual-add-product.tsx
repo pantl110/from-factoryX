@@ -199,7 +199,7 @@ const ManualAddProduct = ({
             onClick={() => setIsManualAddMode(false)}
           />
           <MiniBtn
-            text="추가"
+            text="추가하기"
             variant="primary"
             type="submit"
             disabled={!isFormValid()}

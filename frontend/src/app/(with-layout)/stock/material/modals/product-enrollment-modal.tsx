@@ -160,7 +160,7 @@ const ProductEnrollmentModal = ({
           onBlur={() => setTimeout(() => setIsOpen(false), 150)}
         />
         <MiniBtn
-          text="직접 추가"
+          text="직접 추가하기"
           textColor="text-dg"
           borderColor="border-lg"
           hoverColor="hover:bg-bg"
@@ -223,7 +223,7 @@ const ProductEnrollmentModal = ({
             onClick={onClose}
           />
           <MiniBtn
-            text="추가"
+            text="추가하기"
             textColor="text-wh"
             bgColor="bg-primary"
             hoverColor="hover:bg-primary-hover"

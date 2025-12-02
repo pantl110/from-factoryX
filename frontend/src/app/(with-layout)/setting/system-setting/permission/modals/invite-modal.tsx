@@ -309,7 +309,7 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
                 hoverColor="hover:bg-bg"
               />
               <MiniBtn
-                text="초대"
+                text="초대하기"
                 textColor="text-wh"
                 bgColor="bg-primary"
                 onClick={handleInviteMembers}

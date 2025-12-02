@@ -618,7 +618,7 @@ const ProductDetail = ({
                 'locations' in locationListData &&
                 locationListData.locations.length > 0 && (
                   <MiniBtn
-                    text="추가"
+                    text="추가하기"
                     variant="whiteOutline"
                     disabled={isViewer || !hasSubscription()}
                     onClick={() => {
@@ -635,8 +635,8 @@ const ProductDetail = ({
               locationListData.locations.length === 0 ? (
                 <NoHistoryBox
                   title="등록된 창고 위치가 아직 없어요."
-                  text="[추가] 버튼을 눌러 제품이 보관된 창고를 등록해보세요."
-                  button="창고 위치 추가"
+                  text="[추가하기] 버튼을 눌러 제품이 보관된 창고를 등록해보세요."
+                  button="추가하기"
                   onClick={() => {
                     setSelectedLocation(null);
                     setIsStockLocationModalOpen(true);

@@ -183,7 +183,7 @@ const AddReturnModal = ({
           hoverColor="hover:bg-bg"
         />
         <MiniBtn
-          text="반품 등록"
+          text="반품 등록하기"
           onClick={handleSubmitRefund}
           textColor="text-wh"
           bgColor="bg-primary"

@@ -26,7 +26,7 @@ const StartProductionModal = ({
           hoverColor="hover:bg-bg"
         />
         <MiniBtn
-          text="생산 시작"
+          text="생산 시작하기"
           textColor="text-wh"
           bgColor="bg-primary"
           onClick={onClick}

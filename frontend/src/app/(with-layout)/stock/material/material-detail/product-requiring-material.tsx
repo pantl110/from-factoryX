@@ -162,7 +162,7 @@ const ProductRequiringMaterial = forwardRef<
           <h3 className="Heading-3 text-dg">이 자재가 사용된 제품</h3>
           {productConnections.length > 0 && (
             <MiniBtn
-              text="제품 연결"
+              text="제품 연결하기"
               variant="whiteOutline"
               onClick={() => setIsProductEnrollmentModalOpen(true)}
               disabled={isViewer || !hasSubscription()}
@@ -212,7 +212,7 @@ const ProductRequiringMaterial = forwardRef<
             <NoHistoryBox
               title="이 원자재에 연결된 제품이 아직 없어요."
               text="제품을 연결하면, 자재가 사용되는 제품이 이곳에 표시돼요."
-              button="제품 연결"
+              button="제품 연결하기"
               onClick={() => setIsProductEnrollmentModalOpen(true)}
               disabled={isViewer || !hasSubscription()}
             />

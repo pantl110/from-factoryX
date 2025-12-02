@@ -7,6 +7,8 @@ import {
   FieldArrayWithId,
 } from 'react-hook-form';
 import LocationItem from '../../location-item';
+import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 interface LocationFormModel {
   locations: {
@@ -32,6 +34,7 @@ interface StockLocationProps {
   locations?: LocationFormModel['locations'];
   onDeleteLocation?: (index: number, locationId?: number) => void;
   isLoading?: boolean;
+  onAddClick?: () => void;
 }
 
 const StockLocation = ({
@@ -42,7 +45,14 @@ const StockLocation = ({
   remove,
   onDeleteLocation,
   isLoading,
+  onAddClick,
 }: StockLocationProps) => {
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
+
   if (isLoading) {
     return <div className="h-50" />;
   }
@@ -52,7 +62,10 @@ const StockLocation = ({
       <div className="flex flex-col gap-3">
         <NoHistoryBox
           title="등록된 창고 위치가 아직 없어요."
-          text="[추가] 버튼을 눌러 원자재가 보관된 창고를 등록해보세요."
+          text="[추가하기] 버튼을 눌러 원자재가 보관된 창고를 등록해보세요."
+          button="추가하기"
+          onClick={onAddClick}
+          disabled={isViewer || !hasSubscription?.()}
         />
       </div>
     );

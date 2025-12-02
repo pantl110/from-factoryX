@@ -186,7 +186,7 @@ export const MaterialStockInDetailModal = ({
               disabled={isUpdating}
             />
             <MiniBtn
-              text="수정"
+              text="수정하기"
               variant="secondary"
               type="submit"
               disabled={!isDirty || isUpdating}

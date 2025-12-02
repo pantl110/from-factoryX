@@ -320,14 +320,14 @@ const TaxPageContent = () => {
                     text={
                       checkedCount === 0
                         ? showHidden
-                          ? '복구'
+                          ? '복구하기'
                           : '숨기기'
                         : checkedCount === taxData.length
                           ? showHidden
-                            ? '전체 항목 복구'
+                            ? '전체 항목 복구하기'
                             : '전체 항목 숨기기'
                           : showHidden
-                            ? `${checkedCount}개 항목 복구`
+                            ? `${checkedCount}개 항목 복구하기`
                             : `${checkedCount}개 항목 숨기기`
                     }
                     variant={checkedCount > 0 ? 'red' : 'primary'}
