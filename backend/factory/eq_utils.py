@@ -14,10 +14,13 @@ async def get_equipment_by_id(equipment_id, factory_id):
                 .prefetch_related(
                     Prefetch(
                         "plans",
-                        queryset=ProjectPlan.objects.select_related("product__product").annotate(
+                        queryset=ProjectPlan.objects.select_related(
+                            "product__product"
+                        ).annotate(
                             product_name=F("product__product__name"),
                             product_unit=F("product__product__unit"),
-                            product_id=F("product__product__id"),
+                            # ProjectPlan 모델에는 이미 product_id 필드가 있으므로
+                            # 별도의 product_id annotation 은 생성하지 않는다.
                         ),
                     )
                 )
