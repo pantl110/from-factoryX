@@ -22,13 +22,13 @@ const CreateTaxOverlayview = ({ onClose }: CreateTaxOverlayviewProps) => {
           </div>
           <div className="flex gap-2.5">
             <MiniBtn
-              text="취소하기"
+              text="취소"
               textColor="text-sv"
               onClick={onClose}
               hoverColor="hover:bg-bg"
             />
             <MiniBtn
-              text="발행하기 "
+              text="발행하기"
               textColor="text-wh"
               bgColor="bg-primary"
               hoverColor="hover:bg-primary-hover"

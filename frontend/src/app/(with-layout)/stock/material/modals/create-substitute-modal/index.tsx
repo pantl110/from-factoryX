@@ -185,7 +185,7 @@ const CreateSubstituteModal = ({
         <div className="flex gap-2.5 justify-end mt-3 pb-6">
           <MiniBtn text="닫기" variant="white" onClick={onClose} />
           <MiniBtn
-            text="연결"
+            text="연결하기"
             variant="primary"
             onClick={async () => {
               if (selectedMaterialIds.size === 0) return;

@@ -595,7 +595,7 @@ const CreatTaxPanel = ({
       />
       <div className="relative">
         <MiniBtn
-          text="발행 방식 선택"
+          text="발행 방식 선택하기"
           textColor="text-wh"
           bgColor="bg-primary"
           hoverColor="hover:bg-primary-hover"

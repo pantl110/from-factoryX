@@ -5,6 +5,7 @@ import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import { MaterialResponseModel } from '@/types/data-model';
 import { RoundChip, Checkbox } from '@/ui';
+import { removeTrailingZeros } from '@/utils';
 
 interface TableItemProps {
   material: MaterialResponseModel;
@@ -60,13 +61,13 @@ const TableItem = ({
         <p
           className="flex-1 px-3 text-dg truncate"
           title={
-            typeof currentStock === 'number'
-              ? currentStock.toLocaleString()
+            currentStock !== null && currentStock !== undefined
+              ? removeTrailingZeros(currentStock)
               : '-'
           }
         >
-          {typeof currentStock === 'number'
-            ? currentStock.toLocaleString()
+          {currentStock !== null && currentStock !== undefined
+            ? removeTrailingZeros(currentStock)
             : '-'}
         </p>
         <div className="w-[150px]">

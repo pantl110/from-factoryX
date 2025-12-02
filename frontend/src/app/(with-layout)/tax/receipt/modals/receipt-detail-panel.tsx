@@ -40,7 +40,7 @@ const ReceiptDetailPanel = ({ onClose, itemId }: ReceiptDetailPanelProps) => {
         onClose={onClose}
         headerButton={
           <MiniBtn
-            text="내역 연결"
+            text="내역 연결하기"
             textColor="text-dg"
             borderColor="border-lg"
             hoverColor="hover:bg-bg"

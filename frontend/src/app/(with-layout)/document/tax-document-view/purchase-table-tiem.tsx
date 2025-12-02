@@ -56,7 +56,7 @@ const PurchaseTableTiem = ({
       {canLink && (
         <div className="px-3 flex-[1.5]">
           <MiniBtn
-            text="연결"
+            text="연결하기"
             textColor="text-dg"
             borderColor="border-lg"
             hoverColor="hover:bg-bg"
