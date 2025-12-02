@@ -238,8 +238,10 @@ export interface FacilityPlanResponseModel {
   end_notification: boolean;
   equipment: number;
   id: number;
-  product: number;
+  product: number; // quotation_product_id
   product_name: string;
+  product_unit: string;
+  product_id: number;
   project: number;
   quantity: number;
   start_date: string;

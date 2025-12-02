@@ -39,7 +39,7 @@ const PlanProductsDropdown = ({
   const productMap = new Map<number, { id: number; name: string }>();
 
   projectPlans.forEach((plan) => {
-    const product = plan.quotation_product.product;
+    const { product } = plan.quotation_product;
     if (!productMap.has(product.id)) {
       productMap.set(product.id, {
         id: product.id,

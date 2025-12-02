@@ -50,3 +50,6 @@ export { getMaterialStockStatus } from './get-material-stock-status';
 
 // Role utilities
 export { getRoleText } from './get-role-text';
+
+// Production utilities
+export { calculateAvgProductionTime } from './calculate-production-time';
