@@ -118,6 +118,7 @@ class MaterialSummaryOut(Schema):
     unit: str
     current_stock: Optional[Decimal]
     status: Optional[str] = Field(None, description="자재 상태: '과재고', '충분', '위험', '부족', None")
+    expiry_status: Optional[str] = Field(None, description="유통기한 상태: '양호', '위험', None")
 
 
 # (GET) Expiry Risk Materials

@@ -261,6 +261,11 @@ async def get_materials_by_factory(
             rop=material.rop,
             standard_stock=material.standard_stock,
         )
+        
+        # 유통기한 상태 계산
+        expiry_days = material.expiry_days or 7  # 기본값 7일
+        expiry_status = await sync_to_async(get_expiry_status)(material.id, expiry_days)
+        
         material_list.append(
             {
                 "id": material.id,
@@ -270,6 +275,7 @@ async def get_materials_by_factory(
                 "unit": material.unit,
                 "current_stock": material.current_stock,
                 "status": material_status,
+                "expiry_status": expiry_status,
             }
         )
 
