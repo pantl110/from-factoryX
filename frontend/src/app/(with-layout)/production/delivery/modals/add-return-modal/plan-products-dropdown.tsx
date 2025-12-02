@@ -50,9 +50,12 @@ const PlanProductsDropdown = ({
 
   const products = Array.from(productMap.values());
 
+  // DropdownItem 높이: h-12 (48px), 4개 항목 = 192px + padding
+  const maxHeight = 'max-h-[200px]';
+
   if (isLoading) {
     return (
-      <Dropdown onClose={onClose} width="w-full" maxHeight="max-h-[180px]">
+      <Dropdown onClose={onClose} width="w-full" maxHeight={maxHeight}>
         <DropdownItem text="..." onClick={() => {}} />
       </Dropdown>
     );
@@ -60,14 +63,14 @@ const PlanProductsDropdown = ({
 
   if (products.length === 0) {
     return (
-      <Dropdown onClose={onClose} width="w-full" maxHeight="max-h-[180px]">
+      <Dropdown onClose={onClose} width="w-full" maxHeight={maxHeight}>
         <DropdownItem text="품목이 없습니다." onClick={() => {}} />
       </Dropdown>
     );
   }
 
   return (
-    <Dropdown onClose={onClose} width="w-full" maxHeight="max-h-[180px]">
+    <Dropdown onClose={onClose} width="w-full" maxHeight={maxHeight}>
       {products.map((product) => (
         <DropdownItem
           key={product.id}

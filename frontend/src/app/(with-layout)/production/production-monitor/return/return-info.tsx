@@ -50,10 +50,8 @@ const ReturnInfo = ({
 
   // 폼 유효성 검사
   const isFormValid =
-    watchedRefundDate &&
-    watchedAmount >= 0 &&
-    watchedProductionAmount >= 0 &&
-    watchedProductionAmount + refundData.current_stock >= watchedAmount;
+    watchedRefundDate && watchedAmount >= 0 && watchedProductionAmount >= 0;
+  // && watchedProductionAmount + refundData.current_stock >= watchedAmount;
 
   // 숫자를 000,000 형식으로 포맷팅하는 함수
   const formatNumber = (value: number): string => {
