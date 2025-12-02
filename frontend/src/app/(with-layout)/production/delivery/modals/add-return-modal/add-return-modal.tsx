@@ -3,16 +3,14 @@
 import Input from '@/ui/input';
 import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
-import SearchInput from '@/ui/search-input';
 import { useState } from 'react';
 import { useParams } from 'next/navigation';
-import { ProductNameDropdown } from '@/ui/dropdown/product-name-dropdown';
 import {
-  ProductResponseModel,
   QuotationProductDetailResponseModel,
   ProjectStatusType,
 } from '@/types/data-model';
 import { useInput, getToday, formatDate, useCreateRefund } from '@/hooks';
+import PlanProductsDropdown from './plan-products-dropdown';
 
 interface AddReturnModalProps {
   onClose: () => void;
@@ -64,8 +62,6 @@ const AddReturnModal = ({
   const [selectedProduct, setSelectedProduct] =
     useState<QuotationProductDetailResponseModel | null>(null);
 
-  const [showSearchIcon, setShowSearchIcon] = useState(true);
-
   // 반품 생성 훅
   const { createRefund, isLoading: isCreateRefundLoading } = useCreateRefund();
 
@@ -103,14 +99,14 @@ const AddReturnModal = ({
   };
 
   // 드롭다운에서 선택 시 두 상태를 각각 업데이트
-  const handleSelectProduct = (item: ProductResponseModel) => {
+  const handleSelectProduct = (item: { id: number; name: string }) => {
     // QuotationProductDetailResponseModel로 변환
     const quotationProductData: QuotationProductDetailResponseModel = {
       productId: item.id,
-      product_code: item.code,
+      product_code: '',
       product_name: item.name,
-      spec: item.spec,
-      unit: item.unit,
+      spec: '',
+      unit: '',
       quantity: null,
       unit_price: null,
     };
@@ -118,8 +114,6 @@ const AddReturnModal = ({
     setSelectedProduct(quotationProductData);
     setProductName(item.name);
     setIsProductNameDropdownOpen(false);
-    // 제품 선택 시 반품 수량을 자동으로 설정하지 않음 (사용자가 직접 입력하도록)
-    setShowSearchIcon(false);
   };
 
   return (
@@ -130,36 +124,20 @@ const AddReturnModal = ({
       width="w-[600px]"
     >
       <div className="w-full mt-4 relative">
-        <SearchInput
-          placeholder="제품명 검색"
-          width="w-full"
-          value={productName}
-          onChange={(value) => {
-            setProductName(value);
-            if (value.length > 0) {
-              setIsProductNameDropdownOpen(true);
-            } else {
-              setIsProductNameDropdownOpen(false);
-            }
-          }}
-          onFocus={() => {
-            if (productName.length > 0) {
-              setIsProductNameDropdownOpen(true);
-            }
-            setShowSearchIcon(true);
-          }}
-          onBlur={() =>
-            setTimeout(() => setIsProductNameDropdownOpen(false), 150)
-          }
-          showIcon={showSearchIcon}
+        <Input
+          label="제품명"
+          placeholder="제품을 선택해주세요."
+          value={productName || ''}
+          disabledReadOnly
+          button={true}
+          onClickButton={() => setIsProductNameDropdownOpen(true)}
         />
-        {isProductNameDropdownOpen && productName && (
+        {isProductNameDropdownOpen && (
           <div className="absolute left-0 top-[calc(100%+8px)] z-[100] w-[551px]">
-            <ProductNameDropdown
-              searchTerm={productName}
-              onSelect={handleSelectProduct}
+            <PlanProductsDropdown
+              projectId={projectId}
               onClose={() => setIsProductNameDropdownOpen(false)}
-              width="w-full"
+              onSelect={handleSelectProduct}
             />
           </div>
         )}

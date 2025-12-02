@@ -66,7 +66,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
 
     const getInputClassName = () => {
       let className =
-        'w-full h-12 min-h-9 rounded px-3 Re_Body-1 placeholder:text-sv outline-none border transition-colors duration-300';
+        'w-full h-12 min-h-9 rounded px-3 Re_Body-1 placeholder:text-sv outline-none border transition-colors duration-200 ease-in-out';
 
       if (type === 'number') {
         className +=
@@ -127,9 +127,11 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
           <button
             type="button"
             onClick={onClickButton}
-            className="w-full h-12 min-h-9 rounded px-3 Re_Body-1 border border-lg flex items-center justify-between"
+            className="w-full h-12 min-h-9 rounded px-3 Re_Body-1 border border-lg hover:border-primary flex items-center justify-between transition-colors duration-200 ease-in-out"
           >
-            <span className="Re_Body-1 text-dg">{value}</span>
+            <span className={`Re_Body-1 ${value ? 'text-dg' : 'text-sv'}`}>
+              {value || placeholder}
+            </span>
             <CaretDown size={20} className="text-sv" />
           </button>
         ) : (
@@ -163,7 +165,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
               <button
                 type="button"
                 onClick={togglePasswordVisibility}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-dg hover:text-primary transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-dg hover:text-primary transition-colors duration-200 ease-in-out"
               >
                 {isShowPassword ? (
                   <EyeSlashIcon size={20} className="text-sv" />
