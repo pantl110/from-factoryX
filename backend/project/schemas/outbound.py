@@ -62,7 +62,22 @@ class ListProgressProjectOut(Schema):
 class ProjectPlanModelOut(ModelSchema):
     product_name: Optional[str] = Field(None, description="제품명")
     product_unit: Optional[str] = Field(None, description="제품 단위")
+    # 주의: ProjectPlan.product는 QuotationProduct FK이므로,
+    # 기본 product_id는 QuotationProduct ID가 된다.
+    # 아래 resolver로 실제 Product ID를 반환하도록 오버라이드한다.
     product_id: Optional[int] = Field(None, description="실제 제품(Product) ID")
+
+    @staticmethod
+    def resolve_product_id(obj: ProjectPlan) -> Optional[int]:
+        """
+        ProjectPlan.product는 QuotationProduct FK이므로,
+        실제 Product ID는 obj.product.product_id 에서 가져온다.
+        """
+        try:
+            # obj.product: QuotationProduct, 그 FK가 실제 Product
+            return obj.product.product_id if obj.product_id else None
+        except Exception:
+            return None
 
     class Meta:
         model = ProjectPlan
