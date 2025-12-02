@@ -215,7 +215,13 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
                 )
 
             # 생산 일자 변경 로그 (프로젝트가 생산대기 상태가 아닐 때)
-            if old_start_date != plan.start_date and project.status != Project.ProjectStatus.pending:
+            # 시간 변경만 있을 때는 로그를 남기지 않고, '날짜'가 실제로 바뀐 경우에만 로그를 남긴다.
+            if (
+                old_start_date
+                and plan.start_date
+                and old_start_date.date() != plan.start_date.date()
+                and project.status != Project.ProjectStatus.pending
+            ):
                 change_message = f"생산 일자가 {old_start_date.strftime('%m/%d')}일에서 {plan.start_date.strftime('%m/%d')}일로 변경되었어요"
                 await ProjectLog.objects.acreate(
                     project=plan.project,
