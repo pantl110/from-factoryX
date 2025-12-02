@@ -62,6 +62,7 @@ class ListProgressProjectOut(Schema):
 class ProjectPlanModelOut(ModelSchema):
     product_name: Optional[str] = Field(None, description="제품명")
     product_unit: Optional[str] = Field(None, description="제품 단위")
+    product_id: Optional[int] = Field(None, description="실제 제품(Product) ID")
 
     class Meta:
         model = ProjectPlan
