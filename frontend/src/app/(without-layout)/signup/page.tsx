@@ -23,6 +23,7 @@ const SignupPage = () => {
     watch,
     setValue,
     setError,
+    getValues,
   } = useForm<SignupFormDataModel>({
     mode: 'onChange',
     defaultValues: {
@@ -52,7 +53,15 @@ const SignupPage = () => {
   };
 
   const handleSignupComplete = async (data: SignupFormDataModel) => {
-    await signup.signup(data);
+    // getValues()를 사용하여 최신 form 값을 가져옴 (약관 동의 정보 포함)
+    // 약관 동의는 이메일 인증 전에만 표시되므로, 제출 시 최신 값을 가져와야 함
+    const formData = getValues();
+    await signup.signup({
+      ...data,
+      terms_of_service: formData.terms_of_service ?? false,
+      privacy_policy_agreement: formData.privacy_policy_agreement ?? false,
+      marketing_agreement: formData.marketing_agreement ?? false,
+    });
     if (signup.isSuccess) {
       router.push('/login');
     }
@@ -112,7 +121,11 @@ const SignupPage = () => {
 
             {/* 약관 동의 - 이메일 인증 시작 전에만 표시 */}
             {!verification.isVerificationSent && (
-              <AgreeArea watchedValues={watchedValues} setValue={setValue} />
+              <AgreeArea
+                watchedValues={watchedValues}
+                setValue={setValue}
+                register={register}
+              />
             )}
 
             {/* 로그인 비밀번호 찾기 */}

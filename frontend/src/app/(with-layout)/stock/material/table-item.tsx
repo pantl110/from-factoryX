@@ -32,7 +32,7 @@ const TableItem = ({
     spec,
     current_stock: currentStock,
     status,
-    expiry_status,
+    expiry_status: expiryStatus,
   } = material;
   const colors = status ? InventoryStatusColorMap[status] : null;
 
@@ -83,12 +83,12 @@ const TableItem = ({
           )}
         </div>
         <div className="w-[150px]">
-          {expiry_status ? (
+          {expiryStatus ? (
             <div className="px-2">
               <RoundChip
-                text={expiry_status}
+                text={expiryStatus}
                 variant="sm"
-                color={expiry_status === '위험' ? 'red' : 'secondary'}
+                color={expiryStatus === '위험' ? 'red' : 'secondary'}
               />
             </div>
           ) : (
