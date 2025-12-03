@@ -1182,7 +1182,7 @@ export interface RefundModel {
 // 반품 수정
 export interface UpdateRefundModel {
   amount: number;
-  production_amount: number;
+  production_amount: number | null;
   refund_date: string;
 }
 

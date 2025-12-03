@@ -9,8 +9,8 @@ interface RegisterProductionModalProps {
   onClose: () => void;
   onSuccess?: () => void; // 생산 시작 성공 시 콜백
   logId: number;
-  currentAmount: number;
-  currentProductionAmount: number;
+  currentAmount: number | null;
+  currentProductionAmount: number | null;
   currentRefundDate: string;
 }
 
@@ -28,6 +28,11 @@ const RegisterProductionModal = ({
   const { isToastOpen, isVisible, showToast } = useToast();
 
   const handleRegisterProduction = async () => {
+    // 유효성 검사: 버튼이 활성화된 상태에서만 호출되므로 값이 있어야 함
+    if (currentAmount === null || currentProductionAmount === null) {
+      return;
+    }
+
     const result = await registerProduction(logId, {
       amount: currentAmount,
       production_amount: currentProductionAmount,

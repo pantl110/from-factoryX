@@ -1,6 +1,6 @@
 import InfoLabelValue from '@/ui/info-label-value';
 import MiniBtn from '@/ui/mini-btn';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import RegisterProductionModal from '../modals/register-production-modal';
 import { RefundModel } from '@/types/data-model';
@@ -9,14 +9,14 @@ import useMemberStore from '@/store/member-store';
 
 interface RefundFormDataModel {
   refund_date: string;
-  amount: number;
-  production_amount: number;
+  amount: number | null;
+  production_amount: number | null;
 }
 
 interface ReturnInfoProps {
   refundData: RefundModel;
-  onAmountChange: (newAmount: number) => void;
-  onProductionAmountChange: (newProductionAmount: number) => void;
+  onAmountChange: (newAmount: number | null) => void;
+  onProductionAmountChange: (newProductionAmount: number | null) => void;
   onTabChange?: (tab: string) => void; // 탭 변경 콜백
   logId: number;
 }
@@ -34,12 +34,15 @@ const ReturnInfo = ({
   const [isRegisterProductionModalOpen, setIsRegisterProductionModalOpen] =
     useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [productionAmountInput, setProductionAmountInput] =
+    useState<string>('');
+  const [amountInput, setAmountInput] = useState<string>('');
 
   const { watch, setValue } = useForm<RefundFormDataModel>({
     defaultValues: {
       refund_date: refundData.refund_date || '',
       amount: refundData.amount,
-      production_amount: refundData.production_amount || 0,
+      production_amount: refundData.production_amount ?? null,
     },
     mode: 'onChange', // 실시간 유효성 검사
   });
@@ -48,9 +51,44 @@ const ReturnInfo = ({
   const watchedProductionAmount = watch('production_amount');
   const watchedRefundDate = watch('refund_date');
 
+  // 편집 모드 진입 시 생산수량 입력 필드 초기값 설정
+  useEffect(() => {
+    if (isEditing) {
+      if (
+        watchedProductionAmount === null ||
+        watchedProductionAmount === undefined
+      ) {
+        setProductionAmountInput('');
+      } else if (watchedProductionAmount === 0) {
+        setProductionAmountInput('0');
+      } else {
+        setProductionAmountInput(formatNumber(watchedProductionAmount));
+      }
+    }
+  }, [isEditing, watchedProductionAmount]);
+
+  // 편집 모드 진입 시 반품수량 입력 필드 초기값 설정
+  useEffect(() => {
+    if (isEditing) {
+      if (watchedAmount === null || watchedAmount === undefined) {
+        setAmountInput('');
+      } else if (watchedAmount === 0) {
+        setAmountInput('0');
+      } else {
+        setAmountInput(formatNumber(watchedAmount));
+      }
+    }
+  }, [isEditing, watchedAmount]);
+
   // 폼 유효성 검사
   const isFormValid =
-    watchedRefundDate && watchedAmount >= 0 && watchedProductionAmount >= 0;
+    watchedRefundDate &&
+    watchedAmount !== null &&
+    watchedAmount !== undefined &&
+    watchedAmount > 0 &&
+    watchedProductionAmount !== null &&
+    watchedProductionAmount !== undefined &&
+    watchedProductionAmount >= 0;
   // && watchedProductionAmount + refundData.current_stock >= watchedAmount;
 
   // 숫자를 000,000 형식으로 포맷팅하는 함수
@@ -63,51 +101,74 @@ const ReturnInfo = ({
     e: React.ChangeEvent<HTMLInputElement>
   ) => {
     const { value } = e.target;
+    setProductionAmountInput(value);
 
-    // 빈 문자열이면 0으로 설정
+    // 빈 문자열이면 null로 설정
     if (value === '') {
-      setValue('production_amount', 0);
-      onProductionAmountChange(0);
+      setValue('production_amount', null);
+      onProductionAmountChange(null);
       return;
     }
 
     // 쉼표 제거 후 숫자만 추출
-    const numericValue = parseInt(value.replace(/,/g, '')) || 0;
+    const numericValue = parseInt(value.replace(/,/g, ''));
 
-    if (numericValue >= 0) {
+    if (!isNaN(numericValue) && numericValue >= 0) {
       setValue('production_amount', numericValue);
       onProductionAmountChange(numericValue); // 부모에게 알림
+    }
+  };
+
+  // 생산수량 입력 필드 blur 처리
+  const handleProductionAmountBlur = () => {
+    // 빈 문자열이면 null로 설정
+    if (productionAmountInput === '') {
+      setValue('production_amount', null);
+      onProductionAmountChange(null);
+      setProductionAmountInput('');
     } else {
-      // 음수 값이 입력되면 input을 비움
-      setValue('production_amount', 0);
-      onProductionAmountChange(0);
+      // 입력값이 있으면 포맷팅하여 표시
+      const numericValue = parseInt(productionAmountInput.replace(/,/g, ''));
+      if (!isNaN(numericValue) && numericValue >= 0) {
+        setProductionAmountInput(formatNumber(numericValue));
+      }
     }
   };
 
   // 반품수량 입력 처리 - 실시간 포맷팅
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
+    setAmountInput(value);
 
-    // 빈 문자열이면 0으로 설정
+    // 빈 문자열이면 null로 설정
     if (value === '') {
-      setValue('amount', 0);
-      onAmountChange(0);
+      setValue('amount', null);
+      onAmountChange(null);
       return;
     }
 
     // 쉼표 제거 후 숫자만 추출
-    const numericValue = parseInt(value.replace(/,/g, '')) || 0;
+    const numericValue = parseInt(value.replace(/,/g, ''));
 
-    if (numericValue >= 1) {
+    if (!isNaN(numericValue) && numericValue >= 0) {
       setValue('amount', numericValue);
       onAmountChange(numericValue);
-    } else if (numericValue === 0) {
-      setValue('amount', 0);
-      onAmountChange(0);
+    }
+  };
+
+  // 반품수량 입력 필드 blur 처리
+  const handleAmountBlur = () => {
+    // 빈 문자열이면 null로 설정
+    if (amountInput === '') {
+      setValue('amount', null);
+      onAmountChange(null);
+      setAmountInput('');
     } else {
-      // 음수 값이 입력되면 input을 비움
-      setValue('amount', 0);
-      onAmountChange(0);
+      // 입력값이 있으면 포맷팅하여 표시
+      const numericValue = parseInt(amountInput.replace(/,/g, ''));
+      if (!isNaN(numericValue) && numericValue >= 0) {
+        setAmountInput(formatNumber(numericValue));
+      }
     }
   };
 
@@ -208,8 +269,9 @@ const ReturnInfo = ({
                     <div className="flex items-center w-full">
                       <input
                         type="text"
-                        value={formatNumber(watchedAmount)}
+                        value={amountInput}
                         onChange={handleAmountChange}
+                        onBlur={handleAmountBlur}
                         placeholder="(필수)"
                         className="w-full placeholder:text-gr"
                         style={{ outline: 'none' }}
@@ -245,8 +307,9 @@ const ReturnInfo = ({
                     <div className="flex items-center w-full">
                       <input
                         type="text"
-                        value={formatNumber(watchedProductionAmount)}
+                        value={productionAmountInput}
                         onChange={handleProductionAmountChange}
+                        onBlur={handleProductionAmountBlur}
                         placeholder="(필수)"
                         className="w-full placeholder:text-gr"
                         style={{ outline: 'none' }}
@@ -259,7 +322,8 @@ const ReturnInfo = ({
               <InfoLabelValue
                 label="생산수량"
                 value={
-                  refundData.production_amount
+                  refundData.production_amount !== null &&
+                  refundData.production_amount !== undefined
                     ? refundData.production_amount.toLocaleString()
                     : ''
                 }

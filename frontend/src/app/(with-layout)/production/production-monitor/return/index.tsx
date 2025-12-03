@@ -20,9 +20,10 @@ const ReturnSection = ({
   const [refundData, setRefundData] = useState<RefundModel | null>(null);
 
   // 실시간 입력값을 추적하기 위한 상태 추가
-  const [currentAmount, setCurrentAmount] = useState<number>(0);
-  const [currentProductionAmount, setCurrentProductionAmount] =
-    useState<number>(0);
+  const [currentAmount, setCurrentAmount] = useState<number | null>(null);
+  const [currentProductionAmount, setCurrentProductionAmount] = useState<
+    number | null
+  >(null);
 
   const {
     getRefundDetail,
@@ -38,19 +39,17 @@ const ReturnSection = ({
         setRefundData(result.data);
         // 초기값 설정 - refundData에서 가져옴
         setCurrentAmount(result.data.amount);
-        setCurrentProductionAmount(
-          result.data.amount - (result.data.current_stock || 0)
-        );
+        setCurrentProductionAmount(result.data.production_amount ?? null);
       }
     };
     fetchRefundData();
   }, [refundId, getRefundDetail]);
 
   // 입력값 변경 핸들러
-  const handleAmountChange = (newAmount: number) => {
+  const handleAmountChange = (newAmount: number | null) => {
     setCurrentAmount(newAmount);
   };
-  const handleProductionAmountChange = (newProductionAmount: number) => {
+  const handleProductionAmountChange = (newProductionAmount: number | null) => {
     setCurrentProductionAmount(newProductionAmount);
   };
 
@@ -64,6 +63,8 @@ const ReturnSection = ({
 
   // 실시간 입력값을 사용하여 표 표시 여부 결정
   const shouldShowTable =
+    currentProductionAmount !== null &&
+    currentAmount !== null &&
     currentAmount === currentProductionAmount + (refundData.current_stock || 0);
 
   return (
