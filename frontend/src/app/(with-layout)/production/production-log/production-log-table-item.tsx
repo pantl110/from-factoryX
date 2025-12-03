@@ -179,7 +179,7 @@ const ProductionLogTableItem = ({
           />
         </div>
         <p className="w-[140px] px-3 cursor-default">
-          {plan.avg_production_time != null
+          {plan.avg_production_time !== null
             ? `${plan.avg_production_time.toLocaleString()}초`
             : '-'}
         </p>
