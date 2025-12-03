@@ -240,7 +240,7 @@ class ProjectPlanDetailOut(Schema):
     defective_quantity: Optional[int] = None
     start_date: datetime.datetime
     end_date: datetime.datetime
-    avg_production_time: int
+    avg_production_time: Optional[int] = None
 
 
 # (POST) Project Plan Create
@@ -287,7 +287,7 @@ class ProjectPlanDetailWithRelationsOut(Schema):
     defective_quantity: Optional[int] = None
     start_date: datetime.datetime
     end_date: datetime.datetime
-    avg_production_time: int
+    avg_production_time: Optional[int] = None
     material_status: Literal["충분", "부족"]
     material_consumed: bool
 
