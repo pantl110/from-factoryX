@@ -28,7 +28,7 @@ const ProductionYield = ({ monthlyProfits }: ProductionYieldProps) => {
       <div className="flex flex-col gap-1">
         <p className="Heading-4 text-sv">생산 수익</p>
         <p className="flex gap-1 Heading-1">
-          {currentProfit} <span>만원</span>
+          {currentProfit.toFixed(2)} <span>만원</span>
         </p>
 
         {changePercentage !== undefined && !isNaN(changePercentage) && (
@@ -46,7 +46,7 @@ const ProductionYield = ({ monthlyProfits }: ProductionYieldProps) => {
               >
                 <p>
                   {changePercentage === 0 ? '' : isNegative ? '-' : '+'}
-                  {Math.abs(changePercentage)}
+                  {Math.abs(changePercentage).toFixed(2)}
                   <span>%</span>
                 </p>
                 {changePercentage !== 0 && (

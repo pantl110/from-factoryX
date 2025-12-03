@@ -3,7 +3,6 @@ import {
   ProjectResponseModel,
   WorkInstructionsResponseModel,
 } from '@/types/data-model';
-import Chip from '@/ui/chip';
 import { DocumentType, DocumentTypeColorMap } from './types';
 import { useState } from 'react';
 import Panel from '@/ui/panel';
@@ -17,6 +16,7 @@ import {
   getProductNames,
   getProductNamesDisplay,
 } from '@/utils';
+import { RoundChip } from '@/ui';
 
 interface DocumentTableItemProps {
   data:
@@ -33,7 +33,7 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
     useState(false);
   const [isTaxPanelOpen, setIsTaxPanelOpen] = useState(false);
 
-  const { bgColor, textColor } = DocumentTypeColorMap[documentType];
+  const { color } = DocumentTypeColorMap[documentType];
 
   const taxData = data as PublishedTaxInvoiceResponseModel;
   const projectData = data as ProjectResponseModel;
@@ -121,11 +121,7 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
         ) : documentType === '생산지시서' ? (
           <>
             <div className="px-3 flex-[0.5]">
-              <Chip
-                text={documentType}
-                bgColor={bgColor}
-                textColor={textColor}
-              />
+              <RoundChip text={documentType} variant="sm" color={color} />
             </div>
             <p
               className="px-3 flex-1 truncate"
@@ -177,11 +173,7 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
         ) : projectData ? (
           <>
             <div className="px-3 flex-[0.5]">
-              <Chip
-                text={documentType}
-                bgColor={bgColor}
-                textColor={textColor}
-              />
+              <RoundChip text={documentType} variant="sm" color={color} />
             </div>
             <p
               className="px-3 flex-1 truncate"

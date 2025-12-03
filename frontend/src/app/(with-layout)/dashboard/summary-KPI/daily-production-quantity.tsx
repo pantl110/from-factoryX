@@ -46,7 +46,7 @@ const DailyProductionQuantity = ({
                 >
                   <p className="">
                     {changePercentage === 0 ? '' : isNegative ? '- ' : '+ '}
-                    {Math.abs(changePercentage)}
+                    {Math.abs(changePercentage).toFixed(2)}
                     <span>%</span>
                   </p>
                   {changePercentage !== 0 && (
