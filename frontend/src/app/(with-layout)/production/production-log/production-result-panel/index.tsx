@@ -195,7 +195,6 @@ export const ProductionResultPanel = ({
         start_date: currentFormData.start_date,
         end_date: currentFormData.end_date,
         defective_quantity: defectiveQuantity,
-        avg_production_time: plan.avg_production_time,
         plan_id: plan.id > 0 ? plan.id : undefined,
         material_consumed: isMaterialConsumed,
       });

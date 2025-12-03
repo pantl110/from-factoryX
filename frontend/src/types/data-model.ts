@@ -1121,7 +1121,6 @@ export interface CreateOrUpdateProjectPlanModel {
   defective_quantity?: number | null;
   start_date: string;
   end_date: string;
-  avg_production_time: number;
   status?: OperationStatusType;
   material_consumed?: boolean;
 }
