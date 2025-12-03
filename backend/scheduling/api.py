@@ -16,6 +16,7 @@ from barobill.barobill_state import (
     nts_tax_service_states,
 )
 from stock.models import MaterialProduct, Material
+from factory.models import FactoryEquipment
 from django.db.models import F, OuterRef, Exists, Q
 from itertools import groupby
 from operator import attrgetter
@@ -117,9 +118,21 @@ async def project_plan_start_status_change(request):
             #     if mp.material.current_stock < required_qty:
             #         break
             # else:  # for문이 break 없이 끝났으면 재고 충분
-            plan.status = ProjectPlan.ProductionStatus.production
-            plan.save(update_fields=["status"])
-            update_count += 1
+
+            # 1) 생산 계획 상태를 '가동 중'으로 변경
+            if plan.status != ProjectPlan.ProductionStatus.production:
+                plan.status = ProjectPlan.ProductionStatus.production
+                plan.save(update_fields=["status"])
+                update_count += 1
+
+            # 2) 연결된 설비 상태를 'running' 으로 변경
+            equipment = plan.equipment
+            if (
+                equipment
+                and equipment.status != FactoryEquipment.EquipmentStatus.running
+            ):
+                equipment.status = FactoryEquipment.EquipmentStatus.running
+                equipment.save(update_fields=["status"])
 
         return update_count
 
