@@ -290,6 +290,7 @@ class ProjectPlanDetailWithRelationsOut(Schema):
     avg_production_time: Optional[int] = None
     material_status: Literal["충분", "부족"]
     material_consumed: bool
+    is_refund_plan: bool = False
 
 
 # (GET) Daily Production Quantity

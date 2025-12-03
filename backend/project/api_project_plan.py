@@ -224,15 +224,30 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
                         additional_data={"plan_id": plan.id},
                     )
 
-            # 생산 수량 변경 로그 (프로젝트가 생산대기 상태가 아닐 때)
-            if old_quantity != plan.quantity and project.status != Project.ProjectStatus.pending:
-                change_message = f"생산 수량이 {old_quantity}개에서 {plan.quantity}개로 변경되었어요"
-                await ProjectLog.objects.acreate(
-                    project=plan.project,
-                    type=ProjectLog.LogType.quantity,
-                    title="생산 수량 변경",
-                    content=change_message,
-                )
+            # 생산 수량이 변경된 경우
+            if old_quantity != plan.quantity:
+                # 연결된 반품이 있으면 반품의 생산 수량도 함께 업데이트
+                is_refund_plan = await sync_to_async(plan.refunds.exists)()
+
+                if is_refund_plan:
+                    @sync_to_async
+                    def update_refund_production_amounts():
+                        refunds = list(plan.refunds.all())
+                        for refund in refunds:
+                            refund.production_amount = plan.quantity
+                            refund.save()
+
+                    await update_refund_production_amounts()
+
+                # 생산 수량 변경 로그 (프로젝트가 생산대기 상태가 아닐 때)
+                if project.status != Project.ProjectStatus.pending:
+                    change_message = f"생산 수량이 {old_quantity}개에서 {plan.quantity}개로 변경되었어요"
+                    await ProjectLog.objects.acreate(
+                        project=plan.project,
+                        type=ProjectLog.LogType.quantity,
+                        title="생산 수량 변경",
+                        content=change_message,
+                    )
 
             # 생산 일자 변경 로그 (프로젝트가 생산대기 상태가 아닐 때)
             # 시간 변경만 있을 때는 로그를 남기지 않고, '날짜'가 실제로 바뀐 경우에만 로그를 남긴다.
@@ -348,212 +363,6 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
             plan_id=plan.id,
             action="created",
         )
-
-
-@router.get(
-    "/ongoing",
-    summary="[C] 진행 중인 프로젝트 계획 조회",
-    description="진행 중인 프로젝트의 생산 계획을 조회합니다. 프로젝트 이름으로 검색 가능합니다.",
-    response={200: List[ProjectPlanDetailWithRelationsOut], 404: dict, 500: dict},
-)
-@paginate
-async def list_ongoing_project_plans(
-    request, filters: ProjectPlanListFilter = Query(None)
-):
-    factory_id = request.GET.get("factory_id")
-    if not factory_id:
-        raise HttpError(400, "factory_id를 입력해야 합니다.")
-
-    user = request.auth
-    await is_factory_member(int(factory_id), user)
-
-    try:
-        ongoing_statuses = [
-            Project.ProjectStatus.quotation,
-            Project.ProjectStatus.pending,
-            Project.ProjectStatus.production,
-        ]
-
-        # 진행 중인 프로젝트 조회
-        ongoing_projects = await sync_to_async(list)(
-            Project.objects.filter(status__in=ongoing_statuses)
-        )
-
-        if filters:
-            ongoing_projects = await sync_to_async(list)(
-                filters.filter(Project.objects.filter(status__in=ongoing_statuses))
-            )
-
-        if not ongoing_projects:
-            return []
-
-        project_ids = [project.id for project in ongoing_projects]
-        plans = await sync_to_async(list)(
-            ProjectPlan.objects.filter(project_id__in=project_ids).order_by(
-                "product_id", "created_at"
-            )
-        )
-
-        if not plans:
-            return []
-
-        plans_detail_list = []
-        for plan in plans:
-            quotation_product = await QuotationProduct.objects.aget(id=plan.product_id)
-            product = await Product.objects.aget(id=quotation_product.product_id)
-            equipment = await FactoryEquipment.objects.aget(id=plan.equipment_id)
-
-            # Material 수량 충분성 확인
-            material_status = await check_material_availability(
-                product.id, plan.quantity
-            )
-
-            plans_detail_list.append(
-                ProjectPlanDetailWithRelationsOut(
-                    id=plan.id,
-                    project_id=plan.project_id,
-                    quotation_product=QuotationProductDetailOut(
-                        id=quotation_product.id,
-                        product=ProductDetailOut(
-                            id=product.id,
-                            name=product.name,
-                            code=product.code,
-                            unit=product.unit,
-                            spec=product.spec,
-                        ),
-                        quantity=quotation_product.quantity,
-                        unit_price=quotation_product.unit_price,
-                    ),
-                    equipment=EquipmentDetailOut(
-                        id=equipment.id,
-                        name=equipment.name,
-                        priority=equipment.priority,
-                    ),
-                    status=plan.status,
-                    quantity=plan.quantity,
-                    defective_quantity=plan.defective_quantity,
-                    start_date=plan.start_date,
-                    end_date=plan.end_date,
-                    avg_production_time=plan.avg_production_time,
-                    material_status=material_status,
-                )
-            )
-
-        plans_detail_list = plans_detail_list
-
-        if not plans_detail_list:
-            raise HttpError(404, "진행 중인 프로젝트에 생성된 생산 계획이 없습니다.")
-
-        return plans_detail_list
-
-    except HttpError:
-        raise
-
-    except Exception as e:
-        raise HttpError(500, f"서버 오류가 발생했습니다: {str(e)}")
-
-
-@router.get(
-    "/completed",
-    summary="[C] 완료된 프로젝트 계획 조회",
-    description="완료된 프로젝트의 생산 계획을 조회합니다. 프로젝트 이름으로 검색 가능합니다.",
-    response={200: List[ProjectPlanDetailWithRelationsOut], 404: dict, 500: dict},
-)
-@paginate
-async def list_completed_project_plans(
-    request, filters: ProjectPlanListFilter = Query(None)
-):
-    factory_id = request.GET.get("factory_id")
-    if not factory_id:
-        raise HttpError(400, "factory_id를 입력해야 합니다.")
-
-    user = request.auth
-    await is_factory_member(int(factory_id), user)
-
-    try:
-        completed_statuses = [
-            Project.ProjectStatus.manufactured,
-            Project.ProjectStatus.delivery,
-            Project.ProjectStatus.completed,
-        ]
-
-        # 완료된 프로젝트 조회
-        completed_projects = await sync_to_async(list)(
-            Project.objects.filter(status__in=completed_statuses)
-        )
-
-        if filters:
-            completed_projects = await sync_to_async(list)(
-                filters.filter(Project.objects.filter(status__in=completed_statuses))
-            )
-
-        if not completed_projects:
-            return []
-
-        project_ids = [project.id for project in completed_projects]
-        plans = await sync_to_async(list)(
-            ProjectPlan.objects.filter(project_id__in=project_ids).order_by(
-                "product_id", "created_at"
-            )
-        )
-
-        if not plans:
-            return []
-
-        plans_detail_list = []
-        for plan in plans:
-            quotation_product = await QuotationProduct.objects.aget(id=plan.product_id)
-            product = await Product.objects.get(id=quotation_product.product_id)
-            equipment = await FactoryEquipment.objects.aget(id=plan.equipment_id)
-
-            # Material 수량 충분성 확인
-            material_status = await check_material_availability(
-                product.id, plan.quantity
-            )
-
-            plans_detail_list.append(
-                ProjectPlanDetailWithRelationsOut(
-                    id=plan.id,
-                    project_id=plan.project_id,
-                    quotation_product=QuotationProductDetailOut(
-                        id=quotation_product.id,
-                        product=ProductDetailOut(
-                            id=product.id,
-                            name=product.name,
-                            code=product.code,
-                            unit=product.unit,
-                            spec=product.spec,
-                        ),
-                        quantity=quotation_product.quantity,
-                        unit_price=quotation_product.unit_price,
-                    ),
-                    equipment=EquipmentDetailOut(
-                        id=equipment.id,
-                        name=equipment.name,
-                        priority=equipment.priority,
-                    ),
-                    status=plan.status,
-                    quantity=plan.quantity,
-                    defective_quantity=plan.defective_quantity,
-                    start_date=plan.start_date,
-                    end_date=plan.end_date,
-                    avg_production_time=plan.avg_production_time,
-                    material_status=material_status,
-                )
-            )
-
-        plans_detail_list = plans_detail_list
-
-        if not plans_detail_list:
-            raise HttpError(404, "완료된 프로젝트에 생성된 생산 계획이 없습니다.")
-
-        return plans_detail_list
-
-    except HttpError:
-        raise
-
-    except Exception as e:
-        raise HttpError(500, f"서버 오류가 발생했습니다: {str(e)}")
 
 
 @router.get(
@@ -848,6 +657,9 @@ async def list_project_plans(request, project_id: int):
         # Material 수량 충분성 확인
         material_status = await check_material_availability(product.id, plan.quantity)
 
+        # 해당 생산 계획이 반품에서 생성된 계획인지 여부
+        is_refund_plan = await sync_to_async(plan.refunds.exists)()
+
         plans_detail_list.append(
             ProjectPlanDetailWithRelationsOut(
                 id=plan.id,
@@ -878,6 +690,7 @@ async def list_project_plans(request, project_id: int):
                 avg_production_time=plan.avg_production_time,
                 material_status=material_status,
                 material_consumed=plan.material_consumed,
+                is_refund_plan=is_refund_plan,
             )
         )
 
