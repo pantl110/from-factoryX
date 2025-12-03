@@ -23,6 +23,7 @@ from project.utils import (
     get_refund_with_project,
     parse_and_validate_date,
     get_default_equipment,
+    create_production_plan,
     calculate_plan_schedule,
 )
 
@@ -214,46 +215,32 @@ async def register_production_from_refund_log(
         default_equipment = await get_default_equipment(factory_id)
 
         # 4. 생산 계획 생성 또는 수정
-        #    생산 수량은 음수가 되지 않도록 0으로 보정
-        normalized_production_amount = (
-            payload.production_amount if payload.production_amount is not None else 0
-        )
-        if normalized_production_amount < 0:
-            normalized_production_amount = 0
+        #    위에서 생산 수량이 0 이하인 경우는 이미 처리했으므로, 여기서는 양수만 옵니다
+        production_amount = payload.production_amount
 
         if existing_plan:
             # 기존 plan이 생산 중인지 확인
             plan_status = existing_plan.status
-            if plan_status == "production":
+            if plan_status == ProjectPlan.ProductionStatus.production:
                 raise HttpError(
                     400,
                     "생산 중인 계획은 수정할 수 없습니다.",
                 )
 
             # 기존 plan이 있는 경우 수정
+            # 수정할 때는 기존의 start_date와 end_date를 유지
             project_plan = existing_plan
             project_plan.product = quotation_product
             project_plan.equipment = default_equipment
-            project_plan.quantity = normalized_production_amount
-
-            (
-                start_date,
-                end_date,
-                avg_production_time,
-                _,
-            ) = calculate_plan_schedule(
-                normalized_production_amount, refund_product.average_production_time
-            )
-
-            project_plan.start_date = start_date
-            project_plan.end_date = end_date
-            project_plan.avg_production_time = avg_production_time
+            project_plan.quantity = production_amount
+            # start_date와 end_date는 기존 값 유지
+            project_plan.avg_production_time = refund_product.average_production_time  # 제품의 평균 시간을 직접 사용
 
             await project_plan.asave()
 
             # 6. 기존 refund 정보 수정
             refund.amount = payload.amount
-            refund.production_amount = normalized_production_amount
+            refund.production_amount = production_amount
             refund.refund_date = await parse_and_validate_date(payload.refund_date)
             await refund.asave()
 
@@ -265,24 +252,14 @@ async def register_production_from_refund_log(
 
         else:
             # 기존 plan이 없는 경우 새로 생성
-            (
-                start_date,
-                end_date,
-                avg_production_time,
-                _,
-            ) = calculate_plan_schedule(
-                normalized_production_amount, refund_product.average_production_time
-            )
-
-            project_plan = await ProjectPlan.objects.acreate(
+            # 생성할 때는 calculate_plan_schedule로 자동 계산
+            project_plan = await create_production_plan(
                 project=project,
-                product=quotation_product,  # 수정된 QuotationProduct 사용
+                quotation_product=quotation_product,  # 수정된 QuotationProduct 사용
                 equipment=default_equipment,
-                status="가동 대기",
-                quantity=normalized_production_amount,
-                start_date=start_date,
-                end_date=end_date,
-                avg_production_time=avg_production_time,  # 품목의 평균 생산 시간 사용
+                quantity=production_amount,
+                product_avg_production_time=refund_product.average_production_time,
+                status=ProjectPlan.ProductionStatus.pending,
             )
 
             refund.plan = project_plan
@@ -290,7 +267,7 @@ async def register_production_from_refund_log(
 
             # 6. 기존 refund 정보 수정
             refund.amount = payload.amount
-            refund.production_amount = normalized_production_amount
+            refund.production_amount = production_amount
             refund.refund_date = await parse_and_validate_date(payload.refund_date)
             await refund.asave()
 

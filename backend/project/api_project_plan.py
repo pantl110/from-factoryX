@@ -30,7 +30,10 @@ from typing import List
 from factory.utils import is_factory_member
 from dateutil.relativedelta import relativedelta
 from websocket.utils import send_notification_to_factory
-from project.utils import check_material_availability
+from project.utils import (
+    check_material_availability,
+    update_product_avg_production_time_from_recent_plans,
+)
 from factory.eq_utils import get_equipment_by_id
 from project.plan_utils import get_plan_by_id
 from django.utils import timezone
@@ -86,6 +89,11 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
     # if payload.total_quantity < payload.total_amount:
     #     raise HttpError(400, "해당 품목의 생산 수량 총합이 주문 수량보다 작습니다.")
 
+    # Product 객체 가져오기 (avg_production_time 결정용)
+    product = await Product.objects.aget(id=quotation_product.product_id)
+    
+    # avg_production_time은 항상 product의 average_production_time 사용 (null 허용)
+    avg_production_time = product.average_production_time
 
     if payload.plan_id:
         # 수정 모드
@@ -112,7 +120,7 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
             plan.defective_quantity = payload.defective_quantity
             plan.start_date = payload.start_date
             plan.end_date = payload.end_date
-            plan.avg_production_time = payload.avg_production_time
+            plan.avg_production_time = avg_production_time
             if payload.status:
                 plan.status = payload.status
             # material_consumed가 payload에 명시된 경우에만 업데이트
@@ -120,6 +128,18 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
                 plan.material_consumed = payload.material_consumed
 
             await plan.asave()
+
+            # 생산계획 완료 시 또는 완료 상태에서 수정 시 최근 50개 완료 계획 기반으로 제품 평균 시간 업데이트
+            new_status = plan.status
+            is_completed = new_status == ProjectPlan.ProductionStatus.completed
+            was_completed = old_status == ProjectPlan.ProductionStatus.completed
+            
+            # 완료로 변경되거나, 완료 상태에서 start_date/end_date/quantity가 수정된 경우
+            if is_completed or (was_completed and (old_start_date != plan.start_date or old_end_date != plan.end_date or old_quantity != plan.quantity)):
+                # 최근 50개 완료된 생산계획을 기반으로 제품의 average_production_time 업데이트
+                await sync_to_async(update_product_avg_production_time_from_recent_plans)(
+                    quotation_product.product_id
+                )
 
             # 불량률을 buffer_rate에 반영 (defective_quantity가 있으면)
             if payload.defective_quantity is not None and payload.defective_quantity > 0 and payload.quantity > 0:
@@ -290,7 +310,7 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
             defective_quantity=payload.defective_quantity,
             start_date=payload.start_date,
             end_date=payload.end_date,
-            avg_production_time=payload.avg_production_time,
+            avg_production_time=avg_production_time,
             status=payload.status or ProjectPlan.ProductionStatus.pending,
             material_consumed=payload.material_consumed
             if payload.material_consumed is not None

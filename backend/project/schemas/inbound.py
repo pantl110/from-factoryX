@@ -188,7 +188,7 @@ class ProjectPlanCreateOrUpdateIn(Schema):
     defective_quantity: Optional[int] = Field(None, description="불량품 수량")
     start_date: datetime
     end_date: datetime
-    avg_production_time: int
+    # avg_production_time은 제거됨 - 항상 해당 product의 average_production_time 사용
     status: Optional[str] = None
     material_consumed: Optional[bool] = Field(
         None,
@@ -204,13 +204,6 @@ class ProjectPlanCreateOrUpdateIn(Schema):
             value[0] for value in ProjectPlan.ProductionStatus.choices
         ]:
             raise ValueError("유효하지 않는 상태값입니다.")
-        return v
-
-    @field_validator("avg_production_time")
-    @classmethod
-    def validate_avg_production_time(cls, v):
-        if v <= 0:
-            raise ValueError("평균 생산 시간은 0보다 커야 합니다.")
         return v
 
     @field_validator("defective_quantity")

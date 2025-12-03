@@ -94,7 +94,9 @@ class ProjectPlan(BaseModel):
     )
     start_date = models.DateTimeField(help_text="생산 시작 일시")
     end_date = models.DateTimeField(help_text="마감 예정 일시")
-    avg_production_time = models.IntegerField(help_text="평균 생산 시간(초)")
+    avg_production_time = models.IntegerField(
+        null=True, blank=True, help_text="평균 생산 시간(초)"
+    )
     end_notification = models.BooleanField(
         default=False,
         help_text="생산 완료 알림 여부",

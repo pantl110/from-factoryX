@@ -22,7 +22,7 @@ from document.schemas.outbound import (
 )
 from stock.models import Product
 from project.models import Project, ProjectPlan
-from project.utils import calculate_plan_schedule
+from project.utils import create_production_plan
 from factory.models import FactoryClient, FactoryEquipment, Factory
 from factory.utils import is_factory_member
 from stock.schemas.outbound import ProductRowOut
@@ -420,35 +420,26 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
             base_quantity = prod.quantity
             production_quantity = int(base_quantity * (1 + buffer_rate))
 
-            (
-                start_datetime,
-                end_datetime,
-                avg_production_time,
-                _,
-            ) = calculate_plan_schedule(
-                production_quantity, product.average_production_time
+            # 생산 계획 생성 (저장은 나중에)
+            project_plan = await create_production_plan(
+                project=project,
+                quotation_product=quotation_product,
+                equipment=equipment,
+                quantity=production_quantity,
+                product_avg_production_time=product.average_production_time,
+                status=ProjectPlan.ProductionStatus.pending,
+                save=False,  # 나중에 저장
             )
-
-            # 생산 계획 데이터 준비 (저장은 나중에)
-            project_plan_data = {
-                "project": project,
-                "product": quotation_product,
-                "quantity": production_quantity,
-                "equipment": equipment,
-                "start_date": start_datetime,
-                "end_date": end_datetime,
-                "avg_production_time": avg_production_time,
-            }
 
             # 생산 계획 데이터 저장 (plan_id는 나중에 추가)
             production_plan_info = {
-                "project_plan_data": project_plan_data,
+                "project_plan": project_plan,  # 객체 저장
                 "product_name": product.name,
                 "quantity": production_quantity,
                 "equipment_name": equipment.name,
-                "start_date": start_datetime.strftime("%Y-%m-%d %H:%M"),
-                "end_date": end_datetime.strftime("%Y-%m-%d %H:%M"),
-                "avg_production_time": avg_production_time,
+                "start_date": project_plan.start_date.strftime("%Y-%m-%d %H:%M"),
+                "end_date": project_plan.end_date.strftime("%Y-%m-%d %H:%M"),
+                "avg_production_time": project_plan.avg_production_time,
             }
             production_plans.append(production_plan_info)
 
@@ -499,8 +490,8 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
             # 5. 생산 계획 저장
             print(f"[SAVE] Creating production plans...")
             for i, plan_info in enumerate(production_plans):
-                plan_data = plan_info["project_plan_data"]
-                project_plan = await ProjectPlan.objects.acreate(**plan_data)
+                project_plan = plan_info["project_plan"]
+                await project_plan.asave()  # 저장
                 # 생성된 plan_id 추가
                 plan_info["plan_id"] = project_plan.id
                 print(f"[SAVE] Created production plan {i+1} with ID {project_plan.id}")
@@ -518,11 +509,11 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
                 500, f"데이터 저장 중 오류가 발생했습니다: {str(save_error)}"
             )
 
-        # production_plans에서 project_plan_data 제거 (응답에 불필요한 데이터)
+        # production_plans에서 project_plan 객체 제거 (응답에 불필요한 데이터)
         clean_production_plans = []
         for plan_info in production_plans:
             clean_plan = {
-                k: v for k, v in plan_info.items() if k != "project_plan_data"
+                k: v for k, v in plan_info.items() if k != "project_plan"
             }
             clean_production_plans.append(clean_plan)
 

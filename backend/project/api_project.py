@@ -26,8 +26,7 @@ from project.schemas.outbound import (
 from factory.utils import is_factory_member
 from document.models import Quotation, QuotationProduct
 from project.models import ProjectPlan, ProjectLog
-from project.utils import get_project_by_id
-from helpers.material_consumption import process_material_consumption
+from project.utils import get_project_by_id, update_product_avg_production_time_from_recent_plans
 from django.utils import timezone
 from scheduling.api import update_work_instruction_for_factory
 
@@ -535,14 +534,14 @@ async def update_project_status(
         old_status = project.status
 
         project.status = payload.status
-        if payload.status == "pending":
+        if payload.status == Project.ProjectStatus.pending:
             project.pending_at = timezone.now().date()
         if payload.is_printed is True:
             project.printed_at = timezone.now().date()
         await project.asave()
 
         # 프로젝트 상태가 "생산 대기" → "생산 중"으로 변경되면 WorkInstruction 갱신
-        if old_status == "pending" and payload.status == "production":
+        if old_status == Project.ProjectStatus.pending and payload.status == Project.ProjectStatus.production:
             @sync_to_async
             def update_work_instructions_for_project():
                 today = datetime.now(pytz.timezone(settings.TIME_ZONE)).date()
@@ -563,7 +562,7 @@ async def update_project_status(
             await update_work_instructions_for_project()
 
         # 프로젝트 완료 처리
-        if payload.status == "completed":
+        if payload.status == Project.ProjectStatus.completed:
 
             @sync_to_async
             def handle_project_completion(project_id):
@@ -595,14 +594,24 @@ async def update_project_status(
                     quotation_product = ctx["quotation_product"]
                     plans = ctx["plans"]
 
-                    # 모든 계획 완료 처리 (원자재 소모 기록은 manufactured-to-delivery 단계에서 수행)
+                    # 프로젝트 완료 시점에는 이미 모든 계획이 완료된 상태이므로
+                    # 계획 완료 처리 로직은 불필요 (production → manufactured 전환 시 이미 완료됨)
+                    # 하지만 테스트나 특수한 경우를 위해 주석처리로 유지
                     total_production_qty = 0
+                    # has_new_completed = False
                     for plan in plans:
-                        if plan.status != ProjectPlan.ProductionStatus.completed:
-                            plan.status = ProjectPlan.ProductionStatus.completed
-                            plan.save()
+                        # if plan.status != ProjectPlan.ProductionStatus.completed:
+                        #     plan.status = ProjectPlan.ProductionStatus.completed
+                        #     plan.save()
+                        #     has_new_completed = True
 
                         total_production_qty += int(plan.quantity or 0)
+                    
+                    # 새로 완료된 계획이 있으면 최근 50개 완료 계획 기반으로 제품 평균 시간 업데이트
+                    # if has_new_completed:
+                    #     # handle_project_completion은 @sync_to_async로 감싸져 있으므로, 
+                    #     # 동기 함수를 직접 호출
+                    #     update_product_avg_production_time_from_recent_plans(product_obj.id)
 
                     # QuotationProduct의 납품 상태를 True로 설정
                     if not quotation_product.is_delivery:

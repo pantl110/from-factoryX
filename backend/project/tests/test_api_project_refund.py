@@ -975,18 +975,15 @@ class ProjectRefundAPITestCase(TestCase):
         self.assertEqual(project_plan.product.id, quotation_product.id)
         self.assertEqual(project_plan.equipment.id, equipment.id)
         self.assertEqual(project_plan.quantity, 5)
-        self.assertEqual(project_plan.status, "가동 대기")
-        # 품목의 평균 생산 시간이 사용되는지 확인
-        expected_avg_time = (
-            self.product.average_production_time
-            if self.product.average_production_time is not None
-            else 3600
-        )
-        self.assertEqual(project_plan.avg_production_time, expected_avg_time)
+        self.assertEqual(project_plan.status, "pending")
+        # 품목의 평균 생산 시간이 사용되는지 확인 (제품의 값을 그대로 사용, None이면 None)
+        self.assertEqual(project_plan.avg_production_time, self.product.average_production_time)
 
         # 마감 시간이 올바르게 계산되는지 확인 (초 단위 동일)
+        # 일정 계산에는 제품의 average_production_time이 None이면 기본값 30초 사용
+        schedule_avg_time = self.product.average_production_time if self.product.average_production_time is not None else 30
         expected_duration = timedelta(
-            seconds=expected_avg_time * payload["production_amount"]
+            seconds=schedule_avg_time * payload["production_amount"]
         )
         self.assertEqual(
             project_plan.end_date - project_plan.start_date, expected_duration
@@ -1229,7 +1226,8 @@ class ProjectRefundAPITestCase(TestCase):
         from project.models import ProjectPlan
 
         project_plan = ProjectPlan.objects.get(id=data["project_plan_id"])
-        self.assertEqual(project_plan.avg_production_time, 3600)  # 기본값 1시간
+        # 제품의 average_production_time이 None이면 None으로 저장됨 
+        self.assertIsNone(project_plan.avg_production_time)
 
     # def test_update_refund_with_related_project_plan(self):
     #     """반품 수정 시 연결된 ProjectPlan도 함께 수정되는지 테스트 (PATCH /v1/project-refund/{id})"""

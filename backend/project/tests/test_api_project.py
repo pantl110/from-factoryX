@@ -309,11 +309,12 @@ class ProjectAPITestCase(TestCase):
         quotation_product = QuotationProduct.objects.create(
             quotation=quotation, product=self.product1, quantity=7, unit_price=1000
         )
+        # 프로젝트 완료 시점에는 이미 모든 계획이 완료된 상태여야 함
         plan = ProjectPlan.objects.create(
             project=project,
             product=quotation_product,
             equipment=self.equipment,
-            status=ProjectPlan.ProductionStatus.production,
+            status=ProjectPlan.ProductionStatus.completed,  # 이미 완료된 상태
             quantity=7,
             start_date=timezone.now() - timedelta(days=2),
             end_date=timezone.now() - timedelta(days=1),
@@ -336,7 +337,7 @@ class ProjectAPITestCase(TestCase):
         project.refresh_from_db()
         self.assertEqual(project.status, "completed")
 
-        # 검증: 플랜 완료 처리 및 납품 플래그
+        # 검증: 플랜은 이미 완료된 상태 유지 및 납품 플래그
         plan.refresh_from_db()
         quotation_product.refresh_from_db()
         self.assertEqual(plan.status, ProjectPlan.ProductionStatus.completed)
