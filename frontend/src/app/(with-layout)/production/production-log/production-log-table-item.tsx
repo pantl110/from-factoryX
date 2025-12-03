@@ -85,7 +85,7 @@ const ProductionLogTableItem = ({
 
   return (
     <>
-      <div className="flex items-center h-14 min-w-[1559px] border-b border-lg group Me_Body-1 text-dg">
+      <div className="flex items-center h-14 min-w-[1640px] border-b border-lg group Me_Body-1 text-dg">
         <p
           className="flex-2 px-3 truncate cursor-default"
           title={isFirstOfProduct ? plan.quotation_product.product.name : ''}
@@ -228,7 +228,7 @@ const ProductionLogTableItem = ({
           />
         </div>
         {isEditable && (
-          <div className="w-[200px] px-3 flex gap-2">
+          <div className="w-[260px] px-3 flex gap-2">
             <MiniBtn
               text="저장하기"
               variant="whiteOutline"

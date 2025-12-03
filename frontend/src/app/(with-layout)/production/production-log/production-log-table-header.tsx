@@ -16,7 +16,7 @@ const ProductionLogTableHeader = ({
   );
 
   return (
-    <div className="flex items-center h-12 min-w-[1559px] Me_Body-1 text-sv rounded bg-lg-table cursor-default">
+    <div className="flex items-center h-12 min-w-[1640px] Me_Body-1 text-sv rounded bg-lg-table cursor-default">
       {/* //  sticky top-[113px] */}
       <p className="flex-[2] px-3">제품명</p>
       <p className="flex-1 px-3">제품코드</p>
@@ -30,7 +30,7 @@ const ProductionLogTableHeader = ({
       <p className="w-[150px] px-3">자재 상태</p>
       <p className="w-[200px] px-3">마감일자</p>
       {projectStatus === 'manufactured' && !isViewer && hasSubscription() && (
-        <p className="w-[200px] px-3">액션</p>
+        <p className="w-[260px] px-3">액션</p>
       )}
     </div>
   );
