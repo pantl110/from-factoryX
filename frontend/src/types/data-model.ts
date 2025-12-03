@@ -1105,6 +1105,7 @@ export interface ProjectPlanModel {
   avg_production_time: number; // 단위당 소요 시간
   material_status: '충분' | '부족'; // 원자재 상태
   material_consumed: boolean; // 생산계획 입력 여부
+  is_refund_plan?: boolean; // 반품 관련 생산 계획 여부
 }
 
 export interface ProjectPlanListResponseModel extends PaginationModel {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import MiniBtn from '@/ui/mini-btn';
 import LogItem from './log-item';
@@ -12,7 +12,7 @@ import {
   ProjectLogListResponseModel,
   ProjectLogResponseModel,
 } from '@/types/data-model';
-import { useGetProjectLogs } from '@/hooks';
+import { useGetProjectLogs, useInfiniteScroll } from '@/hooks';
 import Spinner from '@/ui/spinner';
 import { ProjectStatusType } from '@/types/status-type';
 import useMemberStore from '@/store/member-store';
@@ -51,16 +51,56 @@ const ProductionMonitor = ({
     nextPage: null,
     previousPage: null,
   });
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
-  // 프로젝트 로그 데이터 가져오기
-  const loadProjectLogs = async () => {
-    if (!projectId) return;
+  // 프로젝트 로그 데이터 가져오기 (초기 로드)
+  const loadProjectLogs = useCallback(
+    async (page: number = 1, append: boolean = false) => {
+      if (!projectId) return;
 
-    const result = await getProjectLogs(projectId);
-    if (result.success && result.data) {
-      setLogData(result.data);
+      // 추가 로드 시에만 isLoadingMore 체크
+      if (append && isLoadingMore) return;
+
+      if (append) {
+        setIsLoadingMore(true);
+      }
+
+      const result = await getProjectLogs(projectId, { page, size: 20 });
+      if (result.success && result.data) {
+        if (append) {
+          // 기존 데이터에 추가
+          setLogData((prev) => ({
+            ...result.data!,
+            data: [...prev.data, ...result.data!.data],
+          }));
+        } else {
+          // 새로 설정
+          setLogData(result.data);
+        }
+      }
+
+      if (append) {
+        setIsLoadingMore(false);
+      }
+    },
+    [projectId, getProjectLogs, isLoadingMore]
+  );
+
+  // 다음 페이지 로드
+  const loadNextPage = useCallback(() => {
+    if (logData.nextPage && !isLoadingMore && !isLoading) {
+      loadProjectLogs(logData.nextPage, true);
     }
-  };
+  }, [logData.nextPage, isLoadingMore, isLoading, loadProjectLogs]);
+
+  // 무한스크롤 훅
+  const loadMoreRef = useInfiniteScroll<HTMLDivElement>({
+    enabled: true,
+    hasMore: logData.nextPage !== null,
+    isLoading: isLoading && logData.data.length === 0,
+    isFetchingMore: isLoadingMore,
+    onLoadMore: loadNextPage,
+  });
 
   // 특정 로그만 업데이트 (데이터 재로딩 없이)
   const updateLogItem = (logId: number, title: string, content: string) => {
@@ -73,14 +113,23 @@ const ProductionMonitor = ({
   };
 
   useEffect(() => {
-    loadProjectLogs();
-
+    // 프로젝트가 변경되면 초기화하고 첫 페이지 로드
+    setLogData({
+      data: [],
+      count: 0,
+      totalCnt: 0,
+      pageCnt: 0,
+      curPage: 0,
+      nextPage: null,
+      previousPage: null,
+    });
+    loadProjectLogs(1, false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId]);
 
   return (
     <>
-      {isLoading ? (
+      {isLoading && logData.data.length === 0 ? (
         <div className="flex justify-center items-center h-100">
           <Spinner />
         </div>
@@ -106,18 +155,20 @@ const ProductionMonitor = ({
                   </div>
                 )}
 
-                {logData.data.length === 0 ? (
+                {logData.data.length === 0 && !isLoading ? (
                   <EmptyLog />
                 ) : (
                   <div className="flex flex-col gap-4 flex-1 h-full min-h-0 overflow-y-auto scrollbar-hide pb-10">
-                    {logData.data.map((log) => {
+                    {logData.data.map((log, index) => {
+                      const isLastItem = index === logData.data.length - 1;
                       return (
-                        <LogItem
-                          key={log.id}
-                          log={log}
-                          onClick={() => setSelectedLog(log)}
-                          isSelected={selectedLog?.id === log.id}
-                        />
+                        <div key={log.id} ref={isLastItem ? loadMoreRef : null}>
+                          <LogItem
+                            log={log}
+                            onClick={() => setSelectedLog(log)}
+                            isSelected={selectedLog?.id === log.id}
+                          />
+                        </div>
                       );
                     })}
                   </div>
@@ -177,7 +228,10 @@ const ProductionMonitor = ({
             {isCreateMemoModalOpen && (
               <CreateMemoModal
                 onClose={() => setIsCreateMemoModalOpen(false)}
-                onSuccess={loadProjectLogs}
+                onSuccess={() => {
+                  // 메모 작성 후 첫 페이지부터 다시 로드
+                  loadProjectLogs(1, false);
+                }}
               />
             )}
             {/* {isDeleteMemoModalOpen && (

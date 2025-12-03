@@ -262,6 +262,12 @@ const ProductionPlan = ({
     }
 
     Object.values(grouped).forEach((plans) => {
+      // 반품 관련 생산 계획인 경우 추가 plan 생성하지 않음
+      const isRefundPlan = plans[0].is_refund_plan;
+      if (isRefundPlan) {
+        return;
+      }
+
       // 초기 진입 시: 생성 여부 판단은 주문수량 기준, 추천 수량은 버퍼 포함
       const orderQty = plans[0].quotation_product.quantity;
       const targetTotal = orderQty;
@@ -625,6 +631,11 @@ const ProductionPlan = ({
 
       // 주문수량 (현재 plan에서 바로 가져오기)
       const orderQuantity = currentPlan.quotation_product.quantity;
+
+      // 반품 관련 생산 계획인 경우 추가 plan 생성하지 않음
+      if (currentPlan.is_refund_plan) {
+        return;
+      }
 
       // 총 생산수량이 주문수량보다 작으면 자동으로 새 plan 추가
       if (totalQuantity < orderQuantity) {
