@@ -272,7 +272,7 @@ export const MaterialUsage = ({
         />
       </div>
       <div className="flex-[0.4]">
-        <Input label="단위" value={unit} disabled />
+        <Input label="단위" value={unit} disabled className="truncate" />
       </div>
       <div
         className="flex items-center justify-center relative"

@@ -49,7 +49,7 @@ export const Result = ({
             label="단위"
             disabledReadOnly
             value={unitValue}
-            className={inputBgClass}
+            className={`${inputBgClass} truncate`}
           />
         </div>
         <div className="flex-[0.6]">
@@ -66,7 +66,7 @@ export const Result = ({
             label="단위"
             disabledReadOnly
             value={unitValue}
-            className={inputBgClass}
+            className={`${inputBgClass} truncate`}
           />
         </div>
         <div className="flex-1">
