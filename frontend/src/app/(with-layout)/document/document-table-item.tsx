@@ -5,7 +5,8 @@ import {
 } from '@/types/data-model';
 import { DocumentType, DocumentTypeColorMap } from './types';
 import { useState } from 'react';
-import Panel from '@/ui/panel';
+import { createPortal } from 'react-dom';
+import { useTooltip } from '@/hooks';
 import TaxDocumentView from './tax-document-view';
 import TransactionDocumentView from './transaction-document-view';
 import OrderDocumentView from './order-document-view';
@@ -16,7 +17,7 @@ import {
   getProductNames,
   getProductNamesDisplay,
 } from '@/utils';
-import { RoundChip } from '@/ui';
+import { RoundChip, Tooltip, Panel } from '@/ui';
 
 interface DocumentTableItemProps {
   data:
@@ -32,6 +33,15 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
   const [isWorkInstructionPanelOpen, setIsWorkInstructionPanelOpen] =
     useState(false);
   const [isTaxPanelOpen, setIsTaxPanelOpen] = useState(false);
+  const [tooltipPosition, setTooltipPosition] = useState({
+    left: 0,
+    top: 0,
+  });
+  const {
+    isVisible: isClientTooltipVisible,
+    onMouseEnter,
+    onMouseLeave,
+  } = useTooltip({ showDelay: 0, hideDelay: 0 });
 
   const { color } = DocumentTypeColorMap[documentType];
 
@@ -123,26 +133,83 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
             <div className="px-3 flex-[0.5]">
               <RoundChip text={documentType} variant="sm" color={color} />
             </div>
-            <p
-              className="px-3 flex-1 truncate"
-              title={
-                getProductNamesDisplay(
-                  (workInstructionData.plan_info &&
-                  workInstructionData.plan_info.length > 0
-                    ? workInstructionData.plan_info
-                    : workInstructionData.plans
-                  ).map((plan) => plan.client_name)
-                ) ?? '-'
-              }
-            >
-              {getProductNamesDisplay(
-                (workInstructionData.plan_info &&
-                workInstructionData.plan_info.length > 0
-                  ? workInstructionData.plan_info
-                  : workInstructionData.plans
-                ).map((plan) => plan.client_name)
-              ) ?? '-'}
-            </p>
+            <div className="px-3 flex-1 flex items-center gap-2 truncate">
+              {(() => {
+                const clientNames = Array.from(
+                  new Set(
+                    (workInstructionData.plan_info &&
+                    workInstructionData.plan_info.length > 0
+                      ? workInstructionData.plan_info
+                      : workInstructionData.plans || []
+                    )
+                      .map((plan) => plan.client_name)
+                      .filter((name) => name)
+                  )
+                );
+
+                if (clientNames.length === 0) {
+                  return <span>-</span>;
+                }
+
+                if (clientNames.length === 1) {
+                  return <span>{clientNames[0]}</span>;
+                }
+
+                return (
+                  <>
+                    <div
+                      className="relative flex items-center gap-2"
+                      onMouseEnter={(e) => {
+                        e.stopPropagation();
+                        // Chip 요소 찾기 (두 번째 자식 div 안의 div)
+                        const chipContainer = e.currentTarget
+                          .children[1] as HTMLElement;
+                        const chipElement = chipContainer?.querySelector('div');
+                        const rect = chipElement
+                          ? chipElement.getBoundingClientRect()
+                          : e.currentTarget.getBoundingClientRect();
+                        setTooltipPosition({
+                          left: rect.right - 40,
+                          top: rect.bottom + 8,
+                        });
+                        onMouseEnter();
+                      }}
+                      onMouseLeave={(e) => {
+                        e.stopPropagation();
+                        onMouseLeave();
+                      }}
+                    >
+                      <span>{clientNames[0]}</span>
+                      <div>
+                        <RoundChip
+                          text={`+${clientNames.length - 1}`}
+                          variant="sm"
+                          color="gray"
+                        />
+                      </div>
+                    </div>
+                    {isClientTooltipVisible &&
+                      typeof window !== 'undefined' &&
+                      createPortal(
+                        <div
+                          className="fixed w-fit z-10 pointer-events-none"
+                          style={{
+                            left: `${tooltipPosition.left}px`,
+                            top: `${tooltipPosition.top}px`,
+                          }}
+                        >
+                          <Tooltip
+                            text={clientNames.slice(1).join(', ')}
+                            color="black"
+                            position="left"
+                          />
+                        </div>,
+                        document.body
+                      )}
+                  </>
+                );
+              })()}
+            </div>
             <p
               className="px-3 flex-1 truncate"
               title={

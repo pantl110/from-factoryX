@@ -67,7 +67,7 @@ const ProductionMonitor = ({
 
       const result = await getProjectLogs(projectId, { page, size: 20 });
       if (result.success && result.data) {
-        const data = result.data;
+        const { data } = result;
         if (append) {
           // 기존 데이터에 추가
           setLogData((prev) => ({

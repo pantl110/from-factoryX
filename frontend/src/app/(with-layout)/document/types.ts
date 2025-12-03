@@ -8,13 +8,33 @@ export type DocumentType =
 
 export const DocumentTypeColorMap: Record<
   DocumentType,
-  { bgColor: string; textColor: string; color: 'yellow' | 'purple' | 'green' | 'secondary' | 'red' }
+  {
+    bgColor: string;
+    textColor: string;
+    color: 'yellow' | 'purple' | 'green' | 'secondary' | 'red';
+  }
 > = {
   주문서: { bgColor: 'bg-yellow-8', textColor: 'text-yellow', color: 'yellow' },
-  생산지시서: { bgColor: 'bg-purple-8', textColor: 'text-purple', color: 'purple' },
-  거래명세서: { bgColor: 'bg-green-8', textColor: 'text-green', color: 'green' },
-  '매출 세금계산서': { bgColor: 'bg-primary-8', textColor: 'text-primary', color: 'secondary' },
-  '매입 세금계산서': { bgColor: 'bg-red-8', textColor: 'text-red', color: 'red' },
+  생산지시서: {
+    bgColor: 'bg-purple-8',
+    textColor: 'text-purple',
+    color: 'purple',
+  },
+  거래명세서: {
+    bgColor: 'bg-green-8',
+    textColor: 'text-green',
+    color: 'green',
+  },
+  '매출 세금계산서': {
+    bgColor: 'bg-primary-8',
+    textColor: 'text-primary',
+    color: 'secondary',
+  },
+  '매입 세금계산서': {
+    bgColor: 'bg-red-8',
+    textColor: 'text-red',
+    color: 'red',
+  },
 };
 
 export interface DocumentDataModel {
