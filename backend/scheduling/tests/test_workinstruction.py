@@ -214,11 +214,12 @@ class TestWorkInstructionSchedulingAPI(TestCase):
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(data["work_instructions"], 0)
+        # 오늘자 플랜(완료 포함)을 기준으로 작업 지시서를 생성하므로 1개가 생성되어야 함
+        self.assertEqual(data["work_instructions"], 1)
 
-        # 작업 지시서가 생성되지 않았는지 확인
+        # 작업 지시서가 1개 생성되었는지 확인
         work_instructions_count = await WorkInstruction.objects.acount()
-        self.assertEqual(work_instructions_count, 0)
+        self.assertEqual(work_instructions_count, 1)
 
     async def test_create_work_instruction_different_date(self):
         """다른 날짜에 시작하는 계획이 있는 경우 테스트"""
