@@ -361,7 +361,6 @@ const ProductionPlan = ({
         quantity: targetPlan.quantity,
         start_date: targetPlan.start_date,
         end_date: targetPlan.end_date,
-        avg_production_time: targetPlan.avg_production_time,
         status, // 가동 상태 추가
         plan_id: operationStatusDropdownRowId, // 모든 plan이 이제 DB에 저장되므로 항상 ID 사용
         // total_amount: targetPlan.quotation_product.quantity,
@@ -914,7 +913,6 @@ const ProductionPlan = ({
             quantity: formData.quantity,
             start_date: formData.start_date,
             end_date: formData.end_date,
-            avg_production_time: currentPlan.avg_production_time,
             plan_id: parseInt(planId), // 모든 plan이 이제 DB에 저장되므로 항상 planId 사용
             // total_amount: currentPlan.quotation_product.quantity,
             // total_quantity: projectPlans
