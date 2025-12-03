@@ -361,7 +361,11 @@ const TableItem = ({
       />
     ),
     '단위당 소요 시간': (
-      <span className="cursor-default">{item.avg_production_time}초</span>
+      <span className="cursor-default">
+        {item.avg_production_time != null
+          ? `${item.avg_production_time.toLocaleString()}초`
+          : '-'}
+      </span>
     ),
     '마감 예정일자': (
       <Controller

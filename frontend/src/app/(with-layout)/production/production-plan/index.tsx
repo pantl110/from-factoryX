@@ -759,7 +759,6 @@ const ProductionPlan = ({
           quantity: formData.quantity,
           start_date: formData.start_date,
           end_date: formData.end_date,
-          avg_production_time: currentPlan.avg_production_time,
           plan_id: isNewPlan ? undefined : planId,
           // total_amount: currentPlan.quotation_product.quantity,
           // total_quantity: projectPlans

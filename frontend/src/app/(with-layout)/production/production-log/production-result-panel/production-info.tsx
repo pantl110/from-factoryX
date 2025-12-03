@@ -102,7 +102,11 @@ export const ProductionInfo = ({
           <InfoLabelValue label="생산 설비" value={plan.equipment.name} />
           <InfoLabelValue
             label="단위당 소요 시간"
-            value={`${plan.avg_production_time?.toLocaleString()}초`}
+            value={
+              plan.avg_production_time != null
+                ? `${plan.avg_production_time.toLocaleString()}초`
+                : '-'
+            }
           />
         </div>
         <div className="flex">

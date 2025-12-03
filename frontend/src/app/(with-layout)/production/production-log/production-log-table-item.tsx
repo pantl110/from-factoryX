@@ -179,7 +179,9 @@ const ProductionLogTableItem = ({
           />
         </div>
         <p className="w-[140px] px-3 cursor-default">
-          {plan.avg_production_time ? `${plan.avg_production_time}초` : '-'}
+          {plan.avg_production_time != null
+            ? `${plan.avg_production_time.toLocaleString()}초`
+            : '-'}
         </p>
         <div className="w-[150px] px-3">
           <div className="flex justify-between">
