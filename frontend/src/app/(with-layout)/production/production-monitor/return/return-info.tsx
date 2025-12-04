@@ -197,7 +197,7 @@ const ReturnInfo = ({
                   (refundData.plan?.id === null
                     ? false
                     : refundData.plan?.status &&
-                      String(refundData.plan.status) !== '가동 대기')
+                      refundData.plan.status !== 'pending')
                 }
               />
             )}
@@ -214,7 +214,7 @@ const ReturnInfo = ({
                 (refundData.plan?.id === null
                   ? false
                   : refundData.plan?.status &&
-                    String(refundData.plan.status) !== '가동 대기')
+                    refundData.plan.status !== 'pending')
               }
             />
           </div>
