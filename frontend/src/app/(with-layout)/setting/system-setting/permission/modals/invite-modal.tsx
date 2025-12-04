@@ -114,7 +114,9 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
             ? 'admin'
             : member.auth === '운영자'
               ? 'manager'
-              : 'viewer';
+              : member.auth === '생산관리자'
+                ? 'prod_manager'
+                : 'viewer';
         return inviteMember({
           factory_id: factoryId,
           email: member.email,

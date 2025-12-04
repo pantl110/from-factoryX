@@ -42,7 +42,9 @@ const PermissionTableItem = ({
       ? '시스템 관리자'
       : role === 'manager'
         ? '운영자'
-        : '조회자';
+        : role === 'prod_manager'
+          ? '생산관리자'
+          : '조회자';
   const authColors = PermissionRoleInfo[roleText as PermissionRoleType];
   const { updateMember } = useUpdateMember();
 
@@ -55,8 +57,8 @@ const PermissionTableItem = ({
   } = usePortalDropdown();
 
   const handleAuthChange = async (newAuth: string) => {
-    // 이전과 같으면 return
-    if (newAuth === role) {
+    // 이전과 같으면 return (newAuth는 한글, roleText도 한글이므로 비교 가능)
+    if (newAuth === roleText) {
       closeAuthDropdown();
       return;
     }
@@ -67,7 +69,9 @@ const PermissionTableItem = ({
           ? 'admin'
           : newAuth === '운영자'
             ? 'manager'
-            : 'viewer';
+            : newAuth === '생산관리자'
+              ? 'prod_manager'
+              : 'viewer';
       const result = await updateMember({
         memberId: item.id,
         factoryId: factory,
@@ -112,18 +116,20 @@ const PermissionTableItem = ({
               textColor={authColors.chipColor.text}
               bgColor={authColors.chipColor.bg}
               hover={
-                !isViewer && hasSubscription()
+                !isViewer && !isProdManager && hasSubscription()
                   ? authColors.chipColor.hover
                   : undefined
               }
-              state={!isViewer && hasSubscription() ? true : false}
+              state={
+                !isViewer && !isProdManager && hasSubscription() ? true : false
+              }
               cursor={
-                !isViewer && hasSubscription()
+                !isViewer && !isProdManager && hasSubscription()
                   ? 'cursor-pointer'
                   : 'cursor-default'
               }
               onClick={(e) => {
-                if (!isViewer && hasSubscription()) {
+                if (!isViewer && !isProdManager && hasSubscription()) {
                   openAuthDropdown(e as React.MouseEvent);
                 }
               }}
@@ -133,22 +139,26 @@ const PermissionTableItem = ({
         </div>
 
         {/* 권한 드롭다운 */}
-        {isAuthDropdownOpen && authAnchorRect && (
-          <div
-            style={{
-              position: 'fixed',
-              left: authAnchorRect.left,
-              top: authAnchorRect.bottom + 8,
-              zIndex: 10,
-              width: authAnchorRect.width,
-            }}
-          >
-            <AuthDropdown
-              onClose={closeAuthDropdown}
-              onSelect={handleAuthChange}
-            />
-          </div>
-        )}
+        {isAuthDropdownOpen &&
+          authAnchorRect &&
+          !isViewer &&
+          !isProdManager &&
+          hasSubscription() && (
+            <div
+              style={{
+                position: 'fixed',
+                left: authAnchorRect.left,
+                top: authAnchorRect.bottom + 8,
+                zIndex: 10,
+                width: authAnchorRect.width,
+              }}
+            >
+              <AuthDropdown
+                onClose={closeAuthDropdown}
+                onSelect={handleAuthChange}
+              />
+            </div>
+          )}
       </>
     </>
   );

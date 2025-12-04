@@ -63,6 +63,7 @@ const Permission = () => {
   const permissionRoleTypes: PermissionRoleType[] = [
     '시스템 관리자',
     '운영자',
+    '생산관리자',
     '조회자',
   ];
 
@@ -145,7 +146,7 @@ const Permission = () => {
           ))}
         </div>
 
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 mb-24">
           <div className="flex items-center justify-between w-full">
             <h3 className="Heading-3">팀원 권한</h3>
             <div className="flex gap-2.5">

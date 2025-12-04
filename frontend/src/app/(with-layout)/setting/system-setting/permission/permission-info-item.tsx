@@ -1,5 +1,5 @@
-import Chip from '@/ui/chip';
 import { PermissionRoleType, PermissionRoleInfo } from './types';
+import { RoundChip } from '@/ui';
 
 interface PermissionInfoItemProps {
   type: PermissionRoleType;
@@ -11,11 +11,7 @@ const PermissionInfoItem = ({ type }: PermissionInfoItemProps) => {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-2">
-        <Chip
-          text={info.type}
-          bgColor={info.chipColor.bg}
-          textColor={info.chipColor.text}
-        />
+        <RoundChip text={info.type} color={info.color} variant="role" />
         <p className="Heading-3">{info.type}</p>
       </div>
       <p className="Re_Body-1 text-dg whitespace-pre-line">
