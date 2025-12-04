@@ -322,7 +322,7 @@ async def recommend_equipment_and_create_plan(
         additional_plans_by_equipment=additional_plans_by_equipment,
     )
     if not result:
-        raise HttpError(400, "사용 가능한 장비가 없습니다.")
+        raise HttpError(400, "해당 공장에 가동 가능한 설비가 없습니다.")
 
     equipment, recommended_start_date = result
 
