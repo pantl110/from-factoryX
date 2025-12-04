@@ -22,7 +22,7 @@ from project.utils import (
     validate_factory_and_get_user,
     get_refund_with_project,
     parse_and_validate_date,
-    get_default_equipment,
+    recommend_equipment_and_create_plan,
     create_production_plan,
     calculate_plan_schedule,
 )
@@ -211,10 +211,7 @@ async def register_production_from_refund_log(
                 "equipment_name": None,
             }
 
-        # 3. 기본 장비 선택
-        default_equipment = await get_default_equipment(factory_id)
-
-        # 4. 생산 계획 생성 또는 수정
+        # 3. 생산 계획 생성 또는 수정
         #    위에서 생산 수량이 0 이하인 경우는 이미 처리했으므로, 여기서는 양수만 옵니다
         production_amount = payload.production_amount
 
@@ -231,7 +228,7 @@ async def register_production_from_refund_log(
             # 수정할 때는 기존의 start_date와 end_date를 유지
             project_plan = existing_plan
             project_plan.product = quotation_product
-            project_plan.equipment = default_equipment
+            # 기존 plan 수정 시에는 설비를 재추천하지 않고, 기존 설비를 유지
             project_plan.quantity = production_amount
             # start_date와 end_date는 기존 값 유지
             project_plan.avg_production_time = refund_product.average_production_time  # 제품의 평균 시간을 직접 사용
@@ -251,14 +248,14 @@ async def register_production_from_refund_log(
             await project_log.asave()
 
         else:
-            # 기존 plan이 없는 경우 새로 생성
-            # 생성할 때는 calculate_plan_schedule로 자동 계산
-            project_plan = await create_production_plan(
+            # 기존 plan이 없는 경우: 생산 계획 생성
+            avg_production_time = refund_product.average_production_time or 30  # 기본값 30초
+            project_plan, default_equipment = await recommend_equipment_and_create_plan(
                 project=project,
-                quotation_product=quotation_product,  # 수정된 QuotationProduct 사용
-                equipment=default_equipment,
+                quotation_product=quotation_product,
+                factory_id=factory_id,
                 quantity=production_amount,
-                product_avg_production_time=refund_product.average_production_time,
+                product_avg_production_time=avg_production_time,
                 status=ProjectPlan.ProductionStatus.pending,
             )
 

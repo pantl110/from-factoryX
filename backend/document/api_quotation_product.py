@@ -22,7 +22,9 @@ from document.schemas.outbound import (
 )
 from stock.models import Product
 from project.models import Project, ProjectPlan
-from project.utils import create_production_plan
+from project.utils import (
+    recommend_equipment_and_create_plan,
+)
 from factory.models import FactoryClient, FactoryEquipment, Factory
 from factory.utils import is_factory_member
 from stock.schemas.outbound import ProductRowOut
@@ -390,6 +392,9 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
         # 아직 저장하지 않음
 
         production_plans = []
+        # 이번 배치에서 생성한 임시 ProjectPlan들을 설비별로 모아두기
+        # recommend_equipment_and_create_plan 에 전달하여 함께 고려
+        temp_plans_by_equipment = {}
 
         for i, prod in enumerate(payload.products):
             try:
@@ -402,34 +407,27 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
                     f"제품 ID {product_id}에 해당하는 견적 품목을 찾을 수 없습니다.",
                 )
 
-            try:
-                equipment = (
-                    await FactoryEquipment.objects.filter(
-                        factory=factory, status=FactoryEquipment.EquipmentStatus.standby
-                    )
-                    .order_by("priority")
-                    .afirst()
-                )
-                if not equipment:
-                    raise HttpError(400, "해당 공장에 가동 가능한 설비가 없습니다.")
-            except Exception as e:
-                raise HttpError(400, f"설비 조회 중 오류가 발생했습니다: {str(e)}")
-
+            # 제품 정보 먼저 가져오기 (생산 시간 계산을 위해 필요)
             product = await sync_to_async(lambda: quotation_product.product)()
             buffer_rate = float(product.buffer_rate)
             base_quantity = prod.quantity
             production_quantity = int(base_quantity * (1 + buffer_rate))
+            avg_production_time = product.average_production_time or 30  # 기본값 30초
 
-            # 생산 계획 생성 (저장은 나중에)
-            project_plan = await create_production_plan(
-                project=project,
-                quotation_product=quotation_product,
-                equipment=equipment,
-                quantity=production_quantity,
-                product_avg_production_time=product.average_production_time,
-                status=ProjectPlan.ProductionStatus.pending,
-                save=False,  # 나중에 저장
-            )
+            try:
+                # 설비 추천 + 생산 계획 생성까지 한 번에 처리
+                project_plan, equipment = await recommend_equipment_and_create_plan(
+                    project=project,
+                    quotation_product=quotation_product,
+                    factory_id=factory.id,
+                    quantity=production_quantity,
+                    product_avg_production_time=avg_production_time,
+                    status=ProjectPlan.ProductionStatus.pending,
+                    additional_plans_by_equipment=temp_plans_by_equipment,
+                    save=False,  # 나중에 저장
+                )
+            except Exception as e:
+                raise HttpError(400, f"설비 조회 중 오류가 발생했습니다: {str(e)}")
 
             # 생산 계획 데이터 저장 (plan_id는 나중에 추가)
             production_plan_info = {
