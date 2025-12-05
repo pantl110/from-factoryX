@@ -147,11 +147,20 @@ const ProductionPageContent = () => {
             setProductionTab(tabs[deliveryTabIndex]);
           }
         } else if (projectStatus === 'completed') {
-          // 완료 → 납품 탭으로 이동 (완료 상태에서는 납품 탭이 마지막)
-          const deliveryTabIndex = tabs.findIndex((tab) => tab === '납품');
-          if (deliveryTabIndex !== -1) {
-            setSelectedTab(deliveryTabIndex);
-            setProductionTab(tabs[deliveryTabIndex]);
+          // 완료 상태에서는 현재 탭이 세금계산서 탭이면 유지, 아니면 납품 탭으로 이동
+          const taxTabIndex = tabs.findIndex((tab) => tab === '세금계산서');
+          const currentTabName = tabs[selectedTab];
+
+          if (currentTabName === '세금계산서' && taxTabIndex !== -1) {
+            // 현재 세금계산서 탭에 있으면 유지
+            setProductionTab(tabs[selectedTab]);
+          } else {
+            // 그 외의 경우 납품 탭으로 이동
+            const deliveryTabIndex = tabs.findIndex((tab) => tab === '납품');
+            if (deliveryTabIndex !== -1) {
+              setSelectedTab(deliveryTabIndex);
+              setProductionTab(tabs[deliveryTabIndex]);
+            }
           }
         }
         // pending → production, production → manufactured 등은 탭 변경하지 않음

@@ -62,6 +62,10 @@ export { default as useUpdateProjectLog } from './project/project-log/use-update
 // Project plan related hooks
 export { default as useCreateOrUpdateProjectPlan } from './project/project-plan/use-create-or-update-project-plan';
 export { default as useGetProjectPlans } from './project/project-plan/use-get-project-plans';
+export {
+  useProjectPlansQuery,
+  PROJECT_PLANS_QUERY_KEY,
+} from './project/project-plan/use-get-project-plans';
 export { default as useDeleteProjectPlan } from './project/project-plan/use-delete-project-plan';
 
 // Project refund related hooks

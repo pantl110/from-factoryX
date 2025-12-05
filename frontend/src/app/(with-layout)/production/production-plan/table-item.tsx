@@ -45,6 +45,7 @@ interface TableItemProps {
   equipments?: EquipmentResponseModel[]; // 설비 목록 (선택된 설비명 표시용)
   projectStatus?: ProjectStatusType;
   isFirstOfProduct?: boolean; // 같은 제품의 첫 번째 plan인지 여부
+  onSaveSuccess?: () => void; // 제품/자재 정보 변경 시 호출
 }
 
 const TableItem = ({
@@ -58,6 +59,7 @@ const TableItem = ({
   equipments,
   projectStatus,
   isFirstOfProduct = true,
+  onSaveSuccess,
 }: TableItemProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
@@ -441,6 +443,10 @@ const TableItem = ({
         <ProductDetail
           productId={item.quotation_product.product.id}
           onClose={() => setIsProductDetailOpen(false)}
+          onSuccess={() => {
+            // 제품 정보 변경 시 material_status 및 제품 정보 업데이트를 위해 reload
+            onSaveSuccess?.();
+          }}
         />
       )}
     </>

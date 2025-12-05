@@ -532,6 +532,7 @@ const ProductDetail = ({
             await persistStagedConnections(effectiveProductId);
           }
         }
+        // 제품 정보 변경 시 reload를 위해 onSuccess 호출
         onSuccess?.();
         onClose();
       }
@@ -542,6 +543,7 @@ const ProductDetail = ({
         if (effectiveProductId && stagedMaterials.length > 0) {
           await persistStagedConnections(effectiveProductId);
         }
+        // 제품 정보 변경 시 reload를 위해 onSuccess 호출
         onSuccess?.();
         onClose();
       }
@@ -747,6 +749,8 @@ const ProductDetail = ({
             if (productId) {
               await getMaterialProductConnections(productId, 'product');
             }
+            // 자재 정보 변경 시 material_status 및 제품 정보 업데이트를 위해 부모에게 알림
+            onSuccess?.();
             // 마지막에 닫기
             setMaterialId(null);
           }}

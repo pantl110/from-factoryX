@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import ProductionPlanSaveModal from './modals/production-plan-save-modal';
 import TableHeader from './table-header';
 import TableItem from './table-item';
@@ -15,7 +16,6 @@ import OperationStatusDropdown from './modals/operation-status-dropdown';
 import { createPortal } from 'react-dom';
 import FacilityDropdown from './modals/facility-dropdown';
 import {
-  useGetProjectPlans,
   useCreateOrUpdateProjectPlan,
   useDeleteProjectPlan,
   useGetEquipment,
@@ -23,13 +23,15 @@ import {
   useProductionPlanValidation,
   useToast,
   checkDateValidity,
-  convertUTCToKST,
+  PROJECT_PLANS_QUERY_KEY,
 } from '@/hooks';
+import { convertUTCToKST } from '@/utils';
+import { useProjectPlansQuery } from '@/hooks/project/project-plan/use-get-project-plans';
 import { useParams } from 'next/navigation';
-import Spinner from '@/ui/spinner';
-import Toast from '@/ui/toast';
+import { Spinner, Toast } from '@/ui';
 import { CheckCircle, WarningCircle } from '@phosphor-icons/react';
 import { useDebouncedCallback } from 'use-debounce';
+import useMemberStore from '@/store/member-store';
 
 interface ProductionPlanProps {
   handleChangeStatus: (status: ProjectStatusType) => void;
@@ -42,9 +44,17 @@ const ProductionPlan = ({
 }: ProductionPlanProps) => {
   const params = useParams();
   const projectId = params.id ? parseInt(params.id as string) : null;
+  const queryClient = useQueryClient();
+  const factoryId = useMemberStore((state) => state.factoryId);
 
-  // API 호출
-  const { getProjectPlans, isLoading, error } = useGetProjectPlans();
+  // API 호출 - React Query 사용
+  const {
+    data: projectPlansData,
+    isLoading,
+    error: queryError,
+    refetch: refetchProjectPlans,
+  } = useProjectPlansQuery(projectId);
+  const error = queryError?.message || null;
   const { createOrUpdateProjectPlan } = useCreateOrUpdateProjectPlan();
   const { deleteProjectPlan } = useDeleteProjectPlan();
   const { getAllEquipmentList } = useGetEquipment();
@@ -185,63 +195,96 @@ const ProductionPlan = ({
     loadAllEquipments();
   }, [getAllEquipmentList]);
 
-  // 프로젝트 계획 데이터 로드 (초기 로드만)
+  // 프로젝트 계획 데이터 로드 (React Query 사용)
+  // 초기 로드 시에만 완전히 초기화하고, 이후에는 기존 입력값 보존
+  const isInitialLoad = useRef(true);
+
   useEffect(() => {
-    const loadProjectPlans = async () => {
-      if (!projectId) return;
+    if (!projectPlansData) return;
 
-      const result = await getProjectPlans(projectId);
-      if (result.success && result.data) {
-        // DB에서 받은 날짜 데이터를 +9시간(KST)으로 변환해서 저장
-        const plansWithKSTDates = result.data.map((plan: ProjectPlanModel) => ({
-          ...plan,
-          start_date: plan.start_date ? convertUTCToKST(plan.start_date) : '',
-          end_date: plan.end_date ? convertUTCToKST(plan.end_date) : '',
-        }));
+    // DB에서 받은 날짜 데이터를 +9시간(KST)으로 변환해서 저장
+    const plansWithKSTDates = projectPlansData.map(
+      (plan: ProjectPlanModel) => ({
+        ...plan,
+        start_date: plan.start_date ? convertUTCToKST(plan.start_date) : '',
+        end_date: plan.end_date ? convertUTCToKST(plan.end_date) : '',
+      })
+    );
 
-        setProjectPlans((prev) => {
-          const tempPlans = prev.filter((p) => (p.id ?? 0) < 0);
-          if (tempPlans.length === 0) return plansWithKSTDates;
+    setProjectPlans((prev) => {
+      const tempPlans = prev.filter((p) => (p.id ?? 0) < 0);
+      if (tempPlans.length === 0) return plansWithKSTDates;
 
-          const merged = [...plansWithKSTDates];
-          // 임시 플랜을 동일 제품의 마지막 플랜 바로 뒤에 삽입
-          tempPlans.forEach((tp) => {
-            const sameProductIndexes: number[] = [];
-            merged.forEach((p, idx) => {
-              if (p.quotation_product.id === tp.quotation_product.id) {
-                sameProductIndexes.push(idx);
-              }
-            });
-            const insertIdx =
-              sameProductIndexes.length > 0
-                ? sameProductIndexes[sameProductIndexes.length - 1] + 1
-                : merged.length;
-            merged.splice(insertIdx, 0, tp);
-          });
-          return merged;
+      const merged = [...plansWithKSTDates];
+      // 임시 플랜을 동일 제품의 마지막 플랜 바로 뒤에 삽입
+      tempPlans.forEach((tp) => {
+        const sameProductIndexes: number[] = [];
+        merged.forEach((p, idx) => {
+          if (p.quotation_product.id === tp.quotation_product.id) {
+            sameProductIndexes.push(idx);
+          }
         });
+        const insertIdx =
+          sameProductIndexes.length > 0
+            ? sameProductIndexes[sameProductIndexes.length - 1] + 1
+            : merged.length;
+        merged.splice(insertIdx, 0, tp);
+      });
+      return merged;
+    });
 
-        // formChanges를 변환된 데이터로 초기화
-        const initialFormData: Record<number, ProductionPlanFormDataModel> = {};
+    // formChanges를 변환된 데이터로 초기화
+    const initialFormData: Record<number, ProductionPlanFormDataModel> = {};
+    plansWithKSTDates.forEach((plan: ProjectPlanModel) => {
+      initialFormData[plan.id] = {
+        quantity: plan.quantity,
+        equipment_id: plan.equipment.id,
+        start_date: plan.start_date || '',
+        end_date: plan.end_date || '',
+      };
+    });
+
+    if (isInitialLoad.current) {
+      // 초기 로드 시에는 완전히 초기화 (기존 임시 플랜 입력값 보존 + 서버 값 채우기)
+      setFormChanges((prev) => ({
+        ...prev,
+        ...initialFormData,
+      }));
+      isInitialLoad.current = false;
+    } else {
+      // 이후 업데이트 시에는 기존 입력값 보존하고, 새로운 plan만 업데이트
+      setFormChanges((prev) => {
+        const updated = { ...prev };
         plansWithKSTDates.forEach((plan: ProjectPlanModel) => {
-          initialFormData[plan.id] = {
-            quantity: plan.quantity,
-            equipment_id: plan.equipment.id,
-            start_date: plan.start_date || '',
-            end_date: plan.end_date || '',
-          };
+          // 기존에 입력값이 없는 경우에만 서버 값으로 초기화
+          // (사용자가 입력한 값은 보존)
+          if (!prev[plan.id]) {
+            updated[plan.id] = {
+              quantity: plan.quantity,
+              equipment_id: plan.equipment.id,
+              start_date: plan.start_date || '',
+              end_date: plan.end_date || '',
+            };
+          }
         });
-        setFormChanges((prev) => ({
-          // 기존 임시 플랜 입력값 보존 + 서버 값 채우기
-          ...prev,
-          ...initialFormData,
-        }));
-      }
-    };
+        return updated;
+      });
+    }
+  }, [projectPlansData]);
 
-    loadProjectPlans();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectId]);
+  // 특정 제품과 관련된 plan들만 업데이트하는 함수 (React Query 캐시 무효화)
+  const updatePlansForProduct = useCallback(
+    async (productId: number) => {
+      if (!projectId || !factoryId) return;
+
+      // React Query 캐시 무효화하고 명시적으로 refetch하여 제품 정보 업데이트 반영
+      await queryClient.invalidateQueries({
+        queryKey: PROJECT_PLANS_QUERY_KEY(projectId, factoryId),
+      });
+      await refetchProjectPlans();
+    },
+    [projectId, factoryId, queryClient, refetchProjectPlans]
+  );
 
   // 생산 계획 검증 훅 사용
   useProductionPlanValidation(projectPlans, formChanges);
@@ -363,18 +406,6 @@ const ProductionPlan = ({
         end_date: targetPlan.end_date,
         status, // 가동 상태 추가
         plan_id: operationStatusDropdownRowId, // 모든 plan이 이제 DB에 저장되므로 항상 ID 사용
-        // total_amount: targetPlan.quotation_product.quantity,
-        // total_quantity: projectPlans
-        //   .filter(
-        //     (plan) =>
-        //       plan.quotation_product.id === targetPlan.quotation_product.id
-        //   )
-        //   .reduce((sum, plan) => {
-        //     // formChanges에 변경사항이 있으면 그 값 사용
-        //     const planFormData = formChanges[plan.id];
-        //     const quantity = planFormData?.quantity ?? plan.quantity;
-        //     return sum + quantity;
-        //   }, 0),
       });
       if (result.success) {
         // 상태 변경 성공 시 해당 plan의 상태만 업데이트
@@ -770,20 +801,6 @@ const ProductionPlan = ({
           start_date: formData.start_date,
           end_date: formData.end_date,
           plan_id: isNewPlan ? undefined : planId,
-          // total_amount: currentPlan.quotation_product.quantity,
-          // total_quantity: projectPlans
-          //   .filter(
-          //     (plan) =>
-          //       plan.quotation_product.id === currentPlan.quotation_product.id
-          //   )
-          //   .reduce((sum, plan) => {
-          //     if (plan.id === planId) {
-          //       return sum + formData.quantity;
-          //     }
-          //     const planFormData = formChanges[plan.id];
-          //     const quantity = planFormData?.quantity ?? plan.quantity;
-          //     return sum + quantity;
-          //   }, 0),
         });
 
         if (result.success) {
@@ -914,21 +931,6 @@ const ProductionPlan = ({
             start_date: formData.start_date,
             end_date: formData.end_date,
             plan_id: parseInt(planId), // 모든 plan이 이제 DB에 저장되므로 항상 planId 사용
-            // total_amount: currentPlan.quotation_product.quantity,
-            // total_quantity: projectPlans
-            //   .filter(
-            //     (plan) =>
-            //       plan.quotation_product.id === currentPlan.quotation_product.id
-            //   )
-            //   .reduce((sum, plan) => {
-            //     if (plan.id === parseInt(planId)) {
-            //       return sum + formData.quantity;
-            //     }
-            //     // 다른 plan도 formChanges에 변경사항이 있으면 그 값 사용
-            //     const planFormData = formChanges[plan.id];
-            //     const quantity = planFormData?.quantity ?? plan.quantity;
-            //     return sum + quantity;
-            //   }, 0),
           });
         }
       );
@@ -1024,6 +1026,10 @@ const ProductionPlan = ({
                 equipments={allEquipments}
                 projectStatus={projectStatus}
                 isFirstOfProduct={isFirstOfProduct}
+                onSaveSuccess={() => {
+                  // 자재 재고 수정 시 해당 제품의 plan들만 업데이트
+                  updatePlansForProduct(item.quotation_product.product.id);
+                }}
               />
             );
           })}

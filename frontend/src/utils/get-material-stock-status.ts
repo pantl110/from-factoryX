@@ -22,6 +22,11 @@ export function getMaterialStockStatus(params: {
     return null;
   }
 
+  // 현재 재고가 0이면 부족
+  if (currentStock === 0) {
+    return '부족';
+  }
+
   // 1. 과재고: 현재 재고 > 최대 재고
   if (maxStock !== null && maxStock !== undefined) {
     if (currentStock > maxStock) {
@@ -53,16 +58,16 @@ export function getMaterialStockStatus(params: {
     }
   }
 
-  // 4. 부족: 현재 재고 <= 안전 재고 또는 현재 재고 === 0
+  // 4. 부족: 현재 재고 <= 안전 재고
   if (standardStock !== null && standardStock !== undefined) {
     if (currentStock <= standardStock) {
       return '부족';
     }
   }
 
-  // 현재 재고가 0이면 부족
-  if (currentStock === 0) {
-    return '부족';
+  // 과재고 기준(maxStock)이 없으면 충분으로 표시
+  if (maxStock === null || maxStock === undefined) {
+    return '충분';
   }
 
   // 판단할 수 없는 경우

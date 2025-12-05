@@ -1,20 +1,21 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import ProductionLogTableHeader from './production-log-table-header';
 import ProductionLogTableItem from './production-log-table-item';
 import {
   useCreateOrUpdateProjectPlan,
-  useGetProjectPlans,
   useToast,
   checkDateValidity,
   convertUTCToKST,
 } from '@/hooks';
+import { useProjectPlansQuery, PROJECT_PLANS_QUERY_KEY } from '@/hooks';
 import { ProjectPlanModel } from '@/types/data-model';
 import { ProjectStatusType } from '@/types/status-type';
-import Spinner from '@/ui/spinner';
+import { Spinner, Toast } from '@/ui';
 import usePageStatusStore from '@/store/page-status-store';
-import Toast from '@/ui/toast';
 import { CheckCircle, WarningCircle } from '@phosphor-icons/react';
+import useMemberStore from '@/store/member-store';
 
 interface ProductionLogProps {
   projectStatus: ProjectStatusType;
@@ -23,9 +24,26 @@ interface ProductionLogProps {
 const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
   const params = useParams();
   const projectId = params.id ? parseInt(params.id as string) : null;
+  const queryClient = useQueryClient();
+  const factoryId = useMemberStore((state) => state.factoryId);
 
-  const [projectPlans, setProjectPlans] = useState<ProjectPlanModel[]>([]);
-  const { getProjectPlans, isLoading } = useGetProjectPlans();
+  // React Query로 project plans 가져오기
+  const {
+    data: projectPlansData,
+    isLoading,
+    refetch: refetchProjectPlans,
+  } = useProjectPlansQuery(projectId);
+
+  // KST 변환된 project plans
+  const projectPlans = useMemo(() => {
+    if (!projectPlansData) return [];
+    return projectPlansData.map((plan: ProjectPlanModel) => ({
+      ...plan,
+      start_date: plan.start_date ? convertUTCToKST(plan.start_date) : '',
+      end_date: plan.end_date ? convertUTCToKST(plan.end_date) : '',
+    }));
+  }, [projectPlansData]);
+
   const { createOrUpdateProjectPlan } = useCreateOrUpdateProjectPlan();
 
   // store에서 함수들 가져오기
@@ -61,141 +79,54 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
     showToast: showDateToast,
   } = useToast(); // 유효한 날짜 토스트
 
-  const loadProjectPlans = useCallback(async () => {
-    if (!projectId) return;
-
-    const result = await getProjectPlans(projectId);
-    if (result.success && result.data) {
-      // DB에서 받은 날짜 데이터를 +9시간(KST)으로 변환해서 저장
-      const plansWithKSTDates = result.data.map((plan: ProjectPlanModel) => ({
-        ...plan,
-        start_date: plan.start_date ? convertUTCToKST(plan.start_date) : '',
-        end_date: plan.end_date ? convertUTCToKST(plan.end_date) : '',
-      }));
-
-      setProjectPlans(plansWithKSTDates);
-
-      // formChanges를 변환된 데이터로 초기화
-      const initialFormData: Record<
-        number,
-        { quantity: number; start_date: string; end_date: string }
-      > = {};
-      plansWithKSTDates.forEach((plan: ProjectPlanModel) => {
-        initialFormData[plan.id] = {
-          quantity: plan.quantity,
-          start_date: plan.start_date || '',
-          end_date: plan.end_date || '',
-        };
-      });
-      setFormChanges(initialFormData);
-
-      // 초기 유효성 상태 리셋
-      const initialValidity: Record<number, boolean> = {};
-      result.data.forEach((plan: ProjectPlanModel) => {
-        initialValidity[plan.id] = true; // 초기값은 true로 두고, 각 행에서 업데이트됨
-      });
-      setRowValidityMap(initialValidity);
-      setProductionLogValid(true);
-
-      // 모든 plan의 material_consumed가 true이고 defective_quantity가 입력되어 있는지 확인
-      const isAllProductionResultComplete = plansWithKSTDates.every(
-        (plan: ProjectPlanModel) =>
-          plan.material_consumed === true &&
-          plan.defective_quantity !== undefined &&
-          plan.defective_quantity !== null
-      );
-      setAllProductionResultComplete(isAllProductionResultComplete);
-    }
-  }, [
-    projectId,
-    getProjectPlans,
-    setProductionLogValid,
-    setAllProductionResultComplete,
-  ]);
-
+  // projectPlans 변경 시 formChanges, rowValidityMap 초기화
   useEffect(() => {
-    loadProjectPlans();
-  }, [loadProjectPlans]);
+    if (!projectPlans.length) return;
 
-  // 특정 제품과 관련된 plan들만 업데이트하는 함수
+    // formChanges를 변환된 데이터로 초기화
+    const initialFormData: Record<
+      number,
+      { quantity: number; start_date: string; end_date: string }
+    > = {};
+    projectPlans.forEach((plan: ProjectPlanModel) => {
+      initialFormData[plan.id] = {
+        quantity: plan.quantity,
+        start_date: plan.start_date || '',
+        end_date: plan.end_date || '',
+      };
+    });
+    setFormChanges(initialFormData);
+
+    // 초기 유효성 상태 리셋
+    const initialValidity: Record<number, boolean> = {};
+    projectPlans.forEach((plan: ProjectPlanModel) => {
+      initialValidity[plan.id] = true; // 초기값은 true로 두고, 각 행에서 업데이트됨
+    });
+    setRowValidityMap(initialValidity);
+    setProductionLogValid(true);
+
+    // 모든 plan의 material_consumed가 true이고 defective_quantity가 입력되어 있는지 확인
+    const isAllProductionResultComplete = projectPlans.every(
+      (plan: ProjectPlanModel) =>
+        plan.material_consumed === true &&
+        plan.defective_quantity !== undefined &&
+        plan.defective_quantity !== null
+    );
+    setAllProductionResultComplete(isAllProductionResultComplete);
+  }, [projectPlans, setProductionLogValid, setAllProductionResultComplete]);
+
+  // 특정 제품과 관련된 plan들만 업데이트하는 함수 (React Query 캐시 무효화)
   const updatePlansForProduct = useCallback(
     async (productId: number) => {
-      if (!projectId) return;
+      if (!projectId || !factoryId) return;
 
-      const result = await getProjectPlans(projectId);
-      if (result.success && result.data) {
-        // DB에서 받은 날짜 데이터를 +9시간(KST)으로 변환해서 저장
-        const plansWithKSTDates = result.data.map((plan: ProjectPlanModel) => ({
-          ...plan,
-          start_date: plan.start_date ? convertUTCToKST(plan.start_date) : '',
-          end_date: plan.end_date ? convertUTCToKST(plan.end_date) : '',
-        }));
-
-        // 해당 제품과 관련된 plan들만 업데이트
-        setProjectPlans((prevPlans) => {
-          const updatedPlans = prevPlans.map((prevPlan) => {
-            // 해당 제품과 관련된 plan인지 확인
-            if (prevPlan.quotation_product.product.id === productId) {
-              // 새로운 데이터에서 해당 plan 찾기
-              const updatedPlan = plansWithKSTDates.find(
-                (p) => p.id === prevPlan.id
-              );
-              return updatedPlan || prevPlan;
-            }
-            return prevPlan;
-          });
-
-          // 새로운 plan이 추가되었을 수도 있으므로 확인
-          const existingPlanIds = new Set(prevPlans.map((p) => p.id));
-          const newPlans = plansWithKSTDates.filter(
-            (p) =>
-              p.quotation_product.product.id === productId &&
-              !existingPlanIds.has(p.id)
-          );
-
-          return [...updatedPlans, ...newPlans];
-        });
-
-        // formChanges 업데이트 (해당 제품과 관련된 plan들만)
-        setFormChanges((prev) => {
-          const updated = { ...prev };
-          plansWithKSTDates.forEach((plan: ProjectPlanModel) => {
-            if (plan.quotation_product.product.id === productId) {
-              updated[plan.id] = {
-                quantity: plan.quantity,
-                start_date: plan.start_date || '',
-                end_date: plan.end_date || '',
-              };
-            }
-          });
-          return updated;
-        });
-
-        // production result 완료 상태 업데이트
-        const updatedPlans = plansWithKSTDates.filter(
-          (plan) => plan.quotation_product.product.id === productId
-        );
-        if (updatedPlans.length > 0) {
-          setProjectPlans((prevPlans) => {
-            const allPlans = prevPlans.map((prevPlan) => {
-              const updatedPlan = updatedPlans.find(
-                (p) => p.id === prevPlan.id
-              );
-              return updatedPlan || prevPlan;
-            });
-            const isAllProductionResultComplete = allPlans.every(
-              (plan) =>
-                plan.material_consumed === true &&
-                plan.defective_quantity !== undefined &&
-                plan.defective_quantity !== null
-            );
-            setAllProductionResultComplete(isAllProductionResultComplete);
-            return allPlans;
-          });
-        }
-      }
+      // React Query 캐시 무효화하고 명시적으로 refetch하여 제품 정보 업데이트 반영
+      await queryClient.invalidateQueries({
+        queryKey: PROJECT_PLANS_QUERY_KEY(projectId, factoryId),
+      });
+      await refetchProjectPlans();
     },
-    [projectId, getProjectPlans, setAllProductionResultComplete]
+    [projectId, factoryId, queryClient, refetchProjectPlans]
   );
 
   // 생산수량, 날짜 변경 핸들러 (자동 저장 제거)
@@ -220,7 +151,7 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
       const formData = formChanges[planId];
       if (!formData) return;
 
-      const plan = projectPlans.find((p) => p.id === planId);
+      const plan = projectPlans.find((p: ProjectPlanModel) => p.id === planId);
       if (!plan) return;
 
       // 원본 데이터와 비교하여 실제로 변경되었는지 확인
@@ -295,7 +226,9 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
     try {
       const updatePromises = Object.entries(formChanges).map(
         ([planId, formData]) => {
-          const plan = projectPlans.find((p) => p.id === parseInt(planId));
+          const plan = projectPlans.find(
+            (p: ProjectPlanModel) => p.id === parseInt(planId)
+          );
           if (!plan) return Promise.resolve();
 
           // 변경된 것만 업데이트
@@ -367,7 +300,7 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
       return;
     }
     const isAllProductionResultComplete = projectPlans.every(
-      (plan) =>
+      (plan: ProjectPlanModel) =>
         plan.material_consumed === true &&
         plan.defective_quantity !== undefined &&
         plan.defective_quantity !== null
@@ -389,7 +322,7 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
         <div className="flex flex-col w-full overflow-x-auto">
           <ProductionLogTableHeader projectStatus={projectStatus} />
           {projectPlans.length > 0 &&
-            projectPlans.map((plan, index) => {
+            projectPlans.map((plan: ProjectPlanModel, index: number) => {
               // 같은 제품의 첫 번째 plan인지 판단
               const isFirstOfProduct =
                 index === 0 ||
@@ -415,7 +348,8 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
                   onValidityChange={handleValidityChange}
                   isFirstOfProduct={isFirstOfProduct}
                   onSaveSuccess={() => {
-                    loadProjectPlans();
+                    // 자재 재고 수정 시 해당 제품의 plan들만 업데이트
+                    updatePlansForProduct(plan.quotation_product.product.id);
                   }}
                 />
               );

@@ -270,6 +270,7 @@ const ProductionLogTableItem = ({
             productId={plan.quotation_product.product.id}
             onClose={() => setIsProductDetailOpen(false)}
             onSuccess={() => {
+              // 제품 정보 변경 시 material_status 및 제품 정보 업데이트를 위해 reload
               onSaveSuccess?.();
             }}
           />

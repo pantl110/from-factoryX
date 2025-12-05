@@ -1,8 +1,7 @@
 import Dropdown from '@/ui/dropdown/dropdown';
 import DropdownItem from '@/ui/dropdown/dropdown-item';
-import React, { useEffect, useState } from 'react';
-import { useGetProjectPlans } from '@/hooks';
-import { ProjectPlanModel } from '@/types/data-model';
+import React, { useMemo } from 'react';
+import { useProjectPlansQuery } from '@/hooks';
 
 interface PlanProductsDropdownProps {
   projectId: number;
@@ -15,40 +14,25 @@ const PlanProductsDropdown = ({
   onClose,
   onSelect,
 }: PlanProductsDropdownProps) => {
-  const [projectPlans, setProjectPlans] = useState<ProjectPlanModel[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const { getProjectPlans } = useGetProjectPlans();
-
-  useEffect(() => {
-    const fetchProjectPlans = async () => {
-      if (!projectId) return;
-
-      setIsLoading(true);
-      const result = await getProjectPlans(projectId);
-      if (result.success && result.data) {
-        setProjectPlans(result.data);
-      }
-      setIsLoading(false);
-    };
-
-    fetchProjectPlans();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectId]);
+  const { data: projectPlans = [], isLoading } =
+    useProjectPlansQuery(projectId);
 
   // 프로젝트 계획에서 품목 추출 및 중복 제거
-  const productMap = new Map<number, { id: number; name: string }>();
+  const products = useMemo(() => {
+    const productMap = new Map<number, { id: number; name: string }>();
 
-  projectPlans.forEach((plan) => {
-    const { product } = plan.quotation_product;
-    if (!productMap.has(product.id)) {
-      productMap.set(product.id, {
-        id: product.id,
-        name: product.name,
-      });
-    }
-  });
+    projectPlans.forEach((plan) => {
+      const { product } = plan.quotation_product;
+      if (!productMap.has(product.id)) {
+        productMap.set(product.id, {
+          id: product.id,
+          name: product.name,
+        });
+      }
+    });
 
-  const products = Array.from(productMap.values());
+    return Array.from(productMap.values());
+  }, [projectPlans]);
 
   // DropdownItem 높이: h-12 (48px), 4개 항목 = 192px + padding
   const maxHeight = 'max-h-[200px]';
