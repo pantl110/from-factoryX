@@ -1,5 +1,5 @@
 # Set the python version as a build-time argument
-ARG PYTHON_VERSION=3.12-slim-bullseye
+ARG PYTHON_VERSION=3.12-slim
 FROM python:${PYTHON_VERSION}
 
 # Create a virtual environment
