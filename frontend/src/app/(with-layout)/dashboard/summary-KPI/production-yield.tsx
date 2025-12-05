@@ -1,5 +1,6 @@
 import { CaretUpIcon, CaretDownIcon } from '@phosphor-icons/react/dist/ssr';
 import { MonthlyProfitModel } from '@/types/data-model';
+import { removeTrailingZeros } from '@/utils';
 
 interface ProductionYieldProps {
   monthlyProfits: MonthlyProfitModel[];
@@ -23,12 +24,17 @@ const ProductionYield = ({ monthlyProfits }: ProductionYieldProps) => {
       ? ((currentProfit - previousProfit) / previousProfit) * 100
       : undefined;
 
+  // 소수점이 0이면 제거 (유틸 함수 사용, 콤마 제거)
+  const formatProfit = (profit: number): string => {
+    return removeTrailingZeros(profit.toFixed(2)).replace(/,/g, '');
+  };
+
   return (
     <div className="pt-5 pb-4 px-5 rounded-lg border border-[#eeeeee] h-[141px] shadow-[2px_2px_22px_rgba(0,0,0,0.1)]">
       <div className="flex flex-col gap-1">
         <p className="Heading-4 text-sv">생산 수익</p>
         <p className="flex gap-1 Heading-1">
-          {currentProfit.toFixed(2)} <span>만원</span>
+          {formatProfit(currentProfit)} <span>만원</span>
         </p>
 
         {changePercentage !== undefined && !isNaN(changePercentage) && (

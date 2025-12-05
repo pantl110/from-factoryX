@@ -11,7 +11,7 @@ const PermissionInfoItem = ({ type }: PermissionInfoItemProps) => {
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-center gap-2">
-        <RoundChip text={info.type} color={info.color} variant="role" />
+        <RoundChip text={info.type} color={info.color} variant="sm" />
         <p className="Heading-3">{info.type}</p>
       </div>
       <p className="Re_Body-1 text-dg whitespace-pre-line">
