@@ -24,6 +24,8 @@ from project.schemas.outbound import (
     ProjectCloneOut,
 )
 from factory.utils import is_factory_member
+from factory.models import Factory, FactoryClient
+from factory.schemas.outbound import FactoryRowOut, FactoryClientRowOut
 from document.models import Quotation, QuotationProduct
 from project.models import ProjectPlan, ProjectLog
 from project.utils import get_project_by_id, update_product_avg_production_time_from_recent_plans
@@ -31,39 +33,6 @@ from django.utils import timezone
 from scheduling.api import update_work_instruction_for_factory
 
 router = Router(tags=["Project"], auth=jwt_auth)
-
-
-# Project Tab
-# @router.post(
-#     "",
-#     summary="[C] 프로젝트 생성",
-#     description="프로젝트와 견적서를 동시에 생성합니다.",
-#     response={201: ProjectCreateOut, 500: dict},
-# )
-# async def create_project(request):
-#     factory_id = request.GET.get("factory_id")
-#     if not factory_id:
-#         raise HttpError(400, "factory_id를 입력해야 합니다.")
-
-#     user = request.auth
-#     await is_factory_member(int(factory_id), user)
-
-#     try:
-#         factory = await Factory.objects.aget(id=int(factory_id))
-#         new_project = await Project.objects.acreate()
-
-#         new_quotation = await Quotation.objects.acreate(
-#             project=new_project,
-#             factory=factory,
-#             factory_info=FactoryRowOut.from_orm(factory).dict(),
-#         )
-
-#         return 201, {"quotation_id": new_quotation.id, "project_id": new_project.id}
-
-#     except Exception as e:
-#         raise HttpError(
-#             500, "프로젝트 및 견적서 생성 중 내부 서버 오류가 발생했습니다."
-#         )
 
 
 # Archived Project Tab
@@ -92,26 +61,65 @@ async def clone_project(request, payload: ProjectCloneIn):
 
             if original_project.status != Project.ProjectStatus.completed:
                 raise HttpError(400, "완료된 프로젝트만 복제할 수 있습니다.")
-
+            
             new_project = Project.objects.create(
                 status=Project.ProjectStatus.pending,
                 transact_date=None,
                 tax_invoice=None,
+                confirmed_at=timezone.now().date(),
             )
 
+            # 원본 quotation_product와 새 quotation_product 매핑
+            quotation_product_mapping = {}  # {original_quotation_product_id: new_quotation_product}
+            
             original_quotations = original_project.quotations.all()
             for original_quotation in original_quotations:
+                # 반납이 아닌 quotation_product만 필터링
+                non_refund_products = []
+                for original_product in original_quotation.products.all():
+                    # 해당 quotation_product를 사용하는 plan 중 refund가 없는 것만 포함
+                    has_refund = ProjectPlan.objects.filter(
+                        product=original_product,
+                        project=original_project
+                    ).filter(refunds__isnull=False).exists()
+                    
+                    if not has_refund:
+                        non_refund_products.append(original_product)
+                
+                if not non_refund_products:
+                    continue
+                
+                # factory와 client 객체 조회하여 정보 가져오기
+                factory_info_dict = {}
+                if original_quotation.factory_id:
+                    try:
+                        factory_obj = Factory.objects.get(id=original_quotation.factory_id)
+                        factory_info_dict = FactoryRowOut.from_orm(factory_obj).dict()
+                    except Factory.DoesNotExist:
+                        factory_info_dict = {}
+                
+                client_info_dict = {}
+                if original_quotation.client_id:
+                    try:
+                        client_obj = FactoryClient.objects.get(id=original_quotation.client_id)
+                        client_info_dict = FactoryClientRowOut.from_orm(client_obj).dict()
+                    except FactoryClient.DoesNotExist:
+                        client_info_dict = {}
+                
+                # client와 factory는 id로 설정, client_info와 factory_info는 전체 정보로 설정
                 new_quotation = Quotation.objects.create(
                     project=new_project,
-                    factory=original_quotation.factory,
-                    client=original_quotation.client,
-                    due_date=original_quotation.due_date,
-                    uploaded_file=original_quotation.uploaded_file,
+                    factory_id=original_quotation.factory_id,
+                    client_id=original_quotation.client_id,
+                    due_date=None,  # null로 설정
+                    uploaded_file=None,
+                    factory_info=factory_info_dict,
+                    client_info=client_info_dict,
                 )
 
-                original_products = original_quotation.products.all()
-                for original_product in original_products:
-                    QuotationProduct.objects.create(
+                # 반납이 아닌 quotation_product만 생성
+                for original_product in non_refund_products:
+                    new_quotation_product = QuotationProduct.objects.create(
                         quotation=new_quotation,
                         product=original_product.product,
                         quantity=original_product.quantity,
@@ -119,19 +127,42 @@ async def clone_project(request, payload: ProjectCloneIn):
                         is_delivery=False,
                         delivery_date=None,
                     )
+                    # 원본 quotation_product와 새 quotation_product 매핑 저장
+                    quotation_product_mapping[original_product.id] = new_quotation_product
 
-            original_plans = original_project.plans.all()
-            for original_plan in original_plans:
-                ProjectPlan.objects.create(
-                    project=new_project,
-                    status=ProjectPlan.ProductionStatus.pending,
-                    product=original_plan.product,
-                    quantity=original_plan.quantity,
-                    equipment=original_plan.equipment,
-                    start_date=original_plan.start_date,
-                    end_date=original_plan.end_date,
-                    avg_production_time=original_plan.avg_production_time,
-                )
+            # products_info 생성: 반납이 아닌 quotation_product만 포함
+            products_info = []
+            for original_quotation in original_quotations:
+                for original_product in original_quotation.products.all():
+                    # 해당 quotation_product를 사용하는 plan 중 refund가 없는 것만 포함
+                    has_refund = ProjectPlan.objects.filter(
+                        product=original_product,
+                        project=original_project
+                    ).filter(refunds__isnull=False).exists()
+                    
+                    if not has_refund:
+                        new_quotation_product = quotation_product_mapping.get(original_product.id)
+                        if new_quotation_product:
+                            product_info = {
+                                "id": new_quotation_product.product.id,
+                                "name": new_quotation_product.product.name,
+                                "code": new_quotation_product.product.code,
+                                "spec": new_quotation_product.product.spec,
+                                "unit": new_quotation_product.product.unit,
+                                "quantity": new_quotation_product.quantity,
+                                "unit_price": new_quotation_product.unit_price,
+                                "total_price": new_quotation_product.quantity * new_quotation_product.unit_price,
+                                "quotation_product_id": new_quotation_product.id,
+                                "created_at": timezone.now().date().isoformat(),
+                                "delivery_date": None,
+                            }
+                            products_info.append(product_info)
+            
+            # products_info를 첫 번째 quotation에 저장
+            if original_quotations.exists() and products_info:
+                first_quotation = new_project.quotations.first()
+                first_quotation.products_info = products_info
+                first_quotation.save()
 
             original_logs = original_project.logs.filter(type=ProjectLog.LogType.memo)
             for original_log in original_logs:
@@ -142,9 +173,72 @@ async def clone_project(request, payload: ProjectCloneIn):
                     content=original_log.content,
                 )
 
-            return new_project.id
+            # quotation_product_mapping을 ID 기반으로 변환
+            quotation_product_id_mapping = {
+                orig_id: new_qp.id 
+                for orig_id, new_qp in quotation_product_mapping.items()
+            }
+            
+            return new_project.id, quotation_product_id_mapping, int(factory_id)
 
-        new_project_id = await clone_project_data()
+        new_project_id, quotation_product_id_mapping, factory_id_value = await clone_project_data()
+        
+        # Plan 생성: recommend_equipment_and_create_plan 사용
+        async def create_plans():
+            from project.utils import recommend_equipment_and_create_plan
+            
+            new_project = await Project.objects.aget(id=new_project_id)
+            original_project = await Project.objects.aget(id=payload.project_id)
+            
+            # 이번 배치에서 생성한 임시 ProjectPlan들을 설비별로 모아두기
+            temp_plans_by_equipment = {}
+            
+            # 원본 프로젝트의 plan들을 순회하면서 반납이 아닌 것만 처리
+            original_plans = await sync_to_async(list)(
+                ProjectPlan.objects.filter(project=original_project)
+                .select_related("product__product")
+            )
+            
+            for original_plan in original_plans:
+                # refund가 아닌 plan만 처리
+                has_refund = await sync_to_async(original_plan.refunds.exists)()
+                if has_refund:
+                    continue
+                
+                original_quotation_product = original_plan.product
+                new_quotation_product_id = quotation_product_id_mapping.get(original_quotation_product.id)
+                
+                if not new_quotation_product_id:
+                    continue
+                
+                # 새 quotation_product 조회
+                new_quotation_product = await QuotationProduct.objects.select_related("product").aget(id=new_quotation_product_id)
+                
+                # 제품 정보 가져오기 (생산 시간 계산을 위해 필요)
+                product = new_quotation_product.product
+                buffer_rate = float(product.buffer_rate) if product.buffer_rate else 0.0
+                base_quantity = new_quotation_product.quantity  # 주문수량
+                production_quantity = int(base_quantity * (1 + buffer_rate))  # 생산수량
+                avg_production_time = product.average_production_time or 30  # 기본값 30초
+                
+                try:
+                    # 설비 추천 + 생산 계획 생성까지 한 번에 처리
+                    project_plan, equipment = await recommend_equipment_and_create_plan(
+                        project=new_project,
+                        quotation_product=new_quotation_product,
+                        factory_id=factory_id_value,
+                        quantity=production_quantity,
+                        product_avg_production_time=avg_production_time,
+                        status=ProjectPlan.ProductionStatus.pending,
+                        additional_plans_by_equipment=temp_plans_by_equipment,
+                        save=True,
+                    )
+                except Exception as e:
+                    # 설비 추천 실패 시 에러 발생
+                    raise HttpError(400, f"설비 조회 중 오류가 발생했습니다: {str(e)}")
+        
+        await create_plans()
+        
         return 200, ProjectCloneOut(
             project_id=new_project_id, message="프로젝트가 성공적으로 복제되었습니다."
         )
