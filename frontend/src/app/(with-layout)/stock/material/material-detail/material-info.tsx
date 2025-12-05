@@ -290,7 +290,14 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
 
                 // 음수 기호를 포함한 displayValue 생성
                 let displayVal = result.displayValue;
-                if (inputValue === '-') {
+                // 0 입력 시 displayValue가 빈 문자열이 되는 경우 처리
+                if (
+                  result.numericValue === 0 &&
+                  valueWithoutSign !== '' &&
+                  !valueWithoutSign.endsWith('.')
+                ) {
+                  displayVal = '0';
+                } else if (inputValue === '-') {
                   displayVal = '-';
                 } else if (isNegative && result.displayValue) {
                   displayVal = `-${result.displayValue}`;
@@ -318,11 +325,9 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                   const savedValue = (isNegative ? '-' : '') + valueWithoutSign;
                   field.onChange(savedValue);
                 } else {
+                  // 0도 허용하도록 수정, 큰 숫자도 처리 가능하도록 formattedValue 사용
                   const savedValue =
-                    result.numericValue === 0 && !valueWithoutSign.endsWith('.')
-                      ? ''
-                      : (isNegative ? '-' : '') +
-                        result.numericValue.toString();
+                    (isNegative ? '-' : '') + result.formattedValue;
                   field.onChange(savedValue);
                 }
               };
@@ -382,7 +387,14 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
 
                 // 입력 중인 값 표시
                 let displayVal = result.displayValue;
+                // 0 입력 시 displayValue가 빈 문자열이 되는 경우 처리
                 if (
+                  result.numericValue === 0 &&
+                  inputValue !== '' &&
+                  !inputValue.endsWith('.')
+                ) {
+                  displayVal = '0';
+                } else if (
                   inputValue.endsWith('.') &&
                   !result.displayValue.includes('.')
                 ) {
@@ -394,10 +406,8 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                 if (inputValue.endsWith('.') && inputValue !== '.') {
                   field.onChange(inputValue);
                 } else {
-                  const savedValue =
-                    result.numericValue === 0 && !inputValue.endsWith('.')
-                      ? ''
-                      : result.numericValue.toString();
+                  // 0도 허용하도록 수정, 큰 숫자도 처리 가능하도록 formattedValue 사용
+                  const savedValue = result.formattedValue;
                   field.onChange(savedValue);
                 }
               };
@@ -459,7 +469,14 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
 
                 // 입력 중인 값 표시
                 let displayVal = result.displayValue;
+                // 0 입력 시 displayValue가 빈 문자열이 되는 경우 처리
                 if (
+                  result.numericValue === 0 &&
+                  inputValue !== '' &&
+                  !inputValue.endsWith('.')
+                ) {
+                  displayVal = '0';
+                } else if (
                   inputValue.endsWith('.') &&
                   !result.displayValue.includes('.')
                 ) {
@@ -471,10 +488,8 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                 if (inputValue.endsWith('.') && inputValue !== '.') {
                   field.onChange(inputValue);
                 } else {
-                  const savedValue =
-                    result.numericValue === 0 && !inputValue.endsWith('.')
-                      ? ''
-                      : result.numericValue.toString();
+                  // 0도 허용하도록 수정, 큰 숫자도 처리 가능하도록 formattedValue 사용
+                  const savedValue = result.formattedValue;
                   field.onChange(savedValue);
                 }
               };

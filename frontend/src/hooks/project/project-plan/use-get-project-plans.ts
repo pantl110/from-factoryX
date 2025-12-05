@@ -67,9 +67,9 @@ const useGetProjectPlans = () => {
     return {
       isLoading: queryState?.status === 'pending' || false,
       error: queryState?.error
-        ? (queryState.error instanceof Error
-            ? queryState.error.message
-            : '프로젝트 계획 조회에 실패했습니다.')
+        ? queryState.error instanceof Error
+          ? queryState.error.message
+          : '프로젝트 계획 조회에 실패했습니다.'
         : null,
     };
   };

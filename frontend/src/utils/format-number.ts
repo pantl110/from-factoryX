@@ -4,6 +4,15 @@ export const extractNumbers = (value: string): string => {
   return value.replace(/[^0-9]/g, '');
 };
 
+// 문자열 숫자에 천 단위 구분자 추가 (큰 숫자도 처리 가능)
+const addCommasToString = (numStr: string): string => {
+  if (!numStr || numStr === '') return '';
+  // 콤마 제거 후 다시 추가
+  const cleanStr = numStr.replace(/,/g, '');
+  // 천 단위 구분자 추가
+  return cleanStr.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+};
+
 // 날짜 포맷팅 함수 (YYYY-MM-DD)
 export const formatDate = (value: string): string => {
   const numbers = extractNumbers(value);
@@ -230,6 +239,7 @@ export const handleQuantityInput = (
   displayValue: string;
   numericValue: number;
   isValid: boolean;
+  formattedValue: string; // 정제된 문자열 값 (큰 숫자도 처리 가능)
 } => {
   // 빈 문자열 처리
   if (!inputValue || inputValue === '') {
@@ -237,6 +247,7 @@ export const handleQuantityInput = (
       displayValue: '',
       numericValue: 0,
       isValid: true,
+      formattedValue: '',
     };
   }
 
@@ -264,9 +275,16 @@ export const handleQuantityInput = (
   let formattedValue = finalCleanValue;
   if (finalCleanValue.includes('.')) {
     const [integerPart, decimalPart] = finalCleanValue.split('.');
+    // 정수 부분의 앞의 0 제거 (단, "0"만 남으면 유지)
+    const cleanedIntegerPart = integerPart.replace(/^0+/, '') || '0';
     if (decimalPart && decimalPart.length > 1) {
-      formattedValue = integerPart + '.' + decimalPart.slice(0, 1);
+      formattedValue = cleanedIntegerPart + '.' + decimalPart.slice(0, 1);
+    } else {
+      formattedValue = cleanedIntegerPart + '.' + (decimalPart || '');
     }
+  } else {
+    // 정수인 경우 앞의 0 제거 (단, "0"만 남으면 유지)
+    formattedValue = finalCleanValue.replace(/^0+/, '') || '0';
   }
 
   // 숫자 변환
@@ -282,14 +300,13 @@ export const handleQuantityInput = (
     if (formattedValue.includes('.')) {
       // 소수점이 있는 경우
       const [integerPart, decimalPart] = formattedValue.split('.');
-      const formattedInteger = parseInt(integerPart || '0').toLocaleString(
-        'en-US'
-      );
+      // 문자열을 직접 처리하여 천 단위 구분자 추가 (큰 숫자도 처리 가능)
+      const formattedInteger = addCommasToString(integerPart || '0');
       displayValue = `${formattedInteger}.${decimalPart}`;
     } else {
-      // 정수인 경우
-      const intValue = parseInt(formattedValue || '0');
-      displayValue = intValue === 0 ? '' : intValue.toLocaleString('en-US');
+      // 정수인 경우 - 문자열을 직접 처리하여 천 단위 구분자 추가
+      const cleanValue = formattedValue.replace(/,/g, '');
+      displayValue = cleanValue === '0' ? '' : addCommasToString(cleanValue);
     }
   }
 
@@ -297,6 +314,7 @@ export const handleQuantityInput = (
     displayValue,
     numericValue,
     isValid,
+    formattedValue, // 정제된 문자열 값 반환 (큰 숫자도 처리 가능)
   };
 };
 
@@ -335,7 +353,65 @@ export const formatDateTime = (value: string): string => {
 // 숫자 포맷팅 함수 (콤마 추가, 소수점 아래 끝자리 0 제거)
 export const removeTrailingZeros = (num: string | number): string => {
   if (num === '' || num === undefined || num === null) return '';
-  const str = String(num).replace(/,/g, '');
+
+  let str: string;
+  if (typeof num === 'number') {
+    // number 타입인 경우 과학적 표기법 방지를 위해 문자열로 변환
+    // 큰 정수의 경우 toFixed(0)를 사용하여 과학적 표기법 방지
+    if (Number.isInteger(num) && Math.abs(num) < Number.MAX_SAFE_INTEGER) {
+      str = num.toString();
+    } else if (Number.isInteger(num)) {
+      // 매우 큰 정수인 경우 BigInt 사용
+      try {
+        str = BigInt(num).toString();
+      } catch {
+        // BigInt로 변환 불가능한 경우 (범위 초과) - 문자열로 처리 불가능하므로 원본 반환
+        str = num.toString();
+      }
+    } else {
+      // 소수인 경우
+      str = num.toString();
+    }
+
+    // 과학적 표기법 감지 및 변환
+    if (str.includes('e') || str.includes('E')) {
+      // 과학적 표기법을 일반 숫자로 변환
+      const parts = str.toLowerCase().split('e');
+      const base = parseFloat(parts[0]);
+      const exponent = parseInt(parts[1] || '0', 10);
+      if (!isNaN(base) && !isNaN(exponent)) {
+        const result = base * Math.pow(10, exponent);
+        // 결과가 정수인 경우 소수점 제거
+        if (Number.isInteger(result)) {
+          str = result.toString();
+        } else {
+          // 소수인 경우 적절한 소수점 자리수로 변환
+          str = result.toString();
+        }
+      }
+    }
+  } else {
+    str = num;
+  }
+
+  // 콤마 제거
+  str = str.replace(/,/g, '');
+
+  // 과학적 표기법이 남아있는 경우 처리 (문자열에서도)
+  if (str.includes('e') || str.includes('E')) {
+    const parts = str.toLowerCase().split('e');
+    const base = parseFloat(parts[0]);
+    const exponent = parseInt(parts[1] || '0', 10);
+    if (!isNaN(base) && !isNaN(exponent)) {
+      const result = base * Math.pow(10, exponent);
+      if (Number.isInteger(result)) {
+        str = result.toString();
+      } else {
+        str = result.toString();
+      }
+    }
+  }
+
   // 소수점이 있는 경우 처리
   if (str.includes('.')) {
     // 소수점 아래 끝자리 0들을 제거 (예: 100.50 → 100.5, 100.00 → 100)
@@ -344,7 +420,7 @@ export const removeTrailingZeros = (num: string | number): string => {
     if (trimmed.endsWith('.')) {
       trimmed = trimmed.slice(0, -1); // 소수점만 남으면 소수점도 제거
     }
-    return trimmed.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return addCommasToString(trimmed);
   }
-  return str.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  return addCommasToString(str);
 };

@@ -34,7 +34,7 @@ const FacilityHistoryItem = ({ plan }: FacilityHistoryItemProps) => {
         </div>
         <p className="flex-1 px-3">
           {plan.quantity.toLocaleString()}
-          {plan.product_unit && ` ${plan.product_unit}`}
+          {plan.product_unit && plan.product_unit}
         </p>
         <p className="flex-1 px-3">{convertUTCToLocal(plan.start_date)}</p>
         <p className="flex-1 px-3">{convertUTCToLocal(plan.end_date)}</p>
