@@ -195,6 +195,10 @@ def get_material_status(
     if current_stock is None:
         return None
 
+    # 현재 재고가 0이면 부족
+    if current_stock == 0:
+        return "부족"
+
     # 1. 과재고: 현재 재고 > 최대 재고
     if max_stock is not None:
         if current_stock > max_stock:
@@ -210,14 +214,14 @@ def get_material_status(
         if current_stock <= rop and current_stock > standard_stock:
             return "위험"
 
-    # 4. 부족: 현재 재고 <= 안전 재고 또는 현재 재고 === 0
+    # 4. 부족: 현재 재고 <= 안전 재고
     if standard_stock is not None:
         if current_stock <= standard_stock:
             return "부족"
 
-    # 현재 재고가 0이면 부족
-    if current_stock == 0:
-        return "부족"
+    # 과재고 기준(max_stock)이 없으면 충분으로 표시
+    if max_stock is None:
+        return "충분"
 
     # 판단할 수 없는 경우
     return None
