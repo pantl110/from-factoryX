@@ -238,13 +238,17 @@ async def update_factory_member(
                 if payload.role:
                     member.role = payload.role
                     await member.asave()
+                    # 권한 한글명 가져오기
+                    role_display = dict(FactoryMember.FactoryMemberType.choices).get(
+                        payload.role, payload.role
+                    )
                     # 알림 전송
                     await send_notification(
                         user_id=member.user_id,
                         factory_id=member.factory_id,
                         notification_type="member_updated",
                         notification_case="permission_changed",
-                        content=f"{member.user.username}님의 권한이 '{payload.role}'로 변경되었습니다.",
+                        content=f"{member.user.username}님의 권한이 '{role_display}'로 변경되었습니다.",
                     )
                 return {
                     "id": member_id,  # 원래 요청된 ID 반환
