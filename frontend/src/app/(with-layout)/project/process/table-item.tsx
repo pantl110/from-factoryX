@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import Chip from '@/ui/chip';
+import { RoundChip } from '@/ui/round-chip';
 import { useRouter } from 'next/navigation';
-import { getTaxStatusColor, ProjectStatusColorMap } from '@/types/status-type';
+import { getTaxStatusColor } from '@/types/status-type';
 import Checkbox from '@/ui/checkbox';
 import MiniBtn from '@/ui/mini-btn';
 import { ProjectResponseModel } from '@/types/data-model';
@@ -15,6 +15,7 @@ import LinkTaxModal from './modals/link-tax-modal/link-tax-modal';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import { getStartDate } from '@/utils/get-start-date';
+import { getProjectStatusColor } from '@/utils';
 import Skeleton from '@/app/(without-layout)/skeleton';
 
 interface TableItemProps {
@@ -44,9 +45,6 @@ const TableItem = ({
   const [isLinkTaxModalOpen, setIsLinkTaxModalOpen] = useState(false);
   const { cloneProject, isLoading: isCloning } = useCloneProject();
   const [isNavigating, setIsNavigating] = useState(false);
-  // 프로젝트 상태 색상 가져오기 (영어/한글 모두 지원)
-  const chipColors =
-    ProjectStatusColorMap[project.status] || ProjectStatusColorMap.quotation;
 
   // 칩에서 표시할 텍스트 매핑 (영어/한글 모두 지원)
   const getDisplayText = (status: string): string => {
@@ -66,6 +64,7 @@ const TableItem = ({
   };
 
   const displayText = getDisplayText(project.status);
+  const chipColor = getProjectStatusColor(project.status);
 
   const productsName =
     project.status === 'quotation' ||
@@ -169,10 +168,10 @@ const TableItem = ({
           <Checkbox isChecked={checked} onToggle={onToggle || (() => {})} />
         )}
         <div className={`px-3 ${isArchived ? 'w-[150px]' : 'w-[200px]'}`}>
-          <Chip
+          <RoundChip
             text={displayText}
-            bgColor={chipColors.bgColor}
-            textColor={chipColors.textColor}
+            color={chipColor}
+            variant="defaultSmall"
           />
         </div>
         <p

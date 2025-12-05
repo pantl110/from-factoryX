@@ -48,15 +48,23 @@ const LinkModalProjectTableItem = ({
       <p className="w-[150px] px-3 text-dg">{item.transaction_date}</p>
       <p
         className="flex-2 px-3 text-dg truncate"
-        title={item.client_name || '-'}
+        title={item.client_info?.name?.trim() || '-'}
       >
-        {item.client_name || '-'}
+        {item.client_info?.name?.trim() || '-'}
       </p>
       <p
         className="flex-2 px-3 text-dg truncate"
-        title={getProductNamesDisplay(item.product_names || []) || '-'}
+        title={getProductNamesDisplay(
+          item.line_items
+            ?.map((lineItem) => lineItem.name)
+            .filter((name) => name?.trim()) || []
+        )}
       >
-        {getProductNamesDisplay(item.product_names || []) || '-'}
+        {getProductNamesDisplay(
+          item.line_items
+            ?.map((lineItem) => lineItem.name)
+            .filter((name) => name?.trim()) || []
+        )}
       </p>
       <p
         className="flex-2 px-3 text-dg truncate"

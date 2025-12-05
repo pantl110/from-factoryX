@@ -62,9 +62,9 @@ const NotificationModal = ({
   const loadMoreRef = useInfiniteScroll<HTMLDivElement>({
     enabled: true,
     hasMore,
-    isLoading: isLoading,
+    isLoading,
     isFetchingMore: isLoadingMore,
-    onLoadMore: onLoadMore,
+    onLoadMore,
   });
 
   return (

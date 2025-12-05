@@ -131,7 +131,11 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
         ) : documentType === '생산지시서' ? (
           <>
             <div className="px-3 flex-[0.5]">
-              <RoundChip text={documentType} variant="sm" color={color} />
+              <RoundChip
+                text={documentType}
+                variant="defaultSmall"
+                color={color}
+              />
             </div>
             <div className="px-3 flex-1 flex items-center gap-2 truncate">
               {(() => {
@@ -240,7 +244,11 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
         ) : projectData ? (
           <>
             <div className="px-3 flex-[0.5]">
-              <RoundChip text={documentType} variant="sm" color={color} />
+              <RoundChip
+                text={documentType}
+                variant="defaultSmall"
+                color={color}
+              />
             </div>
             <p
               className="px-3 flex-1 truncate"

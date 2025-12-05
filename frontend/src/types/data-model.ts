@@ -1417,8 +1417,8 @@ export interface UnlinkedTaxInvoiceResponseModel {
   id: number;
   tax_invoice_type: string;
   transaction_date: string;
-  client_name: string;
-  product_names: string[];
+  client_info: TaxClientInfoModel;
+  line_items: TaxLineItemModel[];
   transaction_amount: number;
   tax_amount: number;
   total_amount: number;

@@ -1,6 +1,6 @@
 import { ProjectStatusType } from '@/types/status-type';
 
-type RoundChipColor =
+type RoundChipColorType =
   | 'primary'
   | 'secondary'
   | 'red'
@@ -17,8 +17,8 @@ type RoundChipColor =
  */
 export const getProjectStatusColor = (
   status: string | ProjectStatusType
-): RoundChipColor => {
-  const colorMap: Record<string, RoundChipColor> = {
+): RoundChipColorType => {
+  const colorMap: Record<string, RoundChipColorType> = {
     quotation: 'yellow',
     confirmed: 'orange',
     pending: 'gray',
