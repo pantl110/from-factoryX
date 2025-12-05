@@ -57,7 +57,7 @@ const TableHeader = ({
       </div>
       {!isArchived && <p className="w-[200px] px-3 text-sv">세금계산서 연결</p>}
       {!isArchived && <p className="w-[200px] px-3 text-sv">발행 여부</p>}
-      {isArchived && <div className="w-9" />}
+      {isArchived && <div className="w-20" />}
     </div>
   );
 };

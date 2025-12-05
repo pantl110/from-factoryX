@@ -154,7 +154,7 @@ const TableItem = ({
   return (
     <>
       <div
-        className={`group flex items-center h-14 ${
+        className={`flex items-center h-14 ${
           isArchived ? 'w-full' : 'w-[1448px]'
         } border-b border-lg Me_Body-1 cursor-pointer hover:bg-bg`}
         role="button"
@@ -251,8 +251,8 @@ const TableItem = ({
         )}
 
         {isArchived && project.status === 'completed' && role !== 'viewer' ? (
-          <button
-            onClick={handleCloneProject}
+          <div
+            className="w-20 h-full flex items-center justify-center relative"
             onMouseEnter={(e) => {
               const rect = e.currentTarget.getBoundingClientRect();
               setTooltipPosition({
@@ -262,12 +262,19 @@ const TableItem = ({
               setIsTooltipVisible(true);
             }}
             onMouseLeave={() => setIsTooltipVisible(false)}
-            className="w-9 h-full flex items-center justify-center cursor-pointer opacity-0 group-hover:opacity-100 transition-opacity duration-200"
           >
-            <CopySimple size={20} className="text-dg" />
-          </button>
+            <button
+              onClick={handleCloneProject}
+              className="w-full h-full flex items-center cursor-pointer group"
+            >
+              <CopySimple
+                size={20}
+                className="text-sv group-hover:text-primary"
+              />
+            </button>
+          </div>
         ) : isArchived ? (
-          <div className="w-9" />
+          <div className="w-20" />
         ) : (
           <></>
         )}
@@ -277,16 +284,16 @@ const TableItem = ({
         getDisplayText(project.status) === '완료' &&
         createPortal(
           <div
-            className="fixed z-50"
+            className="fixed z-50 pointer-events-none"
             style={{
-              right: `${window.innerWidth - tooltipPosition.x}px`, // 툴팁의 오른쪽을 div 오른쪽에 맞춤
-              top: `${tooltipPosition.y - 18}px`, // 툴팁의 위쪽을 div 아래쪽에 맞춤
+              right: `${window.innerWidth - tooltipPosition.x + 40}px`, // 툴팁의 오른쪽을 div 오른쪽에 맞춤
+              top: `${tooltipPosition.y - 12}px`, // 툴팁의 위쪽을 div 아래쪽에 맞춤 (4px 아래로)
             }}
           >
             <Tooltip
               text={`같은 업체에서 요청이 들어왔다면,
 이 프로젝트를 복제해서 바로 시작해보세요.`}
-              color="primary"
+              color="white"
               position="right"
             />
           </div>,
