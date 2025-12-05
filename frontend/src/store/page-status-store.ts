@@ -71,6 +71,10 @@ export interface PageStatusModel {
   // 납품 데이터 (보관함으로 이동 버튼 활성화 여부 결정)
   deliveryData: Array<{ delivery_date?: string }> | null;
   setDeliveryData: (data: Array<{ delivery_date?: string }> | null) => void;
+
+  // 프로젝트 상태 리로드 함수 (production 페이지에서 설정)
+  reloadProjectStatus: (() => Promise<void>) | null;
+  setReloadProjectStatus: (fn: (() => Promise<void>) | null) => void;
 }
 
 const usePageStatusStore = create<PageStatusModel>((set) => ({
@@ -127,6 +131,10 @@ const usePageStatusStore = create<PageStatusModel>((set) => ({
   // 납품 데이터
   deliveryData: null,
   setDeliveryData: (data) => set({ deliveryData: data }),
+
+  // 프로젝트 상태 리로드 함수
+  reloadProjectStatus: null,
+  setReloadProjectStatus: (fn) => set({ reloadProjectStatus: fn }),
 
   // // 세금계산서 id
   // taxId: null,

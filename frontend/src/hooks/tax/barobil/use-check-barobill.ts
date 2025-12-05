@@ -8,6 +8,7 @@ import {
 import useMemberStore from '@/store/member-store';
 import useAuthStore from '@/store/auth-store';
 import { UpdateMemberResponseModel } from '@/types/data-model';
+import { shouldShowBarobillError } from '@/utils';
 
 // 바로빌 상태 확인 및 인증서 등록 처리 훅
 ////// api 가져와서 사용하는 로직
@@ -82,7 +83,12 @@ export const useCheckBarobill = () => {
           if (certCheckResponse && !certCheckResponse.has_cert) {
             await registerCertification();
           }
-        } catch {
+        } catch (error) {
+          // 인증서 유효성 검사 실패 등의 에러는 다시 throw
+          if (error instanceof Error && error.message.includes('유효성 검사 실패')) {
+            throw error;
+          }
+          // 그 외의 경우는 인증서 등록 시도
           await registerCertification();
         }
         return true;
@@ -96,7 +102,12 @@ export const useCheckBarobill = () => {
         } else if (certCheckResponse && certCheckResponse.has_cert) {
           return true;
         }
-      } catch {
+      } catch (error) {
+        // 인증서 유효성 검사 실패 등의 에러는 다시 throw
+        if (error instanceof Error && error.message.includes('유효성 검사 실패')) {
+          throw error;
+        }
+        // 그 외의 경우는 인증서 등록 시도
         await registerCertification();
       }
       return true;

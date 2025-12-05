@@ -70,6 +70,9 @@ const TopBarContent = ({
     (state) => state.setAddReturnModalOpen
   );
   const deliveryData = usePageStatusStore((state) => state.deliveryData);
+  const reloadProjectStatus = usePageStatusStore(
+    (state) => state.reloadProjectStatus
+  );
 
   // role, 구독 확인
   const role = useMemberStore((state) => state.role);
@@ -163,6 +166,12 @@ const TopBarContent = ({
                 product_spec: p.spec,
               })
             )}
+            onTaxCreated={async (taxId) => {
+              // 세금계산서 생성 후 프로젝트 상태 리로드하여 버튼 업데이트
+              if (reloadProjectStatus) {
+                await reloadProjectStatus();
+              }
+            }}
           />
         )}
       </>
@@ -226,6 +235,12 @@ const TopBarContent = ({
                 product_spec: p.spec,
               })
             )}
+            onTaxCreated={async (taxId) => {
+              // 세금계산서 생성 후 프로젝트 상태 리로드하여 버튼 업데이트
+              if (reloadProjectStatus) {
+                await reloadProjectStatus();
+              }
+            }}
           />
         )}
       </>
@@ -293,6 +308,12 @@ const TopBarContent = ({
                 product_spec: p.spec,
               })
             )}
+            onTaxCreated={async (taxId) => {
+              // 세금계산서 생성 후 프로젝트 상태 리로드하여 버튼 업데이트
+              if (reloadProjectStatus) {
+                await reloadProjectStatus();
+              }
+            }}
           />
         )}
       </>
@@ -357,6 +378,12 @@ const TopBarContent = ({
                 product_spec: p.spec,
               })
             )}
+            onTaxCreated={async (taxId) => {
+              // 세금계산서 생성 후 프로젝트 상태 리로드하여 버튼 업데이트
+              if (reloadProjectStatus) {
+                await reloadProjectStatus();
+              }
+            }}
           />
         )}
       </>
@@ -448,6 +475,12 @@ const TopBarContent = ({
                 product_spec: p.spec,
               })
             )}
+            onTaxCreated={async (taxId) => {
+              // 세금계산서 생성 후 프로젝트 상태 리로드하여 버튼 업데이트
+              if (reloadProjectStatus) {
+                await reloadProjectStatus();
+              }
+            }}
           />
         )}
       </>
@@ -530,6 +563,12 @@ const TopBarContent = ({
                 product_spec: p.spec,
               })
             )}
+            onTaxCreated={async (taxId) => {
+              // 세금계산서 생성 후 프로젝트 상태 리로드하여 버튼 업데이트
+              if (reloadProjectStatus) {
+                await reloadProjectStatus();
+              }
+            }}
           />
         )}
       </>

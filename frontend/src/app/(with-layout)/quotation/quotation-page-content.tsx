@@ -28,6 +28,7 @@ import {
   useGetClient,
   useGetProduct,
   useToast,
+  useLinkTaxInvoice,
 } from '@/hooks';
 import { useSearchParams } from 'next/navigation';
 import useMemberStore from '@/store/member-store';
@@ -62,6 +63,7 @@ const QuotationPageContent = () => {
   const { startProduction } = useStartProduction();
   const { getProjectStatus } = useGetProjectStatus();
   const { updateProjectStatus } = useUpdateProjectStatus();
+  const { linkTaxInvoice } = useLinkTaxInvoice();
   const setProjectStatusData = usePageStatusStore(
     (state: PageStatusModel) => state.setProjectStatusData
   );
@@ -548,6 +550,8 @@ const QuotationPageContent = () => {
     setIsStartProductionModalOpen,
     router,
     createdQuotationId,
+    taxId,
+    linkTaxInvoice,
   });
 
   // 필수 폼이 채워져 있는지 검사 - Client data의 required 필드들이 모두 채워져 있는지 확인
@@ -786,6 +790,9 @@ const QuotationPageContent = () => {
             product_code: product.product_code || '',
             product_spec: product.spec || '',
           }))}
+          onTaxCreated={(taxId) => {
+            setTaxId(taxId); // 세금계산서 ID 업데이트하여 버튼 텍스트 변경
+          }}
         />
       )}
 

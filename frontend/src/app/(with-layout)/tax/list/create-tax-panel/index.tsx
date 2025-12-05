@@ -1,11 +1,10 @@
 'use client';
 
-import Panel from '@/ui/panel';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { Panel, MiniBtn, PanelRefModel, Toast } from '@/ui';
 import SellerInfo from './seller-info';
 import ClientInfo from './client-info';
-import MiniBtn from '@/ui/mini-btn';
 import { CaretDown } from '@phosphor-icons/react/dist/ssr';
-import { useState, useEffect, useCallback, useRef } from 'react';
 import AddItemDropdown from './add-item-dropdown';
 import ClaimReceiptTaxModal from './claim-receipt-tax-modal';
 import IssueTypeDropdown from './issue-type-dropdown';
@@ -16,8 +15,8 @@ import {
   useUpdateClient,
   useLinkTaxInvoice,
   useToast,
+  useCheckBarobill,
 } from '@/hooks';
-import { useCheckBarobill } from '@/hooks/tax/barobil/use-check-barobill';
 import useMemberStore from '@/store/member-store';
 import {
   FactoriesUpdateModel,
@@ -32,8 +31,6 @@ import ProductInfo, {
   ProductInfoRefModel,
   ProductFormDataModel,
 } from './product-info';
-import { PanelRefModel } from '@/ui/panel';
-import Toast from '@/ui/toast';
 import { WarningCircle } from '@phosphor-icons/react';
 
 // 세금계산서 편집용 제품 데이터 타입
@@ -490,17 +487,17 @@ const CreatTaxPanel = ({
           return false;
         }
 
-        // 새로 생성된 세금계산서 ID를 부모에게 전달
-        if (onTaxCreated && result.id) {
-          onTaxCreated(result.id);
-        }
-
-        // 프로젝트 ID가 있으면 프로젝트와 세금계산서 연결
+        // 프로젝트 ID가 있으면 프로젝트와 세금계산서 연결 (먼저 연결)
         if (projectId) {
           await linkTaxInvoice({
             project_id: projectId,
             tax_id: result.id,
           });
+        }
+
+        // 새로 생성된 세금계산서 ID를 부모에게 전달 (연결 후 전달)
+        if (onTaxCreated && result.id) {
+          onTaxCreated(result.id);
         }
       }
     } catch (error) {

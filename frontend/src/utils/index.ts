@@ -56,3 +56,4 @@ export { calculateAvgProductionTime } from './calculate-production-time';
 
 // Project utilities
 export { getProjectStatusColor } from './get-project-status-color';
+

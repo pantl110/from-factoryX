@@ -194,6 +194,9 @@ const ProductionPageContent = () => {
   const setHandleChangeStatus = usePageStatusStore(
     (state) => state.setHandleChangeStatus
   );
+  const setReloadProjectStatus = usePageStatusStore(
+    (state) => state.setReloadProjectStatus
+  );
 
   // store에서 모달 상태 가져오기
   const isAddReturnModalOpen = usePageStatusStore(
@@ -205,8 +208,17 @@ const ProductionPageContent = () => {
 
   useEffect(() => {
     setHandleChangeStatus(handleChangeStatus);
-    return () => setHandleChangeStatus(null);
-  }, [handleChangeStatus, setHandleChangeStatus]);
+    setReloadProjectStatus(reloadProjectStatus);
+    return () => {
+      setHandleChangeStatus(null);
+      setReloadProjectStatus(null);
+    };
+  }, [
+    handleChangeStatus,
+    setHandleChangeStatus,
+    reloadProjectStatus,
+    setReloadProjectStatus,
+  ]);
 
   const projectStatusType =
     (projectStatus?.status as ProjectStatusType) || 'quotation';
@@ -297,6 +309,10 @@ const ProductionPageContent = () => {
                         product_spec: p.spec,
                       })
                     )}
+                    onTaxCreated={async (taxId) => {
+                      // 세금계산서 생성 후 프로젝트 상태 리로드하여 버튼 업데이트
+                      await reloadProjectStatus();
+                    }}
                   />
                 )}
               </>

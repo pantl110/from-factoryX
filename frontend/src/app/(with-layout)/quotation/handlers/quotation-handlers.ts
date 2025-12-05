@@ -44,6 +44,8 @@ interface QuotationHandlersProps {
   setIsStartProductionModalOpen: (open: boolean) => void;
   router: ReturnType<typeof useRouter>;
   createdQuotationId?: number | null;
+  taxId?: number | null; // 세금계산서 ID
+  linkTaxInvoice?: (params: { project_id: number; tax_id: number }) => Promise<{ success: boolean }>; // 세금계산서 연결 함수
 }
 
 export const useQuotationHandlers = ({
@@ -62,6 +64,8 @@ export const useQuotationHandlers = ({
   setIsStartProductionModalOpen,
   router,
   createdQuotationId,
+  taxId,
+  linkTaxInvoice,
 }: QuotationHandlersProps) => {
   const [isSaveDraftLoading, setIsSaveDraftLoading] = useState(false);
   const [isStartProductionLoading, setIsStartProductionLoading] =
@@ -318,6 +322,19 @@ export const useQuotationHandlers = ({
 
       // 성공 시 모달 닫고
       setIsStartProductionModalOpen(false);
+      
+      // 프로젝트 생성 성공 후 세금계산서가 있으면 연결
+      if (result && result.project_id && taxId && linkTaxInvoice) {
+        try {
+          await linkTaxInvoice({
+            project_id: result.project_id,
+            tax_id: taxId,
+          });
+        } catch {
+          // 세금계산서 연결 실패는 조용히 무시 (프로젝트 생성은 성공했으므로)
+        }
+      }
+      
       //프로젝트 페이지로 이동
       if (result && result.project_id) {
         router.push(`/production/${result.project_id}`);
@@ -401,6 +418,8 @@ export const useQuotationHandlers = ({
     setIsStartProductionModalOpen,
     router,
     createdQuotationId,
+    taxId,
+    linkTaxInvoice,
   ]);
 
   return {

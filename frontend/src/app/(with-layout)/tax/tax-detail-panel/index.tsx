@@ -31,6 +31,7 @@ interface TaxDetailPanelProps {
   projectId?: number;
   initialClientData?: TaxClientInfoModel;
   initialProducts?: TaxProductEditModel[];
+  onTaxCreated?: (taxId: number) => void; // 새로 생성된 세금계산서 ID 전달
 }
 
 const TaxDetailPanel = ({
@@ -40,6 +41,7 @@ const TaxDetailPanel = ({
   projectId,
   initialClientData,
   initialProducts,
+  onTaxCreated,
 }: TaxDetailPanelProps) => {
   // 모달
   const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
@@ -126,7 +128,10 @@ const TaxDetailPanel = ({
             })) as TaxProductEditModel[]) || initialProducts
           }
           setIsEditingMode={setIsEditingMode}
-          onTaxCreated={setCreatedTaxId} // 새로 생성된 세금계산서 ID 전달
+          onTaxCreated={(taxId) => {
+            setCreatedTaxId(taxId); // 내부 상태 업데이트
+            onTaxCreated?.(taxId); // 외부 콜백 호출
+          }}
           projectId={projectId}
         />
       ) : (
