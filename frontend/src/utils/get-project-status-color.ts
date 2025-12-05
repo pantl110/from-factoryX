@@ -30,4 +30,3 @@ export const getProjectStatusColor = (
   };
   return colorMap[status] || 'gray';
 };
-

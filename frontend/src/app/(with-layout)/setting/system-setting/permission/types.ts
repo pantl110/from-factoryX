@@ -2,7 +2,11 @@
 export type InvitationStatusType = 'invited' | 'active';
 
 // 설정의 권한 종류
-export type PermissionRoleType = '시스템 관리자' | '운영자' | '조회자' | '생산관리자';
+export type PermissionRoleType =
+  | '시스템 관리자'
+  | '운영자'
+  | '조회자'
+  | '생산관리자';
 
 export interface AuthInfoModel {
   type: PermissionRoleType;

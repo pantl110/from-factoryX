@@ -45,6 +45,10 @@ const TopBar = ({ isSidebarVisible }: TopBarProps) => {
   const [notifications, setNotifications] = useState<
     NotificationResponseModel[]
   >([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const NOTIFICATION_PAGE_SIZE = 10;
 
   // 웹소켓으로 실시간 알림 상태 관리
   const { status: _wsStatus } = useWebSocket({
@@ -65,29 +69,54 @@ const TopBar = ({ isSidebarVisible }: TopBarProps) => {
     },
   });
 
-  // 알림 데이터 로드
+  // 알림 데이터 로드 (초기 로드)
   useEffect(() => {
     const loadNotifications = async () => {
-      // 먼저 첫 페이지를 작은 크기로 호출하여 totalCount 확인
-      const initialResult = await getNotifications(1, 10);
+      // 처음에는 첫 페이지만 로드 (10개)
+      const initialResult = await getNotifications(1, NOTIFICATION_PAGE_SIZE);
       if (initialResult.success && initialResult.data) {
-        const totalCount = initialResult.data.totalCnt;
-
-        // totalCount가 있으면 전체 알림을 한 번에 로드
-        if (totalCount > 0) {
-          const fullResult = await getNotifications(1, totalCount);
-          if (fullResult.success && fullResult.data) {
-            setNotifications(fullResult.data.data);
-          }
-        } else {
-          // totalCount가 0이면 빈 배열 설정
-          setNotifications([]);
-        }
+        setNotifications(initialResult.data.data || []);
+        const pageCnt = initialResult.data.pageCnt || 1;
+        setHasMore(pageCnt > 1);
+        setCurrentPage(1);
+      } else {
+        setNotifications([]);
+        setHasMore(false);
       }
     };
 
     loadNotifications();
   }, [getNotifications]);
+
+  // 추가 페이지 로드 함수
+  const loadMoreNotifications = async () => {
+    if (isLoadingMore || !hasMore || isLoadingNotifications) return;
+
+    setIsLoadingMore(true);
+    const nextPage = currentPage + 1;
+    const result = await getNotifications(nextPage, NOTIFICATION_PAGE_SIZE);
+
+    if (result.success && result.data) {
+      const newNotifications = result.data.data || [];
+      setNotifications((prev) => [...prev, ...newNotifications]);
+      setCurrentPage(nextPage);
+      setHasMore(nextPage < (result.data.pageCnt || 1));
+    }
+
+    setIsLoadingMore(false);
+  };
+
+  // 페이지네이션 상태 초기화 함수
+  // markAllAsRead가 전체 알림을 반환하므로, 전체를 표시하고 페이지네이션 상태 초기화
+  const resetPagination = () => {
+    // 전체 알림이 이미 setNotifications로 설정되었으므로
+    // 페이지네이션 상태만 초기화 (전체가 이미 로드되었으므로 hasMore는 false)
+    const totalCount = notifications.length;
+    const pageCnt = Math.ceil(totalCount / NOTIFICATION_PAGE_SIZE);
+    setCurrentPage(pageCnt); // 마지막 페이지로 설정
+    setHasMore(false); // 전체가 이미 로드되었으므로 더 이상 로드할 필요 없음
+    setIsLoadingMore(false);
+  };
 
   // 페이지 이동 시 production 관련 상태 초기화
   useEffect(() => {
@@ -135,6 +164,10 @@ const TopBar = ({ isSidebarVisible }: TopBarProps) => {
           notifications={notifications}
           isLoading={isLoadingNotifications}
           setNotifications={setNotifications}
+          hasMore={hasMore}
+          isLoadingMore={isLoadingMore}
+          onLoadMore={loadMoreNotifications}
+          onResetPagination={resetPagination}
         />
       )}
     </>

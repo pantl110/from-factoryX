@@ -26,7 +26,7 @@ const useGetNotifications = () => {
         const queryParams = new URLSearchParams();
         queryParams.append('factory_id', factoryId.toString());
         queryParams.append('page', page.toString());
-        queryParams.append('size', size.toString());
+        queryParams.append('page_size', size.toString());
 
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/v1/notification?${queryParams}`,

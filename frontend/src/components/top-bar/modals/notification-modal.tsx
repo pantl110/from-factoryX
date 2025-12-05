@@ -1,8 +1,9 @@
 import Modal from '@/ui/modal/modal';
 import MiniBtn from '@/ui/mini-btn';
 import { NotificationResponseModel } from '@/types/data-model';
-import { useMarkAllNotificationsRead } from '@/hooks';
+import { useMarkAllNotificationsRead, useInfiniteScroll } from '@/hooks';
 import NotificationItem from './notification-item';
+import { useRef } from 'react';
 
 interface NotificationModalProps {
   onClose: () => void;
@@ -11,6 +12,10 @@ interface NotificationModalProps {
   setNotifications: React.Dispatch<
     React.SetStateAction<NotificationResponseModel[]>
   >;
+  hasMore: boolean;
+  isLoadingMore: boolean;
+  onLoadMore: () => void;
+  onResetPagination?: () => void;
 }
 
 const NotificationModal = ({
@@ -18,9 +23,14 @@ const NotificationModal = ({
   notifications,
   isLoading,
   setNotifications,
+  hasMore,
+  isLoadingMore,
+  onLoadMore,
+  onResetPagination,
 }: NotificationModalProps) => {
   const { markAllAsRead, isLoading: isMarkAllLoading } =
     useMarkAllNotificationsRead();
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // 새 알림은 TopBar에서 실시간으로 처리됨
 
@@ -29,6 +39,8 @@ const NotificationModal = ({
     const result = await markAllAsRead();
     if (result.success && result.data) {
       setNotifications(result.data);
+      // 페이지네이션 상태 초기화 (전체 알림을 다시 로드했으므로)
+      onResetPagination?.();
     }
   };
 
@@ -45,6 +57,15 @@ const NotificationModal = ({
 
   // 읽지 않은 알림 개수
   const unreadCount = notifications.filter((n) => !n.is_read).length;
+
+  // 무한스크롤을 위한 ref
+  const loadMoreRef = useInfiniteScroll<HTMLDivElement>({
+    enabled: true,
+    hasMore,
+    isLoading: isLoading,
+    isFetchingMore: isLoadingMore,
+    onLoadMore: onLoadMore,
+  });
 
   return (
     <Modal
@@ -67,20 +88,31 @@ const NotificationModal = ({
         )
       }
     >
-      <div className="mt-3 mx-6 pb-6 h-[calc(100%-76px)] flex flex-col gap-1 overflow-y-auto scrollbar-hide">
-        {isLoading || notifications.length === 0 ? (
+      <div
+        ref={scrollContainerRef}
+        className="mt-3 mx-6 pb-6 h-[calc(100%-76px)] flex flex-col gap-1 overflow-y-auto scrollbar-hide"
+      >
+        {notifications.length === 0 && !isLoadingMore ? (
           <div className="flex flex-col items-center justify-center h-full">
             <p className="Re_Body-1 text-gr">아직 알림이 없어요.</p>
           </div>
         ) : (
-          notifications.map((item) => (
-            <NotificationItem
-              key={item.id}
-              item={item}
-              onRead={handleReadNotification}
-              isMarkAllLoading={isMarkAllLoading}
-            />
-          ))
+          <>
+            {notifications.map((item) => (
+              <NotificationItem
+                key={item.id}
+                item={item}
+                onRead={handleReadNotification}
+                isMarkAllLoading={isMarkAllLoading}
+              />
+            ))}
+            {/* 무한스크롤 트리거 요소 */}
+            {hasMore && (
+              <div ref={loadMoreRef} className="py-2 flex justify-center">
+                {isLoadingMore && <p className="Re_Body-2 text-gr">...</p>}
+              </div>
+            )}
+          </>
         )}
       </div>
     </Modal>
