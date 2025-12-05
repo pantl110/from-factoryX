@@ -6,6 +6,7 @@ import {
   OperationStatusType,
   InventoryStatusType,
 } from '@/types/status-type';
+import { RoundChip } from '@/ui';
 import { ProjectPlanModel, EquipmentResponseModel } from '@/types/data-model';
 import { tableHeader } from './types';
 import {
@@ -280,30 +281,21 @@ const TableItem = ({
       />
     ),
     '생산 자재 상태': (
-      <div className="flex gap-[27px]">
-        <Chip
+      <div className="flex gap-2.5 items-center">
+        <RoundChip
           text={materialStatus}
-          textColor={
+          variant="sm"
+          color={
             operationStatus === 'completed'
-              ? 'text-sv'
-              : materialColor.textColor
-          }
-          bgColor={
-            operationStatus === 'completed' ? 'bg-bg' : materialColor.bgColor
+              ? 'gray'
+              : (materialColor?.color ?? 'gray')
           }
         />
-        {materialStatus === '부족' && operationStatus !== 'completed' && (
-          // <div
-          //   className="cursor-pointer hover:bg-bg rounded-[8px] w-9 h-9 flex items-center justify-center "
-          //   onClick={() => setIsProductDetailOpen(true)}
-          // >
-          //   <ArrowLineUpRight size={16} className="text-dg" />
-          // </div>
+        {materialStatus !== '충분' && operationStatus !== 'completed' && (
           <IconBtn
             icon={ArrowLineUpRight}
             iconSize={16}
             onClick={() => setIsProductDetailOpen(true)}
-            groupHover={true}
           />
         )}
       </div>
@@ -435,9 +427,9 @@ const TableItem = ({
         {tableHeader.map((header) => (
           <div
             key={header.name}
-            className={`${header.width} px-3 truncate ${
-              header.name === '가동 상태' ? 'relative' : ''
-            }`}
+            className={`${header.width} ${
+              header.name === '생산 자재 상태' ? 'px-2' : 'px-3'
+            } truncate ${header.name === '가동 상태' ? 'relative' : ''}`}
             title={String(itemData[header.name as keyof typeof itemData] ?? '')}
           >
             {itemData[header.name as keyof typeof itemData]}

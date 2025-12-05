@@ -6,9 +6,12 @@ import { formatDateTime } from '@/hooks';
 import { ArrowLineUpRight } from '@phosphor-icons/react';
 import { useForm, Controller } from 'react-hook-form';
 import MiniBtn from '@/ui/mini-btn';
+import IconBtn from '@/ui/icon-btn';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import { ProductionResultPanel } from './production-result-panel';
+import { RoundChip } from '@/ui';
+import { InventoryStatusColorMap } from '@/types/status-type';
 
 interface ProductionLogTableItemProps {
   plan: ProjectPlanModel;
@@ -183,24 +186,24 @@ const ProductionLogTableItem = ({
             ? `${plan.avg_production_time.toLocaleString()}초`
             : '-'}
         </p>
-        <div className="w-[150px] px-3">
-          <div className="flex justify-between">
-            <Chip
+        <div className="w-[150px] px-2">
+          <div className="flex items-center gap-2.5">
+            <RoundChip
               text={plan.material_status}
-              textColor={
-                plan.material_status === '충분' ? 'text-primary' : 'text-red'
-              }
-              bgColor={
-                plan.material_status === '충분' ? 'bg-primary-8' : 'bg-red-8'
+              variant="sm"
+              color={
+                InventoryStatusColorMap[
+                  plan.material_status as keyof typeof InventoryStatusColorMap
+                ]?.color ?? 'gray'
               }
             />
-            {plan.material_status === '부족' && (
-              <div
-                className="cursor-pointer hover:bg-bg rounded-[8px] w-9 h-9 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-in-out"
+            {plan.material_status !== '충분' && (
+              <IconBtn
+                icon={ArrowLineUpRight}
+                iconSize={16}
+                iconColor="text-sv"
                 onClick={() => setIsProductDetailOpen(true)}
-              >
-                <ArrowLineUpRight size={16} className="text-dg" />
-              </div>
+              />
             )}
           </div>
         </div>
@@ -266,6 +269,9 @@ const ProductionLogTableItem = ({
           <ProductDetail
             productId={plan.quotation_product.product.id}
             onClose={() => setIsProductDetailOpen(false)}
+            onSuccess={() => {
+              onSaveSuccess?.();
+            }}
           />
         )}
       </div>

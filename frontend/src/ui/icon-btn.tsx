@@ -28,7 +28,7 @@ const IconBtn = ({
 }: IconBtnProps) => {
   return (
     <button
-      className={`group ${className} shrink-0 flex items-center justify-center ${size} ${rounded} ${hoverBg && 'hover:bg-bg'} transition-colors duration-200 ${groupHover ? `opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-in-out` : ''}`}
+      className={`group ${className} shrink-0 flex items-center justify-center ${size} ${rounded} ${hoverBg && 'hover:bg-bg'} transition-colors duration-200 ease-in-out ${groupHover ? `opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-in-out` : ''}`}
       onClick={onClick}
     >
       <Icon

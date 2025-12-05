@@ -291,22 +291,17 @@ export const TaxDraftStatusColorMap: Record<
 };
 
 // 원자재 상태
-export type MaterialStatusType = 'using' | 'used' | 'pending';
+export type MaterialStatusType = '과재고' | '충분' | '위험' | '부족';
 export const MaterialStatusTypeColorMap: Record<
   MaterialStatusType,
   StatusColorModel
 > = {
-  using: {
-    textColor: 'text-primary',
-    bgColor: 'bg-primary-8',
-    color: 'secondary',
+  과재고: {
+    color: 'red',
   },
-  used: { textColor: 'text-orange', bgColor: 'bg-orange-8', color: 'orange' },
-  pending: {
-    textColor: 'text-orange',
-    bgColor: 'bg-orange-8',
-    color: 'orange',
-  },
+  충분: { color: 'secondary' },
+  위험: { color: 'orange' },
+  부족: { color: 'red' },
 };
 
 // 유통기한 상태

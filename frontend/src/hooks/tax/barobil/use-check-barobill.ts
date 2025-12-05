@@ -85,7 +85,10 @@ export const useCheckBarobill = () => {
           }
         } catch (error) {
           // 인증서 유효성 검사 실패 등의 에러는 다시 throw
-          if (error instanceof Error && error.message.includes('유효성 검사 실패')) {
+          if (
+            error instanceof Error &&
+            error.message.includes('유효성 검사 실패')
+          ) {
             throw error;
           }
           // 그 외의 경우는 인증서 등록 시도
@@ -104,7 +107,10 @@ export const useCheckBarobill = () => {
         }
       } catch (error) {
         // 인증서 유효성 검사 실패 등의 에러는 다시 throw
-        if (error instanceof Error && error.message.includes('유효성 검사 실패')) {
+        if (
+          error instanceof Error &&
+          error.message.includes('유효성 검사 실패')
+        ) {
           throw error;
         }
         // 그 외의 경우는 인증서 등록 시도

@@ -117,6 +117,87 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
     loadProjectPlans();
   }, [loadProjectPlans]);
 
+  // 특정 제품과 관련된 plan들만 업데이트하는 함수
+  const updatePlansForProduct = useCallback(
+    async (productId: number) => {
+      if (!projectId) return;
+
+      const result = await getProjectPlans(projectId);
+      if (result.success && result.data) {
+        // DB에서 받은 날짜 데이터를 +9시간(KST)으로 변환해서 저장
+        const plansWithKSTDates = result.data.map((plan: ProjectPlanModel) => ({
+          ...plan,
+          start_date: plan.start_date ? convertUTCToKST(plan.start_date) : '',
+          end_date: plan.end_date ? convertUTCToKST(plan.end_date) : '',
+        }));
+
+        // 해당 제품과 관련된 plan들만 업데이트
+        setProjectPlans((prevPlans) => {
+          const updatedPlans = prevPlans.map((prevPlan) => {
+            // 해당 제품과 관련된 plan인지 확인
+            if (prevPlan.quotation_product.product.id === productId) {
+              // 새로운 데이터에서 해당 plan 찾기
+              const updatedPlan = plansWithKSTDates.find(
+                (p) => p.id === prevPlan.id
+              );
+              return updatedPlan || prevPlan;
+            }
+            return prevPlan;
+          });
+
+          // 새로운 plan이 추가되었을 수도 있으므로 확인
+          const existingPlanIds = new Set(prevPlans.map((p) => p.id));
+          const newPlans = plansWithKSTDates.filter(
+            (p) =>
+              p.quotation_product.product.id === productId &&
+              !existingPlanIds.has(p.id)
+          );
+
+          return [...updatedPlans, ...newPlans];
+        });
+
+        // formChanges 업데이트 (해당 제품과 관련된 plan들만)
+        setFormChanges((prev) => {
+          const updated = { ...prev };
+          plansWithKSTDates.forEach((plan: ProjectPlanModel) => {
+            if (plan.quotation_product.product.id === productId) {
+              updated[plan.id] = {
+                quantity: plan.quantity,
+                start_date: plan.start_date || '',
+                end_date: plan.end_date || '',
+              };
+            }
+          });
+          return updated;
+        });
+
+        // production result 완료 상태 업데이트
+        const updatedPlans = plansWithKSTDates.filter(
+          (plan) => plan.quotation_product.product.id === productId
+        );
+        if (updatedPlans.length > 0) {
+          setProjectPlans((prevPlans) => {
+            const allPlans = prevPlans.map((prevPlan) => {
+              const updatedPlan = updatedPlans.find(
+                (p) => p.id === prevPlan.id
+              );
+              return updatedPlan || prevPlan;
+            });
+            const isAllProductionResultComplete = allPlans.every(
+              (plan) =>
+                plan.material_consumed === true &&
+                plan.defective_quantity !== undefined &&
+                plan.defective_quantity !== null
+            );
+            setAllProductionResultComplete(isAllProductionResultComplete);
+            return allPlans;
+          });
+        }
+      }
+    },
+    [projectId, getProjectPlans, setAllProductionResultComplete]
+  );
+
   // 생산수량, 날짜 변경 핸들러 (자동 저장 제거)
   const handleFormChange = useCallback(
     (
