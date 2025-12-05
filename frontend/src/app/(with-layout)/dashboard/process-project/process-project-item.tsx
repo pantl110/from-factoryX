@@ -1,14 +1,13 @@
 'use client';
 
-import Chip from '@/ui/chip';
+import { RoundChip } from '@/ui';
 import { ProjectResponseModel } from '@/types/data-model';
+import { ProjectStatusMap, ProjectStatusType } from '@/types/status-type';
 import {
-  ProjectStatusColorMap,
-  ProjectStatusMap,
-  ProjectStatusType,
-} from '@/types/status-type';
-import { formatRelativeTime } from '@/utils/format-relative-time';
-import { getStartDate } from '@/utils/get-start-date';
+  formatRelativeTime,
+  getStartDate,
+  getProjectStatusColor,
+} from '@/utils';
 
 interface ProcessProjectItemProps {
   project: ProjectResponseModel;
@@ -16,14 +15,6 @@ interface ProcessProjectItemProps {
 }
 
 const ProcessProjectItem = ({ project, onClick }: ProcessProjectItemProps) => {
-  const getStatusColor = (status: string) => {
-    const colorMap = ProjectStatusColorMap[status];
-    if (colorMap) {
-      return { bg: colorMap.bgColor, text: colorMap.textColor };
-    }
-    return { bg: 'bg-purple-8', text: 'text-purple' };
-  };
-
   return (
     <div
       className="flex flex-col gap-4 p-4 border rounded-lg border-[#eeeeee] cursor-pointer min-w-0"
@@ -42,10 +33,10 @@ const ProcessProjectItem = ({ project, onClick }: ProcessProjectItemProps) => {
         <p className="flex-1 Me_Body-1 text-dg">
           {formatRelativeTime(getStartDate(project))}
         </p>
-        <Chip
+        <RoundChip
           text={ProjectStatusMap[project.status as ProjectStatusType]}
-          bgColor={getStatusColor(project.status).bg}
-          textColor={getStatusColor(project.status).text}
+          color={getProjectStatusColor(project.status)}
+          variant="defaultSmall"
         />
       </div>
     </div>

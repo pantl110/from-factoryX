@@ -53,3 +53,6 @@ export { getRoleText } from './get-role-text';
 
 // Production utilities
 export { calculateAvgProductionTime } from './calculate-production-time';
+
+// Project utilities
+export { getProjectStatusColor } from './get-project-status-color';

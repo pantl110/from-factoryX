@@ -92,6 +92,7 @@
     letter-spacing: -0.02em;
   }
   .Me_Body-1 {
+    /* 프레이머에는 이게 3임 */
     font-size: 16px;
     line-height: 1.6;
     font-weight: var(--font-weight-medium);
@@ -104,8 +105,9 @@
     color: #000000;
   }
   .Me_Body-3 {
-    font-size: 16px;
-    line-height: 1.6;
+    /* 프레이머에는 이게 1임 */
+    font-size: 22px;
+    line-height: 1.2;
     font-weight: var(--font-weight-medium);
     color: #18181b;
   }

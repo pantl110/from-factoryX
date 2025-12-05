@@ -1,13 +1,9 @@
 'use client';
 
-import Chip from '@/ui/chip';
+import { RoundChip } from '@/ui';
 import { ProjectResponseModel } from '@/types/data-model';
-import {
-  ProjectStatusColorMap,
-  ProjectStatusMap,
-  ProjectStatusType,
-} from '@/types/status-type';
-import { convertUTCToKSTDate } from '@/utils';
+import { ProjectStatusMap, ProjectStatusType } from '@/types/status-type';
+import { convertUTCToKSTDate, getProjectStatusColor } from '@/utils';
 
 interface PendingQuoteItemProps {
   project: ProjectResponseModel;
@@ -15,14 +11,6 @@ interface PendingQuoteItemProps {
 }
 
 const PendingQuoteItem = ({ project, onClick }: PendingQuoteItemProps) => {
-  const getStatusColor = (status: string) => {
-    const colorMap = ProjectStatusColorMap[status];
-    if (colorMap) {
-      return { bg: colorMap.bgColor, text: colorMap.textColor };
-    }
-    return { bg: 'bg-bg', text: 'text-bl' };
-  };
-
   return (
     <div
       className="flex flex-col gap-2 p-4 border rounded-lg border-lg cursor-pointer min-w-0"
@@ -47,10 +35,10 @@ const PendingQuoteItem = ({ project, onClick }: PendingQuoteItemProps) => {
         <p className="flex-1 Me_Body-1 text-sv">
           {convertUTCToKSTDate(project.created_at) || '-'}
         </p>
-        <Chip
+        <RoundChip
           text={ProjectStatusMap[project.status as ProjectStatusType]}
-          bgColor={getStatusColor(project.status).bg}
-          textColor={getStatusColor(project.status).text}
+          color={getProjectStatusColor(project.status)}
+          variant="defaultSmall"
         />
       </div>
     </div>
