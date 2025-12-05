@@ -400,16 +400,19 @@ async def check_material_availability(product_id: int, required_quantity: int) -
         
         for material_product in material_products:
             material = material_product.material
-            required_material_quantity = (
-                float(material_product.quantity) * required_quantity
-            )
-
-            # 필요한 수량보다 현재 재고가 적으면 부족
-            if material.current_stock is None or material.current_stock < required_material_quantity:
-                material_statuses.append("부족")
-                continue
-
+            
+            # 필요 수량 계산 (주석처리: 투입될 양은 고려하지 않음)
+            # required_material_quantity = (
+            #     float(material_product.quantity) * required_quantity
+            # )
+            #
+            # 필요한 수량보다 현재 재고가 적으면 부족 (주석처리)
+            # if material.current_stock is None or material.current_stock < required_material_quantity:
+            #     material_statuses.append("부족")
+            #     continue
+            
             # 원자재 상태 확인 (get_material_status 사용)
+            # 현재 재고 상태만 확인 (필요 수량은 고려하지 않음)
             status = get_material_status(
                 current_stock=material.current_stock,
                 max_stock=material.max_stock,
@@ -420,14 +423,20 @@ async def check_material_availability(product_id: int, required_quantity: int) -
             # 상태가 None이거나 판단 불가능한 경우는 "충분"으로 처리
             if status is None:
                 material_statuses.append("충분")
+            elif status == "부족":
+                # get_material_status가 "부족"을 반환한 경우
+                material_statuses.append("부족")
+            elif status == "위험":
+                material_statuses.append("위험")
             else:
-                material_statuses.append(status)
+                # "충분" 또는 "과재고" 등은 "충분"으로 처리
+                material_statuses.append("충분")
 
         # 우선순위: 부족 > 위험 > 충분
         # 1. 하나라도 "부족" 상태인 경우
         if "부족" in material_statuses:
-            return "부족"
-        
+                return "부족"
+
         # 2. "부족"은 없는데 "위험"이 하나라도 있는 경우
         if "위험" in material_statuses:
             return "위험"
