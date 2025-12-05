@@ -377,8 +377,12 @@ async def check_material_availability(product_id: int, required_quantity: int) -
         required_quantity: 생산할 제품 수량
 
     Returns:
-        str: "충분" 또는 "부족"
+        str: "충분", "위험", 또는 "부족"
+        - "부족": 하나라도 부족한 원자재가 있는 경우
+        - "위험": 부족은 없지만 하나라도 위험 상태인 원자재가 있는 경우
+        - "충분": 모든 원자재가 충분한 경우
     """
+    from stock.utils import get_material_status
 
     @sync_to_async
     def check_materials():
@@ -391,18 +395,44 @@ async def check_material_availability(product_id: int, required_quantity: int) -
             # 원자재가 필요하지 않은 제품인 경우
             return "충분"
 
-        # 각 원자재별로 수량 충분성 확인
+        # 각 원자재별로 상태 확인
+        material_statuses = []
+        
         for material_product in material_products:
             material = material_product.material
             required_material_quantity = (
                 float(material_product.quantity) * required_quantity
             )
 
-            # 현재 재고가 필요한 수량보다 적으면 "부족"
-            if material.current_stock < required_material_quantity:
-                return "부족"
+            # 필요한 수량보다 현재 재고가 적으면 부족
+            if material.current_stock is None or material.current_stock < required_material_quantity:
+                material_statuses.append("부족")
+                continue
 
-        # 모든 원자재가 충분하면 "충분"
+            # 원자재 상태 확인 (get_material_status 사용)
+            status = get_material_status(
+                current_stock=material.current_stock,
+                max_stock=material.max_stock,
+                rop=material.rop,
+                standard_stock=material.standard_stock,
+            )
+            
+            # 상태가 None이거나 판단 불가능한 경우는 "충분"으로 처리
+            if status is None:
+                material_statuses.append("충분")
+            else:
+                material_statuses.append(status)
+
+        # 우선순위: 부족 > 위험 > 충분
+        # 1. 하나라도 "부족" 상태인 경우
+        if "부족" in material_statuses:
+            return "부족"
+        
+        # 2. "부족"은 없는데 "위험"이 하나라도 있는 경우
+        if "위험" in material_statuses:
+            return "위험"
+        
+        # 3. 그 외에는 "충분"
         return "충분"
 
     return await check_materials()

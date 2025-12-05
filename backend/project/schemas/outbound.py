@@ -288,7 +288,7 @@ class ProjectPlanDetailWithRelationsOut(Schema):
     start_date: datetime.datetime
     end_date: datetime.datetime
     avg_production_time: Optional[int] = None
-    material_status: Literal["충분", "부족"]
+    material_status: Literal["충분", "위험", "부족"]
     material_consumed: bool
     is_refund_plan: bool = False
 
