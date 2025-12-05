@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect } from 'react';
 import Input from '@/ui/input';
 import MiniBtn from '@/ui/mini-btn';
 import Link from 'next/link';
@@ -9,10 +10,17 @@ import { useRouter } from 'next/navigation';
 import FactoryXLogo from '@/ui/icons/factory-x-logo';
 import { LoginFormDataModel } from '@/types/data-model';
 import { useLogin } from '@/hooks/users/use-login';
+import useAuthStore from '@/store/auth-store';
 
 const LoginPage = () => {
   const router = useRouter();
   const { login, isLoading } = useLogin();
+  const setLoggingOut = useAuthStore((state) => state.setLoggingOut);
+
+  // 로그인 페이지 진입 시 로그아웃 상태 초기화
+  useEffect(() => {
+    setLoggingOut(false);
+  }, [setLoggingOut]);
   // const [showFactorySelectModal, setShowFactorySelectModal] = useState(false);
   // const [factories, _setFactories] = useState<FactoriesResponseModel[]>([]);
 

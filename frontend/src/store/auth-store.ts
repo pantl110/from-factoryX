@@ -6,9 +6,11 @@ interface AuthStateProps {
   userInfo: UserInfoModel | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isLoggingOut: boolean;
   setUserInfo: (userInfo: UserInfoModel | null) => void;
   setLoading: (loading: boolean) => void;
   setAuthenticated: (authenticated: boolean) => void;
+  setLoggingOut: (isLoggingOut: boolean) => void;
   clearAuth: () => void;
   fetchUserInfo: () => Promise<boolean>;
   initializeAuth: () => void;
@@ -20,6 +22,7 @@ const useAuthStore = create<AuthStateProps>()(
       userInfo: null,
       isLoading: false,
       isAuthenticated: false,
+      isLoggingOut: false,
 
       setUserInfo: (userInfo) => {
         set({
@@ -33,12 +36,15 @@ const useAuthStore = create<AuthStateProps>()(
 
       setAuthenticated: (isAuthenticated) => set({ isAuthenticated }),
 
+      setLoggingOut: (isLoggingOut) => set({ isLoggingOut }),
+
       clearAuth: () => {
-        // 1. 먼저 상태 초기화
+        // 1. 먼저 상태 초기화 (isLoggingOut은 유지 - 로그아웃 중 빈 화면 표시를 위해)
         set({
           userInfo: null,
           isAuthenticated: false,
           isLoading: false,
+          // isLoggingOut은 유지 - router.push 후에 초기화
         });
 
         // 2. 그 다음 localStorage 제거

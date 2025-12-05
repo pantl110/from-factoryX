@@ -16,12 +16,13 @@ interface UseLogoutReturnModel {
 
 export const useLogout = (): UseLogoutReturnModel => {
   const [isLoading, setIsLoading] = useState(false);
-  const { clearAuth } = useAuthStore();
+  const { clearAuth, setLoggingOut } = useAuthStore();
   const { clearAll: clearMember } = useMemberStore();
   const { clearSubscription } = useSubscriptionStore();
 
   const logout = async () => {
     setIsLoading(true);
+    setLoggingOut(true);
 
     try {
       const response = await fetch(
@@ -46,7 +47,7 @@ export const useLogout = (): UseLogoutReturnModel => {
       // 1. 먼저 localStorage에서 저장소 제거
       clearAuthData();
 
-      // 2. 그 다음 전역 상태 초기화
+      // 2. 그 다음 전역 상태 초기화 (isLoggingOut은 유지)
       clearAuth();
       clearMember(); // member store 전체 클리어
       clearSubscription(); // subscription store 전체 클리어
@@ -66,7 +67,7 @@ export const useLogout = (): UseLogoutReturnModel => {
       // 에러가 발생해도 1. 먼저 localStorage에서 저장소 제거
       clearAuthData();
 
-      // 2. 그 다음 전역 상태 초기화
+      // 2. 그 다음 전역 상태 초기화 (isLoggingOut은 유지)
       clearAuth();
       clearMember(); // member store 전체 클리어
       clearSubscription(); // subscription store 전체 클리어
