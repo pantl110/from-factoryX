@@ -46,26 +46,19 @@ async def get_mobile_dashboard_counts(
 
         @sync_to_async
         def calculate_counts():
-            # 1. 납품되지 않은 견적서 품목 수 (기존 엔드포인트 조건과 동일)
-            if parsed_base_date:
-                week_later = parsed_base_date + timedelta(days=7)
-                undelivered_qs = QuotationProduct.objects.filter(
-                    quotation__factory_id=int(factory_id),
-                    quotation__project__status__in=[
-                        "pending",
-                        "production",
-                        "manufactured",
-                        "delivery",
-                    ],
-                    is_delivery=False,
-                    quotation__due_date__range=(parsed_base_date, week_later),
-                )
-            else:
-                undelivered_qs = QuotationProduct.objects.filter(
-                    quotation__factory_id=int(factory_id),
-                    quotation__project__status="delivery",
-                    is_delivery=False,
-                )
+            # 1. 오늘이 납기일인데 납품되지 않은 견적서 품목 수
+            today = timezone.now().date()
+            undelivered_qs = QuotationProduct.objects.filter(
+                quotation__factory_id=int(factory_id),
+                quotation__project__status__in=[
+                    "pending",
+                    "production",
+                    "manufactured",
+                    "delivery",
+                ],
+                is_delivery=False,
+                quotation__due_date=today,  # 오늘이 납기일
+            )
             undelivered_count = undelivered_qs.count()
 
             # 2. 부족 원자재 수 (status=shortage 조건과 동일)
