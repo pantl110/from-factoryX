@@ -669,6 +669,7 @@ async def list_undelivered_quotation_products(
                         else None
                     ),  # 납기일자 (견적서 기준)
                     "project_id": qp.quotation.project.id,  # 프로젝트 ID
+                    "quotation_product_id": qp.id,  # 견적서 품목 ID
                 }
             )
 
