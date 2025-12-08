@@ -590,8 +590,10 @@ async def list_quotation_products(request, quotation_id: int = Query(None)):
     "/undelivered",
     summary="[C] 납품되지 않은 견적서 품목 조회",
     description=(
-        "기본적으로 프로젝트가 납품 상태이고 납품되지 않은 견적서 품목을 페이지네이션하여 조회합니다. "
-        "base_date가 전달되면 해당 날짜를 기준으로 일주일 이내(과거 포함)의 납품 예정 품목을 조회하며, 이 경우 생산대기/생산중/생산완료/납품 상태의 프로젝트를 모두 포함합니다. "
+        "납품되지 않은 견적서 품목을 페이지네이션하여 조회합니다. "
+        "base_date가 전달되면 해당 날짜를 기준으로 due_filter('today', 'delayed', 'scheduled')로 필터링하며, "
+        "생산대기/생산중/생산완료/납품 상태의 프로젝트를 모두 포함합니다. "
+        "base_date가 없으면 프로젝트 상태가 납품인 프로젝트에서 납품되지 않은 견적서 품목만 조회합니다. "
     ),
     response={
         200: list[UndeliveredQuotationProductOut],
@@ -602,8 +604,11 @@ async def list_quotation_products(request, quotation_id: int = Query(None)):
 @paginate(CustomPageNumberPagination, page_size=5)
 async def list_undelivered_quotation_products(
     request,
+    due_filter: str = Query(
+        "today", description="납기일 필터: today(오늘), delayed(지연), scheduled(예정), base_date가 있을 때만 사용"
+    ),
     base_date: str | None = Query(
-        None, description="기준 날짜 (YYYY-MM-DD)"
+        None, description="기준 날짜 (YYYY-MM-DD), 전달되면 due_filter로 필터링"
     ),
 ):
     factory_id = request.GET.get("factory_id")
@@ -622,8 +627,14 @@ async def list_undelivered_quotation_products(
                 raise HttpError(
                     400, "base_date는 YYYY-MM-DD 형식이어야 합니다."
                 )
-            week_later = base + timedelta(days=7)
 
+            # 필터 타입 검증
+            if due_filter not in ["today", "delayed", "scheduled"]:
+                raise HttpError(
+                    400, "due_filter는 'today', 'delayed', 'scheduled' 중 하나여야 합니다."
+                )
+
+            # 기본 queryset 구성
             queryset = QuotationProduct.objects.select_related(
                 "quotation__client", "quotation__project", "product"
             ).filter(
@@ -635,8 +646,18 @@ async def list_undelivered_quotation_products(
                     "delivery",  # 납품
                 ],
                 is_delivery=False,  # 납품완료되지 않음
-                quotation__due_date__range=(base, week_later),
             )
+
+            # 필터 타입에 따른 due_date 조건 추가
+            if due_filter == "today":
+                # 오늘: due_date == base
+                queryset = queryset.filter(quotation__due_date=base)
+            elif due_filter == "delayed":
+                # 지연: due_date < base
+                queryset = queryset.filter(quotation__due_date__lt=base)
+            elif due_filter == "scheduled":
+                # 예정: due_date > base
+                queryset = queryset.filter(quotation__due_date__gt=base)
             
         else:
             # 기존 로직: 프로젝트 상태가 납품인 프로젝트에서 납품이 되지 않은 견적서 품목 목록
@@ -648,8 +669,8 @@ async def list_undelivered_quotation_products(
                 is_delivery=False,
             )
 
-        # delivery_date 오름차순 정렬 (가장 과거 납품일 먼저)
-        queryset = queryset.order_by("delivery_date")
+        # due_date 오름차순 정렬 (가장 과거 납기일 먼저)
+        queryset = queryset.order_by("quotation__due_date")
 
         undelivered_products = await sync_to_async(list)(queryset)
 
