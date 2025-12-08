@@ -16,6 +16,7 @@ from django.db.models import Q
 # (POST) Project Clone
 class ProjectCloneIn(Schema):
     project_id: int
+    due_date: Optional[date] = Field(None, description="납기일")
 
 
 # (PATCH) Project Status Update

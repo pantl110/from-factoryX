@@ -52,8 +52,11 @@ async def clone_project(request, payload: ProjectCloneIn):
 
     try:
 
+        # payload에서 due_date 추출 (async 함수에서)
+        due_date_value = payload.due_date if payload.due_date else None
+        
         @sync_to_async
-        def clone_project_data():
+        def clone_project_data(due_date):
             try:
                 original_project = Project.objects.get(id=payload.project_id)
             except Project.DoesNotExist:
@@ -111,7 +114,7 @@ async def clone_project(request, payload: ProjectCloneIn):
                     project=new_project,
                     factory_id=original_quotation.factory_id,
                     client_id=original_quotation.client_id,
-                    due_date=None,  # null로 설정
+                    due_date=due_date,  # payload에서 받은 납기일 사용
                     uploaded_file=None,
                     factory_info=factory_info_dict,
                     client_info=client_info_dict,
@@ -181,7 +184,7 @@ async def clone_project(request, payload: ProjectCloneIn):
             
             return new_project.id, quotation_product_id_mapping, int(factory_id)
 
-        new_project_id, quotation_product_id_mapping, factory_id_value = await clone_project_data()
+        new_project_id, quotation_product_id_mapping, factory_id_value = await clone_project_data(due_date_value)
         
         # Plan 생성: recommend_equipment_and_create_plan 사용
         async def create_plans():
