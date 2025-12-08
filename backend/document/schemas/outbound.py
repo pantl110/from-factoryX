@@ -116,6 +116,7 @@ class UndeliveredQuotationProductOut(Schema):
     quantity: Optional[int] = None  # 수량
     delivery_date: Optional[str] = None  # 납품일자
     project_id: int  # 프로젝트 ID
+    quotation_product_id: int  # 견적서 품목 ID
 
 
 # (GET) Today's Production Plans
