@@ -3,6 +3,7 @@ from api.security import jwt_auth
 from factory.schemas.inbound import FactoryUpdateIn
 from factory.schemas.outbound import FactoryModelOut, FactoryModelDetailOut
 from factory.models import Factory, FactoryMember
+from user.models import User
 from typing import List
 from ninja.errors import HttpError
 from factory.utils import get_factory_by_id, is_factory_member
@@ -154,13 +155,56 @@ async def update_factory(request, payload: FactoryUpdateIn):
     member = await is_factory_member(int(factory_id), user)
     factory = await get_factory_by_id(int(factory_id))
 
+    # 사업자등록번호 변경 전 값 저장
+    old_business_registration_number = factory.business_registration_number
+
     # None이 아닌 값만 업데이트
     data = payload.dict(exclude_unset=True)
+
+    # 사업자등록번호가 변경되는지 확인
+    business_registration_number_changed = (
+        "business_registration_number" in data
+        and data["business_registration_number"] != old_business_registration_number
+    )
 
     for field, value in data.items():
         setattr(factory, field, value)
 
     await factory.asave()
+
+    # 사업자등록번호가 변경되었고, 바로빌 인증이 있는 경우 모든 멤버의 인증 상태 초기화
+    if business_registration_number_changed:
+        @sync_to_async
+        @transaction.atomic
+        def reset_barobill_auth():
+            # 해당 공장의 모든 멤버 중 바로빌 인증이 있는 멤버 확인
+            barobill_members = FactoryMember.objects.filter(
+                factory=factory, is_barobill_user=True
+            )
+            
+            if barobill_members.exists():
+                # 해당 공장의 모든 멤버의 바로빌 인증 상태 초기화
+                # 먼저 초기화될 barobill_id 목록 저장 (User 초기화에 사용)
+                reset_barobill_ids = [
+                    bid for bid in barobill_members.values_list("barobill_id", flat=True)
+                    if bid is not None
+                ]
+                
+                FactoryMember.objects.filter(factory=factory).update(
+                    is_barobill_user=False,
+                    barobill_id=None,
+                    barobill_password=None,
+                )
+                
+                # 해당 공장의 멤버인 User들의 barobill_user_id도 초기화
+                # 해당 공장의 멤버의 barobill_id와 일치하는 User의 barobill_user_id만 초기화
+                if reset_barobill_ids:
+                    User.objects.filter(
+                        factory_members__factory=factory,
+                        barobill_user_id__in=reset_barobill_ids
+                    ).distinct().update(barobill_user_id=None)
+
+        await reset_barobill_auth()
 
     factory.member = member
     return factory
