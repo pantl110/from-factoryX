@@ -167,7 +167,7 @@ const OrderPage = () => {
                 text="주문 확정하기"
                 variant="primary"
                 width="w-full"
-                big={true}
+                big
                 onClick={() => {
                   setIsOrderConfirmModalOpen(true);
                 }}

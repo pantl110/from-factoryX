@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useCallback, useState, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
 import MiniBtn from './mini-btn';

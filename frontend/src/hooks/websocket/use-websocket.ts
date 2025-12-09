@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect, useRef, useCallback, useState } from 'react';
 import useMemberStore from '@/store/member-store';
 

@@ -1,26 +1,37 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
-
-import ClientInfo from '../../client-info';
+import { useParams, useSearchParams } from 'next/navigation';
 import DeliveryInfo from '../../delivery-info';
 import Topbar from '../../topbar';
-import { useGetProjectStatus } from '@/hooks';
+import ProjectInfo from './project-info';
+import { useGetProjectStatus, useGetQuotationProductDetail } from '@/hooks';
 import { ProjectStatusResponseModel } from '@/types/data-model';
+import Scan from './scan';
+import { MoBottomNavigation } from '@/ui';
+import { useRouter } from 'next/navigation';
 
 const DeliveryPage = () => {
   const params = useParams<{ id: string }>();
-  const projectId = Number(params.id);
+  const searchParams = useSearchParams();
+  const quotationProductId = params?.id ? Number(params.id) : 0;
+  const projectId = searchParams.get('project_id')
+    ? Number(searchParams.get('project_id'))
+    : null;
+  const router = useRouter();
 
   const { getProjectStatus, isLoading, error } = useGetProjectStatus();
   const [projectStatus, setProjectStatus] =
     useState<ProjectStatusResponseModel | null>(null);
 
+  const { data: quotationProductDetail } =
+    useGetQuotationProductDetail(quotationProductId);
+
   useEffect(() => {
     let isMounted = true;
 
     const fetchProjectStatus = async () => {
+      if (!projectId) return;
       const result = await getProjectStatus(projectId);
       if (isMounted && result.success && result.data) {
         setProjectStatus(result.data);
@@ -35,20 +46,28 @@ const DeliveryPage = () => {
   }, [getProjectStatus, projectId]);
 
   return (
-    <div className="pb-6">
+    <div className="pb-30 ">
       <Topbar title="납기 상세 조회" />
       {error || (isLoading && !projectStatus) ? (
         <></>
       ) : (
         <>
-          <ClientInfo
-            clientInfo={projectStatus?.quotations?.[0]?.client_info}
+          <ProjectInfo
+            projectStatus={projectStatus}
+            orderQuantity={quotationProductDetail?.quantity || 0}
           />
           <div className="h-2 bg-bg" />
           <DeliveryInfo
             address={projectStatus?.quotations?.[0]?.client_info?.address}
-            products={projectStatus?.quotations?.[0]?.products} // products_info아닌 납품 제품 정보
             dueDate={projectStatus?.due_date}
+          />
+          <div className="h-2 bg-bg" />
+          <Scan />
+          <MoBottomNavigation
+            type="delivery"
+            onClick={() =>
+              router.push(`/delivery/${quotationProductId}/detail`)
+            }
           />
         </>
       )}

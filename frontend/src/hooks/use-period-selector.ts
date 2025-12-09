@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useEffect, useRef } from 'react';
 
 export type PeriodType = '1개월' | '3개월' | '6개월' | '1년' | '직접 설정';

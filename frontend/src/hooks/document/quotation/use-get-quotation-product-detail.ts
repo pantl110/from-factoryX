@@ -1,5 +1,7 @@
 import { QuotationProductResponseModel } from '@/types/data-model';
-import { useState, useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import axios, { AxiosError } from 'axios';
+import useMemberStore from '@/store/member-store';
 
 interface UseGetQuotationProductDetailReturnModel {
   data: QuotationProductResponseModel | null;
@@ -12,58 +14,55 @@ interface UseGetQuotationProductDetailReturnModel {
 const useGetQuotationProductDetail = (
   id: number
 ): UseGetQuotationProductDetailReturnModel => {
-  const [data, setData] = useState<QuotationProductResponseModel | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const factoryId = useMemberStore((state) => state.factoryId);
 
-  const fetchQuotationProductDetail = async () => {
-    setIsLoading(true);
-    setError(null);
+  const { data, isLoading, error, refetch } = useQuery<
+    QuotationProductResponseModel,
+    AxiosError
+  >({
+    queryKey: ['quotation-product-detail', id, factoryId],
+    queryFn: async () => {
+      if (!factoryId) {
+        throw new Error('공장 ID가 설정되지 않았습니다.');
+      }
 
-    try {
-      const response = await fetch(
+      const response = await axios.get<QuotationProductResponseModel>(
         `${process.env.NEXT_PUBLIC_API_URL}/v1/document/quotation/product/${id}`,
         {
-          method: 'GET',
-          credentials: 'include',
+          params: {
+            factory_id: factoryId,
+          },
+          withCredentials: true,
           headers: {
             'Content-Type': 'application/json',
           },
         }
       );
 
-      if (response.ok) {
-        const result = await response.json();
-        setData(result);
-      } else {
-        const errorData = await response.json();
-        throw new Error(
-          errorData.message || '견적서 제품 상세 조회에 실패했습니다.'
-        );
-      }
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error
-          ? err.message
-          : '견적서 제품 상세 조회에 실패했습니다.';
-      setError(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
+      return response.data;
+    },
+    enabled: !!id && id > 0 && !!factoryId,
+  });
+
+  const getErrorMessage = (): string | null => {
+    if (!error) return null;
+
+    const errorData = error.response?.data as { message?: string } | undefined;
+    return (
+      errorData?.message ||
+      error.message ||
+      '견적서 제품 상세 조회에 실패했습니다.'
+    );
   };
 
-  useEffect(() => {
-    if (id) {
-      fetchQuotationProductDetail();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
-
-  const refetch = () => {
-    fetchQuotationProductDetail();
+  return {
+    data: data || null,
+    isLoading,
+    error: getErrorMessage(),
+    refetch: () => {
+      refetch();
+    },
   };
-
-  return { data, isLoading, error, refetch };
 };
 
 export default useGetQuotationProductDetail;

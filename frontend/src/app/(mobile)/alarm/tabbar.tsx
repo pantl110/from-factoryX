@@ -11,7 +11,7 @@ const Tabbar = () => {
   const tabs = useMemo(
     () => [
       { name: '전체', param: 'all' },
-      { name: '납기 도래', param: 'due-date' },
+      { name: '납품 현황', param: 'due-date' },
       // { name: '정산 현황', param: 'payment-due' },
       { name: 'ROP', param: 'rop' },
       { name: '유통기한', param: 'expiry' },

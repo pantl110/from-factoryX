@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { ResetPasswordModel } from '@/types/data-model';
 import { useRouter } from 'next/navigation';

@@ -13,7 +13,8 @@ interface RoundChipProps {
     | 'purple'
     | 'gray'
     | 'white'
-    | 'whiteOutline';
+    | 'whiteOutline'
+    | 'grayBlue';
 }
 
 const colorClasses = {
@@ -27,6 +28,7 @@ const colorClasses = {
   gray: 'bg-bg text-dg',
   white: 'bg-wh text-dg',
   whiteOutline: 'bg-wh text-dg border border-lg',
+  grayBlue: 'bg-bg text-primary',
 } as const;
 
 const sizeClasses = {

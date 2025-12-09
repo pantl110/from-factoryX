@@ -1,3 +1,5 @@
+'use client';
+
 import { QuotationProductHistoryItemResponseModel } from '@/types/data-model';
 import { useState, useCallback } from 'react';
 import useMemberStore from '@/store/member-store';

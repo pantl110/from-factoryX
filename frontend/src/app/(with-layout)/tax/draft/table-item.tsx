@@ -1,11 +1,7 @@
 import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
-import {
-  TaxDocumentTypeColorMap,
-  TaxDraftStatusColorMap,
-} from '@/types/status-type';
 import Checkbox from '@/ui/checkbox';
-import Chip from '@/ui/chip';
 import useMemberStore from '@/store/member-store';
+import { RoundChip } from '@/ui';
 
 interface TableItemProps {
   item: PublishedTaxInvoiceResponseModel;
@@ -29,6 +25,23 @@ const TableItem = ({
       : item.publish_status === 'pending'
         ? '전송 대기'
         : '-';
+  const chipColor:
+    | 'primary'
+    | 'secondary'
+    | 'red'
+    | 'green'
+    | 'orange'
+    | 'yellow'
+    | 'purple'
+    | 'gray'
+    | 'white'
+    | 'whiteOutline'
+    | 'grayBlue' =
+    chipText === '임시 저장'
+      ? 'secondary'
+      : chipText === '전송 대기'
+        ? 'grayBlue'
+        : 'gray';
 
   return (
     <div
@@ -42,38 +55,48 @@ const TableItem = ({
           disabled={isProdManager || isViewer}
         />
       </div>
-      <div className="px-3 w-[150px]">
+      <div className="px-2 w-[150px]">
         {chipText === '-' ? (
           <span className="text-dg">-</span>
         ) : (
-          <Chip
+          <RoundChip
             text={chipText}
-            bgColor={
-              TaxDraftStatusColorMap[
-                chipText as keyof typeof TaxDraftStatusColorMap
-              ].bgColor
+            color={
+              chipColor as
+                | 'primary'
+                | 'secondary'
+                | 'red'
+                | 'green'
+                | 'orange'
+                | 'yellow'
+                | 'purple'
+                | 'gray'
+                | 'white'
+                | 'whiteOutline'
+                | 'grayBlue'
             }
-            textColor={
-              TaxDraftStatusColorMap[
-                chipText as keyof typeof TaxDraftStatusColorMap
-              ].textColor
-            }
+            variant="sm"
           />
         )}
       </div>
-      <div className="px-3 flex-2">
-        <Chip
+      <div className="px-2 flex-2">
+        <RoundChip
           text={item.tax_invoice_type === 'sales' ? '매출' : '매입'}
-          bgColor={
-            TaxDocumentTypeColorMap[
-              item.tax_invoice_type as keyof typeof TaxDocumentTypeColorMap
-            ].bgColor
+          color={
+            (item.tax_invoice_type === 'sales' ? 'secondary' : 'red') as
+              | 'primary'
+              | 'secondary'
+              | 'red'
+              | 'green'
+              | 'orange'
+              | 'yellow'
+              | 'purple'
+              | 'gray'
+              | 'white'
+              | 'whiteOutline'
+              | 'grayBlue'
           }
-          textColor={
-            TaxDocumentTypeColorMap[
-              item.tax_invoice_type as keyof typeof TaxDocumentTypeColorMap
-            ].textColor
-          }
+          variant="sm"
         />
       </div>
 
@@ -94,9 +117,13 @@ const TableItem = ({
       </p>
       <p
         className="px-3 w-[200px] truncate"
-        title={`${(item.transaction_amount || 0) + (item.tax_amount || 0)}`.toLocaleString()}
+        title={(
+          (item.transaction_amount || 0) + (item.tax_amount || 0)
+        ).toLocaleString()}
       >
-        {`${(item.transaction_amount || 0) + (item.tax_amount || 0)}`.toLocaleString()}
+        {(
+          (item.transaction_amount || 0) + (item.tax_amount || 0)
+        ).toLocaleString()}
       </p>
       <p
         className="px-3 w-[200px] truncate"

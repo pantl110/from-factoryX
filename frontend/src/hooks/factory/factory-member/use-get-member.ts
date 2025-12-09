@@ -1,3 +1,5 @@
+'use client';
+
 import { MemberRoleType, MemberStatusType } from '@/types/status-type';
 import { useState } from 'react';
 import axios from 'axios';

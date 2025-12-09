@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { MemberListResponseModel } from '@/types/data-model';
 

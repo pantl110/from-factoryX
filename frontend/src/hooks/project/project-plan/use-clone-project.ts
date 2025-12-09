@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import useMemberStore from '@/store/member-store';
 
@@ -11,7 +13,7 @@ const useCloneProject = () => {
   const [error, setError] = useState<string | null>(null);
   const factoryId = useMemberStore((state) => state.factoryId);
 
-  const cloneProject = async (projectId: number) => {
+  const cloneProject = async (projectId: number, dueDate: string) => {
     setIsLoading(true);
     setError(null);
 
@@ -30,7 +32,10 @@ const useCloneProject = () => {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ project_id: projectId }),
+          body: JSON.stringify({
+            project_id: projectId,
+            ...(dueDate && { due_date: dueDate }),
+          }),
         }
       );
 

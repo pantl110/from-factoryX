@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useCallback } from 'react';
 import axios from 'axios';
 import useMemberStore from '@/store/member-store';

@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 
 // 공장 삭제
