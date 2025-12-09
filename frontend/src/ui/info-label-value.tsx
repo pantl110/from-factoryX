@@ -91,15 +91,13 @@ const InfoLabelValue = ({
                 ? '가동 대기'
                 : chip.status === 'running'
                   ? '가동 중'
-                  : chip.status === 'using'
-                    ? '사용중'
-                    : chip.status === 'danger'
+                  : chip.status === 'danger'
+                    ? '위험'
+                    : chip.status === 'warning'
                       ? '위험'
-                      : chip.status === 'warning'
-                        ? '위험'
-                        : chip.status === 'safe'
-                          ? '양호'
-                          : chip.status // 재고 상태는 그대로 표시 (충분, 부족)
+                      : chip.status === 'safe'
+                        ? '양호'
+                        : chip.status // 재고 상태는 그대로 표시 (충분, 부족)
         }
         color={colors.color}
       />
