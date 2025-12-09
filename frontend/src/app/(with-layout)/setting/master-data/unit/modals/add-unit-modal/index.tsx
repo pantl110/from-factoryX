@@ -98,7 +98,8 @@ export const AddUnitModal = ({
   const handleSelectMaterial = (material: MaterialResponseModel) => {
     setValue('name', material.name);
     setValue('code', material.code);
-    setValue('unit', material.unit);
+    // 자재일 경우: 기준단위는 사용자 입력, 변환단위에 자재 단위 자동 설정
+    setValue('conversionUnit', material.unit);
     setSelectedMaterialId(material.id);
     setIsMaterialDropdownOpen(false);
     setMaterialSearchInput(material.name);
@@ -107,6 +108,7 @@ export const AddUnitModal = ({
   const handleSelectProduct = (product: ProductResponseModel) => {
     setValue('name', product.name);
     setValue('code', product.code);
+    // 제품일 경우: 기준단위에 제품 단위 자동 설정
     setValue('unit', product.unit);
     setSelectedProductId(product.id);
     setIsProductDropdownOpen(false);
@@ -221,14 +223,25 @@ export const AddUnitModal = ({
           <div className="flex gap-2">
             <Input
               label="기준단위"
+              placeholder={
+                addUnitType === 'material' ? '기준단위를 입력하세요.' : ''
+              }
               value={watchedUnit || ''}
-              disabledReadOnly
-              placeholder=""
+              disabledReadOnly={addUnitType === 'product'}
+              {...(addUnitType === 'material'
+                ? register('unit', { required: true })
+                : {})}
             />
             <Input
-              placeholder={'변환단위을 입력하세요.'}
+              placeholder={
+                addUnitType === 'material' ? '' : '변환단위을 입력하세요.'
+              }
               label="변환단위"
-              {...register('conversionUnit', { required: true })}
+              value={watchedConversionUnit || ''}
+              disabledReadOnly={addUnitType === 'material'}
+              {...(addUnitType === 'product'
+                ? register('conversionUnit', { required: true })
+                : {})}
             />
           </div>
 
@@ -258,7 +271,7 @@ export const AddUnitModal = ({
               <div className="flex-[0.5]">
                 <Input
                   value={watchedUnit || ''}
-                  disabledReadOnly
+                  disabledReadOnly={addUnitType === 'product'}
                   placeholder=""
                 />
               </div>
@@ -278,7 +291,7 @@ export const AddUnitModal = ({
               <div className="flex-[0.5]">
                 <Input
                   value={watchedConversionUnit || ''}
-                  disabledReadOnly
+                  disabledReadOnly={addUnitType === 'material'}
                   placeholder=""
                 />
               </div>
