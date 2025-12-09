@@ -115,9 +115,11 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
     setAllProductionResultComplete(isAllProductionResultComplete);
   }, [projectPlans, setProductionLogValid, setAllProductionResultComplete]);
 
-  // 특정 제품과 관련된 plan들만 업데이트하는 함수 (React Query 캐시 무효화)
+  // 자재 재고 수정 후 프로젝트 plan 정보를 다시 불러오는 함수
+  // productId는 호출 시 전달되지만, API가 project_id로만 필터링하므로
+  // 전체 프로젝트 plan을 다시 불러옴 (특정 제품만 필터링 불가)
   const updatePlansForProduct = useCallback(
-    async (productId: number) => {
+    async (_productId: number) => {
       if (!projectId || !factoryId) return;
 
       // React Query 캐시 무효화하고 명시적으로 refetch하여 제품 정보 업데이트 반영
@@ -348,7 +350,7 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
                   onValidityChange={handleValidityChange}
                   isFirstOfProduct={isFirstOfProduct}
                   onSaveSuccess={() => {
-                    // 자재 재고 수정 시 해당 제품의 plan들만 업데이트
+                    // 자재 재고 수정 후 프로젝트 plan 정보를 다시 불러옴
                     updatePlansForProduct(plan.quotation_product.product.id);
                   }}
                 />

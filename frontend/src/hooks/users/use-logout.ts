@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { LogoutResponseModel } from '@/types/data-model';
 import useAuthStore from '@/store/auth-store';

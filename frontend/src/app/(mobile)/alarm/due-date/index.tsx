@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { CaretRight, Package } from '@phosphor-icons/react';
 import { useRouter } from 'next/navigation';
 import Title from '../title';
@@ -37,8 +37,9 @@ const getChipInfo = (
   }
 
   if (diff < 0) {
+    const daysPast = Math.abs(Math.round(diff));
     return {
-      text: `납기일이 ${Math.abs(Math.round(diff))}일 지났어요!`,
+      text: `납기일이 ${daysPast.toLocaleString()}일 지났어요!`,
       variant: 'red-secondary',
     };
   }
@@ -47,7 +48,8 @@ const getChipInfo = (
     return { text: '오늘이 납품일이에요!', variant: 'secondary' };
   }
 
-  return { text: `D-${Math.round(diff)}`, variant: 'outline' };
+  const daysRemaining = Math.round(diff);
+  return { text: `D-${daysRemaining.toLocaleString()}`, variant: 'outline' };
 };
 
 const formatSubText = (
@@ -73,10 +75,30 @@ interface DueDateProps {
   limit?: number;
 }
 
+// 필터 한글명을 API 값으로 매핑
+const filterToApiValue = (
+  filter: string
+): 'today' | 'delayed' | 'scheduled' => {
+  switch (filter) {
+    case '오늘':
+      return 'today';
+    case '지연':
+      return 'delayed';
+    case '예정':
+      return 'scheduled';
+    default:
+      return 'today';
+  }
+};
+
 const DueDate = ({ hideWhenEmpty = false, limit }: DueDateProps) => {
   const router = useRouter();
   const factoryId = useMemberStore((state) => state.factoryId);
   const baseDate = getTodayDateString();
+  const [selectedFilter, setSelectedFilter] = useState<string>('오늘');
+  // 전체 탭(limit이 있을 때)에서는 항상 "오늘"로 고정
+  const dueFilter = limit ? 'today' : filterToApiValue(selectedFilter);
+
   const {
     data,
     fetchNextPage,
@@ -89,7 +111,12 @@ const DueDate = ({ hideWhenEmpty = false, limit }: DueDateProps) => {
     totalCount: number;
     nextPage: number | null;
   }>({
-    queryKey: ['undelivered-quotation-products', factoryId, baseDate],
+    queryKey: [
+      'undelivered-quotation-products',
+      factoryId,
+      baseDate,
+      dueFilter,
+    ],
     enabled: !!factoryId,
     initialPageParam: 1,
     getNextPageParam: (lastPage) => lastPage.nextPage,
@@ -110,6 +137,7 @@ const DueDate = ({ hideWhenEmpty = false, limit }: DueDateProps) => {
               page: pageNumber,
               page_size: dueDatePageSize,
               base_date: baseDate,
+              due_filter: dueFilter,
             },
             withCredentials: true,
           }
@@ -167,6 +195,7 @@ const DueDate = ({ hideWhenEmpty = false, limit }: DueDateProps) => {
           item.quantity
         ),
         projectId: item.project_id,
+        quotationProductId: item.quotation_product_id,
       };
     });
     if (limit && mapped.length > limit) {
@@ -189,7 +218,7 @@ const DueDate = ({ hideWhenEmpty = false, limit }: DueDateProps) => {
     if (alarmItems.length === 0 || errorMessage) {
       return (
         <div className="px-6 pt-4">
-          <NoHistoryBox text="납기 도래 알림이 없어요." />
+          <NoHistoryBox text="납품 현황 알림이 없어요." />
         </div>
       );
     }
@@ -204,10 +233,12 @@ const DueDate = ({ hideWhenEmpty = false, limit }: DueDateProps) => {
             name={item.name}
             subText={item.subText}
             onClick={() => {
-              if (!item.projectId) {
+              if (!item.projectId || !item.quotationProductId) {
                 return;
               }
-              router.push(`/delivery/${item.projectId}`);
+              router.push(
+                `/delivery/${item.quotationProductId}?project_id=${item.projectId}`
+              );
             }}
           />
         ))}
@@ -238,7 +269,14 @@ const DueDate = ({ hideWhenEmpty = false, limit }: DueDateProps) => {
   return (
     <>
       <div className="flex flex-col gap-1 pt-4">
-        <Title icon={<Package />} title="납기 도래" count={totalCount} />
+        <Title
+          icon={<Package />}
+          title="납품 현황"
+          count={totalCount}
+          delivery={!limit}
+          selectedFilter={selectedFilter}
+          onFilterChange={setSelectedFilter}
+        />
         {content}
       </div>
     </>

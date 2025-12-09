@@ -1,5 +1,4 @@
 import { ProjectPlanModel, ProjectStatusType } from '@/types/data-model';
-import Chip from '@/ui/chip';
 import { useEffect, useState } from 'react';
 import ProductDetail from '../../stock/product/product-detail';
 import { formatDateTime } from '@/hooks';

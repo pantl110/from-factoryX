@@ -1,3 +1,5 @@
+'use client';
+
 import { UserInfoModel, UpdateUserInfoModel } from '@/types/data-model';
 import { useState, useCallback } from 'react';
 import useAuthStore from '@/store/auth-store';

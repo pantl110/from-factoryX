@@ -1,10 +1,5 @@
 import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
-import {
-  TaxDocumentTypeColorMap,
-  TaxDraftStatusColorMap,
-} from '@/types/status-type';
 import Checkbox from '@/ui/checkbox';
-import Chip from '@/ui/chip';
 import useMemberStore from '@/store/member-store';
 import { RoundChip } from '@/ui';
 

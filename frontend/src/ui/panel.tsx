@@ -1,3 +1,5 @@
+'use client';
+
 import { ArrowLineRightIcon } from '@phosphor-icons/react/dist/ssr';
 import {
   useEffect,

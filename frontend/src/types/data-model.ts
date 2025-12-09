@@ -984,6 +984,7 @@ export interface UndeliveredProductModel {
   quantity?: number; // 수량
   delivery_date: string | null;
   project_id: number;
+  quotation_product_id: number;
 }
 
 export interface UndeliveredProductListResponseModel extends PaginationModel {

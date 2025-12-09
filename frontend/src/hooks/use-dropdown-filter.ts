@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useMemo } from 'react';
 
 // items: 전체 리스트

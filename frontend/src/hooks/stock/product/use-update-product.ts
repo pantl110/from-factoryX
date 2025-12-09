@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { ProductResponseModel, ProductModel } from '@/types/data-model';
 import useMemberStore from '@/store/member-store';

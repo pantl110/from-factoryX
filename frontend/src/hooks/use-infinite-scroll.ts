@@ -1,3 +1,5 @@
+'use client';
+
 import { RefCallback, useCallback, useEffect, useRef } from 'react';
 
 interface UseInfiniteScrollOptionsProps {

@@ -1,3 +1,5 @@
+'use client';
+
 import { ProjectListResponseModel } from '@/types/data-model';
 import { useState, useCallback, useRef, useEffect } from 'react';
 import useMemberStore from '@/store/member-store';

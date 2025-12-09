@@ -20,7 +20,7 @@ const TodoList = ({ data }: TodoListProps) => {
       {/* 할일 리스트 */}
       {/* <div className="flex gap-2.5"> */}
       <TodoListItem
-        title="납기 도래"
+        title="납품 현황"
         count={data.undelivered_quotation_products}
         onClick={() => {
           router.push('/alarm?tab=due-date');

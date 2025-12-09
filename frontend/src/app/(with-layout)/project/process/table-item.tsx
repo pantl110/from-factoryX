@@ -17,6 +17,7 @@ import useSubscriptionStore from '@/store/subscription-store';
 import { getStartDate } from '@/utils/get-start-date';
 import { getProjectStatusColor } from '@/utils';
 import Skeleton from '@/app/(without-layout)/skeleton';
+import CloneProjectModal from '../clone-project-modal';
 
 interface TableItemProps {
   project: ProjectResponseModel;
@@ -45,6 +46,7 @@ const TableItem = ({
   const [isLinkTaxModalOpen, setIsLinkTaxModalOpen] = useState(false);
   const { cloneProject, isLoading: isCloning } = useCloneProject();
   const [isNavigating, setIsNavigating] = useState(false);
+  const [isCloneProjectModalOpen, setIsCloneProjectModalOpen] = useState(false);
 
   // 칩에서 표시할 텍스트 매핑 (영어/한글 모두 지원)
   const getDisplayText = (status: string): string => {
@@ -112,12 +114,12 @@ const TableItem = ({
           : '-';
 
   // 프로젝트 복제 핸들러
-  const handleCloneProject = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-
+  const handleCloneProject = async (dueDate: string) => {
     if (isCloning) return; // 이미 진행 중이면 중복 실행 방지
 
-    const result = await cloneProject(project.id);
+    setIsCloneProjectModalOpen(false); // 모달 닫기
+
+    const result = await cloneProject(project.id, dueDate);
     if (result.success) {
       //  production 페이지로 이동
       router.push(`/production/${result.data.project_id}`);
@@ -264,7 +266,10 @@ const TableItem = ({
             onMouseLeave={() => setIsTooltipVisible(false)}
           >
             <button
-              onClick={handleCloneProject}
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsCloneProjectModalOpen(true);
+              }}
               className="w-full h-full flex items-center cursor-pointer group"
             >
               <CopySimple
@@ -310,6 +315,15 @@ const TableItem = ({
       )}
 
       {isNavigating && createPortal(<Skeleton />, document.body)}
+
+      {isCloneProjectModalOpen && (
+        <CloneProjectModal
+          handleCloneProject={(dueDate) => {
+            handleCloneProject(dueDate);
+          }}
+          onClose={() => setIsCloneProjectModalOpen(false)}
+        />
+      )}
     </>
   );
 };

@@ -1,3 +1,5 @@
+'use client';
+
 import { useState, useCallback } from 'react';
 import { EquipmentListResponseModel } from '@/types/data-model';
 import useMemberStore from '@/store/member-store';

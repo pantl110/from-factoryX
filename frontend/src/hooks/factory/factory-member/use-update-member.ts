@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { MemberRoleType, MemberStatusType } from '@/types/status-type';
 import { UpdateMemberResponseModel } from '@/types/data-model';

@@ -1,3 +1,5 @@
+'use client';
+
 import { useCallback } from 'react';
 import {
   useBarobillRegister,
@@ -8,7 +10,6 @@ import {
 import useMemberStore from '@/store/member-store';
 import useAuthStore from '@/store/auth-store';
 import { UpdateMemberResponseModel } from '@/types/data-model';
-import { shouldShowBarobillError } from '@/utils';
 
 // 바로빌 상태 확인 및 인증서 등록 처리 훅
 ////// api 가져와서 사용하는 로직

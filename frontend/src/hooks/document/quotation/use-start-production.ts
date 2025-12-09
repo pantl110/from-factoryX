@@ -1,3 +1,5 @@
+'use client';
+
 import { ProductionDataModel } from '@/types/data-model';
 import { useState } from 'react';
 import useMemberStore from '@/store/member-store';

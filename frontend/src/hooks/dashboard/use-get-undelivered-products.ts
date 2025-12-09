@@ -6,9 +6,12 @@ import { useQuery } from '@tanstack/react-query';
 import useMemberStore from '@/store/member-store';
 import { UndeliveredProductListResponseModel } from '@/types/data-model';
 
+type DueFilterType = 'today' | 'delayed' | 'scheduled';
+
 interface UseUndeliveredProductsQueryParamsModel {
   page?: number;
   baseDate?: string;
+  dueFilter?: DueFilterType;
 }
 
 const EMPTY_RESPONSE: UndeliveredProductListResponseModel = {
@@ -20,7 +23,11 @@ const EMPTY_RESPONSE: UndeliveredProductListResponseModel = {
 };
 
 const useGetUndeliveredProducts = (
-  { page = 1, baseDate }: UseUndeliveredProductsQueryParamsModel = {
+  {
+    page = 1,
+    baseDate,
+    dueFilter = 'today',
+  }: UseUndeliveredProductsQueryParamsModel = {
     page: 1,
   }
 ) => {
@@ -34,6 +41,7 @@ const useGetUndeliveredProducts = (
       factoryId,
       page,
       baseDate ?? null,
+      dueFilter,
     ],
     queryFn: async () => {
       if (!factoryId) {
@@ -47,7 +55,9 @@ const useGetUndeliveredProducts = (
             params: {
               factory_id: factoryId,
               page,
-              ...(baseDate ? { base_date: baseDate } : {}),
+              ...(baseDate
+                ? { base_date: baseDate, due_filter: dueFilter }
+                : {}),
             },
             withCredentials: true,
           }
