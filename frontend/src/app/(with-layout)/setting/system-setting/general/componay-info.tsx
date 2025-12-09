@@ -6,6 +6,7 @@ import {
   useToast,
   useGetFactory,
   useUpdateFactory,
+  useGetMember,
   formatBusinessNumber,
   formatPhoneNumber,
   formatFaxNumber,
@@ -15,14 +16,19 @@ import { CheckCircle } from '@phosphor-icons/react';
 import { useEffect, useState } from 'react';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
+import useAuthStore from '@/store/auth-store';
 
 const CompanyInfo = () => {
   const { isToastOpen, isVisible, showToast } = useToast(2000);
 
   const { getFactory, factory } = useGetFactory();
   const { updateFactory } = useUpdateFactory();
+  const { getMember } = useGetMember();
   const factoryId = useMemberStore((state) => state.factoryId);
   const role = useMemberStore((state) => state.role);
+  const { setIsBarobillUser } = useMemberStore();
+  const { userInfo, fetchUserInfo } = useAuthStore();
+  const memberId = userInfo?.member_id;
   const isAdmin = role === 'admin';
   const hasSubscription = useSubscriptionStore(
     (state) => state.hasSubscription
@@ -106,11 +112,36 @@ const CompanyInfo = () => {
         business_address: data.business_address || '',
         billing_key: factory.billing_key,
       };
+      // 사업자 번호가 변경되었는지 확인
+      const businessNumberChanged =
+        factory.business_registration_number !==
+        data.business_registration_number;
+
       const result = await updateFactory(updateData);
       if (result && result.success) {
         showToast();
         // 수정 후 최신 factory 정보로 폼 동기화
         await getFactory(factoryId);
+
+        // 사업자 번호가 변경되었으면 백엔드에서 바로빌 상태를 업데이트하므로
+        // 최신 정보를 가져와서 auth-store와 member-store 업데이트 (localStorage에 자동 저장됨)
+        if (businessNumberChanged && memberId && factoryId) {
+          // auth-store 업데이트 (barobill_user_id 포함)
+          await fetchUserInfo();
+
+          // member-store 업데이트 (isBarobillUser 포함)
+          try {
+            const memberResult = await getMember({
+              factory_id: factoryId,
+              member_id: memberId,
+            });
+            if (memberResult.success && memberResult.data) {
+              setIsBarobillUser(memberResult.data.is_barobill_user);
+            }
+          } catch {
+            // 멤버 정보 조회 실패 시 무시
+          }
+        }
       } else if (result && result.error) {
         setError('name', { type: 'manual', message: result.error });
       }

@@ -77,6 +77,7 @@ export interface UserInfoModel {
   phone_number?: string | null;
   profile_image?: string | null;
   member_id: number;
+  barobill_user_id?: string | null;
 }
 
 // 회원 정보 수정
