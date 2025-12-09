@@ -274,7 +274,7 @@ const ProductionPlan = ({
 
   // 특정 제품과 관련된 plan들만 업데이트하는 함수 (React Query 캐시 무효화)
   const updatePlansForProduct = useCallback(
-    async (productId: number) => {
+    async (_productId: number) => {
       if (!projectId || !factoryId) return;
 
       // React Query 캐시 무효화하고 명시적으로 refetch하여 제품 정보 업데이트 반영

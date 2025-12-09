@@ -1,5 +1,8 @@
 import { TaxDocumentType, TaxDocumentTypeColorMap } from '@/types/status-type';
-import Chip from '@/ui/chip';
+import { RoundChip } from '@/ui';
+import type { ComponentProps } from 'react';
+
+type RoundChipColor = ComponentProps<typeof RoundChip>['color'];
 
 interface TaxItemProps {
   taxType: TaxDocumentType;
@@ -10,6 +13,7 @@ interface TaxItemProps {
 
 const TaxItem = ({ taxType, company, date, onClick }: TaxItemProps) => {
   const color = TaxDocumentTypeColorMap[taxType];
+  const chipColor: RoundChipColor = (color.color ?? 'gray') as RoundChipColor;
 
   return (
     <div
@@ -18,10 +22,10 @@ const TaxItem = ({ taxType, company, date, onClick }: TaxItemProps) => {
     >
       <div className="flex items-center gap-4 w-full">
         <div className="flex items-center justify-center flex-shrink-0">
-          <Chip
+          <RoundChip
             text={taxType === 'sales' ? '매출' : '매입'}
-            textColor={color.textColor}
-            bgColor={color.bgColor}
+            variant="sm"
+            color={chipColor}
           />
         </div>
         <p
