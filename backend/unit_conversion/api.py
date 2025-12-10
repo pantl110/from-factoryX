@@ -10,6 +10,8 @@ from stock.utils import get_material_by_id, get_product_by_id
 from unit_conversion.utils import get_unit_conversion_by_id
 from asgiref.sync import sync_to_async
 from factory.utils import is_factory_member
+from django.db.models import Q, Max, OuterRef, Subquery, IntegerField
+from django.db.models.functions import Coalesce
 
 router = Router(tags=["Unit Conversion"])
 
@@ -77,7 +79,6 @@ async def list_unit_conversions(
         
         # 검색어 q가 제공된 경우, material_name과 product_name으로 검색
         if q:
-            from django.db.models import Q
             queryset = queryset.filter(
                 Q(material__name__icontains=q) | 
                 Q(product__name__icontains=q)
@@ -88,9 +89,6 @@ async def list_unit_conversions(
             queryset = filters.filter(queryset)
         
         # 정렬: 같은 material_id 또는 product_id끼리 그룹화하여 최신 그룹이 먼저 오도록
-        from django.db.models import Max, OuterRef, Subquery, IntegerField
-        from django.db.models.functions import Coalesce
-        
         # material_id가 있으면 material_id로, 없으면 product_id로 그룹화
         # Subquery를 사용하여 각 그룹의 최대 id 계산
         

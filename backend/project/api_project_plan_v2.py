@@ -5,9 +5,8 @@ from api.security import jwt_auth
 from django.db import models
 from datetime import datetime, timedelta
 from django.utils import timezone
-from typing import List
 from project.schemas.outbound import MobileDashboardCountOut
-from project.models import Project, ProjectPlan
+from project.models import Project
 from document.models import QuotationProduct
 from stock.models import Material
 from stock.utils import get_expiry_status
@@ -47,7 +46,8 @@ async def get_mobile_dashboard_counts(
         @sync_to_async
         def calculate_counts():
             # 1. 오늘이 납기일인데 납품되지 않은 견적서 품목 수
-            today = timezone.now().date()
+            # base_date가 제공되면 해당 날짜 사용, 없으면 오늘 사용
+            target_date = parsed_base_date if parsed_base_date else timezone.now().date()
             undelivered_qs = QuotationProduct.objects.filter(
                 quotation__factory_id=int(factory_id),
                 quotation__project__status__in=[
@@ -57,7 +57,7 @@ async def get_mobile_dashboard_counts(
                     "delivery",
                 ],
                 is_delivery=False,
-                quotation__due_date=today,  # 오늘이 납기일
+                quotation__due_date=target_date,  # 기준 날짜가 납기일
             )
             undelivered_count = undelivered_qs.count()
 
