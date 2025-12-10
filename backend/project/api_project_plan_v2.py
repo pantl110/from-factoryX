@@ -34,20 +34,20 @@ async def get_mobile_dashboard_counts(
     user = request.auth
     await is_factory_member(int(factory_id), user)
 
-    parsed_base_date = None
-    if base_date:
-        try:
-            parsed_base_date = datetime.strptime(base_date, "%Y-%m-%d").date()
-        except ValueError:
-            raise HttpError(400, "base_date는 YYYY-MM-DD 형식이어야 합니다.")
+    if not base_date:
+        raise HttpError(400, "base_date를 입력해야 합니다.")
+
+    try:
+        parsed_base_date = datetime.strptime(base_date, "%Y-%m-%d").date()
+    except ValueError:
+        raise HttpError(400, "base_date는 YYYY-MM-DD 형식이어야 합니다.")
 
     try:
 
         @sync_to_async
         def calculate_counts():
             # 1. 오늘이 납기일인데 납품되지 않은 견적서 품목 수
-            # base_date가 제공되면 해당 날짜 사용, 없으면 오늘 사용
-            target_date = parsed_base_date if parsed_base_date else timezone.now().date()
+            target_date = parsed_base_date
             undelivered_qs = QuotationProduct.objects.filter(
                 quotation__factory_id=int(factory_id),
                 quotation__project__status__in=[
