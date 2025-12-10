@@ -113,7 +113,7 @@ const CompanyInfo = () => {
         billing_key: factory.billing_key,
       };
       // 사업자 번호가 변경되었는지 확인
-      const businessNumberChanged =
+      const hasBusinessNumberChanged =
         factory.business_registration_number !==
         data.business_registration_number;
 
@@ -125,7 +125,7 @@ const CompanyInfo = () => {
 
         // 사업자 번호가 변경되었으면 백엔드에서 바로빌 상태를 업데이트하므로
         // 최신 정보를 가져와서 auth-store와 member-store 업데이트 (localStorage에 자동 저장됨)
-        if (businessNumberChanged && memberId && factoryId) {
+        if (hasBusinessNumberChanged && memberId && factoryId) {
           // auth-store 업데이트 (barobill_user_id 포함)
           await fetchUserInfo();
 

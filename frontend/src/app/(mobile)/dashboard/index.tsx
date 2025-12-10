@@ -4,6 +4,7 @@ import { Calendar } from '@phosphor-icons/react';
 import { useMemo } from 'react';
 import { useGetMobileDashboardCounts } from '@/hooks';
 import { MobileDashboardCountsResponseModel } from '@/types/data-model';
+import { getToday } from '@/utils';
 import TopBar from './topbar';
 import WorkList from './work-list';
 import TodoList from './todo-list';
@@ -17,7 +18,8 @@ const EMPTY_COUNTS: MobileDashboardCountsResponseModel = {
 };
 
 const MobileDashboardPage = () => {
-  const baseDate = useMemo(() => new Date().toISOString().split('T')[0], []);
+  // 오늘 날짜 사용 (UTC가 아닌 로컬 시간)
+  const baseDate = useMemo(() => getToday(), []);
   const { data } = useGetMobileDashboardCounts({ baseDate });
   const dashboardCounts = data ?? EMPTY_COUNTS;
 
