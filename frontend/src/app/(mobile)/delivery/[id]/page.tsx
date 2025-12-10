@@ -27,6 +27,25 @@ const DeliveryPage = () => {
   const { data: quotationProductDetail } =
     useGetQuotationProductDetail(quotationProductId);
 
+  // 스캔된 바코드 처리
+  useEffect(() => {
+    const scannedCode = searchParams.get('scanned_code');
+    if (scannedCode) {
+      // 스캔된 바코드 로그 기록
+      // eslint-disable-next-line no-console
+      console.log('Scanned barcode:', scannedCode);
+
+      // 쿼리 파라미터에서 scanned_code 제거
+      const newSearchParams = new URLSearchParams(searchParams.toString());
+      newSearchParams.delete('scanned_code');
+      const newUrl =
+        newSearchParams.toString() === ''
+          ? `/delivery/${quotationProductId}`
+          : `/delivery/${quotationProductId}?${newSearchParams.toString()}`;
+      router.replace(newUrl);
+    }
+  }, [searchParams, router, quotationProductId]);
+
   useEffect(() => {
     let isMounted = true;
 
