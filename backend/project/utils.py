@@ -1,6 +1,6 @@
 from ninja.errors import HttpError
 from asgiref.sync import sync_to_async
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from typing import Optional, Tuple, List, TYPE_CHECKING
 from django.utils import timezone
 from project.models import Refund, Project, ProjectLog, ProjectPlan
@@ -10,6 +10,28 @@ from django.db.models import Max
 
 if TYPE_CHECKING:
     from document.models import QuotationProduct
+
+
+def get_date_from_datetime(dt):
+    """
+    datetime 객체에서 date를 안전하게 추출합니다.
+    naive datetime인 경우 aware datetime으로 변환 후 date를 반환합니다.
+    
+    Args:
+        dt: datetime 또는 date 객체 (None 가능)
+    
+    Returns:
+        date 객체 또는 None
+    """
+    if dt is None:
+        return None
+    # date 객체인 경우 그대로 반환
+    if isinstance(dt, date) and not isinstance(dt, datetime):
+        return dt
+    # datetime 객체인 경우 처리
+    if timezone.is_naive(dt):
+        dt = timezone.make_aware(dt)
+    return timezone.localtime(dt).date()
 
 
 async def get_project_by_id(project_id):

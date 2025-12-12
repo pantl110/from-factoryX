@@ -35,6 +35,7 @@ from project.utils import (
 )
 from factory.eq_utils import get_equipment_by_id
 from project.plan_utils import get_plan_by_id
+from project.utils import get_date_from_datetime
 from django.utils import timezone
 from scheduling.api import update_work_instruction_for_factory
 from document.utils import create_work_instruction_history
@@ -155,7 +156,7 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
                 await product_obj.asave()
 
             # 오늘 생산하는 Plan이면 WorkInstruction 갱신
-            if plan.start_date.date() == timezone.localdate():
+            if get_date_from_datetime(plan.start_date) == timezone.localdate():
                 await sync_to_async(update_work_instruction_for_factory)(equipment.factory_id)
             
             # WorkInstruction history 기록
@@ -253,7 +254,7 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
             if (
                 old_start_date
                 and plan.start_date
-                and old_start_date.date() != plan.start_date.date()
+                and get_date_from_datetime(old_start_date) != get_date_from_datetime(plan.start_date)
                 and project.status != Project.ProjectStatus.pending
             ):
                 change_message = f"생산 일자가 {old_start_date.strftime('%m/%d')}일에서 {plan.start_date.strftime('%m/%d')}일로 변경되었어요"
@@ -266,8 +267,8 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
 
             # 알림 전송 (프로젝트가 생산대기 상태가 아닐 때)
             today = timezone.localdate()
-            if ((payload.start_date and payload.start_date.date() == today) or (
-                old_start_date and old_start_date.date() == today
+            if ((payload.start_date and get_date_from_datetime(payload.start_date) == today) or (
+                old_start_date and get_date_from_datetime(old_start_date) == today
             )) and project.status != Project.ProjectStatus.pending:
                 client_name = "-"
                 try:
@@ -332,7 +333,7 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
         )
 
         # 오늘 생산하는 Plan이면 WorkInstruction 갱신
-        if plan.start_date.date() == timezone.localdate():
+        if get_date_from_datetime(plan.start_date) == timezone.localdate():
             await sync_to_async(update_work_instruction_for_factory)(equipment.factory_id)
             
             # WorkInstruction history 기록 (추가)
@@ -715,7 +716,7 @@ async def delete_project_plan(request, plan_id: int):
         raise HttpError(404, "해당 생산 계획을 찾을 수 없습니다.")
 
     # 삭제 전에 오늘 생산하는 Plan이면 WorkInstruction 갱신 및 history 기록
-    if plan.start_date.date() == timezone.localdate():
+    if get_date_from_datetime(plan.start_date) == timezone.localdate():
         # WorkInstruction history 기록 (삭제)
         @sync_to_async
         def record_deletion_history():

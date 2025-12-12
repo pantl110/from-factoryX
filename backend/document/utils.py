@@ -8,6 +8,7 @@ from typing import Any, Dict, List
 from datetime import datetime, date
 from django.conf import settings
 from django.utils import timezone
+from project.utils import get_date_from_datetime
 
 import aiohttp
 from langchain.output_parsers import ResponseSchema, StructuredOutputParser
@@ -146,8 +147,8 @@ def create_work_instruction_history(
     today = timezone.localdate()
     
     # Plan 수정 전/후의 start_date가 오늘 날짜인지 확인
-    old_start_date_is_today = old_start_date.date() == today if old_start_date else False
-    new_start_date_is_today = new_start_date.date() == today if new_start_date else False
+    old_start_date_is_today = get_date_from_datetime(old_start_date) == today if old_start_date else False
+    new_start_date_is_today = get_date_from_datetime(new_start_date) == today if new_start_date else False
     
     # action 결정
     action = None
@@ -171,7 +172,7 @@ def create_work_instruction_history(
     # 해당 Plan이 연결된 WorkInstruction 찾기
     # 추가의 경우: new_start_date 기준으로 WorkInstruction 찾기
     # 삭제의 경우: old_start_date 기준으로 WorkInstruction 찾기
-    target_date = new_start_date.date() if new_start_date_is_today else (old_start_date.date() if old_start_date else today)
+    target_date = get_date_from_datetime(new_start_date) if new_start_date_is_today else (get_date_from_datetime(old_start_date) if old_start_date else today)
     
     work_instructions = WorkInstruction.objects.filter(
         factory_id=plan.equipment.factory_id,
