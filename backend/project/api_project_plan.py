@@ -7,7 +7,6 @@ from django.db import models
 from django.conf import settings
 from datetime import datetime
 from decimal import Decimal
-import pytz
 from project.schemas.inbound import (
     ProjectPlanCreateOrUpdateIn,
     ProjectPlanListFilter,
@@ -156,7 +155,7 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
                 await product_obj.asave()
 
             # 오늘 생산하는 Plan이면 WorkInstruction 갱신
-            if plan.start_date.date() == datetime.now(pytz.timezone(settings.TIME_ZONE)).date():
+            if plan.start_date.date() == timezone.localdate():
                 await sync_to_async(update_work_instruction_for_factory)(equipment.factory_id)
             
             # WorkInstruction history 기록
@@ -266,9 +265,9 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
                 )
 
             # 알림 전송 (프로젝트가 생산대기 상태가 아닐 때)
-            kst_now = timezone.localtime(timezone.now())
-            if ((payload.start_date and payload.start_date.date() == kst_now.date()) or (
-                old_start_date and old_start_date.date() == kst_now.date()
+            today = timezone.localdate()
+            if ((payload.start_date and payload.start_date.date() == today) or (
+                old_start_date and old_start_date.date() == today
             )) and project.status != Project.ProjectStatus.pending:
                 client_name = "-"
                 try:
@@ -333,7 +332,7 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
         )
 
         # 오늘 생산하는 Plan이면 WorkInstruction 갱신
-        if plan.start_date.date() == datetime.now(pytz.timezone(settings.TIME_ZONE)).date():
+        if plan.start_date.date() == timezone.localdate():
             await sync_to_async(update_work_instruction_for_factory)(equipment.factory_id)
             
             # WorkInstruction history 기록 (추가)
@@ -381,8 +380,7 @@ async def list_today_production_plans(request):
 
     try:
         # Django 설정의 TIME_ZONE 기준으로 오늘 날짜 계산
-        local_tz = pytz.timezone(settings.TIME_ZONE)
-        today_local = datetime.now(local_tz).date()
+        today_local = timezone.localdate()
 
         @sync_to_async
         def get_today_plans():
@@ -717,7 +715,7 @@ async def delete_project_plan(request, plan_id: int):
         raise HttpError(404, "해당 생산 계획을 찾을 수 없습니다.")
 
     # 삭제 전에 오늘 생산하는 Plan이면 WorkInstruction 갱신 및 history 기록
-    if plan.start_date.date() == datetime.now(pytz.timezone(settings.TIME_ZONE)).date():
+    if plan.start_date.date() == timezone.localdate():
         # WorkInstruction history 기록 (삭제)
         @sync_to_async
         def record_deletion_history():
