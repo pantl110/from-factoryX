@@ -30,9 +30,18 @@ def get_date_from_datetime(dt):
         return dt
     # datetime 객체인 경우 처리
     if isinstance(dt, datetime):
-        if timezone.is_naive(dt):
-            dt = timezone.make_aware(dt)
-        return timezone.localtime(dt).date()
+        # naive datetime인지 확인 (utcoffset() 메서드로 확인)
+        try:
+            if dt.tzinfo is None:
+                # naive datetime인 경우 aware로 변환
+                dt = timezone.make_aware(dt)
+            return timezone.localtime(dt).date()
+        except (ValueError, AttributeError, TypeError):
+            # 오류 발생 시 최후의 수단: datetime에서 직접 date 추출
+            try:
+                return dt.date()
+            except Exception:
+                return dt
     # 그 외의 경우 (예: 문자열 등)는 그대로 반환
     return dt
 
