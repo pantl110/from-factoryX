@@ -25,13 +25,16 @@ def get_date_from_datetime(dt):
     """
     if dt is None:
         return None
-    # date 객체인 경우 그대로 반환
+    # date 객체인 경우 그대로 반환 (datetime은 date의 서브클래스이므로 먼저 datetime 체크)
     if isinstance(dt, date) and not isinstance(dt, datetime):
         return dt
     # datetime 객체인 경우 처리
-    if timezone.is_naive(dt):
-        dt = timezone.make_aware(dt)
-    return timezone.localtime(dt).date()
+    if isinstance(dt, datetime):
+        if timezone.is_naive(dt):
+            dt = timezone.make_aware(dt)
+        return timezone.localtime(dt).date()
+    # 그 외의 경우 (예: 문자열 등)는 그대로 반환
+    return dt
 
 
 async def get_project_by_id(project_id):
