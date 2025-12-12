@@ -30,6 +30,7 @@ from tax.models import NationalTaxService
 from datetime import date, timedelta
 from project.models import Project
 from django.conf import settings
+from django.utils import timezone
 from barobill.barobill_error_code import (
     barobill_error_codes,
 )
@@ -319,7 +320,7 @@ async def sync_tax_invoices(request, factory_id: int):
     user = request.auth
     factory = await get_factory_by_id(factory_id)
 
-    today = date.today()
+    today = timezone.localdate()
     past_date = today - timedelta(days=200)
 
     certKey = settings.BAROBILL_CERT_KEY
@@ -327,8 +328,6 @@ async def sync_tax_invoices(request, factory_id: int):
     userId = user.barobill_user_id
     taxType = 1
     dateType = 1
-    today = date.today()
-    past_date = today - timedelta(days=200)  # 200일 전 날짜
     startDate = past_date.strftime("%Y%m%d")  # 200일 전 날짜
     endDate = today.strftime("%Y%m%d")  # 현재 날짜로 설정
     countPerPage = 100  # 최대 100건

@@ -451,7 +451,7 @@ async def get_dashboard(request):
     await is_factory_member(int(factory_id), user)
 
     try:
-        today = date.today()
+        today = timezone.localdate()
         current_month_start = today.replace(day=1)
         current_month_end = (current_month_start + relativedelta(months=1)) - timedelta(
             days=1

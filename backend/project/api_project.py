@@ -7,7 +7,6 @@ from datetime import date, timedelta, datetime
 from api.security import jwt_auth
 from typing import List
 from django.conf import settings
-import pytz
 
 from project.models import Project, ProjectPlan
 from project.schemas.inbound import (
@@ -417,7 +416,7 @@ async def list_project(
     try:
         if not factory_id:
             raise HttpError(400, "factory_id는 필수입니다.")
-        now = date.today()
+        now = timezone.localdate()
         two_months_ago = now - timedelta(days=60)
 
         @sync_to_async
@@ -641,7 +640,7 @@ async def update_project_status(
         if old_status == Project.ProjectStatus.pending and payload.status == Project.ProjectStatus.production:
             @sync_to_async
             def update_work_instructions_for_project():
-                today = datetime.now(pytz.timezone(settings.TIME_ZONE)).date()
+                today = timezone.localdate()
                 
                 # 이 프로젝트의 오늘 시작하는 Plan들의 factory_id 조회
                 factory_ids = set(

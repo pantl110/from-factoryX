@@ -5,7 +5,6 @@ from asgiref.sync import sync_to_async
 from django.utils import timezone
 from django.conf import settings
 from datetime import timedelta, datetime
-import pytz
 from websocket.utils import send_notification_to_factory
 from notification.models import Notification
 from document.models import Quotation
@@ -248,7 +247,7 @@ async def create_work_instruction(request):
     @sync_to_async
     @transaction.atomic
     def get_today_project_plans():
-        today = datetime.now(pytz.timezone(settings.TIME_ZONE)).date()
+        today = timezone.localdate()
         yesterday = today - timedelta(days=1)
         
         # 1단계: 어제 WorkInstruction 아카이빙 (불변으로 만들기)
@@ -336,7 +335,7 @@ async def create_work_instruction(request):
 def update_work_instruction_for_factory(factory_id, target_date=None):
     """특정 factory의 WorkInstruction을 실시간으로 갱신"""
     if target_date is None:
-        target_date = datetime.now(pytz.timezone(settings.TIME_ZONE)).date()
+        target_date = timezone.localdate()
     
     # 해당 날짜의 생산 중인 Plan들 조회
     plans = list(

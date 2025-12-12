@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any, Dict, List
 from datetime import datetime, date
 from django.conf import settings
-import pytz
+from django.utils import timezone
 
 import aiohttp
 from langchain.output_parsers import ResponseSchema, StructuredOutputParser
@@ -143,7 +143,7 @@ def create_work_instruction_history(
     new_values=None,
 ):
     """WorkInstruction에 연결된 Plan의 변경 이력을 기록하는 helper 함수"""
-    today = datetime.now(pytz.timezone(settings.TIME_ZONE)).date()
+    today = timezone.localdate()
     
     # Plan 수정 전/후의 start_date가 오늘 날짜인지 확인
     old_start_date_is_today = old_start_date.date() == today if old_start_date else False
