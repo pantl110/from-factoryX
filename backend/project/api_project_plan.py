@@ -420,7 +420,7 @@ async def list_today_production_plans(request):
                         "unit": plan.product.product.unit,  # 단위
                         "production_quantity": plan.quantity,  # 생산 수량
                         "equipment_name": plan.equipment.name,  # 생산 설비
-                        "production_time": plan.avg_production_time or 30,  # 생산 시간 (초), 기본값 30초
+                        "production_time": plan.avg_production_time if plan.avg_production_time is not None else 30,  # 생산 시간 (초), 기본값 30초
                         "start_date": plan.start_date,  # 생산 시작일
                         "end_date": plan.end_date,  # 생산 종료일
                         "project_id": plan.product.quotation.project.id,  # 프로젝트 ID
