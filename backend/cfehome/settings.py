@@ -16,6 +16,9 @@ from zeep import Client
 import sys
 import os
 
+# 시간대 환경 변수 설정 (Django 설정 로드 전에 설정)
+os.environ.setdefault("TZ", "Asia/Seoul")
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -148,6 +151,7 @@ DATABASES = {
         "NAME": BASE_DIR / "db.sqlite3",
     },
 }
+
 if DATABASE_URL is not None:
     import dj_database_url
 
@@ -158,6 +162,10 @@ if DATABASE_URL is not None:
             conn_health_checks=True,
         ),
     }
+
+    # PostgreSQL 시간대 설정 (Neon 호환)
+    if "postgresql" in DATABASE_URL or "postgres" in DATABASE_URL:
+        DATABASES["default"]["OPTIONS"] = {"options": "-c timezone=Asia/Seoul"}
 
 if "test" in sys.argv:
     DATABASES["default"] = {
@@ -190,11 +198,11 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "ko-kr"
 
-TIME_ZONE = "Asia/Seoul"
+TIME_ZONE = "Asia/Seoul" #  # USE_TZ=False일 때는 거의 사용 안 됨 (하지만 명시적으로 남겨두는 것도 좋음)
 
 USE_I18N = True
 
-USE_TZ = True
+USE_TZ = False # Django가 시스템 시간대를 사용
 
 AUTH_USER_MODEL = "user.User"
 
