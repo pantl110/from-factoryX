@@ -640,7 +640,7 @@ async def update_project_status(
         if old_status == Project.ProjectStatus.pending and payload.status == Project.ProjectStatus.production:
             @sync_to_async
             def update_work_instructions_for_project():
-                today = timezone.localdate()
+                today = date.today() if not settings.USE_TZ else timezone.localdate()
                 
                 # 이 프로젝트의 오늘 시작하는 Plan들의 factory_id 조회
                 factory_ids = set(

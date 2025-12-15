@@ -1,15 +1,13 @@
-from ninja import Router, Query
+from ninja import Router
 from ninja.errors import HttpError
-from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
 from api.security import jwt_auth
 from django.db import models
 from django.conf import settings
-from datetime import datetime, date, timedelta
+from datetime import date, timedelta
 from decimal import Decimal, ROUND_HALF_UP
 from project.schemas.inbound import (
     ProjectPlanCreateOrUpdateIn,
-    ProjectPlanListFilter,
 )
 from project.schemas.outbound import (
     ProjectPlanDetailWithRelationsOut,
@@ -153,7 +151,7 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
                 await product_obj.asave()
 
             # 오늘 생산하는 Plan이면 WorkInstruction 갱신
-            today = date.today() if not settings.USE_TZ else timezone.localdate()
+            today = date.today()
             if plan.start_date.date() == today:
                 await sync_to_async(update_work_instruction_for_factory)(equipment.factory_id)
             
@@ -264,7 +262,7 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
                 )
 
             # 알림 전송 (프로젝트가 생산대기 상태가 아닐 때)
-            today = date.today() if not settings.USE_TZ else timezone.localdate()
+            today = date.today()
             if ((payload.start_date and payload.start_date.date() == today) or (
                 old_start_date and old_start_date.date() == today
             )) and project.status != Project.ProjectStatus.pending:
@@ -331,7 +329,7 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
         )
 
         # 오늘 생산하는 Plan이면 WorkInstruction 갱신
-        today = date.today() if not settings.USE_TZ else timezone.localdate()
+        today = date.today()
         if plan.start_date.date() == today:
             await sync_to_async(update_work_instruction_for_factory)(equipment.factory_id)
             
@@ -451,7 +449,7 @@ async def get_dashboard(request):
     await is_factory_member(int(factory_id), user)
 
     try:
-        today = date.today() if not settings.USE_TZ else timezone.localdate()
+        today = date.today()
         current_month_start = today.replace(day=1)
         current_month_end = (current_month_start + relativedelta(months=1)) - timedelta(
             days=1

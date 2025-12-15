@@ -143,7 +143,7 @@ def create_work_instruction_history(
     new_values=None,
 ):
     """WorkInstruction에 연결된 Plan의 변경 이력을 기록하는 helper 함수"""
-    today = timezone.localdate()
+    today = date.today()
     
     # Plan 수정 전/후의 start_date가 오늘 날짜인지 확인
     old_start_date_is_today = old_start_date.date() == today if old_start_date else False

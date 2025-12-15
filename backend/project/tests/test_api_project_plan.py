@@ -158,8 +158,8 @@ class ProjectPlanAPITestCase(TestCase):
             product=self.quotation_product,
             equipment=self.equipment,
             quantity=10,
-            start_date=timezone.make_aware(datetime(2024, 1, 1, 0, 0, 0)),
-            end_date=timezone.make_aware(datetime(2024, 1, 31, 0, 0, 0)),
+            start_date=datetime(2024, 1, 1, 0, 0, 0),
+            end_date=datetime(2024, 1, 31, 0, 0, 0),
             avg_production_time=3600,
         )
 
@@ -903,9 +903,7 @@ class ProjectPlanAPITestCase(TestCase):
         """오늘 생산 시작인 프로젝트 계획 조회 성공 테스트"""
         # 오늘 날짜로 프로젝트 계획 생성
         today = date.today()
-        start_of_today = timezone.make_aware(
-            datetime.combine(today, datetime.min.time())
-        )
+        start_of_today = datetime.combine(today, datetime.min.time())
         plan = ProjectPlan.objects.create(
             project=self.project,
             product=self.quotation_product,
@@ -944,9 +942,7 @@ class ProjectPlanAPITestCase(TestCase):
         """오늘 생산 시작인 프로젝트 계획 조회 (여러 데이터) 테스트"""
         # 오늘 날짜로 7개의 프로젝트 계획 생성
         today = date.today()
-        start_of_today = timezone.make_aware(
-            datetime.combine(today, datetime.min.time())
-        )
+        start_of_today = datetime.combine(today, datetime.min.time())
         for i in range(7):
             ProjectPlan.objects.create(
                 project=self.project,
@@ -1111,10 +1107,8 @@ class DashboardAPITestCase(TestCase):
             )
             # created_at을 이번달로 설정
             Project.objects.filter(id=project.id).update(
-                created_at=timezone.make_aware(
-                    datetime.combine(
-                        current_month_start + timedelta(days=i), datetime.min.time()
-                    )
+                created_at=datetime.combine(
+                    current_month_start + timedelta(days=i), datetime.min.time()
                 )
             )
 
@@ -1135,10 +1129,8 @@ class DashboardAPITestCase(TestCase):
             )
             # created_at을 지난달로 설정
             Project.objects.filter(id=project.id).update(
-                created_at=timezone.make_aware(
-                    datetime.combine(
-                        previous_month_start + timedelta(days=i), datetime.min.time()
-                    )
+                created_at=datetime.combine(
+                    previous_month_start + timedelta(days=i), datetime.min.time()
                 )
             )
 
