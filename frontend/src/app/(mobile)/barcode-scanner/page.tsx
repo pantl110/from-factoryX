@@ -68,6 +68,7 @@ const BarcodeScannerContent = () => {
 
     // Image Capture API를 사용한 초점 설정 (더 안정적)
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const imageCapture = new (window as any).ImageCapture(videoTrack);
       if (imageCapture && imageCapture.setOptions) {
         await imageCapture.setOptions({
@@ -75,8 +76,8 @@ const BarcodeScannerContent = () => {
         });
         return;
       }
-    } catch (err) {
-      console.log('Image Capture API 사용 불가:', err);
+    } catch {
+      // Image Capture API 사용 불가 - 무시
     }
 
     // Image Capture API가 없으면 MediaTrackConstraints 사용
@@ -101,9 +102,8 @@ const BarcodeScannerContent = () => {
               } as ExtendedMediaTrackConstraintSetType,
             ],
           } as unknown as MediaTrackConstraints);
-        } catch (poiErr) {
+        } catch {
           // pointsOfInterest가 지원되지 않아도 focusMode만으로도 초점 조정 가능
-          console.log('pointsOfInterest 미지원, focusMode만 사용');
         }
       } catch (err) {
         console.error('초점 설정 실패:', err);
@@ -158,6 +158,7 @@ const BarcodeScannerContent = () => {
       }
 
       if (scannedText) {
+        // eslint-disable-next-line no-console
         console.log('바코드 인식 성공:', scannedText);
 
         // 처리 중 상태로 설정하여 중복 인식 방지
@@ -167,6 +168,7 @@ const BarcodeScannerContent = () => {
         // 스캔된 바코드를 쿼리 파라미터로 전달하여 이전 페이지로 즉시 이동
         const url = new URL(callbackUrl, window.location.origin);
         url.searchParams.set('scanned_code', scannedText);
+        // eslint-disable-next-line no-console
         console.log('이동할 URL:', url.pathname + url.search);
 
         // 즉시 이동
@@ -183,7 +185,7 @@ const BarcodeScannerContent = () => {
         errorMessage.includes('already playing') ||
         errorMessage.includes('not possible to play')
       ) {
-        console.log('비디오 재생 관련 오류 무시 (정상 동작 중):', errorMessage);
+        // 비디오 재생 관련 오류는 정상 동작 중이므로 무시
         return;
       }
 
@@ -213,6 +215,7 @@ const BarcodeScannerContent = () => {
       },
     },
     // 모든 방향에서 바코드 인식 가능하도록 설정
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     hints: new Map([[DecodeHintType.TRY_HARDER, true]]) as any,
   });
 
@@ -274,11 +277,10 @@ const BarcodeScannerContent = () => {
     };
   }, [ref]);
 
-  // 비디오가 준비되면 자동 초점 활성화 및 디버깅
+  // 비디오가 준비되면 자동 초점 활성화
   useEffect(() => {
     const video = ref.current;
     if (!video) {
-      console.log('비디오 요소가 아직 준비되지 않았습니다.');
       return;
     }
 
@@ -362,8 +364,7 @@ const BarcodeScannerContent = () => {
               onClick={handleVideoClick}
               onTouchStart={handleVideoTouch}
               onError={(e) => {
-                const video = e.currentTarget;
-                const error = video.error;
+                const { error } = e.currentTarget;
                 if (error) {
                   // 실제 비디오 재생 오류만 처리 (코드 4: 형식 미지원)
                   if (error.code === 4) {
