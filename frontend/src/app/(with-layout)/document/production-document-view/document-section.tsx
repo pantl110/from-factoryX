@@ -40,7 +40,7 @@ export const DocumentSection = ({
               </div>
               {items.map((item, index) => (
                 <ProductionTableItem
-                  key={item.project + index}
+                  key={item.id ?? `${projectName}-${index}`}
                   productName={item.product_name}
                   spec={item.product_spec}
                   unit={item.product_unit}
@@ -65,9 +65,9 @@ export const DocumentSection = ({
               index ===
               self.findIndex((t) => t.product_code === item.product_code)
           )
-          .map((item) => (
+          .map((item, index) => (
             <CommentItem
-              key={item.product}
+              key={item.id ?? `${item.product_code}-${index}`}
               title={item.product_name}
               comment={item.product_note || '-'}
             />
