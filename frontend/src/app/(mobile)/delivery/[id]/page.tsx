@@ -35,14 +35,18 @@ const DeliveryPage = () => {
       // eslint-disable-next-line no-console
       console.log('Scanned barcode:', scannedCode);
 
-      // 쿼리 파라미터에서 scanned_code 제거
+      // 쿼리 파라미터에서 scanned_code 제거 (중복 실행 방지)
       const newSearchParams = new URLSearchParams(searchParams.toString());
       newSearchParams.delete('scanned_code');
       const newUrl =
         newSearchParams.toString() === ''
           ? `/delivery/${quotationProductId}`
           : `/delivery/${quotationProductId}?${newSearchParams.toString()}`;
-      router.replace(newUrl);
+
+      // URL이 변경된 경우에만 replace 실행
+      if (window.location.pathname + window.location.search !== newUrl) {
+        router.replace(newUrl);
+      }
     }
   }, [searchParams, router, quotationProductId]);
 

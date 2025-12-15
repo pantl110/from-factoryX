@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { WarningCircle } from '@phosphor-icons/react';
 import Spinner from '@/ui/spinner';
 import Topbar from '@/app/(mobile)/topbar';
+import { DecodeHintType } from '@zxing/library';
 
 // 실험적 카메라 API 타입 정의
 type ExtendedMediaTrackCapabilitiesType = MediaTrackCapabilities & {
@@ -33,6 +34,8 @@ const BarcodeScannerContent = () => {
   const [focusPoint, setFocusPoint] = useState<{ x: number; y: number } | null>(
     null
   );
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [lastScannedCode, setLastScannedCode] = useState<string | null>(null);
 
   const handleFocusPoint = async (
     video: HTMLVideoElement,
@@ -87,7 +90,7 @@ const BarcodeScannerContent = () => {
               focusMode: 'single-shot',
             } as ExtendedMediaTrackConstraintSetType,
           ],
-        } as MediaTrackConstraints);
+        } as unknown as MediaTrackConstraints);
 
         // pointsOfInterest가 지원되는 경우 추가로 설정
         try {
@@ -114,7 +117,7 @@ const BarcodeScannerContent = () => {
               focusMode: 'manual',
             } as ExtendedMediaTrackConstraintSetType,
           ],
-        } as MediaTrackConstraints);
+        } as unknown as MediaTrackConstraints);
       } catch (err) {
         console.error('초점 설정 실패:', err);
       }
@@ -127,7 +130,7 @@ const BarcodeScannerContent = () => {
               focusMode: 'continuous',
             } as ExtendedMediaTrackConstraintSetType,
           ],
-        } as MediaTrackConstraints);
+        } as unknown as MediaTrackConstraints);
       } catch (err) {
         console.error('초점 설정 실패:', err);
       }
@@ -148,16 +151,43 @@ const BarcodeScannerContent = () => {
   const { ref } = useZxing({
     onDecodeResult(result) {
       const scannedText = result.getText();
+
+      // 이미 처리 중이거나 같은 바코드가 반복 인식되는 경우 무시
+      if (isProcessing || lastScannedCode === scannedText) {
+        return;
+      }
+
       if (scannedText) {
-        // 스캔된 바코드를 쿼리 파라미터로 전달하여 이전 페이지로 이동
+        console.log('바코드 인식 성공:', scannedText);
+
+        // 처리 중 상태로 설정하여 중복 인식 방지
+        setIsProcessing(true);
+        setLastScannedCode(scannedText);
+
+        // 스캔된 바코드를 쿼리 파라미터로 전달하여 이전 페이지로 즉시 이동
         const url = new URL(callbackUrl, window.location.origin);
         url.searchParams.set('scanned_code', scannedText);
+        console.log('이동할 URL:', url.pathname + url.search);
+
+        // 즉시 이동
         router.push(url.pathname + url.search);
       }
     },
     onError(err: unknown) {
+      const error = err as { name?: string; message?: string };
+
+      // 비디오 재생 관련 오류는 무시 (BrowserCodeReader 내부 오류)
+      const errorMessage = error.message || '';
+      if (
+        errorMessage.includes('play') ||
+        errorMessage.includes('already playing') ||
+        errorMessage.includes('not possible to play')
+      ) {
+        console.log('비디오 재생 관련 오류 무시 (정상 동작 중):', errorMessage);
+        return;
+      }
+
       console.error('바코드 스캐너 오류:', err);
-      const error = err as { name?: string };
       if (error.name === 'NotAllowedError') {
         setError(
           '카메라 권한이 필요합니다.\n설정에서 카메라 권한을 허용해주세요.'
@@ -167,11 +197,13 @@ const BarcodeScannerContent = () => {
           '카메라를 찾을 수 없습니다.\n카메라가 연결되어 있는지 확인해주세요.'
         );
       } else {
-        setError('바코드 스캔 중 오류가 발생했습니다.');
+        setError(
+          `바코드 스캔 중 오류가 발생했습니다.\n${error.message || error.name || '알 수 없는 오류'}`
+        );
       }
       setIsScanning(false);
     },
-    paused: false,
+    paused: isProcessing, // 처리 중이면 스캔 일시정지
     // 내장 카메라 직접 사용 설정
     constraints: {
       video: {
@@ -180,6 +212,8 @@ const BarcodeScannerContent = () => {
         height: { ideal: 720 },
       },
     },
+    // 모든 방향에서 바코드 인식 가능하도록 설정
+    hints: new Map([[DecodeHintType.TRY_HARDER, true]]) as any,
   });
 
   useEffect(() => {
@@ -189,42 +223,64 @@ const BarcodeScannerContent = () => {
 
     setError(null);
     setIsScanning(true);
-    // 내장 카메라 접근 시도
-    navigator.mediaDevices
-      .getUserMedia({
-        video: {
-          facingMode: 'environment', // 후면 카메라 우선
-        },
-      })
-      .then(() => {
+
+    // BrowserCodeReader의 비디오 재생 오류를 전역에서 필터링
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      const errorMessage = event.reason?.message || String(event.reason || '');
+      if (
+        errorMessage.includes('not possible to play') ||
+        errorMessage.includes('already playing') ||
+        errorMessage.includes('play()')
+      ) {
+        // BrowserCodeReader 내부 비디오 재생 오류는 무시
+        event.preventDefault();
+        return;
+      }
+    };
+
+    window.addEventListener('unhandledrejection', handleUnhandledRejection);
+
+    // useZxing이 카메라를 자동으로 처리하므로, 비디오가 준비될 때까지 대기
+    let checkCount = 0;
+    const maxChecks = 50; // 최대 5초 대기 (100ms * 50)
+
+    const checkVideoReady = () => {
+      const video = ref.current;
+      checkCount++;
+
+      if (video && video.readyState >= 2 && video.videoWidth > 0) {
         setIsScanning(false);
-      })
-      .catch((err) => {
-        console.error('카메라 접근 오류:', err);
-        const error = err as { name?: string };
-        if (error.name === 'NotAllowedError') {
-          setError(
-            '카메라 권한이 필요합니다.\n설정에서 카메라 권한을 허용해주세요.'
-          );
-        } else if (error.name === 'NotFoundError') {
-          setError(
-            '카메라를 찾을 수 없습니다.\n카메라가 연결되어 있는지 확인해주세요.'
-          );
-        } else {
-          setError('카메라 접근 중 오류가 발생했습니다.');
-        }
+        return;
+      }
+
+      if (checkCount < maxChecks) {
+        // 비디오가 아직 준비되지 않았으면 잠시 후 다시 확인
+        setTimeout(checkVideoReady, 100);
+      } else {
         setIsScanning(false);
-      });
+      }
+    };
+
+    // 초기 확인을 약간 지연시켜 useZxing이 비디오를 설정할 시간을 줌
+    const timeoutId = setTimeout(checkVideoReady, 300);
 
     return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener(
+        'unhandledrejection',
+        handleUnhandledRejection
+      );
       document.body.style.overflow = originalStyle;
     };
-  }, []);
+  }, [ref]);
 
-  // 비디오가 준비되면 자동 초점 활성화
+  // 비디오가 준비되면 자동 초점 활성화 및 디버깅
   useEffect(() => {
     const video = ref.current;
-    if (!video) return;
+    if (!video) {
+      console.log('비디오 요소가 아직 준비되지 않았습니다.');
+      return;
+    }
 
     const setupAutofocus = () => {
       const stream = video.srcObject as MediaStream | null;
@@ -245,19 +301,17 @@ const BarcodeScannerContent = () => {
                 focusMode: 'continuous',
               } as ExtendedMediaTrackConstraintSetType,
             ],
-          } as MediaTrackConstraints)
-          .catch((err) => {
-            console.log('자동 초점 설정 실패:', err);
+          } as unknown as MediaTrackConstraints)
+          .catch(() => {
+            // 초점 설정 실패는 무시 (모든 기기에서 지원하지 않음)
           });
       }
     };
 
     // 비디오가 로드되면 초점 설정
     if (video.readyState >= 2) {
-      // 이미 로드된 경우
       setupAutofocus();
     } else {
-      // 로드 대기
       video.addEventListener('loadedmetadata', setupAutofocus, { once: true });
     }
 
@@ -307,6 +361,34 @@ const BarcodeScannerContent = () => {
               muted
               onClick={handleVideoClick}
               onTouchStart={handleVideoTouch}
+              onError={(e) => {
+                const video = e.currentTarget;
+                const error = video.error;
+                if (error) {
+                  // 실제 비디오 재생 오류만 처리 (코드 4: 형식 미지원)
+                  if (error.code === 4) {
+                    console.error('비디오 형식 미지원:', error);
+                    setError('비디오 형식을 지원하지 않습니다.');
+                  }
+                  // 다른 오류는 BrowserCodeReader가 처리하므로 무시
+                }
+              }}
+              onLoadedData={() => {
+                // 비디오 데이터가 로드되면 재생 시도
+                const video = ref.current;
+                if (video && video.paused) {
+                  video.play().catch(() => {
+                    // 재생 실패는 무시 (BrowserCodeReader가 처리)
+                  });
+                }
+                setIsScanning(false);
+              }}
+              onCanPlay={() => {
+                setIsScanning(false);
+              }}
+              onPlaying={() => {
+                setIsScanning(false);
+              }}
             />
             {/* 포커스 링 UI */}
             {focusPoint && (
