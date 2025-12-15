@@ -12,7 +12,7 @@ import TransactionDocumentView from './transaction-document-view';
 import OrderDocumentView from './order-document-view';
 import ProductionDocumentView from './production-document-view';
 import {
-  convertUTCToKSTDate,
+  formatISODate,
   getLastDeliveryDate,
   getProductNames,
   getProductNamesDisplay,
@@ -122,10 +122,10 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
               )?.toLocaleString() || '-'}
             </p>
             <p className="px-3 w-[150px]">
-              {convertUTCToKSTDate(taxData.transaction_date) || '-'}
+              {formatISODate(taxData.transaction_date) || '-'}
             </p>
             <p className="px-3 w-[150px]">
-              {convertUTCToKSTDate(taxData.created_at) || '-'}
+              {formatISODate(taxData.created_at) || '-'}
             </p>
           </>
         ) : documentType === '생산지시서' ? (
@@ -236,9 +236,9 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
             </p>
             <p
               className="px-3 flex-[0.5] truncate"
-              title={convertUTCToKSTDate(workInstructionData.created_at) || '-'}
+              title={formatISODate(workInstructionData.created_at) || '-'}
             >
-              {convertUTCToKSTDate(workInstructionData.created_at) || '-'}
+              {formatISODate(workInstructionData.created_at) || '-'}
             </p>
           </>
         ) : projectData ? (
@@ -266,13 +266,13 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
               className="px-3 flex-[0.5] truncate"
               title={
                 documentType === '주문서'
-                  ? convertUTCToKSTDate(projectData.pending_at) || '-'
-                  : convertUTCToKSTDate(projectData.printed_at) || '-'
+                  ? formatISODate(projectData.pending_at) || '-'
+                  : formatISODate(projectData.printed_at) || '-'
               }
             >
               {documentType === '주문서'
-                ? convertUTCToKSTDate(projectData.pending_at) || '-'
-                : convertUTCToKSTDate(projectData.printed_at) || '-'}
+                ? formatISODate(projectData.pending_at) || '-'
+                : formatISODate(projectData.printed_at) || '-'}
             </p>
           </>
         ) : null}

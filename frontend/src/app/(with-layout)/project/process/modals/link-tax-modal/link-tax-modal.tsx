@@ -10,7 +10,7 @@ import {
   useGetMaterialHistory,
   useConnectMaterialHistory,
 } from '@/hooks';
-import { convertUTCToKSTDate } from '@/hooks';
+import { formatISODate } from '@/utils';
 import {
   UnlinkedTaxInvoiceListResponseModel,
   TaxLineItemModel,
@@ -80,8 +80,8 @@ const LinkTaxModal = ({
         q: debouncedSearchKeyword,
         page: currentPage,
         page_size: 5,
-        start_date: convertUTCToKSTDate(startDate.toISOString()),
-        end_date: convertUTCToKSTDate(endDate.toISOString()),
+        start_date: formatISODate(startDate.toISOString()),
+        end_date: formatISODate(endDate.toISOString()),
         ordering,
         tax_invoice_type: 'sales',
         is_hidden: false,

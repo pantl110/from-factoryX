@@ -1,7 +1,7 @@
 import Chip from '@/ui/chip';
 import Input from '@/ui/input';
 import { ProjectStatusType, ProjectStatusColorMap } from '@/types/status-type';
-import { convertUTCToKSTDate } from '@/hooks';
+import { formatISODate } from '@/utils';
 
 export interface ProductFlowTitleProps {
   status: ProjectStatusType;
@@ -58,7 +58,7 @@ const ProductFlowTitle = ({
             <Input
               label="생산시작일"
               type="text"
-              value={convertUTCToKSTDate(startDate)}
+              value={formatISODate(startDate)}
               placeholder="YYYY-MM-DD"
               disabledSetting
             />
@@ -66,7 +66,7 @@ const ProductFlowTitle = ({
             <Input
               label="생산마감일"
               type="text"
-              value={convertUTCToKSTDate(endDate)}
+              value={formatISODate(endDate)}
               placeholder="YYYY-MM-DD"
               disabledSetting
             />

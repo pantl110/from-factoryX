@@ -331,7 +331,7 @@ export const formatTime = (value: string): string => {
   }
 };
 
-// 날짜와 시간 포맷팅 함수 (YYYY-MM-DD HH:MM)
+// 날짜와 시간 포맷팅 함수 (YYYY-MM-DD HH:MM) - 입력 필드용
 export const formatDateTime = (value: string): string => {
   const numbers = extractNumbers(value);
 
@@ -348,6 +348,47 @@ export const formatDateTime = (value: string): string => {
   } else {
     return `${numbers.slice(0, 4)}-${numbers.slice(4, 6)}-${numbers.slice(6, 8)} ${numbers.slice(8, 10)}:${numbers.slice(10, 12)}`;
   }
+};
+
+// ISO 날짜 문자열을 YYYY-MM-DD HH:MM 형식으로 변환 (T를 공백으로, 분까지만)
+export const formatISODateTime = (dateString: string | null): string => {
+  if (!dateString) return '';
+  // ISO 형식 처리: 2025-08-24T04:13:00Z -> 2025-08-24 04:13
+  return dateString.replace('T', ' ').slice(0, 16);
+};
+
+// ISO 날짜 문자열을 YYYY-MM-DD 형식으로 변환 (날짜만, 시간 제거)
+export const formatISODate = (dateString: string | null): string => {
+  if (!dateString) return '';
+  // ISO 형식 처리: 2025-08-24T04:13:00Z -> 2025-08-24
+  // 이미 날짜만 있는 형식이면 그대로 반환
+  if (dateString.includes('T')) {
+    return dateString.split('T')[0];
+  }
+  // 날짜만 있는 형식이면 그대로 반환 (YYYY-MM-DD)
+  return dateString.split(' ')[0];
+};
+
+// YYYY-MM-DD HH:mm 형식을 ISO datetime 형식으로 변환 (API 전송용)
+// 예: "2025-01-15 14:30" -> "2025-01-15T14:30:00Z"
+export const convertToISODateTime = (dateTimeString: string | null): string => {
+  if (!dateTimeString) return '';
+
+  // 이미 ISO 형식이면 그대로 반환
+  if (dateTimeString.includes('T') && dateTimeString.includes('Z')) {
+    return dateTimeString;
+  }
+
+  // YYYY-MM-DD HH:mm 형식인 경우
+  if (dateTimeString.match(/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}$/)) {
+    // 로컬 시간으로 Date 객체 생성
+    const date = new Date(dateTimeString.replace(' ', 'T') + ':00');
+    // UTC로 변환하여 ISO 형식으로 반환
+    return date.toISOString();
+  }
+
+  // 다른 형식이면 그대로 반환
+  return dateTimeString;
 };
 
 // 숫자 포맷팅 함수 (콤마 추가, 소수점 아래 끝자리 0 제거)

@@ -7,8 +7,8 @@ import {
   useCreateOrUpdateProjectPlan,
   useToast,
   checkDateValidity,
-  convertUTCToKST,
 } from '@/hooks';
+import { formatISODateTime } from '@/utils';
 import { useProjectPlansQuery, PROJECT_PLANS_QUERY_KEY } from '@/hooks';
 import { ProjectPlanModel } from '@/types/data-model';
 import { ProjectStatusType } from '@/types/status-type';
@@ -34,13 +34,13 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
     refetch: refetchProjectPlans,
   } = useProjectPlansQuery(projectId);
 
-  // KST 변환된 project plans
+  // project plans (날짜 형식 변환: T를 공백으로, 분까지만)
   const projectPlans = useMemo(() => {
     if (!projectPlansData) return [];
     return projectPlansData.map((plan: ProjectPlanModel) => ({
       ...plan,
-      start_date: plan.start_date ? convertUTCToKST(plan.start_date) : '',
-      end_date: plan.end_date ? convertUTCToKST(plan.end_date) : '',
+      start_date: formatISODateTime(plan.start_date),
+      end_date: formatISODateTime(plan.end_date),
     }));
   }, [projectPlansData]);
 

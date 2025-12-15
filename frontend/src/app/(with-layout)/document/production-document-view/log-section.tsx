@@ -1,9 +1,6 @@
 import { WorkInstructionHistoryResponseModel } from '@/types/data-model';
-import {
-  useWorkInstructionHistoryQuery,
-  convertUTCToLocalTime,
-  convertUTCToLocalDate,
-} from '@/hooks';
+import { useWorkInstructionHistoryQuery } from '@/hooks';
+import { formatISODate, formatISODateTime } from '@/utils';
 import NoHistoryBox from '@/ui/no-history-box';
 import MemoLogItem from './memo-log-item';
 import { RoundChip } from '@/ui';
@@ -103,10 +100,12 @@ export const LogSection = ({ workInstructionId }: LogSectionProps) => {
       after.start_date !== undefined &&
       before.start_date !== after.start_date
     ) {
-      const beforeDate = convertUTCToLocalDate(before.start_date);
-      const beforeTime = convertUTCToLocalTime(before.start_date);
-      const afterDate = convertUTCToLocalDate(after.start_date);
-      const afterTime = convertUTCToLocalTime(after.start_date);
+      const beforeDateTime = formatISODateTime(before.start_date);
+      const afterDateTime = formatISODateTime(after.start_date);
+      const beforeDate = beforeDateTime ? beforeDateTime.split(' ')[0] : '';
+      const beforeTime = beforeDateTime ? beforeDateTime.split(' ')[1] : '';
+      const afterDate = afterDateTime ? afterDateTime.split(' ')[0] : '';
+      const afterTime = afterDateTime ? afterDateTime.split(' ')[1] : '';
 
       // 변환된 날짜와 시간이 모두 다를 때만 추가
       if (beforeDate !== afterDate || beforeTime !== afterTime) {
@@ -120,10 +119,10 @@ export const LogSection = ({ workInstructionId }: LogSectionProps) => {
       after.end_date !== undefined &&
       before.end_date !== after.end_date
     ) {
-      const beforeDate = convertUTCToLocalDate(before.end_date);
-      const beforeTime = convertUTCToLocalTime(before.end_date);
-      const afterDate = convertUTCToLocalDate(after.end_date);
-      const afterTime = convertUTCToLocalTime(after.end_date);
+      const beforeDate = formatISODate(before.end_date);
+      const beforeTime = formatISODateTime(before.end_date);
+      const afterDate = formatISODate(after.end_date);
+      const afterTime = formatISODateTime(after.end_date);
 
       // 변환된 날짜와 시간이 모두 다를 때만 추가
       if (beforeDate !== afterDate || beforeTime !== afterTime) {
@@ -166,14 +165,14 @@ export const LogSection = ({ workInstructionId }: LogSectionProps) => {
     }
     if (item === '생산 일자') {
       if (!before.start_date) return '-';
-      const date = convertUTCToLocalDate(before.start_date);
-      const time = convertUTCToLocalTime(before.start_date);
+      const date = formatISODate(before.start_date);
+      const time = formatISODateTime(before.start_date);
       return `${date}\n${time}`;
     }
     if (item === '마감 예정일자') {
       if (!before.end_date) return '-';
-      const date = convertUTCToLocalDate(before.end_date);
-      const time = convertUTCToLocalTime(before.end_date);
+      const date = formatISODate(before.end_date);
+      const time = formatISODateTime(before.end_date);
       return `${date}\n${time}`;
     }
     if (item === '상태') {
@@ -208,14 +207,14 @@ export const LogSection = ({ workInstructionId }: LogSectionProps) => {
     }
     if (item === '생산 일자') {
       if (!after.start_date) return '-';
-      const date = convertUTCToLocalDate(after.start_date);
-      const time = convertUTCToLocalTime(after.start_date);
+      const date = formatISODate(after.start_date);
+      const time = formatISODateTime(after.start_date);
       return `${date}\n${time}`;
     }
     if (item === '마감 예정일자') {
       if (!after.end_date) return '-';
-      const date = convertUTCToLocalDate(after.end_date);
-      const time = convertUTCToLocalTime(after.end_date);
+      const date = formatISODate(after.end_date);
+      const time = formatISODateTime(after.end_date);
       return `${date}\n${time}`;
     }
     if (item === '상태') {
@@ -253,7 +252,7 @@ export const LogSection = ({ workInstructionId }: LogSectionProps) => {
                 className="flex items-start border-b border-lg Me_Body-1 cursor-default"
               >
                 <p className="flex-[0.5] px-3 py-[15px] text-dg">
-                  {index === 0 ? convertUTCToLocalDate(history.created_at) : ''}
+                  {index === 0 ? formatISODate(history.created_at) : ''}
                 </p>
                 <p
                   className="flex-[1.2] px-3 py-[15px] text-dg truncate"
@@ -332,7 +331,7 @@ export const LogSection = ({ workInstructionId }: LogSectionProps) => {
                 memo?: string | null;
               } | null;
               const memo = afterData?.memo ?? null;
-              const time = convertUTCToLocalDate(history.created_at);
+              const time = formatISODate(history.created_at);
               const changedBy = history.changed_by
                 ? {
                     role: history.changed_by.role || null,

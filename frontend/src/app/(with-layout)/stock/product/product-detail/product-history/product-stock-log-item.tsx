@@ -1,7 +1,7 @@
 import { ProductHistoryResponseModel } from '@/types/data-model';
 import IconBtn from '@/ui/icon-btn';
 import { Note } from '@phosphor-icons/react';
-import { convertUTCToKSTDate } from '@/hooks';
+import { formatISODate } from '@/utils';
 
 interface ProductStockLogItemProps {
   item: ProductHistoryResponseModel;
@@ -28,7 +28,7 @@ const ProductStockLogItem = ({
   return (
     <>
       <div className="flex items-center h-14 border-b border-lg Me_Body-1">
-        <p className="flex-1 px-3 text-dg">{convertUTCToKSTDate(createdAt)}</p>
+        <p className="flex-1 px-3 text-dg">{formatISODate(createdAt)}</p>
         <p className="flex-1 px-3 text-dg">{clientName}</p>
         <p className="flex-1 px-3 text-primary">
           {productionQuantity ? '+' + productionQuantity.toLocaleString() : '-'}

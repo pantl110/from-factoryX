@@ -7,6 +7,20 @@ import { WarningCircle } from '@phosphor-icons/react';
 import Spinner from '@/ui/spinner';
 import Topbar from '@/app/(mobile)/topbar';
 
+// 실험적 카메라 API 타입 정의
+type ExtendedMediaTrackCapabilitiesType = MediaTrackCapabilities & {
+  focusMode?: string[];
+};
+
+interface PointOfInterestModel {
+  x: number;
+  y: number;
+}
+
+type ExtendedMediaTrackConstraintSetType = MediaTrackConstraintSet & {
+  pointsOfInterest?: PointOfInterestModel[];
+};
+
 const BarcodeScannerContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -46,7 +60,8 @@ const BarcodeScannerContent = () => {
     if (!videoTrack) return;
 
     // 포커스 포인트 설정 (실험적 API)
-    const capabilities = videoTrack.getCapabilities() as any;
+    const capabilities =
+      videoTrack.getCapabilities() as ExtendedMediaTrackCapabilitiesType;
     if (
       capabilities?.focusMode?.includes('manual') ||
       capabilities?.focusMode?.includes('single-shot')
@@ -56,9 +71,9 @@ const BarcodeScannerContent = () => {
           advanced: [
             {
               pointsOfInterest: [{ x: normalizedX, y: normalizedY }],
-            },
-          ] as any,
-        } as any)
+            } as ExtendedMediaTrackConstraintSetType,
+          ],
+        } as MediaTrackConstraints)
         .catch((err) => {
           console.error('초점 설정 실패:', err);
         });

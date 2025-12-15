@@ -169,7 +169,7 @@ const TableItem = ({
         {!isViewer && hasSubscription() && (
           <Checkbox isChecked={checked} onToggle={onToggle || (() => {})} />
         )}
-        <div className={`px-3 ${isArchived ? 'w-[150px]' : 'w-[200px]'}`}>
+        <div className={`px-2 ${isArchived ? 'w-[150px]' : 'w-[200px]'}`}>
           <RoundChip
             text={displayText}
             color={chipColor}

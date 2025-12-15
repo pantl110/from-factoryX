@@ -23,15 +23,15 @@ import {
   useProductionPlanValidation,
   useToast,
   checkDateValidity,
+  useProjectPlansQuery,
   PROJECT_PLANS_QUERY_KEY,
 } from '@/hooks';
-import { convertUTCToKST } from '@/utils';
-import { useProjectPlansQuery } from '@/hooks/project/project-plan/use-get-project-plans';
 import { useParams } from 'next/navigation';
 import { Spinner, Toast } from '@/ui';
 import { CheckCircle, WarningCircle } from '@phosphor-icons/react';
 import { useDebouncedCallback } from 'use-debounce';
 import useMemberStore from '@/store/member-store';
+import { formatISODateTime } from '@/utils';
 
 interface ProductionPlanProps {
   handleChangeStatus: (status: ProjectStatusType) => void;
@@ -202,12 +202,12 @@ const ProductionPlan = ({
   useEffect(() => {
     if (!projectPlansData) return;
 
-    // DB에서 받은 날짜 데이터를 +9시간(KST)으로 변환해서 저장
+    // DB에서 받은 날짜 데이터를 형식 변환 (T를 공백으로, 분까지만)
     const plansWithKSTDates = projectPlansData.map(
       (plan: ProjectPlanModel) => ({
         ...plan,
-        start_date: plan.start_date ? convertUTCToKST(plan.start_date) : '',
-        end_date: plan.end_date ? convertUTCToKST(plan.end_date) : '',
+        start_date: formatISODateTime(plan.start_date),
+        end_date: formatISODateTime(plan.end_date),
       })
     );
 

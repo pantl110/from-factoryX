@@ -3,7 +3,7 @@ import useSubscriptionStore from '@/store/subscription-store';
 import IconBtn from '@/ui/icon-btn';
 import { PencilSimple, Trash } from '@phosphor-icons/react';
 import { MaterialRepackagingResponseModel } from '@/types/data-model';
-import { convertUTCToLocalDate, removeTrailingZeros } from '@/utils';
+import { formatISODate, removeTrailingZeros } from '@/utils';
 import { getExpiryClassName } from '../utils';
 
 interface MaterialPackagingItemProps {
@@ -62,7 +62,7 @@ export const MaterialPackagingItem = ({
         })}`}
       >
         {repackaging.expiration_date
-          ? convertUTCToLocalDate(repackaging.expiration_date) || '-'
+          ? formatISODate(repackaging.expiration_date) || '-'
           : '-'}
       </p>
 

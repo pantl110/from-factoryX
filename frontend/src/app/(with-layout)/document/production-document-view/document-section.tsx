@@ -2,8 +2,8 @@ import React from 'react';
 import ProductionTableItem from './production-table-item';
 import CommentItem from './comment-item';
 import TextareaAutosize from 'react-textarea-autosize';
-import { convertUTCToKST } from '@/hooks';
 import { WorkInstructionDetailPlanModel } from '@/types/data-model';
+import { formatISODateTime } from '@/utils';
 
 interface DocumentSectionProps {
   grouped: Record<string, WorkInstructionDetailPlanModel[]>;
@@ -47,7 +47,7 @@ export const DocumentSection = ({
                   productionQuantity={item.quantity || 0}
                   machine={item.equipment_name || '-'}
                   productionTime={
-                    convertUTCToKST(item.start_date)?.split(' ')[1] || null
+                    formatISODateTime(item.start_date)?.split(' ')[1] || null
                   }
                 />
               ))}

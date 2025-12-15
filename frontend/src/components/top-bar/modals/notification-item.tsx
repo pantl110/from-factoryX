@@ -2,7 +2,8 @@ import MiniBtn from '@/ui/mini-btn';
 import { NotificationResponseModel } from '@/types/data-model';
 import { NotificationCaseType } from '@/types/status-type';
 import { Siren, CheckCircle, WarningCircle } from '@phosphor-icons/react';
-import { useGetNotificationDetail, convertUTCToKSTDate } from '@/hooks';
+import { useGetNotificationDetail } from '@/hooks';
+import { formatISODate } from '@/utils';
 
 interface NotificationItemProps {
   item: NotificationResponseModel;
@@ -80,9 +81,7 @@ const NotificationItem = ({
             {item.content}
           </p>
         </div>
-        <p className="Me_Body-2 text-gr">
-          {convertUTCToKSTDate(item.created_at)}
-        </p>
+        <p className="Me_Body-2 text-gr">{formatISODate(item.created_at)}</p>
       </div>
       {!item.is_read && (
         <div className="shrink-0 ml-2">

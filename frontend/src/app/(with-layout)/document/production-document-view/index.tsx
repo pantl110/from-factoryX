@@ -1,6 +1,7 @@
 import DocumentViewTitle from '../document-view-title';
 import { useEffect, useState } from 'react';
-import { useGetWorkInstruction, convertUTCToKSTDate } from '@/hooks';
+import { useGetWorkInstruction } from '@/hooks';
+import { formatISODate } from '@/utils';
 import {
   WorkInstructionDetailPlanModel,
   WorkInstructionDetailResponseModel,
@@ -94,7 +95,7 @@ const ProductionDocumentView = ({
         />
       </div>
       <DocumentViewTitle
-        title={`PR-${convertUTCToKSTDate(workInstruction?.created_at || '') || ''} 생산지시서`}
+        title={`PR-${formatISODate(workInstruction?.created_at || '') || ''} 생산지시서`}
       />
 
       {selectedChip === 'document' ? (

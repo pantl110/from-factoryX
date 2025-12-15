@@ -1,6 +1,5 @@
 import { FacilityPlanResponseModel } from '@/types/data-model';
-import { convertUTCToLocal } from '@/hooks';
-import { calculateAvgProductionTime } from '@/utils';
+import { calculateAvgProductionTime, formatISODateTime } from '@/utils';
 import { useState } from 'react';
 import IconBtn from '@/ui/icon-btn';
 import { ArrowLineUpRight } from '@phosphor-icons/react';
@@ -36,8 +35,8 @@ const FacilityHistoryItem = ({ plan }: FacilityHistoryItemProps) => {
           {plan.quantity.toLocaleString()}
           {plan.product_unit && plan.product_unit}
         </p>
-        <p className="flex-1 px-3">{convertUTCToLocal(plan.start_date)}</p>
-        <p className="flex-1 px-3">{convertUTCToLocal(plan.end_date)}</p>
+        <p className="flex-1 px-3">{formatISODateTime(plan.start_date)}</p>
+        <p className="flex-1 px-3">{formatISODateTime(plan.end_date)}</p>
         <p
           className="flex-1 px-3 truncate"
           title={avgProductionTime !== '-' ? `${avgProductionTime}초` : '-'}

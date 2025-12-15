@@ -1,5 +1,5 @@
 import { MaterialHistoryResponseModel } from '@/types/data-model';
-import { convertUTCToKSTDate } from '@/hooks';
+import { formatISODate } from '@/utils';
 
 interface LinkModalTaxTableItemProps {
   item: MaterialHistoryResponseModel;
@@ -63,9 +63,9 @@ const LinkModalTaxTableItem = ({
       </p>
       <p
         className="flex-1 px-3 text-dg truncate"
-        title={convertUTCToKSTDate(item.date) || '-'}
+        title={formatISODate(item.date) || '-'}
       >
-        {convertUTCToKSTDate(item.date) || '-'}
+        {formatISODate(item.date) || '-'}
       </p>
     </div>
   );

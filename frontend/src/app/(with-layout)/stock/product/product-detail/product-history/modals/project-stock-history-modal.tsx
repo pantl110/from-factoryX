@@ -5,7 +5,7 @@ import { ProductHistoryListResponseModel } from '@/types/data-model';
 import NoHistoryBox from '@/ui/no-history-box';
 import Pagination from '@/components/pagination';
 import MiniBtn from '@/ui/mini-btn';
-import { convertUTCToKSTDate } from '@/hooks';
+import { formatISODate } from '@/utils';
 
 interface ProjectStockHistoryModalProps {
   projectId?: number;
@@ -72,7 +72,7 @@ const ProjectStockHistoryModal = ({
                     key={history.id}
                   >
                     <p className="flex-1 px-3 text-dg">
-                      {convertUTCToKSTDate(history.created_at)}
+                      {formatISODate(history.created_at)}
                     </p>
                     <p className="flex-1 px-3 text-primary">
                       {history.production_quantity

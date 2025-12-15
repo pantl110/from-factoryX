@@ -12,7 +12,7 @@ import {
   useGetMaterialHistoryDetail,
 } from '@/hooks';
 import { useEffect, useState } from 'react';
-import { convertUTCToKSTDate, isValidDateString } from '@/utils';
+import { formatISODate, isValidDateString } from '@/utils';
 import {
   UpdateMaterialRepackagingModel,
   CreateMaterialRepackagingModel,
@@ -78,7 +78,7 @@ export const InputArea = ({
         quantity: removeTrailingZeros(repackaging.quantity),
         location: repackaging.warehouse_location || '',
         expirationDate: repackaging.expiration_date
-          ? convertUTCToKSTDate(repackaging.expiration_date) || ''
+          ? formatISODate(repackaging.expiration_date) || ''
           : '',
       });
     }
@@ -91,7 +91,7 @@ export const InputArea = ({
         quantity: '',
         location: parentHistory.warehouse_location || '',
         expirationDate: parentHistory.expiration_date
-          ? convertUTCToKSTDate(parentHistory.expiration_date) || ''
+          ? formatISODate(parentHistory.expiration_date) || ''
           : '',
       });
     }

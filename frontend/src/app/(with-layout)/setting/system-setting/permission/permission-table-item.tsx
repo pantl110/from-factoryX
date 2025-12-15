@@ -5,11 +5,8 @@ import AuthDropdown from './modals/auth-dropdown';
 import { MemberResponseModel } from '@/types/data-model';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
-import {
-  convertUTCToKSTDate,
-  useUpdateMember,
-  usePortalDropdown,
-} from '@/hooks';
+import { useUpdateMember, usePortalDropdown } from '@/hooks';
+import { formatISODate } from '@/utils';
 
 interface PermissionTableItemProps {
   item: MemberResponseModel;
@@ -18,9 +15,9 @@ interface PermissionTableItemProps {
   onUpdate?: () => void; // 업데이트 후 목록 새로고침
 }
 
-// 공용 유틸 사용 (KST 날짜)
+// 공용 유틸 사용 (날짜만)
 const formatDate = (dateString?: string | null) =>
-  dateString ? convertUTCToKSTDate(dateString) || '-' : '-';
+  dateString ? formatISODate(dateString) || '-' : '-';
 
 const PermissionTableItem = ({
   item,

@@ -3,7 +3,7 @@
 import { RoundChip } from '@/ui';
 import { ProjectResponseModel } from '@/types/data-model';
 import { ProjectStatusMap, ProjectStatusType } from '@/types/status-type';
-import { convertUTCToKSTDate, getProjectStatusColor } from '@/utils';
+import { formatISODate, getProjectStatusColor } from '@/utils';
 
 interface PendingQuoteItemProps {
   project: ProjectResponseModel;
@@ -33,7 +33,7 @@ const PendingQuoteItem = ({ project, onClick }: PendingQuoteItemProps) => {
       </div>
       <div className="flex items-center">
         <p className="flex-1 Me_Body-1 text-sv">
-          {convertUTCToKSTDate(project.created_at) || '-'}
+          {formatISODate(project.created_at) || '-'}
         </p>
         <RoundChip
           text={ProjectStatusMap[project.status as ProjectStatusType]}

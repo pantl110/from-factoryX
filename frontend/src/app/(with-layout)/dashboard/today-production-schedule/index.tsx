@@ -11,7 +11,7 @@ import ProductionTable from './production-table';
 import useMemberStore from '@/store/member-store';
 import useGetWorkInstructions from '@/hooks/document/work-instruction/use-get-work-instructions';
 import useUpdateWorkInstruction from '@/hooks/document/work-instruction/use-update-work-instruction';
-import { convertUTCToKSTDate } from '@/hooks';
+import { formatISODate } from '@/utils';
 
 interface TodayProductionScheduleProps {
   todayProductionPlans: TodayProductionPlanModel[];
@@ -52,8 +52,8 @@ const TodayProductionSchedule = ({
       ) {
         const latest = res.data.data[0];
         const created = (latest.created_at as string | undefined) || '';
-        const createdDate = convertUTCToKSTDate(created);
-        const today = convertUTCToKSTDate(new Date().toISOString());
+        const createdDate = formatISODate(created);
+        const today = formatISODate(new Date().toISOString());
         if (createdDate === today) {
           setLatestWorkInstructionId(latest.id as number);
         } else {

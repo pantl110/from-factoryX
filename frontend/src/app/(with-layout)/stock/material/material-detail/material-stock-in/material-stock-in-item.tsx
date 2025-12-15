@@ -2,7 +2,7 @@ import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import { IconBtn, MiniBtn } from '@/ui';
 import { MaterialHistoryResponseModel } from '@/types/data-model';
-import { convertUTCToKSTDate, removeTrailingZeros } from '@/utils';
+import { formatISODate, removeTrailingZeros } from '@/utils';
 import { getExpiryClassName } from '../utils';
 import { PencilSimple } from '@phosphor-icons/react';
 
@@ -83,7 +83,7 @@ export const MaterialStockInItem = ({
         })}`}
       >
         {history.expiration_date
-          ? convertUTCToKSTDate(history.expiration_date) || '-'
+          ? formatISODate(history.expiration_date) || '-'
           : '-'}
       </p>
 
