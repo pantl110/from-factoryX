@@ -8,7 +8,7 @@ import {
 import usePageStatusStore, { PageStatusModel } from '@/store/page-status-store';
 
 const crumbNameMap: Record<string, string> = {
-  dashboard: '대시보드',
+  dashboard: '현황판',
 
   project: '프로젝트 관리',
   completed: '보관된 프로젝트',

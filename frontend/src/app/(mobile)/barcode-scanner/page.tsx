@@ -19,6 +19,7 @@ interface PointOfInterestModel {
 
 type ExtendedMediaTrackConstraintSetType = MediaTrackConstraintSet & {
   pointsOfInterest?: PointOfInterestModel[];
+  focusMode?: string;
 };
 
 const BarcodeScannerContent = () => {
@@ -33,7 +34,7 @@ const BarcodeScannerContent = () => {
     null
   );
 
-  const handleFocusPoint = (
+  const handleFocusPoint = async (
     video: HTMLVideoElement,
     clientX: number,
     clientY: number
@@ -59,24 +60,77 @@ const BarcodeScannerContent = () => {
     const videoTrack = stream.getVideoTracks()[0];
     if (!videoTrack) return;
 
-    // 포커스 포인트 설정 (실험적 API)
     const capabilities =
       videoTrack.getCapabilities() as ExtendedMediaTrackCapabilitiesType;
-    if (
-      capabilities?.focusMode?.includes('manual') ||
-      capabilities?.focusMode?.includes('single-shot')
-    ) {
-      videoTrack
-        .applyConstraints({
+
+    // Image Capture API를 사용한 초점 설정 (더 안정적)
+    try {
+      const imageCapture = new (window as any).ImageCapture(videoTrack);
+      if (imageCapture && imageCapture.setOptions) {
+        await imageCapture.setOptions({
+          pointsOfInterest: [{ x: normalizedX, y: normalizedY }],
+        });
+        return;
+      }
+    } catch (err) {
+      console.log('Image Capture API 사용 불가:', err);
+    }
+
+    // Image Capture API가 없으면 MediaTrackConstraints 사용
+    // focusMode를 single-shot으로 설정하여 초점 조정
+    if (capabilities?.focusMode?.includes('single-shot')) {
+      try {
+        // 먼저 single-shot 모드로 설정
+        await videoTrack.applyConstraints({
           advanced: [
             {
-              pointsOfInterest: [{ x: normalizedX, y: normalizedY }],
+              focusMode: 'single-shot',
             } as ExtendedMediaTrackConstraintSetType,
           ],
-        } as MediaTrackConstraints)
-        .catch((err) => {
-          console.error('초점 설정 실패:', err);
-        });
+        } as MediaTrackConstraints);
+
+        // pointsOfInterest가 지원되는 경우 추가로 설정
+        try {
+          await videoTrack.applyConstraints({
+            advanced: [
+              {
+                pointsOfInterest: [{ x: normalizedX, y: normalizedY }],
+              } as ExtendedMediaTrackConstraintSetType,
+            ],
+          } as unknown as MediaTrackConstraints);
+        } catch (poiErr) {
+          // pointsOfInterest가 지원되지 않아도 focusMode만으로도 초점 조정 가능
+          console.log('pointsOfInterest 미지원, focusMode만 사용');
+        }
+      } catch (err) {
+        console.error('초점 설정 실패:', err);
+      }
+    } else if (capabilities?.focusMode?.includes('manual')) {
+      // manual 모드가 있는 경우
+      try {
+        await videoTrack.applyConstraints({
+          advanced: [
+            {
+              focusMode: 'manual',
+            } as ExtendedMediaTrackConstraintSetType,
+          ],
+        } as MediaTrackConstraints);
+      } catch (err) {
+        console.error('초점 설정 실패:', err);
+      }
+    } else if (capabilities?.focusMode?.includes('continuous')) {
+      // continuous autofocus 활성화
+      try {
+        await videoTrack.applyConstraints({
+          advanced: [
+            {
+              focusMode: 'continuous',
+            } as ExtendedMediaTrackConstraintSetType,
+          ],
+        } as MediaTrackConstraints);
+      } catch (err) {
+        console.error('초점 설정 실패:', err);
+      }
     }
   };
 
@@ -118,6 +172,14 @@ const BarcodeScannerContent = () => {
       setIsScanning(false);
     },
     paused: false,
+    // 내장 카메라 직접 사용 설정
+    constraints: {
+      video: {
+        facingMode: 'environment', // 후면 카메라 우선, 없으면 전면 카메라 사용
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+      },
+    },
   });
 
   useEffect(() => {
@@ -127,14 +189,30 @@ const BarcodeScannerContent = () => {
 
     setError(null);
     setIsScanning(true);
-    // 카메라 접근 시도
+    // 내장 카메라 접근 시도
     navigator.mediaDevices
-      .getUserMedia({ video: { facingMode: 'environment' } })
+      .getUserMedia({
+        video: {
+          facingMode: 'environment', // 후면 카메라 우선
+        },
+      })
       .then(() => {
         setIsScanning(false);
       })
       .catch((err) => {
         console.error('카메라 접근 오류:', err);
+        const error = err as { name?: string };
+        if (error.name === 'NotAllowedError') {
+          setError(
+            '카메라 권한이 필요합니다.\n설정에서 카메라 권한을 허용해주세요.'
+          );
+        } else if (error.name === 'NotFoundError') {
+          setError(
+            '카메라를 찾을 수 없습니다.\n카메라가 연결되어 있는지 확인해주세요.'
+          );
+        } else {
+          setError('카메라 접근 중 오류가 발생했습니다.');
+        }
         setIsScanning(false);
       });
 
@@ -142,6 +220,51 @@ const BarcodeScannerContent = () => {
       document.body.style.overflow = originalStyle;
     };
   }, []);
+
+  // 비디오가 준비되면 자동 초점 활성화
+  useEffect(() => {
+    const video = ref.current;
+    if (!video) return;
+
+    const setupAutofocus = () => {
+      const stream = video.srcObject as MediaStream | null;
+      if (!stream) return;
+
+      const videoTrack = stream.getVideoTracks()[0];
+      if (!videoTrack) return;
+
+      const capabilities =
+        videoTrack.getCapabilities() as ExtendedMediaTrackCapabilitiesType;
+
+      // continuous autofocus 활성화 (가장 안정적)
+      if (capabilities?.focusMode?.includes('continuous')) {
+        videoTrack
+          .applyConstraints({
+            advanced: [
+              {
+                focusMode: 'continuous',
+              } as ExtendedMediaTrackConstraintSetType,
+            ],
+          } as MediaTrackConstraints)
+          .catch((err) => {
+            console.log('자동 초점 설정 실패:', err);
+          });
+      }
+    };
+
+    // 비디오가 로드되면 초점 설정
+    if (video.readyState >= 2) {
+      // 이미 로드된 경우
+      setupAutofocus();
+    } else {
+      // 로드 대기
+      video.addEventListener('loadedmetadata', setupAutofocus, { once: true });
+    }
+
+    return () => {
+      video.removeEventListener('loadedmetadata', setupAutofocus);
+    };
+  }, [ref]);
 
   return (
     <div className="fixed inset-0 z-50 bg-wh flex flex-col">
