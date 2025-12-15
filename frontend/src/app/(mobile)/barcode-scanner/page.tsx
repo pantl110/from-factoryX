@@ -15,6 +15,66 @@ const BarcodeScannerContent = () => {
 
   const [error, setError] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
+  const [focusPoint, setFocusPoint] = useState<{ x: number; y: number } | null>(
+    null
+  );
+
+  const handleFocusPoint = (
+    video: HTMLVideoElement,
+    clientX: number,
+    clientY: number
+  ) => {
+    if (!video) return;
+
+    const rect = video.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+    const normalizedX = x / rect.width;
+    const normalizedY = y / rect.height;
+
+    // UI 피드백: 클릭한 위치 표시
+    setFocusPoint({ x, y });
+    setTimeout(() => {
+      setFocusPoint(null);
+    }, 1000);
+
+    // 비디오 스트림에서 비디오 트랙 가져오기
+    const stream = video.srcObject as MediaStream | null;
+    if (!stream) return;
+
+    const videoTrack = stream.getVideoTracks()[0];
+    if (!videoTrack) return;
+
+    // 포커스 포인트 설정 (실험적 API)
+    const capabilities = videoTrack.getCapabilities() as any;
+    if (
+      capabilities?.focusMode?.includes('manual') ||
+      capabilities?.focusMode?.includes('single-shot')
+    ) {
+      videoTrack
+        .applyConstraints({
+          advanced: [
+            {
+              pointsOfInterest: [{ x: normalizedX, y: normalizedY }],
+            },
+          ] as any,
+        } as any)
+        .catch((err) => {
+          console.error('초점 설정 실패:', err);
+        });
+    }
+  };
+
+  const handleVideoClick = (e: React.MouseEvent<HTMLVideoElement>) => {
+    handleFocusPoint(e.currentTarget, e.clientX, e.clientY);
+  };
+
+  const handleVideoTouch = (e: React.TouchEvent<HTMLVideoElement>) => {
+    const touch = e.touches[0];
+    if (touch) {
+      handleFocusPoint(e.currentTarget, touch.clientX, touch.clientY);
+    }
+  };
 
   const { ref } = useZxing({
     onDecodeResult(result) {
@@ -27,7 +87,7 @@ const BarcodeScannerContent = () => {
       }
     },
     onError(err: unknown) {
-      console.error('Barcode scanner error:', err);
+      console.error('바코드 스캐너 오류:', err);
       const error = err as { name?: string };
       if (error.name === 'NotAllowedError') {
         setError(
@@ -59,7 +119,7 @@ const BarcodeScannerContent = () => {
         setIsScanning(false);
       })
       .catch((err) => {
-        console.error('Camera access error:', err);
+        console.error('카메라 접근 오류:', err);
         setIsScanning(false);
       });
 
@@ -100,13 +160,37 @@ const BarcodeScannerContent = () => {
             </button>
           </div>
         ) : (
-          <video
-            ref={ref}
-            className="w-full h-full object-cover"
-            autoPlay
-            playsInline
-            muted
-          />
+          <>
+            <video
+              ref={ref}
+              className="w-full h-full object-cover"
+              autoPlay
+              playsInline
+              muted
+              onClick={handleVideoClick}
+              onTouchStart={handleVideoTouch}
+            />
+            {/* 포커스 링 UI */}
+            {focusPoint && (
+              <div
+                className="absolute pointer-events-none z-20"
+                style={{
+                  left: `${focusPoint.x}px`,
+                  top: `${focusPoint.y}px`,
+                  transform: 'translate(-50%, -50%)',
+                }}
+              >
+                <div className="relative w-20 h-20">
+                  {/* 외부 링 */}
+                  <div className="absolute inset-0 border-2 border-white rounded-full animate-ping opacity-75" />
+                  {/* 내부 링 */}
+                  <div className="absolute inset-2 border-2 border-white rounded-full" />
+                  {/* 중앙 점 */}
+                  <div className="absolute top-1/2 left-1/2 w-1 h-1 bg-white rounded-full transform -translate-x-1/2 -translate-y-1/2" />
+                </div>
+              </div>
+            )}
+          </>
         )}
       </div>
 
