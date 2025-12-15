@@ -23,6 +23,12 @@ type ExtendedMediaTrackConstraintSetType = MediaTrackConstraintSet & {
   focusMode?: string;
 };
 
+// 디버그 로그 (하얀 화면 원인 파악용)
+const logDiag = (...args: unknown[]) => {
+  // eslint-disable-next-line no-console
+  console.warn('[barcode-debug]', ...args);
+};
+
 const BarcodeScannerContent = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -43,6 +49,7 @@ const BarcodeScannerContent = () => {
     clientY: number
   ) => {
     if (!video) return;
+    logDiag('focus start', { clientX, clientY });
 
     const rect = video.getBoundingClientRect();
     const x = clientX - rect.left;
@@ -58,82 +65,35 @@ const BarcodeScannerContent = () => {
 
     // 비디오 스트림에서 비디오 트랙 가져오기
     const stream = video.srcObject as MediaStream | null;
-    if (!stream) return;
+    if (!stream) {
+      logDiag('focus abort: no stream');
+      return;
+    }
 
     const videoTrack = stream.getVideoTracks()[0];
-    if (!videoTrack) return;
+    if (!videoTrack) {
+      logDiag('focus abort: no video track');
+      return;
+    }
 
     const capabilities =
       videoTrack.getCapabilities() as ExtendedMediaTrackCapabilitiesType;
+    logDiag('focus capabilities', capabilities);
 
     // Image Capture API를 사용한 초점 설정 (더 안정적)
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const imageCapture = new (window as any).ImageCapture(videoTrack);
       if (imageCapture && imageCapture.setOptions) {
+        logDiag('focus using ImageCapture');
         await imageCapture.setOptions({
           pointsOfInterest: [{ x: normalizedX, y: normalizedY }],
         });
-        return;
+        return; // ImageCapture 성공 시 추가 제약 호출하지 않음
       }
     } catch {
       // Image Capture API 사용 불가 - 무시
-    }
-
-    // Image Capture API가 없으면 MediaTrackConstraints 사용
-    // focusMode를 single-shot으로 설정하여 초점 조정
-    if (capabilities?.focusMode?.includes('single-shot')) {
-      try {
-        // 먼저 single-shot 모드로 설정
-        await videoTrack.applyConstraints({
-          advanced: [
-            {
-              focusMode: 'single-shot',
-            } as ExtendedMediaTrackConstraintSetType,
-          ],
-        } as unknown as MediaTrackConstraints);
-
-        // pointsOfInterest가 지원되는 경우 추가로 설정
-        try {
-          await videoTrack.applyConstraints({
-            advanced: [
-              {
-                pointsOfInterest: [{ x: normalizedX, y: normalizedY }],
-              } as ExtendedMediaTrackConstraintSetType,
-            ],
-          } as unknown as MediaTrackConstraints);
-        } catch {
-          // pointsOfInterest가 지원되지 않아도 focusMode만으로도 초점 조정 가능
-        }
-      } catch (err) {
-        console.error('초점 설정 실패:', err);
-      }
-    } else if (capabilities?.focusMode?.includes('manual')) {
-      // manual 모드가 있는 경우
-      try {
-        await videoTrack.applyConstraints({
-          advanced: [
-            {
-              focusMode: 'manual',
-            } as ExtendedMediaTrackConstraintSetType,
-          ],
-        } as unknown as MediaTrackConstraints);
-      } catch (err) {
-        console.error('초점 설정 실패:', err);
-      }
-    } else if (capabilities?.focusMode?.includes('continuous')) {
-      // continuous autofocus 활성화
-      try {
-        await videoTrack.applyConstraints({
-          advanced: [
-            {
-              focusMode: 'continuous',
-            } as ExtendedMediaTrackConstraintSetType,
-          ],
-        } as unknown as MediaTrackConstraints);
-      } catch (err) {
-        console.error('초점 설정 실패:', err);
-      }
+      logDiag('focus ImageCapture failed');
     }
   };
 
@@ -252,6 +212,11 @@ const BarcodeScannerContent = () => {
       checkCount++;
 
       if (video && video.readyState >= 2 && video.videoWidth > 0) {
+        logDiag('video ready', {
+          readyState: video.readyState,
+          videoWidth: video.videoWidth,
+          videoHeight: video.videoHeight,
+        });
         setIsScanning(false);
         return;
       }
@@ -260,6 +225,7 @@ const BarcodeScannerContent = () => {
         // 비디오가 아직 준비되지 않았으면 잠시 후 다시 확인
         setTimeout(checkVideoReady, 100);
       } else {
+        logDiag('video ready timeout');
         setIsScanning(false);
       }
     };
@@ -274,6 +240,7 @@ const BarcodeScannerContent = () => {
         handleUnhandledRejection
       );
       document.body.style.overflow = originalStyle;
+      logDiag('cleanup effect');
     };
   }, [ref]);
 
@@ -372,23 +339,22 @@ const BarcodeScannerContent = () => {
                     setError('비디오 형식을 지원하지 않습니다.');
                   }
                   // 다른 오류는 BrowserCodeReader가 처리하므로 무시
-                }
-              }}
-              onLoadedData={() => {
-                // 비디오 데이터가 로드되면 재생 시도
-                const video = ref.current;
-                if (video && video.paused) {
-                  video.play().catch(() => {
-                    // 재생 실패는 무시 (BrowserCodeReader가 처리)
+                  logDiag('video error event', {
+                    code: error.code,
+                    message: error.message,
                   });
                 }
-                setIsScanning(false);
               }}
               onCanPlay={() => {
+                logDiag('video canplay');
                 setIsScanning(false);
               }}
               onPlaying={() => {
+                logDiag('video playing');
                 setIsScanning(false);
+              }}
+              onSuspend={() => {
+                logDiag('video suspend');
               }}
             />
             {/* 포커스 링 UI */}
