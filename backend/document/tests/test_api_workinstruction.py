@@ -2,16 +2,13 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from ninja.testing import TestAsyncClient
 from document.api_workinstruction import router
-from document.models import WorkInstruction
+from document.models import WorkInstruction, Quotation
 from factory.models import Factory, FactoryMember, FactoryEquipment, FactoryClient
 from project.models import ProjectPlan, Project
 from stock.models import Product
 import jwt
 from django.conf import settings
-from datetime import timedelta
-from django.utils import timezone
-from document.models import Quotation, QuotationProduct
-from datetime import date
+from datetime import timedelta, datetime, date
 
 User = get_user_model()
 
@@ -79,7 +76,7 @@ class TestWorkInstructionAPI(TestCase):
         )
 
         # 프로젝트 계획 생성 (가동 대기 상태, 오늘 생산일자)
-        now = timezone.now()
+        now = datetime.now()
         self.project_plan = ProjectPlan.objects.create(
             project=self.project,
             product=self.quotation_product,
@@ -102,7 +99,7 @@ class TestWorkInstructionAPI(TestCase):
     def _get_jwt_token(self):
         """JWT 토큰 생성"""
         return jwt.encode(
-            {"user_id": self.user.id, "exp": timezone.now() + timedelta(hours=1)},
+            {"user_id": self.user.id, "exp": datetime.now() + timedelta(hours=1)},
             settings.SECRET_KEY,
             algorithm="HS256",
         )

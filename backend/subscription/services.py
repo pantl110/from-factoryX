@@ -7,7 +7,7 @@ import uuid
 import logging
 from subscription.exceptions import PaymentError, BillingKeyError
 from django.db import transaction
-from django.utils import timezone
+from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
 
@@ -215,7 +215,7 @@ class SubscriptionBillingService:
     def process_subscription_payment(self, subscription_history):
         """구독 정기 결제 처리 (트랜잭션 적용)"""
         order_id = (
-            f"subscription_{subscription_history.id}_{int(timezone.now().timestamp())}"
+            f"subscription_{subscription_history.id}_{int(datetime.now().timestamp())}"
         )
 
         # Payment 객체 먼저 생성 (PENDING 상태)
@@ -240,7 +240,7 @@ class SubscriptionBillingService:
             payment.payment_key = payment_result.get("paymentKey")
             payment.status = "DONE"
             payment.method = payment_result.get("method")
-            payment.approved_at = timezone.now()
+            payment.approved_at = datetime.now()
 
             # 카드 정보 저장
             card_info = payment_result.get("card", {})

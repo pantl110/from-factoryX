@@ -5,7 +5,7 @@ from ninja.testing import TestAsyncClient
 from user.models import User
 from factory.models import Factory, FactoryMember
 from asgiref.sync import sync_to_async
-from django.utils import timezone
+from datetime import datetime
 
 
 class TestFactoryMember(TestCase):
@@ -37,7 +37,7 @@ class TestFactoryMember(TestCase):
         from datetime import timedelta
 
         # 직접 JWT 토큰 생성
-        payload = {"user_id": self.user.id, "exp": timezone.now() + timedelta(hours=1)}
+        payload = {"user_id": self.user.id, "exp": datetime.now() + timedelta(hours=1)}
         token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
         return {
@@ -137,7 +137,7 @@ class TestFactoryMember(TestCase):
         headers = await self.authenticate()
         # 미가입 초대자 추가
         invited_email = "invitee2@example.com"
-        invited_at = timezone.now().isoformat()
+        invited_at = datetime.now().isoformat()
         self.factory.inviting = [
             {
                 "email": invited_email,
@@ -227,7 +227,7 @@ class TestFactoryMember(TestCase):
                 "email": invited_email,
                 "role": "viewer",
                 "invited_by": self.user.id,
-                "invited_at": timezone.now().isoformat(),
+                "invited_at": datetime.now().isoformat(),
             }
         ]
         await sync_to_async(self.factory.save)()
@@ -285,19 +285,19 @@ class TestFactoryMember(TestCase):
                 "email": "invitee5@example.com",
                 "role": "member",
                 "invited_by": self.user.id,
-                "invited_at": timezone.now().isoformat(),
+                "invited_at": datetime.now().isoformat(),
             },
             {
                 "email": "invitee6@example.com",
                 "role": "viewer",
                 "invited_by": self.user.id,
-                "invited_at": timezone.now().isoformat(),
+                "invited_at": datetime.now().isoformat(),
             },
             {
                 "email": "invitee7@example.com",
                 "role": "manager",
                 "invited_by": self.user.id,
-                "invited_at": timezone.now().isoformat(),
+                "invited_at": datetime.now().isoformat(),
             },
         ]
         await sync_to_async(self.factory.save)()
@@ -332,7 +332,7 @@ class TestFactoryMember(TestCase):
                 "email": invited_email,
                 "role": "viewer",
                 "invited_by": self.user.id,
-                "invited_at": timezone.now().isoformat(),
+                "invited_at": datetime.now().isoformat(),
             }
         ]
         await sync_to_async(self.factory.save)()
@@ -374,7 +374,7 @@ class TestFactoryMember(TestCase):
                 "email": "invitee8@example.com",
                 "role": "viewer",
                 "invited_by": self.user.id,
-                "invited_at": timezone.now().isoformat(),
+                "invited_at": datetime.now().isoformat(),
             }
         ]
         await sync_to_async(self.factory.save)()

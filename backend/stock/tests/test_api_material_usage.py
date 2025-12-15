@@ -7,8 +7,7 @@ from stock.models import Product, Material, MaterialHistory, MaterialUsage
 import json
 import jwt
 from django.conf import settings
-from datetime import timedelta
-from django.utils import timezone
+from datetime import timedelta, datetime
 from decimal import Decimal
 from typing import Optional
 
@@ -50,8 +49,8 @@ class MaterialUsageAPITestCase(TestCase):
             product=self.quotation_product,
             equipment=self.equipment,
             quantity=100,
-            start_date=timezone.now(),
-            end_date=timezone.now() + timedelta(days=7),
+            start_date=datetime.now(),
+            end_date=datetime.now() + timedelta(days=7),
             avg_production_time=3600,
         )
         self.material_history = MaterialHistory.objects.create(
@@ -65,7 +64,7 @@ class MaterialUsageAPITestCase(TestCase):
             remaining_quantity=50,
         )
 
-        one_month_ago = timezone.now() - relativedelta(months=1)
+        one_month_ago = datetime.now() - relativedelta(months=1)
         FactoryMember.objects.create(
             factory=self.factory,
             user=self.user,
@@ -76,7 +75,7 @@ class MaterialUsageAPITestCase(TestCase):
         FactoryMember.objects.filter(factory=self.factory).update(created_at=one_month_ago)
 
         self.token = jwt.encode(
-            {"user_id": self.user.id, "exp": timezone.now() + timedelta(hours=1)},
+            {"user_id": self.user.id, "exp": datetime.now() + timedelta(hours=1)},
             settings.SECRET_KEY,
             algorithm="HS256",
         )
@@ -187,7 +186,7 @@ class MaterialUsageAPITestCase(TestCase):
         from dateutil.relativedelta import relativedelta
 
         other_factory = Factory.objects.create(name="다른 공장", owner=self.user)
-        one_month_ago = timezone.now() - relativedelta(months=1)
+        one_month_ago = datetime.now() - relativedelta(months=1)
         FactoryMember.objects.create(
             factory=other_factory,
             user=self.user,

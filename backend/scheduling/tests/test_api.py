@@ -1,8 +1,7 @@
 import jwt
-from datetime import timedelta, date
+from datetime import timedelta, date, datetime
 from django.test import TestCase
 from django.conf import settings
-from django.utils import timezone
 from user.models import User
 from factory.models import Factory, FactoryMember, FactoryEquipment
 from project.models import Project, ProjectPlan
@@ -72,8 +71,8 @@ class SchedulingAPITestCase(TestCase):
             equipment=self.equipment,
             status=ProjectPlan.ProductionStatus.production,
             quantity=10,
-            start_date=timezone.now() - timedelta(days=1),
-            end_date=timezone.now() - timedelta(hours=1),  # 1시간 전 마감
+            start_date=datetime.now() - timedelta(days=1),
+            end_date=datetime.now() - timedelta(hours=1),  # 1시간 전 마감
             avg_production_time=3600,
             end_notification=False,
         )
@@ -86,7 +85,7 @@ class SchedulingAPITestCase(TestCase):
 
     def generate_jwt_token(self):
         return jwt.encode(
-            {"user_id": self.user.id, "exp": timezone.now() + timedelta(hours=1)},
+            {"user_id": self.user.id, "exp": datetime.now() + timedelta(hours=1)},
             settings.SECRET_KEY,
             algorithm="HS256",
         )
@@ -284,7 +283,7 @@ class ProjectPlanEndNotificationTestCase(SchedulingAPITestCase):
     def test_project_plan_end_notification_no_overdue_plans(self):
         """마감 예정일이 지나지 않은 계획들만 있는 경우 테스트"""
         # 프로젝트 계획의 마감일을 미래로 변경
-        self.project_plan.end_date = timezone.now() + timedelta(days=1)
+        self.project_plan.end_date = datetime.now() + timedelta(days=1)
         self.project_plan.save()
 
         url = "/v1/scheduling/project-plan/end"
@@ -399,7 +398,7 @@ class SchedulingDecoratorsTestCase(TestCase):
             email="test@example.com", password="testpass123"
         )
         self.token = jwt.encode(
-            {"user_id": self.user.id, "exp": timezone.now() + timedelta(hours=1)},
+            {"user_id": self.user.id, "exp": datetime.now() + timedelta(hours=1)},
             settings.SECRET_KEY,
             algorithm="HS256",
         )
@@ -477,7 +476,7 @@ class SchedulingIntegrationTestCase(TestCase):
         )
 
         self.token = jwt.encode(
-            {"user_id": self.user.id, "exp": timezone.now() + timedelta(hours=1)},
+            {"user_id": self.user.id, "exp": datetime.now() + timedelta(hours=1)},
             settings.SECRET_KEY,
             algorithm="HS256",
         )
@@ -552,8 +551,8 @@ class SchedulingIntegrationTestCase(TestCase):
             equipment=self.equipment,
             status=ProjectPlan.ProductionStatus.production,
             quantity=15,
-            start_date=timezone.now() - timedelta(days=1),
-            end_date=timezone.now() - timedelta(minutes=30),  # 30분 전 마감
+            start_date=datetime.now() - timedelta(days=1),
+            end_date=datetime.now() - timedelta(minutes=30),  # 30분 전 마감
             avg_production_time=2400,
             end_notification=False,
         )
@@ -621,8 +620,8 @@ class SchedulingIntegrationTestCase(TestCase):
             equipment=self.equipment,
             status=ProjectPlan.ProductionStatus.production,
             quantity=10,
-            start_date=timezone.now() - timedelta(days=1),
-            end_date=timezone.now() - timedelta(hours=1),
+            start_date=datetime.now() - timedelta(days=1),
+            end_date=datetime.now() - timedelta(hours=1),
             avg_production_time=1800,
             end_notification=False,
         )
@@ -633,8 +632,8 @@ class SchedulingIntegrationTestCase(TestCase):
             equipment=self.equipment,
             status=ProjectPlan.ProductionStatus.production,
             quantity=20,
-            start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() - timedelta(hours=3),
+            start_date=datetime.now() - timedelta(days=2),
+            end_date=datetime.now() - timedelta(hours=3),
             avg_production_time=3000,
             end_notification=False,
         )

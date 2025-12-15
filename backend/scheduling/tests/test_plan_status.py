@@ -3,7 +3,6 @@ import jwt
 from datetime import datetime, timedelta, date
 from django.test import TestCase
 from django.conf import settings
-from django.utils import timezone
 from user.models import User
 from factory.models import Factory, FactoryMember, FactoryEquipment
 from project.models import Project, ProjectPlan
@@ -75,8 +74,8 @@ class SchedulingAPITestCase(TestCase):
             equipment=self.equipment,
             status=ProjectPlan.ProductionStatus.production,
             quantity=10,
-            start_date=timezone.now() - timedelta(days=1),
-            end_date=timezone.now() - timedelta(hours=1),  # 1시간 전 마감
+            start_date=datetime.now() - timedelta(days=1),
+            end_date=datetime.now() - timedelta(hours=1),  # 1시간 전 마감
             avg_production_time=3600,
             end_notification=False,
         )
@@ -89,7 +88,7 @@ class SchedulingAPITestCase(TestCase):
 
     def generate_jwt_token(self):
         return jwt.encode(
-            {"user_id": self.user.id, "exp": timezone.now() + timedelta(hours=1)},
+            {"user_id": self.user.id, "exp": datetime.now() + timedelta(hours=1)},
             settings.SECRET_KEY,
             algorithm="HS256",
         )
@@ -127,8 +126,8 @@ class ProjectPlanStartStatusChangeTestCase(SchedulingAPITestCase):
             equipment=self.equipment,
             status=ProjectPlan.ProductionStatus.pending,
             quantity=10,  # 총 50kg 자재 필요 (5 * 10)
-            start_date=timezone.now() - timedelta(hours=1),  # 1시간 전 시작 예정
-            end_date=timezone.now() + timedelta(hours=5),
+            start_date=datetime.now() - timedelta(hours=1),  # 1시간 전 시작 예정
+            end_date=datetime.now() + timedelta(hours=5),
             avg_production_time=1800,
         )
 
@@ -203,7 +202,7 @@ class ProjectPlanStartStatusChangeTestCase(SchedulingAPITestCase):
     def test_project_plan_start_future_start_date(self):
         """시작 예정일이 미래인 경우 상태변경 안됨 테스트"""
         # 시작일을 미래로 설정
-        self.pending_plan.start_date = timezone.now() + timedelta(hours=1)
+        self.pending_plan.start_date = datetime.now() + timedelta(hours=1)
         self.pending_plan.save()
 
         url = "/v1/scheduling/project-plan/start"
@@ -221,7 +220,7 @@ class ProjectPlanStartStatusChangeTestCase(SchedulingAPITestCase):
     def test_project_plan_start_upgrade_future_start_date(self):
         """시작 예정일이 미래인 경우 상태변경 안됨 테스트"""
         # 시작일을 미래로 설정
-        self.pending_plan.start_date = timezone.now() + timedelta(hours=1)
+        self.pending_plan.start_date = datetime.now() + timedelta(hours=1)
         self.pending_plan.save()
 
         url = "/v1/scheduling/project-plan/start"
@@ -309,8 +308,8 @@ class ProjectPlanStartStatusChangeTestCase(SchedulingAPITestCase):
             equipment=self.equipment,
             status=ProjectPlan.ProductionStatus.pending,
             quantity=5,  # 총 25kg 자재 필요 (5 * 5)
-            start_date=timezone.now() - timedelta(minutes=30),
-            end_date=timezone.now() + timedelta(hours=3),
+            start_date=datetime.now() - timedelta(minutes=30),
+            end_date=datetime.now() + timedelta(hours=3),
             avg_production_time=1200,
         )
 
@@ -342,8 +341,8 @@ class ProjectPlanStartStatusChangeTestCase(SchedulingAPITestCase):
             equipment=self.equipment,
             status=ProjectPlan.ProductionStatus.pending,
             quantity=5,
-            start_date=timezone.now() - timedelta(minutes=30),
-            end_date=timezone.now() + timedelta(hours=3),
+            start_date=datetime.now() - timedelta(minutes=30),
+            end_date=datetime.now() + timedelta(hours=3),
             avg_production_time=1200,
         )
 

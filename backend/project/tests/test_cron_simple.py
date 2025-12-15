@@ -5,8 +5,7 @@ from factory.models import Factory, FactoryMember, FactoryEquipment
 from project.models import Project, ProjectPlan
 from document.models import Quotation, QuotationProduct
 from stock.models import Product
-from datetime import date, timedelta
-from django.utils import timezone
+from datetime import date, timedelta, datetime
 import io
 
 User = get_user_model()
@@ -76,7 +75,7 @@ class SimpleCronTest(TestCase):
         )
         
         # 프로젝트 계획 생성 (가동 대기 상태, 오늘 생산일자)
-        now = timezone.now()
+        now = datetime.now()
         self.project_plan = ProjectPlan.objects.create(
             project=self.project,
             product=self.quotation_product,

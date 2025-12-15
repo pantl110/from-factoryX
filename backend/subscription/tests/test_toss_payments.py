@@ -5,11 +5,9 @@ from subscription.models import Subscription, SubscriptionHistory, Payment, Paym
 from subscription.services import TossPaymentsService, SubscriptionBillingService
 from subscription.exceptions import PaymentError, BillingKeyError
 from user.models import EmailVerification
-from django.utils import timezone
-from datetime import timedelta, date
+from datetime import timedelta, date, datetime
 from unittest.mock import patch, MagicMock
 from asgiref.sync import sync_to_async
-import json
 
 User = get_user_model()
 
@@ -180,8 +178,8 @@ class SubscriptionAPITestCase(TestCase):
         subscription_history = await SubscriptionHistory.objects.acreate(
             factory=self.factory,
             subscription=self.subscription_basic,
-            start_date=timezone.now().date(),
-            end_date=(timezone.now() + timedelta(days=30)).date(),
+            start_date=date.today(),
+            end_date=(datetime.now() + timedelta(days=30)).date(),
             billing_key="test_billing_key",
             customer_key="test_customer_key",
         )
@@ -193,7 +191,7 @@ class SubscriptionAPITestCase(TestCase):
             amount=50000,
             status="DONE",
             method="카드",
-            approved_at=timezone.now(),
+            approved_at=datetime.now(),
         )
 
         client = TestAsyncClient(router)
@@ -218,8 +216,8 @@ class SubscriptionAPITestCase(TestCase):
         subscription_history = await SubscriptionHistory.objects.acreate(
             factory=self.factory,
             subscription=self.subscription_basic,
-            start_date=timezone.now().date(),
-            end_date=(timezone.now() + timedelta(days=15)).date(),
+            start_date=date.today(),
+            end_date=(datetime.now() + timedelta(days=15)).date(),
             billing_key="test_billing_key",
             customer_key="test_customer_key",
         )
@@ -358,8 +356,8 @@ class SubscriptionBillingServiceTestCase(TestCase):
         self.subscription_history = SubscriptionHistory.objects.create(
             factory=self.factory,
             subscription=self.subscription,
-            start_date=timezone.now().date(),
-            end_date=(timezone.now() + timedelta(days=30)).date(),
+            start_date=date.today(),
+            end_date=(datetime.now() + timedelta(days=30)).date(),
             billing_key="test_billing_key",
             customer_key="test_customer_key",
         )
@@ -402,7 +400,7 @@ class SubscriptionBillingServiceTestCase(TestCase):
             order_id="test_order_123",
             amount=50000,
             status="DONE",
-            approved_at=timezone.now(),
+            approved_at=datetime.now(),
         )
 
         client = TestAsyncClient(router)
@@ -446,7 +444,7 @@ class SubscriptionBillingServiceTestCase(TestCase):
             order_id="test_order_123",
             amount=50000,
             status="DONE",
-            approved_at=timezone.now(),
+            approved_at=datetime.now(),
         )
 
         client = TestAsyncClient(router)
@@ -499,7 +497,7 @@ class SubscriptionBillingServiceTestCase(TestCase):
             order_id="test_order_123",
             amount=50000,
             status="DONE",
-            approved_at=timezone.now(),
+            approved_at=datetime.now(),
         )
 
         client = TestAsyncClient(router)
@@ -595,7 +593,7 @@ class SubscriptionBillingServiceTestCase(TestCase):
         from subscription.api import router
 
         # 구독을 만료시킴
-        self.subscription_history.end_date = timezone.now().date() - timedelta(days=1)
+        self.subscription_history.end_date = date.today() - timedelta(days=1)
         await self.subscription_history.asave()
 
         client = TestAsyncClient(router)

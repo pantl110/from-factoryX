@@ -4,8 +4,7 @@ from user.models import User
 from factory.models import Factory, FactoryMember
 import jwt
 from django.conf import settings
-from datetime import timedelta
-from django.utils import timezone
+from datetime import timedelta, date, datetime
 from subscription.models import Subscription, SubscriptionHistory
 
 
@@ -42,8 +41,8 @@ class FactoryCreateAPITestCase(TestCase):
         self.subscription_history = SubscriptionHistory.objects.create(
             subscription=self.subscription,
             factory=self.factory,
-            start_date=timezone.now().date(),
-            end_date=timezone.now().date() + timedelta(days=30),
+            start_date=date.today(),
+            end_date=date.today() + timedelta(days=30),
         )
 
         self.token = self.generate_jwt_token()
@@ -51,7 +50,7 @@ class FactoryCreateAPITestCase(TestCase):
 
     def generate_jwt_token(self):
         return jwt.encode(
-            {"user_id": self.user.id, "exp": timezone.now() + timedelta(hours=1)},
+            {"user_id": self.user.id, "exp": datetime.now() + timedelta(hours=1)},
             settings.SECRET_KEY,
             algorithm="HS256",
         )
@@ -464,7 +463,7 @@ class FactoryCreateAPITestCase(TestCase):
         from django.utils import timezone
         import time
 
-        base_time = timezone.now()
+        base_time = datetime.now()
 
         member1 = FactoryMember.objects.create(
             factory=factory1,
@@ -482,7 +481,7 @@ class FactoryCreateAPITestCase(TestCase):
             role=FactoryMember.FactoryMemberType.admin,
             status=FactoryMember.MemberStatus.active,
             invited_by=self.user,
-            invited_at=base_time + timezone.timedelta(seconds=1),
+            invited_at=base_time + timedelta(seconds=1),
         )
         time.sleep(0.1)  # 시간 간격
 
@@ -492,7 +491,7 @@ class FactoryCreateAPITestCase(TestCase):
             role=FactoryMember.FactoryMemberType.admin,
             status=FactoryMember.MemberStatus.active,
             invited_by=self.user,
-            invited_at=base_time + timezone.timedelta(seconds=2),
+            invited_at=base_time + timedelta(seconds=2),
         )
 
         url = "/v1/factory"

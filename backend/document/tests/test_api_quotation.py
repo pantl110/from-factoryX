@@ -6,10 +6,9 @@ from stock.models import Product
 from project.models import Project
 import jwt
 from django.conf import settings
-from datetime import timedelta, date
+from datetime import timedelta, date, datetime, datetime
 from cfehome.urls import base_api
 from asgiref.sync import sync_to_async
-from django.utils import timezone
 from ninja.testing import TestAsyncClient
 
 User = get_user_model()
@@ -117,7 +116,7 @@ class QuotationDetailAPITestCase(TestCase):
     def generate_jwt_token(self):
         """JWT 토큰 생성"""
         return jwt.encode(
-            {"user_id": self.user.id, "exp": timezone.now() + timedelta(hours=1)},
+            {"user_id": self.user.id, "exp": datetime.now() + timedelta(hours=1)},
             settings.SECRET_KEY,
             algorithm="HS256",
         )

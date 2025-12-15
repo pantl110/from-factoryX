@@ -10,7 +10,7 @@ from factory.utils import get_factory_by_id, is_factory_member
 from asgiref.sync import sync_to_async
 from django.db.models import Prefetch
 from subscription.models import Subscription, SubscriptionHistory
-from django.utils import timezone
+from datetime import date
 from dateutil.relativedelta import relativedelta
 from django.db import transaction
 
@@ -55,7 +55,7 @@ async def create_factory(request):
             raise ValueError("트라이얼 구독 플랜이 존재하지 않습니다. 관리자에게 문의해주세요.")
 
         # 트라이얼 구독 히스토리 생성 (1개월)
-        start_date = timezone.now().date()
+        start_date = date.today()
         end_date = start_date + relativedelta(months=1)
 
         SubscriptionHistory.objects.create(

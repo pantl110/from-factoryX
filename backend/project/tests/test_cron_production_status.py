@@ -5,8 +5,7 @@ from factory.models import Factory, FactoryMember, FactoryEquipment
 from project.models import Project, ProjectPlan
 from document.models import Quotation, QuotationProduct
 from stock.models import Product
-from datetime import date, timedelta
-from django.utils import timezone
+from datetime import date, timedelta, datetime
 import io
 
 User = get_user_model()
@@ -69,7 +68,7 @@ class CronProductionStatusTestCase(TestCase):
         )
 
         # 프로젝트 계획 생성 (가동 대기 상태, 오늘 생산일자)
-        now = timezone.now()
+        now = datetime.now()
         self.project_plan = ProjectPlan.objects.create(
             project=self.project,
             product=self.quotation_product,
@@ -107,7 +106,7 @@ class CronProductionStatusTestCase(TestCase):
     def test_update_equipment_status_past_date(self):
         """과거 생산일자의 프로젝트 계획 테스트"""
         # 과거 생산일자로 프로젝트 계획 수정
-        self.project_plan.start_date = timezone.now() - timedelta(days=1)
+        self.project_plan.start_date = datetime.now() - timedelta(days=1)
         self.project_plan.save()
 
         # 명령어 실행
@@ -121,7 +120,7 @@ class CronProductionStatusTestCase(TestCase):
     def test_update_equipment_status_future_date(self):
         """미래 생산일자의 프로젝트 계획 테스트"""
         # 미래 생산일자로 프로젝트 계획 수정
-        self.project_plan.start_date = timezone.now() + timedelta(days=1)
+        self.project_plan.start_date = datetime.now() + timedelta(days=1)
         self.project_plan.save()
 
         # 명령어 실행
@@ -164,7 +163,7 @@ class CronProductionStatusTestCase(TestCase):
         """같은 설비를 사용하는 여러 프로젝트 계획 테스트"""
         # 두 번째 프로젝트와 계획 생성
         project2 = Project.objects.create(status="pending")
-        plan_start = timezone.now()
+        plan_start = datetime.now()
         plan2 = ProjectPlan.objects.create(
             project=project2,
             product=self.quotation_product,
@@ -193,7 +192,7 @@ class CronProductionStatusTestCase(TestCase):
     def test_no_plans_to_update(self):
         """업데이트할 계획이 없는 경우 테스트"""
         # 프로젝트 계획을 미래 날짜로 설정
-        self.project_plan.start_date = timezone.now() + timedelta(days=10)
+        self.project_plan.start_date = datetime.now() + timedelta(days=10)
         self.project_plan.save()
 
         # 명령어 실행

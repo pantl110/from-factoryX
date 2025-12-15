@@ -1,6 +1,5 @@
 from django.core.management.base import BaseCommand
-from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, date
 from subscription.models import SubscriptionHistory, Payment
 from subscription.services import SubscriptionBillingService
 from subscription.exceptions import PaymentError, BillingKeyError
@@ -32,7 +31,7 @@ class Command(BaseCommand):
         days = options["days"]
 
         # 지정된 일수 후에 만료되는 구독들을 찾음
-        target_date = timezone.now().date() + timedelta(days=days)
+        target_date = date.today() + timedelta(days=days)
 
         # 구독 자동 갱신 대상: 만료 예정이고 빌링키가 있으며 취소되지 않은 구독
         expiring_subscriptions = SubscriptionHistory.objects.filter(

@@ -1,12 +1,12 @@
 from django.apps import apps
-from django.utils import timezone
+from datetime import date
 
 
 def generate_lot_number() -> str:
     """LOT-YYYYMMDD-XX 형식의 LOT 번호를 생성합니다."""
     MaterialHistory = apps.get_model("stock", "MaterialHistory")
 
-    today_str = timezone.localdate().strftime("%Y%m%d")
+    today_str = date.today().strftime("%Y%m%d")
     prefix = f"LOT-{today_str}-"
 
     last_lot = (

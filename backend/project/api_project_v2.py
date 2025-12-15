@@ -10,7 +10,7 @@ from project.schemas.inbound import ProjectFilter
 from project.schemas.outbound import ProjectModelOut, StaleConfirmedProjectOut
 from factory.utils import is_factory_member
 from django.db.models import Min
-from django.utils import timezone
+from datetime import date
 
 router = Router(
     tags=["Project V2"],
@@ -85,7 +85,7 @@ async def list_stale_confirmed_projects(request):
     user = request.auth
     await is_factory_member(int(factory_id), user)
 
-    today = timezone.localdate()
+    today = date.today()
     cutoff_date = today - timedelta(days=7)
 
     try:

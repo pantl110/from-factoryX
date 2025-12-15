@@ -26,7 +26,6 @@ from api.exceptions import CustomAuthorizationError
 from django.http import JsonResponse
 from api.security import jwt_auth
 from user.models import EmailVerification
-from django.utils import timezone
 from datetime import timedelta, datetime
 from user.models import EmailVerification
 from factory.models import Factory, FactoryMember
@@ -118,7 +117,7 @@ async def verify_code(request, data: EmailVerificationCodeIn):
         )
 
         # 만료 시간 확인
-        if verification.created_at + timedelta(minutes=3) < timezone.now():
+        if verification.created_at + timedelta(minutes=3) < datetime.now():
             raise HttpError(400, "인증 코드가 만료되었습니다.")
 
         # 인증 완료 처리
@@ -154,7 +153,7 @@ async def reset_password(request, data: PasswordResetIn):
         )
 
         # 만료 시간 확인 (인증 후 5분 내에 비밀번호 재설정해야 함)
-        if verification.created_at + timedelta(minutes=5) < timezone.now():
+        if verification.created_at + timedelta(minutes=5) < datetime.now():
             raise HttpError(400, "인증 시간이 만료되었습니다. 다시 인증해주세요.")
 
         # 사용자 찾기

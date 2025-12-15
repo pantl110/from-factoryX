@@ -2,8 +2,7 @@ import jwt
 from django.test import TestCase, Client
 from django.urls import reverse
 from django.conf import settings
-from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, datetime
 from location.models import Location
 from stock.models import Material, Product
 from factory.models import Factory
@@ -63,7 +62,7 @@ class LocationAPITestCase(TestCase):
 
     def generate_jwt_token(self):
         """JWT 토큰 생성"""
-        payload = {"user_id": self.user.id, "exp": timezone.now() + timedelta(hours=1)}
+        payload = {"user_id": self.user.id, "exp": datetime.now() + timedelta(hours=1)}
         return jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
     def test_create_material_location(self):

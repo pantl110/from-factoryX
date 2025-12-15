@@ -1,8 +1,7 @@
 from ninja.errors import HttpError
 from stock.models import Product, ProductHistory, Material, MaterialHistory
 from factory.models import Factory
-from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, date, datetime
 from repackaging.models import MaterialRepackaging
 
 
@@ -114,7 +113,7 @@ async def get_material_history_by_material(
 
     if months:
         # 최근 N개월 데이터만 조회
-        start_date = timezone.now() - timedelta(days=months * 30)
+        start_date = datetime.now() - timedelta(days=months * 30)
         queryset = queryset.filter(created_at__gte=start_date)
 
     return queryset
@@ -234,8 +233,8 @@ def get_expiry_status(material_id: int, expiry_days: int) -> str | None:
     Returns:
         str | None: '양호', '위험', None (해당 항목이 없을 경우)
     """
-    # 오늘 날짜 (timezone 기준)
-    today = timezone.localdate()
+    # 오늘 날짜
+    today = date.today()
     
     # MaterialHistory에서 remaining_quantity > 0이고 expiration_date가 있는 것들
     histories = MaterialHistory.objects.filter(

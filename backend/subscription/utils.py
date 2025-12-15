@@ -7,7 +7,6 @@ from datetime import timedelta
 import logging
 from factory.utils import get_factory_by_id, is_factory_member
 from subscription.schemas.inbound import SubscriptionPaymentIn
-from django.utils import timezone
 
 
 async def get_subscription_by_id(subscription_id: int) -> Subscription:

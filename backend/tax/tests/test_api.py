@@ -49,7 +49,7 @@ class TaxAPITestCase(TestCase):
     def generate_jwt_token(self):
         """JWT 토큰 생성"""
         return jwt.encode(
-            {"user_id": self.user.id, "exp": timezone.now() + timedelta(hours=1)},
+            {"user_id": self.user.id, "exp": datetime.now() + timedelta(hours=1)},
             settings.SECRET_KEY,
             algorithm="HS256",
         )
@@ -1132,6 +1132,7 @@ class TaxAPITestCase(TestCase):
         """발행대기+임시저장 전체 조회 테스트"""
         # pending
         invoice_pending = NationalTaxService.objects.create(
+            factory=self.factory,
             client=self.client_company1,
             transaction_date=date(2025, 6, 4),
             transaction_amount=100000,
@@ -1141,6 +1142,7 @@ class TaxAPITestCase(TestCase):
         )
         # temporary
         invoice_temporary = NationalTaxService.objects.create(
+            factory=self.factory,
             client=self.client_company2,
             transaction_date=date(2025, 6, 5),
             transaction_amount=200000,
@@ -1170,6 +1172,7 @@ class TaxAPITestCase(TestCase):
     def test_list_pending_tax_invoices_pending_only(self):
         """발행대기만 조회 테스트"""
         invoice_pending = NationalTaxService.objects.create(
+            factory=self.factory,
             client=self.client_company1,
             transaction_date=date(2025, 6, 4),
             transaction_amount=100000,
@@ -1178,6 +1181,7 @@ class TaxAPITestCase(TestCase):
             publish_status="pending",
         )
         invoice_temporary = NationalTaxService.objects.create(
+            factory=self.factory,
             client=self.client_company2,
             transaction_date=date(2025, 6, 5),
             transaction_amount=200000,
@@ -1197,6 +1201,7 @@ class TaxAPITestCase(TestCase):
     def test_list_pending_tax_invoices_temporary_only(self):
         """임시저장만 조회 테스트"""
         invoice_pending = NationalTaxService.objects.create(
+            factory=self.factory,
             client=self.client_company1,
             transaction_date=date(2025, 6, 4),
             transaction_amount=100000,
@@ -1205,6 +1210,7 @@ class TaxAPITestCase(TestCase):
             publish_status="pending",
         )
         invoice_temporary = NationalTaxService.objects.create(
+            factory=self.factory,
             client=self.client_company2,
             transaction_date=date(2025, 6, 5),
             transaction_amount=200000,
@@ -1224,6 +1230,7 @@ class TaxAPITestCase(TestCase):
     def test_list_pending_tax_invoices_search_by_q(self):
         """q로 거래처명/품목명 통합 검색 테스트 (pending/temporary)"""
         invoice1 = NationalTaxService.objects.create(
+            factory=self.factory,
             client=self.client_company1,
             client_info=FactoryClientRowOut.from_orm(self.client_company1).dict(),
             transaction_date=date(2025, 6, 4),
@@ -1233,6 +1240,7 @@ class TaxAPITestCase(TestCase):
             publish_status="pending",
         )
         invoice2 = NationalTaxService.objects.create(
+            factory=self.factory,
             client=self.client_company2,
             client_info=FactoryClientRowOut.from_orm(self.client_company2).dict(),
             transaction_date=date(2025, 6, 5),
@@ -1392,6 +1400,7 @@ class TaxAPITestCase(TestCase):
         )
         # 세금계산서(매입) 생성
         invoice = NationalTaxService.objects.create(
+            factory=self.factory,
             client=self.client_company1,
             transaction_date=date(2025, 6, 10),
             transaction_amount=100000,
@@ -1400,7 +1409,7 @@ class TaxAPITestCase(TestCase):
             transaction_type="receipt",
             publish_status="published",
         )
-        # 자재 구매 이력 생성(세금계산서 연결)
+        # 자재 구매 이력 생성
         history = MaterialHistory.objects.create(
             material=material,
             client=self.client_company1,
@@ -1408,8 +1417,29 @@ class TaxAPITestCase(TestCase):
             quantity=50,
             price=2000,
             total_stock=150,
-            purchase_tax_invoice=invoice,
         )
+        
+        # 세금계산서의 line_items에 material_history_id 연결
+        # line_items가 비어있으면 생성, 있으면 첫 번째 항목에 연결
+        line_items = invoice.line_items or []
+        if not line_items:
+            # line_items가 비어있으면 기본 항목 생성
+            line_items = [{
+                "id": 1,
+                "name": "테스트자재",
+                "quantity": 50,
+                "unit_price": 2000,
+                "amount": 100000,
+                "tax": 10000,
+                "material_history": history.id,
+            }]
+        else:
+            # 기존 line_items의 첫 번째 항목에 material_history_id 연결
+            if line_items:
+                line_items[0]["material_history"] = history.id
+        
+        invoice.line_items = line_items
+        invoice.save()
         # API 호출
         url = f"/v1/tax/invoice-by-material-history?material_history_id={history.id}"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")

@@ -32,7 +32,6 @@ from project.utils import (
 )
 from factory.eq_utils import get_equipment_by_id
 from project.plan_utils import get_plan_by_id
-from django.utils import timezone
 from scheduling.api import update_work_instruction_for_factory
 from document.utils import create_work_instruction_history
 
@@ -378,7 +377,7 @@ async def list_today_production_plans(request):
 
     try:
         # Django 설정의 TIME_ZONE 기준으로 오늘 날짜 계산
-        today_local = date.today() if not settings.USE_TZ else timezone.localdate()
+        today_local = date.today()
 
         @sync_to_async
         def get_today_plans():
@@ -710,7 +709,7 @@ async def delete_project_plan(request, plan_id: int):
         raise HttpError(404, "해당 생산 계획을 찾을 수 없습니다.")
 
     # 삭제 전에 오늘 생산하는 Plan이면 WorkInstruction 갱신 및 history 기록
-    today = date.today() if not settings.USE_TZ else timezone.localdate()
+    today = date.today()
     if plan.start_date.date() == today:
         # WorkInstruction history 기록 (삭제)
         @sync_to_async

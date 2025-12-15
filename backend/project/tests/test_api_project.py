@@ -1,6 +1,5 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
-from django.utils import timezone
 from factory.models import Factory, FactoryClient, FactoryMember
 from project.models import Project
 from document.models import Quotation, QuotationProduct
@@ -111,7 +110,7 @@ class ProjectAPITestCase(TestCase):
     def generate_jwt_token(self):
         """JWT 토큰 생성"""
         return jwt.encode(
-            {"user_id": self.user.id, "exp": timezone.now() + timedelta(hours=1)},
+            {"user_id": self.user.id, "exp": datetime.now() + timedelta(hours=1)},
             settings.SECRET_KEY,
             algorithm="HS256",
         )
@@ -147,8 +146,8 @@ class ProjectAPITestCase(TestCase):
                 product=quotation_product1,
                 quantity=10,
                 equipment=self.equipment,
-                start_date=timezone.make_aware(datetime(2025, 6, 4, 0, 0, 0)),
-                end_date=timezone.make_aware(datetime(2025, 6, 10, 0, 0, 0)),
+                start_date=datetime(2025, 6, 4, 0, 0, 0),
+                end_date=datetime(2025, 6, 10, 0, 0, 0),
                 avg_production_time=3600,
             )
 
@@ -316,8 +315,8 @@ class ProjectAPITestCase(TestCase):
             equipment=self.equipment,
             status=ProjectPlan.ProductionStatus.completed,  # 이미 완료된 상태
             quantity=7,
-            start_date=timezone.now() - timedelta(days=2),
-            end_date=timezone.now() - timedelta(days=1),
+            start_date=datetime.now() - timedelta(days=2),
+            end_date=datetime.now() - timedelta(days=1),
             avg_production_time=1800,
         )
 
@@ -399,12 +398,8 @@ class ProjectAPITestCase(TestCase):
             equipment=self.equipment,
             status="생산 완료",
             quantity=10,
-            start_date=timezone.make_aware(
-                datetime.combine(date.today() - timedelta(days=5), datetime.min.time())
-            ),
-            end_date=timezone.make_aware(
-                datetime.combine(date.today(), datetime.min.time())
-            ),
+            start_date=datetime.combine(date.today() - timedelta(days=5), datetime.min.time()),
+            end_date=datetime.combine(date.today(), datetime.min.time()),
             avg_production_time=30,  # 평균 생산 시간 추가
         )
 
@@ -414,10 +409,10 @@ class ProjectAPITestCase(TestCase):
             equipment=self.equipment,
             status="생산 완료",
             quantity=5,
-            start_date=timezone.make_aware(
+            start_date=datetime(
                 datetime.combine(date.today() - timedelta(days=3), datetime.min.time())
             ),
-            end_date=timezone.make_aware(
+            end_date=datetime(
                 datetime.combine(date.today(), datetime.min.time())
             ),
             avg_production_time=30,  # 평균 생산 시간 추가
@@ -494,12 +489,8 @@ class ProjectAPITestCase(TestCase):
             equipment=self.equipment,
             status=ProjectPlan.ProductionStatus.completed,
             quantity=5,
-            start_date=timezone.make_aware(
-                datetime.combine(date.today() - timedelta(days=3), datetime.min.time())
-            ),
-            end_date=timezone.make_aware(
-                datetime.combine(date.today(), datetime.min.time())
-            ),
+            start_date=datetime.combine(date.today() - timedelta(days=3), datetime.min.time()),
+            end_date=datetime.combine(date.today(), datetime.min.time()),
             avg_production_time=30,  # 평균 생산 시간 추가
         )
 
@@ -781,7 +772,7 @@ class ProjectAPITestCase(TestCase):
 
     def test_list_stale_confirmed_projects_success(self):
         """confirmed_at 기준 7일 이상 지난 프로젝트 조회 성공"""
-        today = timezone.localdate()
+        today = date.today()
 
         overdue_project, _, _ = self.create_test_project_with_quotation(
             status="confirmed"
@@ -994,10 +985,10 @@ class ProjectAPITestCase(TestCase):
         p1, _, _ = self.create_test_project_with_quotation(status="production")
         p2, _, _ = self.create_test_project_with_quotation(status="production")
         ProjectPlan.objects.filter(project=p1).update(
-            start_date=timezone.make_aware(datetime(2025, 6, 1))
+            start_date=datetime(2025, 6, 1)
         )
         ProjectPlan.objects.filter(project=p2).update(
-            start_date=timezone.make_aware(datetime(2025, 6, 10))
+            start_date=datetime(2025, 6, 10)
         )
 
         url = f"/v2/project?factory_id={self.factory.id}&status=progress&order_by=start_date&order_dir=asc"
@@ -1079,7 +1070,7 @@ class ProjectAPITestCase(TestCase):
         )
         # auto_now 필드 문제를 해결하기 위해 update() 사용
         Project.objects.filter(id=project_abandoned.id).update(
-            updated_at=timezone.make_aware(datetime(2025, 3, 1))
+            updated_at=datetime(2025, 3, 1)
         )
         project_abandoned.refresh_from_db()
 
@@ -1151,7 +1142,7 @@ class ProjectAPITestCase(TestCase):
         )
         # 3개월 전으로 설정 (2개월 이상 경과)
         Project.objects.filter(id=project4.id).update(
-            updated_at=timezone.make_aware(datetime(2025, 2, 1))
+            updated_at=datetime(2025, 2, 1)
         )
         project4.refresh_from_db()
 
@@ -1388,8 +1379,8 @@ class ProjectAPITestCase(TestCase):
             product=quotation.products.last(),
             quantity=5,
             equipment=self.equipment,
-            start_date=timezone.make_aware(datetime(2025, 6, 15, 0, 0, 0)),
-            end_date=timezone.make_aware(datetime(2025, 6, 20, 0, 0, 0)),
+            start_date=datetime(2025, 6, 15, 0, 0, 0),
+            end_date=datetime(2025, 6, 20, 0, 0, 0),
             avg_production_time=3600,
         )
 
@@ -1461,8 +1452,8 @@ class ProjectAPITestCase(TestCase):
             ),
             quantity=10,
             equipment=self.equipment,
-            start_date=timezone.make_aware(datetime(2025, 6, 4, 0, 0, 0)),
-            end_date=timezone.make_aware(datetime(2025, 6, 10, 0, 0, 0)),
+            start_date=datetime(2025, 6, 4, 0, 0, 0),
+            end_date=datetime(2025, 6, 10, 0, 0, 0),
             avg_production_time=3600,
         )
 
@@ -1499,12 +1490,8 @@ class ProjectAPITestCase(TestCase):
             product=quotation.products.last(),
             quantity=5,
             equipment=self.equipment,
-            start_date=timezone.make_aware(
-                datetime(2025, 6, 1, 0, 0, 0)
-            ),  # 가장 빠른 시작일
-            end_date=timezone.make_aware(
-                datetime(2025, 6, 25, 0, 0, 0)
-            ),  # 가장 늦은 마감일
+            start_date=datetime(2025, 6, 1, 0, 0, 0),  # 가장 빠른 시작일
+            end_date=datetime(2025, 6, 25, 0, 0, 0),  # 가장 늦은 마감일
             avg_production_time=3600,
         )
 
@@ -1513,8 +1500,8 @@ class ProjectAPITestCase(TestCase):
             product=quotation.products.last(),
             quantity=3,
             equipment=self.equipment,
-            start_date=timezone.make_aware(datetime(2025, 6, 10, 0, 0, 0)),
-            end_date=timezone.make_aware(datetime(2025, 6, 15, 0, 0, 0)),
+            start_date=datetime(2025, 6, 10, 0, 0, 0),
+            end_date=datetime(2025, 6, 15, 0, 0, 0),
             avg_production_time=3600,
         )
 
@@ -1630,8 +1617,8 @@ class ProjectAPITestCase(TestCase):
             product=quotation.products.first(),
             quantity=10,
             equipment=self.equipment,
-            start_date=timezone.make_aware(datetime(2025, 6, 4, 0, 0, 0)),
-            end_date=timezone.make_aware(datetime(2025, 6, 10, 0, 0, 0)),
+            start_date=datetime(2025, 6, 4, 0, 0, 0),
+            end_date=datetime(2025, 6, 10, 0, 0, 0),
             avg_production_time=3600,
         )
 
@@ -1681,8 +1668,8 @@ class ProjectAPITestCase(TestCase):
                 product=quotation.products.first(),
                 quantity=10,
                 equipment=self.equipment,
-                start_date=timezone.make_aware(datetime(2025, 6, i + 1, 0, 0, 0)),
-                end_date=timezone.make_aware(datetime(2025, 6, i + 10, 0, 0, 0)),
+                start_date=datetime(2025, 6, i + 1, 0, 0, 0),
+                end_date=datetime(2025, 6, i + 10, 0, 0, 0),
                 avg_production_time=3600,
             )
 

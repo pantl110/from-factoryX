@@ -2,8 +2,7 @@ from django.test import TransactionTestCase
 from ninja.testing import TestAsyncClient
 from user.api import router
 from user.models import User, EmailVerification
-from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, datetime
 from asgiref.sync import sync_to_async
 
 
@@ -219,7 +218,7 @@ class TestEmailVerificationEdgeCases(TransactionTestCase):
         verification = await sync_to_async(EmailVerification.objects.get)(
             email=self.test_email, verification_type="signup", is_verified=False
         )
-        verification.created_at = timezone.now() - timedelta(minutes=10)
+        verification.created_at = datetime.now() - timedelta(minutes=10)
         await sync_to_async(verification.save)()
 
         # 만료된 코드로 검증 시도

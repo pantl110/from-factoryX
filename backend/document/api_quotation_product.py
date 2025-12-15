@@ -6,8 +6,7 @@ from api.pagination import CustomPageNumberPagination
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 from asgiref.sync import sync_to_async
-from datetime import datetime, timedelta
-from django.utils import timezone
+from datetime import datetime, timedelta, date
 
 from document.models import Quotation, QuotationProduct
 from document.schemas.inbound import (
@@ -172,7 +171,7 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
         project = quotation.project
         if payload.is_confirm:
             project.status = Project.ProjectStatus.confirmed
-            project.confirmed_at = timezone.now().date()
+            project.confirmed_at = date.today()
         else:
             project.status = Project.ProjectStatus.quotation
             project.confirmed_at = None
@@ -388,7 +387,7 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
 
         project = await sync_to_async(lambda: quotation.project)()
         project.status = Project.ProjectStatus.pending
-        project.pending_at = timezone.now().date()
+        project.pending_at = date.today()
         # 아직 저장하지 않음
 
         production_plans = []
@@ -519,7 +518,7 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
             "quotation_id": quotation.id,
             "project_id": project.id,
             "status": "production_waiting",
-            "created_at": timezone.now(),
+            "created_at": datetime.now(),
             "due_date": quotation.due_date.isoformat() if quotation.due_date else None,
             "production_plans": clean_production_plans,
         }

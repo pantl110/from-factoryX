@@ -1,19 +1,15 @@
 from ninja import Router
 from ninja.errors import HttpError
 from asgiref.sync import sync_to_async
-from django.utils import timezone
 from api.security import jwt_auth
-
 from project.models import Project, ProjectLog, Refund, ProjectPlan
 from project.schemas.outbound import (
     RefundCreateOut,
-    RefundUpdateOut,
     RefundDetailOut,
     RefundProductionRegistrationOut,
 )
 from project.schemas.inbound import (
     RefundCreateIn,
-    RefundUpdateIn,
     RefundProductionRegistrationIn,
 )
 from stock.models import Product
@@ -23,8 +19,6 @@ from project.utils import (
     get_refund_with_project,
     parse_and_validate_date,
     recommend_equipment_and_create_plan,
-    create_production_plan,
-    calculate_plan_schedule,
 )
 
 

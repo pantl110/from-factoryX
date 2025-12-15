@@ -5,7 +5,6 @@ from api.security import jwt_auth
 from django.db import models
 from django.conf import settings
 from datetime import datetime, timedelta, date
-from django.utils import timezone
 from project.schemas.outbound import MobileDashboardCountOut
 from project.models import Project
 from document.models import QuotationProduct
@@ -76,7 +75,7 @@ async def get_mobile_dashboard_counts(
                     expiry_risk_count += 1
 
             # 4. 7일 이상 확정 상태 유지 중인 프로젝트 수
-            today = date.today() if not settings.USE_TZ else timezone.localdate()
+            today = date.today()
             cutoff_date = today - timedelta(days=7)
             stale_confirmed_count = (
                 Project.objects.filter(

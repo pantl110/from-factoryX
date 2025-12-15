@@ -2,9 +2,8 @@ from ninja import Router
 from helpers.decorators import scheduling_only
 from project.models import Project, ProjectPlan
 from asgiref.sync import sync_to_async
-from django.utils import timezone
 from django.conf import settings
-from datetime import timedelta, date
+from datetime import timedelta, date, datetime
 from websocket.utils import send_notification_to_factory
 from notification.models import Notification
 from document.models import Quotation
@@ -47,7 +46,7 @@ async def project_deadline_notification(request):
                 Project.ProjectStatus.manufactured,
                 Project.ProjectStatus.delivery,
             ],
-            due_date__lte=timezone.now().date() + timedelta(days=3),
+            due_date__lte=date.today() + timedelta(days=3),
             due_date_notification=False,
         )
         quotations = list(queryset)
@@ -78,7 +77,7 @@ async def project_deadline_notification(request):
 async def project_plan_start_status_change(request):
     @sync_to_async
     def update_start_project_plans():
-        now = timezone.now()
+        now = datetime.now()
         # 가동 대기 상태이면서 시작 예정일 지난 플랜 조회
         plans = list(
             ProjectPlan.objects.select_related(
@@ -153,7 +152,7 @@ async def project_plan_end_notification(request):
             "equipment__factory", "product__product"
         ).filter(
             status=ProjectPlan.ProductionStatus.production,
-            end_date__lt=timezone.now(),
+            end_date__lt=datetime.now(),
             end_notification=False,
         )
         plans = list(queryset)

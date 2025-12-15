@@ -4,8 +4,8 @@ from tax.api import router
 from ninja.testing import TestAsyncClient
 from user.models import User, EmailVerification
 from factory.models import Factory, FactoryClient, FactoryMember
-from django.utils import timezone
 from tax.models import NationalTaxService
+from datetime import date
 
 
 class TestTaxService(TestCase):
@@ -91,13 +91,13 @@ class TestTaxService(TestCase):
             "publish_status": "temporary",
             "tax_invoice_type": "sales",
             "transaction_type": "receipt",
-            "transaction_date": timezone.now().date().strftime("%Y-%m-%d"),
+            "transaction_date": date.today().strftime("%Y-%m-%d"),
             "client": self.client_company1.id,
             "transaction_amount": 70000,
             "tax_amount": 7000,
             "line_items": [
                 {
-                    "purchase_expiry": timezone.now().date(),
+                    "purchase_expiry": date.today(),
                     "name": "M8 볼트 세트",
                     "information": "M8x20",
                     "chargeable_unit": "10",
@@ -107,7 +107,7 @@ class TestTaxService(TestCase):
                     "description": "볼트 세트 설명",
                 },
                 {
-                    "purchase_expiry": timezone.now().date(),
+                    "purchase_expiry": date.today(),
                     "name": "나사",
                     "information": "M6x15",
                     "chargeable_unit": "10",
@@ -169,7 +169,7 @@ class TestTaxService(TestCase):
             "tax_amount": 8000,
             "line_items": [
                 {
-                    "purchase_expiry": timezone.now().date(),
+                    "purchase_expiry": date.today(),
                     "name": "M8 볼트 세트",
                     "information": "M8x20",
                     "chargeable_unit": "10",
@@ -179,7 +179,7 @@ class TestTaxService(TestCase):
                     "description": "볼트 세트 수정 설명",
                 },
                 {
-                    "purchase_expiry": timezone.now().date(),
+                    "purchase_expiry": date.today(),
                     "name": "나사",
                     "information": "M6x15",
                     "chargeable_unit": "10",
@@ -301,7 +301,7 @@ class TestTaxService(TestCase):
             spec="SUS304",
             current_stock=0,
             standard_stock=0,
-            cost_average=0,
+            # cost_average=0,
         )
 
         mh = await MaterialHistory.objects.acreate(

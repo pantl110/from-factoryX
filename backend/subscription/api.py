@@ -32,8 +32,7 @@ from subscription.utils import (
 )
 from subscription.services import TossPaymentsService, SubscriptionBillingService
 from subscription.exceptions import PaymentError, BillingKeyError
-from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, datetime, date
 from dateutil.relativedelta import relativedelta
 from django.db import transaction
 from django.db.models import F
@@ -233,10 +232,9 @@ async def delete_billing_key(request, factory_id: int):
             factory.save(update_fields=["billing_key"]) 
 
             # 현재 및 미래(플랜 변경 예정 시 다음 구독 플랜) 구독 이력의 키 정보 초기화 (end_date >= today)
-            from django.utils import timezone as dj_tz
             for hist in SubscriptionHistory.objects.filter(
                 factory=factory,
-                end_date__gte=dj_tz.now().date(),
+                end_date__gte=date.today(),
             ):
                 hist.billing_key = None
                 hist.customer_key = None
@@ -279,7 +277,7 @@ async def process_subscription_payment(
                 factory=factory,
                 subscription=subscription,
                 is_canceled=True,
-                end_date__gt=timezone.now().date(),
+                end_date__gt=date.today(),
             )
             .order_by("-end_date")
             .first()
@@ -305,10 +303,10 @@ async def process_subscription_payment(
             subscription_id=subscription.id,
             subscription_type=subscription.type,
             payment_key="",
-            order_id=f"reactivated_{reactivated.id}_{int(timezone.now().timestamp())}",
+            order_id=f"reactivated_{reactivated.id}_{int(datetime.now().timestamp())}",
             amount=0,
             status="DONE",
-            approved_at=timezone.now(),
+            approved_at=datetime.now(),
             method="REACTIVATED",
             card_company=None,
             card_type=None,
@@ -331,7 +329,7 @@ async def process_subscription_payment(
         return 200, result
 
     # 2️⃣ 활성 구독 확인 (취소된 구독도 포함)
-    current_date = timezone.now().date()
+    current_date = date.today()
     existing_history = await SubscriptionHistory.objects.filter(
         factory=factory,
         end_date__gt=current_date,
@@ -379,10 +377,10 @@ async def process_subscription_payment(
                 subscription_id=subscription.id,
                 subscription_type=subscription.type,
                 payment_key="",
-                order_id=f"plan_change_{factory_id}_{int(timezone.now().timestamp())}",
+                order_id=f"plan_change_{factory_id}_{int(datetime.now().timestamp())}",
                 amount=0,
                 status="DONE",
-                approved_at=timezone.now(),
+                approved_at=datetime.now(),
                 method="PLAN_CHANGE_SCHEDULED",
                 card_company=None,
                 card_type=None,
@@ -393,7 +391,7 @@ async def process_subscription_payment(
 
     # 3️⃣ 활성 구독 없음 -> 새 결제 진행
     toss_service = TossPaymentsService()
-    order_id = f"subscription_{factory_id}_{int(timezone.now().timestamp())}"
+    order_id = f"subscription_{factory_id}_{int(datetime.now().timestamp())}"
 
     # 활성 구독이 없고, 동일 플랜의 취소 이력도 없을 때
     # PaymentAuth에서 빌링키 확인
@@ -431,7 +429,7 @@ async def process_subscription_payment(
             # 1) 새 구독 이력 생성 (한 달 단위)
             from dateutil.relativedelta import relativedelta
 
-            today = timezone.now().date()
+            today = date.today()
             
             # 트라이얼에서 partners로 전환한 경우 오늘부터 시작
             if hasattr(request, '_trial_to_partners') and request._trial_to_partners:
@@ -452,7 +450,7 @@ async def process_subscription_payment(
                 factory=factory,
                 subscription=subscription,
                 start_date=start_date,
-                end_date=(timezone.now() + relativedelta(months=1)).date(),
+                end_date=(datetime.now() + relativedelta(months=1)).date(),
                 billing_key=payload.billing_key,
                 customer_key=payload.customer_key,
             )
@@ -465,7 +463,7 @@ async def process_subscription_payment(
                 amount=subscription.price,
                 status="DONE",
                 method=payment_result.get("method"),
-                approved_at=timezone.now(),
+                approved_at=datetime.now(),
                 # 카드 정보 저장
                 card_company=resolved_company,
                 card_type=card_info.get("cardType"),
@@ -559,7 +557,7 @@ async def get_subscription_status(request, factory_id: int):
     # 현재 활성 구독 조회
     current_subscription = await sync_to_async(
         SubscriptionHistory.objects.filter(
-            factory=factory, end_date__gt=timezone.now().date()
+            factory=factory, end_date__gt=date.today()
         )
         .select_related("subscription")
         .first
@@ -576,7 +574,7 @@ async def get_subscription_status(request, factory_id: int):
         .first
     )()
 
-    is_active = current_subscription.end_date > timezone.now().date()
+    is_active = current_subscription.end_date > date.today()
 
     result = SubscriptionStatusOut(
         subscription_history=SubscriptionHistoryOut.from_orm(current_subscription),
@@ -609,7 +607,7 @@ async def cancel_scheduled_subscription(request, factory_id: int):
     # 현재 활성 구독 조회
     current_subscription = await sync_to_async(
         SubscriptionHistory.objects.filter(
-            factory=factory, end_date__gt=timezone.now().date()
+            factory=factory, end_date__gt=date.today()
         )
         .select_related("subscription")
         .first
@@ -700,7 +698,7 @@ async def cancel_payment(request, payment_id: int, payload: PaymentCancelIn):
         payment_key=payment.payment_key,
         cancel_amount=0,  # 환불 금액은 0 (환불하지 않음)
         cancel_reason=payload.cancel_reason,
-        canceled_at=timezone.now(),
+        canceled_at=datetime.now(),
     )
 
     logger.info(f"구독 취소 성공 (다음 달 자동 갱신 중단): payment_id={payment_id}")
@@ -723,7 +721,7 @@ async def renew_subscription(request, factory_id: int):
     # 현재 구독 조회
     current_subscription = await sync_to_async(
         SubscriptionHistory.objects.filter(
-            factory=factory, end_date__gte=timezone.now().date()
+            factory=factory, end_date__gte=date.today()
         )
         .select_related("subscription")
         .first
@@ -833,7 +831,7 @@ async def toss_payments_webhook(request):
 
                     if new_status == "DONE":
                         payment.status = "DONE"
-                        payment.approved_at = timezone.now()
+                        payment.approved_at = datetime.now()
                     elif new_status == "CANCELED":
                         payment.status = "CANCELED"
                     elif new_status == "FAILED":

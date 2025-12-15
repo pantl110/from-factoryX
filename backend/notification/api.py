@@ -10,8 +10,7 @@ from notification.utils import get_notification_by_id
 from factory.utils import get_factory_by_id
 from channels.layers import get_channel_layer
 from websocket.utils import send_notification_to_factory
-from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, datetime
 
 
 router = Router(tags=["Notification"], auth=jwt_auth)
@@ -32,7 +31,7 @@ async def get_notifications(request, factory_id: int):
     @sync_to_async
     def get_notifications_for_member():
         queryset = Notification.objects.filter(
-            receiver=member, created_at__gte=timezone.now() - timedelta(days=3)
+            receiver=member, created_at__gte=datetime.now() - timedelta(days=3)
         )
         queryset = queryset.order_by("-created_at")
         return list(queryset)

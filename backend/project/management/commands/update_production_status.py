@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand
 from django.db import transaction
 from project.models import Project, ProjectPlan
 from factory.models import FactoryEquipment
-from django.utils import timezone
+from datetime import date
 import logging
 
 logger = logging.getLogger(__name__)
@@ -18,7 +18,7 @@ class Command(BaseCommand):
         try:
             with transaction.atomic():
                 # 오늘 날짜
-                today = timezone.localdate()
+                today = date.today()
                 
                 # 오늘 생산일자이면서, 프로젝트가 "생산 중"이고 계획이 가동 대기 상태인 프로젝트 계획들만 조회
                 # - 프로젝트가 아직 생산중 상태가 아니면(예: pending 등) 계획/설비 상태는 변경하지 않음

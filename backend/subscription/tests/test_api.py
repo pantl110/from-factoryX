@@ -5,8 +5,7 @@ from ninja.testing import TestAsyncClient
 from user.models import User, EmailVerification
 from factory.models import Factory, FactoryClient, FactoryMember
 from subscription.models import Subscription, SubscriptionHistory, PaymentAuth
-from django.utils import timezone
-from datetime import timedelta
+from datetime import timedelta, datetime, date
 from asgiref.sync import sync_to_async
 
 
@@ -76,8 +75,8 @@ class TestSubscriptionService(TestCase):
         self.subscription_history = SubscriptionHistory.objects.create(
             subscription=self.subscription,
             factory=self.factory,
-            start_date=timezone.now().date(),
-            end_date=(timezone.now() + timedelta(days=30)).date(),
+            start_date=date.today(),
+            end_date=(datetime.now() + timedelta(days=30)).date(),
         )
 
     async def authenticate(self):
@@ -140,11 +139,11 @@ class TestSubscriptionService(TestCase):
         headers = await self.authenticate()
         
         # 현재 활성 구독 생성 (한 달 구독)
-        current_end_date = (timezone.now() + timedelta(days=30)).date()
+        current_end_date = (datetime.now() + timedelta(days=30)).date()
         current_subscription = await sync_to_async(SubscriptionHistory.objects.create)(
             subscription=self.subscription,
             factory=self.factory,
-            start_date=timezone.now().date(),
+            start_date=date.today(),
             end_date=current_end_date,
             is_canceled=False,
         )

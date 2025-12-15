@@ -30,7 +30,6 @@ from tax.models import NationalTaxService
 from datetime import date, timedelta
 from project.models import Project
 from django.conf import settings
-from django.utils import timezone
 from barobill.barobill_error_code import (
     barobill_error_codes,
 )
@@ -266,15 +265,45 @@ async def get_tax_invoice_by_material_history(request, material_history_id: int)
 
         def get_invoice_data(material_history_id):
             try:
+                # MaterialHistory 조회
                 h = MaterialHistory.objects.select_related(
-                    "purchase_tax_invoice", "material", "client"
+                    "material", "client"
                 ).get(id=material_history_id)
             except MaterialHistory.DoesNotExist:
                 return None
-            invoice = h.purchase_tax_invoice
+
+            # NationalTaxService에서 line_items에 해당 material_history_id가 있는 세금계산서 찾기
+            # 매입 세금계산서만 검색 (tax_invoice_type="purchase")
+            # MaterialHistory의 factory와 일치하는 세금계산서만 검색
+            tax_services = NationalTaxService.objects.filter(
+                tax_invoice_type="purchase",
+                factory=h.material.factory,
+            ).select_related("client")
+
+            invoice = None
+            matched_line_item = None
+
+            for tax_service in tax_services:
+                line_items = tax_service.line_items or []
+                for item in line_items:
+                    # material_history 필드가 material_history_id와 일치하는지 확인
+                    item_material_history_id = item.get("material_history")
+                    if item_material_history_id is not None:
+                        # 타입 변환 (int 또는 str일 수 있음)
+                        if int(item_material_history_id) == material_history_id:
+                            invoice = tax_service
+                            matched_line_item = item
+                            break
+                if invoice:
+                    break
+
             if not invoice:
                 return None
+
             client = invoice.client
+            if not client:
+                return None
+
             return dict(
                 client_name=client.name,
                 business_registration_number=client.business_registration_number,
@@ -320,7 +349,7 @@ async def sync_tax_invoices(request, factory_id: int):
     user = request.auth
     factory = await get_factory_by_id(factory_id)
 
-    today = timezone.localdate()
+    today = date.today()
     past_date = today - timedelta(days=200)
 
     certKey = settings.BAROBILL_CERT_KEY

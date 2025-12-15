@@ -7,8 +7,7 @@ from project.models import Project, ProjectPlan
 from document.models import Quotation, QuotationProduct
 from factory.models import Factory, FactoryMember, FactoryEquipment
 from stock.models import Product
-from django.utils import timezone
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import jwt
 from django.conf import settings
 
@@ -62,7 +61,7 @@ class TestWorkInstructionSchedulingAPI(TestCase):
         self.quotation = Quotation.objects.create(
             project=self.project,
             factory=self.factory,
-            due_date=timezone.now().date(),
+            due_date=date.today(),
         )
 
         # 견적서 품목 생성
@@ -83,7 +82,7 @@ class TestWorkInstructionSchedulingAPI(TestCase):
 
     def generate_jwt_token(self):
         return jwt.encode(
-            {"user_id": self.user.id, "exp": timezone.now() + timedelta(hours=1)},
+            {"user_id": self.user.id, "exp": datetime.now() + timedelta(hours=1)},
             settings.SECRET_KEY,
             algorithm="HS256",
         )
@@ -100,8 +99,8 @@ class TestWorkInstructionSchedulingAPI(TestCase):
     async def test_create_work_instruction_success(self):
         """작업 지시서 생성 성공 테스트"""
         # 오늘 시작하는 생산 중인 프로젝트 계획 생성
-        start_date = timezone.now().replace(hour=9, minute=0, second=0, microsecond=0)
-        end_date = timezone.now().replace(hour=18, minute=0, second=0, microsecond=0)
+        start_date = datetime.now().replace(hour=9, minute=0, second=0, microsecond=0)
+        end_date = datetime.now().replace(hour=18, minute=0, second=0, microsecond=0)
 
         await ProjectPlan.objects.acreate(
             project=self.project,
@@ -147,8 +146,8 @@ class TestWorkInstructionSchedulingAPI(TestCase):
         )
 
         # 오늘 시작하는 생산 중인 프로젝트 계획들 생성
-        start_date = timezone.now().replace(hour=9, minute=0, second=0, microsecond=0)
-        end_date = timezone.now().replace(hour=18, minute=0, second=0, microsecond=0)
+        start_date = datetime.now().replace(hour=9, minute=0, second=0, microsecond=0)
+        end_date = datetime.now().replace(hour=18, minute=0, second=0, microsecond=0)
 
         # 첫 번째 공장의 계획
         await ProjectPlan.objects.acreate(
@@ -193,8 +192,8 @@ class TestWorkInstructionSchedulingAPI(TestCase):
         await ProjectPlan.objects.filter(equipment=self.equipment).adelete()
         
         # 생산 완료 상태의 계획만 생성 (WorkInstruction에 포함되지 않아야 함)
-        start_date = timezone.now().replace(hour=9, minute=0, second=0, microsecond=0)
-        end_date = timezone.now().replace(hour=18, minute=0, second=0, microsecond=0)
+        start_date = datetime.now().replace(hour=9, minute=0, second=0, microsecond=0)
+        end_date = datetime.now().replace(hour=18, minute=0, second=0, microsecond=0)
 
         await ProjectPlan.objects.acreate(
             project=self.project,
@@ -224,12 +223,12 @@ class TestWorkInstructionSchedulingAPI(TestCase):
     async def test_create_work_instruction_different_date(self):
         """다른 날짜에 시작하는 계획이 있는 경우 테스트"""
         # 내일 시작하는 생산 중인 계획 생성
-        tomorrow = timezone.now().replace(
+        tomorrow = datetime.now().replace(
             hour=9, minute=0, second=0, microsecond=0
-        ) + timezone.timedelta(days=1)
-        end_date = timezone.now().replace(
+        ) + timedelta(days=1)
+        end_date = datetime.now().replace(
             hour=18, minute=0, second=0, microsecond=0
-        ) + timezone.timedelta(days=1)
+        ) + timedelta(days=1)
 
         await ProjectPlan.objects.acreate(
             project=self.project,
@@ -263,14 +262,14 @@ class TestWorkInstructionSchedulingAPI(TestCase):
             memo="기존 작업 지시서",
         )
         # created_at을 오늘로 설정하기 위해 저장 시간을 조정
-        work_instruction.created_at = timezone.now().replace(
+        work_instruction.created_at = datetime.now().replace(
             hour=0, minute=0, second=0, microsecond=0
         )
         await work_instruction.asave()
 
         # 오늘 시작하는 생산 중인 계획 생성
-        start_date = timezone.now().replace(hour=9, minute=0, second=0, microsecond=0)
-        end_date = timezone.now().replace(hour=18, minute=0, second=0, microsecond=0)
+        start_date = datetime.now().replace(hour=9, minute=0, second=0, microsecond=0)
+        end_date = datetime.now().replace(hour=18, minute=0, second=0, microsecond=0)
 
         plan = await ProjectPlan.objects.acreate(
             project=self.project,
@@ -304,8 +303,8 @@ class TestWorkInstructionSchedulingAPI(TestCase):
     async def test_create_work_instruction_multiple_plans_same_factory(self):
         """같은 공장에 여러 생산 계획이 있는 경우 테스트"""
         # 두 개의 프로젝트 계획 생성
-        start_date = timezone.now().replace(hour=9, minute=0, second=0, microsecond=0)
-        end_date = timezone.now().replace(hour=18, minute=0, second=0, microsecond=0)
+        start_date = datetime.now().replace(hour=9, minute=0, second=0, microsecond=0)
+        end_date = datetime.now().replace(hour=18, minute=0, second=0, microsecond=0)
 
         await ProjectPlan.objects.acreate(
             project=self.project,

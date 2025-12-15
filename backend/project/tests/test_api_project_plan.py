@@ -68,7 +68,7 @@ class ProjectPlanAPITestCase(TestCase):
         from dateutil.relativedelta import relativedelta
 
         # 한 달 전에 가입한 것으로 설정
-        one_month_ago = timezone.now() - relativedelta(months=1)
+        one_month_ago = datetime.now() - relativedelta(months=1)
         self.factory_member = FactoryMember.objects.create(
             factory=self.factory,
             user=self.user,
@@ -90,7 +90,7 @@ class ProjectPlanAPITestCase(TestCase):
     def generate_jwt_token(self):
         """JWT 토큰 생성"""
         return jwt.encode(
-            {"user_id": self.user.id, "exp": timezone.now() + timedelta(hours=1)},
+            {"user_id": self.user.id, "exp": datetime.now() + timedelta(hours=1)},
             settings.SECRET_KEY,
             algorithm="HS256",
         )
@@ -1060,7 +1060,7 @@ class DashboardAPITestCase(TestCase):
         from dateutil.relativedelta import relativedelta
 
         # 한 달 전에 가입한 것으로 설정
-        one_month_ago = timezone.now() - relativedelta(months=1)
+        one_month_ago = datetime.now() - relativedelta(months=1)
         self.factory_member = FactoryMember.objects.create(
             factory=self.factory,
             user=self.user,
@@ -1078,7 +1078,7 @@ class DashboardAPITestCase(TestCase):
     def generate_jwt_token(self):
         """JWT 토큰 생성"""
         return jwt.encode(
-            {"user_id": self.user.id, "exp": timezone.now() + timedelta(hours=1)},
+            {"user_id": self.user.id, "exp": datetime.now() + timedelta(hours=1)},
             settings.SECRET_KEY,
             algorithm="HS256",
         )
@@ -1088,7 +1088,7 @@ class DashboardAPITestCase(TestCase):
         from django.utils import timezone
         from dateutil.relativedelta import relativedelta
 
-        today = timezone.now().date()
+        today = date.today()
         current_month_start = today.replace(day=1)
 
         # 이번달 프로젝트 생성
@@ -1207,7 +1207,7 @@ class MobileDashboardCountTestCase(TestCase):
             invited_by=self.user,
         )
         self.token = jwt.encode(
-            {"user_id": self.user.id, "exp": timezone.now() + timedelta(hours=1)},
+            {"user_id": self.user.id, "exp": datetime.now() + timedelta(hours=1)},
             settings.SECRET_KEY,
             algorithm="HS256",
         )

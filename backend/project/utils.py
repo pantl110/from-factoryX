@@ -2,7 +2,6 @@ from ninja.errors import HttpError
 from asgiref.sync import sync_to_async
 from datetime import datetime, timedelta, date
 from typing import Optional, Tuple, List, TYPE_CHECKING
-from django.utils import timezone
 from project.models import Refund, Project, ProjectLog, ProjectPlan
 from stock.models import MaterialProduct, Product
 from factory.models import FactoryEquipment
@@ -157,7 +156,7 @@ async def recommend_equipment(
         if not equipments:
             return None
 
-        now = timezone.now()
+        now = datetime.now()
         now_rounded = ceil_to_5_minutes(now)
         equipment_availability = []
 
@@ -182,7 +181,7 @@ async def recommend_equipment(
                     plans.sort(
                         key=lambda p: p.start_date
                         if p.start_date is not None
-                        else timezone.datetime.max.replace(tzinfo=timezone.utc)
+                        else datetime.max
                     )
 
             # 사용 가능한 시간 슬롯 찾기 (5분 단위로 맞춘 시작 시각)
@@ -458,7 +457,7 @@ def calculate_plan_schedule(
     Args:
         quantity: 생산 수량
         avg_production_time: 제품별 평균 생산 시간(초)
-        start: 시작 시각(없으면 timezone.now())
+        start: 시작 시각(없으면 datetime.now())
 
     Returns:
         (start_datetime, end_datetime, resolved_avg_time, total_seconds)
@@ -468,7 +467,7 @@ def calculate_plan_schedule(
         raise ValueError("quantity must be non-negative")
 
     resolved_avg = avg_production_time or 30  # 기본값 30초
-    start_dt = start or timezone.now()
+    start_dt = start or datetime.now()
     total_seconds = resolved_avg * quantity
     end_dt = start_dt + timedelta(seconds=total_seconds)
 
@@ -518,7 +517,7 @@ async def create_production_plan(
         )
     else:
         # 사용자가 입력한 start_date와 end_date 사용
-        start_datetime = start_date or timezone.now()
+        start_datetime = start_date or datetime.now()
         end_datetime = end_date
     
     # 생산 계획 생성

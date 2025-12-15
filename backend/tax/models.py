@@ -1,7 +1,6 @@
 from django.db import models
 from common.models import BaseModel
 from factory.models import FactoryClient, Factory
-from django.utils import timezone
 import random
 
 

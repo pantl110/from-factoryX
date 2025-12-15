@@ -4,7 +4,6 @@ from datetime import datetime, timedelta, timezone
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from api.exceptions import CustomAuthorizationError
-from zoneinfo import ZoneInfo
 from uuid import UUID
 import re
 
@@ -243,7 +242,7 @@ def create_verification_code(email, verification_type):
 
     # 새 인증 코드 생성
     code = generate_verification_code()
-    expires_at = timezone.now() + timedelta(minutes=5)  # 5분 후 만료
+    expires_at = datetime.now() + timedelta(minutes=5)  # 5분 후 만료
 
     verification = EmailVerification.objects.create(
         email=email,

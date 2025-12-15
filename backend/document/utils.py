@@ -7,7 +7,6 @@ from pathlib import Path
 from typing import Any, Dict, List
 from datetime import datetime, date
 from django.conf import settings
-from django.utils import timezone
 
 import aiohttp
 from langchain.output_parsers import ResponseSchema, StructuredOutputParser

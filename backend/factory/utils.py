@@ -3,7 +3,7 @@ from factory.models import Factory, FactoryEquipment
 from factory.models import Factory, FactoryClient, FactoryMember
 from django.db import connection
 from django.conf import settings
-from django.utils import timezone
+from datetime import datetime
 
 
 async def is_factory_member(factory_id: int, user=None):
@@ -601,7 +601,7 @@ def create_inviting_data(email, role, invited_by):
         "email": email,
         "role": role,
         "invited_by": get_user_id(invited_by),
-        "invited_at": timezone.now().isoformat(),
+        "invited_at": datetime.now().isoformat(),
     }
 
 

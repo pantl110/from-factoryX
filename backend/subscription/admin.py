@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 from django.urls import reverse
-from django.utils import timezone
+from datetime import date
 from subscription.models import Subscription, SubscriptionHistory, Payment, PaymentAuth
 
 
@@ -132,7 +132,7 @@ class SubscriptionHistoryAdmin(admin.ModelAdmin):
     billing_status.short_description = "빌링 상태"
 
     def status_display(self, obj):
-        now = timezone.now().date()
+        now = date.today()
         if obj.is_canceled:
             return format_html('<span style="color: orange;">취소됨</span>')
         elif obj.end_date < now:

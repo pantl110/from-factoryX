@@ -28,7 +28,6 @@ from factory.schemas.outbound import FactoryRowOut, FactoryClientRowOut
 from document.models import Quotation, QuotationProduct
 from project.models import ProjectPlan, ProjectLog
 from project.utils import get_project_by_id, update_product_avg_production_time_from_recent_plans
-from django.utils import timezone
 from scheduling.api import update_work_instruction_for_factory
 
 router = Router(tags=["Project"], auth=jwt_auth)
@@ -68,7 +67,7 @@ async def clone_project(request, payload: ProjectCloneIn):
                 status=Project.ProjectStatus.pending,
                 transact_date=None,
                 tax_invoice=None,
-                confirmed_at=timezone.now().date(),
+                confirmed_at=date.today(),
             )
 
             # 원본 quotation_product와 새 quotation_product 매핑
@@ -155,7 +154,7 @@ async def clone_project(request, payload: ProjectCloneIn):
                                 "unit_price": new_quotation_product.unit_price,
                                 "total_price": new_quotation_product.quantity * new_quotation_product.unit_price,
                                 "quotation_product_id": new_quotation_product.id,
-                                "created_at": timezone.now().date().isoformat(),
+                                "created_at": date.today().isoformat(),
                                 "delivery_date": None,
                             }
                             products_info.append(product_info)
@@ -327,7 +326,7 @@ async def manufactured_to_delivery(request, project_id: int):
             "message": "생산 완료 프로젝트가 성공적으로 납품 처리되었습니다.",
             "project_id": project_id,
             "status": "delivery",
-            "processed_at": timezone.now().isoformat(),
+            "processed_at": datetime.now().isoformat(),
         }
 
     except Project.DoesNotExist:
@@ -416,7 +415,7 @@ async def list_project(
     try:
         if not factory_id:
             raise HttpError(400, "factory_id는 필수입니다.")
-        now = timezone.localdate()
+        now = date.today()
         two_months_ago = now - timedelta(days=60)
 
         @sync_to_async
@@ -631,16 +630,16 @@ async def update_project_status(
 
         project.status = payload.status
         if payload.status == Project.ProjectStatus.pending:
-            project.pending_at = timezone.now().date()
+            project.pending_at = date.today()
         if payload.is_printed is True:
-            project.printed_at = timezone.now().date()
+            project.printed_at = date.today()
         await project.asave()
 
         # 프로젝트 상태가 "생산 대기" → "생산 중"으로 변경되면 WorkInstruction 갱신
         if old_status == Project.ProjectStatus.pending and payload.status == Project.ProjectStatus.production:
             @sync_to_async
             def update_work_instructions_for_project():
-                today = date.today() if not settings.USE_TZ else timezone.localdate()
+                today = date.today()
                 
                 # 이 프로젝트의 오늘 시작하는 Plan들의 factory_id 조회
                 factory_ids = set(

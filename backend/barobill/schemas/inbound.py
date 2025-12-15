@@ -1,8 +1,6 @@
 from ninja import Schema, Field
 from pydantic import field_validator, ValidationInfo
-from datetime import date
-from django.utils import timezone
-from datetime import timedelta
+from datetime import date, datetime, timedelta
 
 
 class BarobillRegisterIn(Schema):
@@ -33,9 +31,9 @@ class BarobillCorpCertIn(Schema):
 class BarobillGetPeriodIn(Schema):
     factory: int = Field(..., description="공장 ID")
     start_date: date = Field(
-        default=timezone.now() - timedelta(days=30), description="조회 시작 날짜"
+        default=lambda: date.today() - timedelta(days=30), description="조회 시작 날짜"
     )
-    end_date: date = Field(default=timezone.now(), description="조회 종료 날짜")
+    end_date: date = Field(default=lambda: date.today(), description="조회 종료 날짜")
     page_size: int = Field(default=10, ge=1, le=100, description="페이지당 항목 수")
     page: int = Field(default=1, ge=1, description="페이지 번호")
 
@@ -49,7 +47,7 @@ class BarobillTaxInvoiceIssueIn(Schema):
         description="발행 목적 (1: 영수, 2: 청구)",
     )
     write_date: date = Field(
-        default=timezone.now().date(),
+        default=lambda: date.today(),
         description="작성 날짜 (기본값: 오늘)",
     )
     amount_total: float = Field(

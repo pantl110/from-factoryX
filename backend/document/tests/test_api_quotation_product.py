@@ -860,7 +860,7 @@ class QuotationProductAPITestCase(TestCase):
         )  # 가동 대기 상태인 설비만 할당됨
 
         # 기본값 확인
-        today = timezone.now().date()
+        today = date.today()
         # self.assertEqual(plan.start_date, today)  # 기본값: 오늘
 
         # end_date는 제품의 average_production_time에 따라 계산됨
