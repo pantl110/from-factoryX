@@ -53,9 +53,9 @@ class SimpleCronTest(TestCase):
             spec='10x10x10'
         )
         
-        # 프로젝트 생성 (생산 대기 상태)
+        # 프로젝트 생성 (생산 중 상태) - 크론 명령어는 생산 중인 프로젝트만 처리
         self.project = Project.objects.create(
-            status='pending'  # 생산 대기
+            status='production'  # 생산 중
         )
         
         # 견적서 생성

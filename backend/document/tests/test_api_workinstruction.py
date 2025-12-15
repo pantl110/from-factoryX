@@ -2,7 +2,7 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from ninja.testing import TestAsyncClient
 from document.api_workinstruction import router
-from document.models import WorkInstruction, Quotation
+from document.models import WorkInstruction, Quotation, QuotationProduct
 from factory.models import Factory, FactoryMember, FactoryEquipment, FactoryClient
 from project.models import ProjectPlan, Project
 from stock.models import Product

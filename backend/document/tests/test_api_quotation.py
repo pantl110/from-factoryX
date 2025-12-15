@@ -6,8 +6,8 @@ from stock.models import Product
 from project.models import Project
 import jwt
 from django.conf import settings
-from datetime import timedelta, date, datetime, datetime
-from cfehome.urls import base_api
+from datetime import timedelta, date, datetime
+from document.api_quotation import router
 from asgiref.sync import sync_to_async
 from ninja.testing import TestAsyncClient
 
@@ -111,7 +111,7 @@ class QuotationDetailAPITestCase(TestCase):
         self.token = self.generate_jwt_token()
 
         # 테스트 클라이언트 생성
-        self.client = TestAsyncClient()
+        self.client = TestAsyncClient(router)
 
     def generate_jwt_token(self):
         """JWT 토큰 생성"""
@@ -128,7 +128,7 @@ class QuotationDetailAPITestCase(TestCase):
     async def test_get_quotation_detail_success(self):
         """견적서 조회 성공 테스트"""
         response = await self.client.get(
-            f"/v1/document/quotation/{self.quotation.id}?factory_id={self.factory.id}",
+            f"/{self.quotation.id}?factory_id={self.factory.id}",
             headers=self.get_auth_headers(),
         )
 
@@ -175,7 +175,7 @@ class QuotationDetailAPITestCase(TestCase):
     async def test_get_quotation_detail_not_found(self):
         """존재하지 않는 견적서 조회 테스트"""
         response = await self.client.get(
-            f"/v1/document/quotation/99999?factory_id={self.factory.id}",
+            f"/99999?factory_id={self.factory.id}",
             headers=self.get_auth_headers(),
         )
 
@@ -184,7 +184,7 @@ class QuotationDetailAPITestCase(TestCase):
     async def test_get_quotation_detail_unauthorized(self):
         """인증되지 않은 사용자 테스트"""
         response = await self.client.get(
-            f"/v1/document/quotation/{self.quotation.id}?factory_id={self.factory.id}"
+            f"/{self.quotation.id}?factory_id={self.factory.id}"
         )
 
         self.assertEqual(response.status_code, 401)
@@ -192,7 +192,7 @@ class QuotationDetailAPITestCase(TestCase):
     async def test_get_quotation_detail_invalid_token(self):
         """잘못된 토큰 테스트"""
         response = await self.client.get(
-            f"/v1/document/quotation/{self.quotation.id}?factory_id={self.factory.id}",
+            f"/{self.quotation.id}?factory_id={self.factory.id}",
             headers={"Authorization": "Bearer invalid_token"},
         )
 
@@ -201,7 +201,7 @@ class QuotationDetailAPITestCase(TestCase):
     async def test_get_quotation_detail_missing_factory_id(self):
         """factory_id 파라미터 누락 테스트"""
         response = await self.client.get(
-            f"/v1/document/quotation/{self.quotation.id}",
+            f"/{self.quotation.id}",
             headers=self.get_auth_headers(),
         )
 
@@ -215,7 +215,7 @@ class QuotationDetailAPITestCase(TestCase):
         )
 
         response = await self.client.get(
-            f"/v1/document/quotation/{quotation_no_factory.id}?factory_id={self.factory.id}",
+            f"/{quotation_no_factory.id}?factory_id={self.factory.id}",
             headers=self.get_auth_headers(),
         )
 
@@ -230,7 +230,7 @@ class QuotationDetailAPITestCase(TestCase):
         )
 
         response = await self.client.get(
-            f"/v1/document/quotation/{quotation_no_products.id}?factory_id={self.factory.id}",
+            f"/{quotation_no_products.id}?factory_id={self.factory.id}",
             headers=self.get_auth_headers(),
         )
 
@@ -257,7 +257,7 @@ class QuotationDetailAPITestCase(TestCase):
         )
 
         response = await self.client.get(
-            f"/v1/document/quotation/{quotation_partial.id}?factory_id={self.factory.id}",
+            f"/{quotation_partial.id}?factory_id={self.factory.id}",
             headers=self.get_auth_headers(),
         )
 
@@ -279,7 +279,7 @@ class QuotationDetailAPITestCase(TestCase):
         """세액 계산 정확성 테스트"""
         # 세액 계산이 정확한지 테스트
         response = await self.client.get(
-            f"/v1/document/quotation/{self.quotation.id}?factory_id={self.factory.id}",
+            f"/{self.quotation.id}?factory_id={self.factory.id}",
             headers=self.get_auth_headers(),
         )
 
@@ -327,7 +327,7 @@ class QuotationDetailAPITestCase(TestCase):
 
         # 현재 사용자가 다른 공장의 견적서에 접근 시도 (권한 체크 제거로 200 반환)
         response = await self.client.get(
-            f"/v1/document/quotation/{other_quotation.id}?factory_id={other_factory.id}",
+            f"/{other_quotation.id}?factory_id={other_factory.id}",
             headers=self.get_auth_headers(),
         )
 
@@ -342,7 +342,7 @@ class QuotationDetailAPITestCase(TestCase):
         )
 
         response = await self.client.get(
-            f"/v1/document/quotation/{self.quotation.id}?factory_id={self.factory.id}",
+            f"/{self.quotation.id}?factory_id={self.factory.id}",
             headers=self.get_auth_headers(),
         )
 
@@ -368,7 +368,7 @@ class QuotationDetailAPITestCase(TestCase):
         )
 
         response = await self.client.get(
-            f"/v1/document/quotation/{self.quotation.id}?factory_id={self.factory.id}",
+            f"/{self.quotation.id}?factory_id={self.factory.id}",
             headers=self.get_auth_headers(),
         )
 
@@ -389,7 +389,7 @@ class QuotationDetailAPITestCase(TestCase):
     async def test_get_quotation_detail_product_fields(self):
         """견적서 품목 조회 시 productId와 product_code 필드 테스트"""
         response = await self.client.get(
-            f"/v1/document/quotation/{self.quotation.id}?factory_id={self.factory.id}",
+            f"/{self.quotation.id}?factory_id={self.factory.id}",
             headers=self.get_auth_headers(),
         )
 
@@ -426,7 +426,7 @@ class QuotationDetailAPITestCase(TestCase):
     async def test_get_quotation_detail_product_calculation_accuracy(self):
         """견적서 품목 금액 계산 정확성 테스트"""
         response = await self.client.get(
-            f"/v1/document/quotation/{self.quotation.id}?factory_id={self.factory.id}",
+            f"/{self.quotation.id}?factory_id={self.factory.id}",
             headers=self.get_auth_headers(),
         )
 
@@ -462,7 +462,7 @@ class QuotationDetailAPITestCase(TestCase):
         )
 
         response = await self.client.get(
-            f"/v1/document/quotation/{self.quotation.id}?factory_id={self.factory.id}",
+            f"/{self.quotation.id}?factory_id={self.factory.id}",
             headers=self.get_auth_headers(),
         )
 
@@ -544,10 +544,10 @@ startxref
         }
 
         response = await self.client.post(
-            f"/v1/document/quotation/send-email",
+            f"/send-email",
             data=json.dumps(payload),
             content_type="application/json",
-            **self.get_auth_headers(),
+            headers=self.get_auth_headers(),
         )
 
         self.assertEqual(response.status_code, 200)

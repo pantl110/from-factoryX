@@ -130,6 +130,14 @@ class TestSubscriptionService(TestCase):
         response = await self.client.post(
             f"/{self.factory2.id}", json=payload, headers=headers
         )
+        # Check status code first before trying to parse JSON
+        if response.status_code != 201:
+            # If not 201, check what the actual error is
+            try:
+                error_data = response.json()
+                self.fail(f"Expected 201, got {response.status_code}: {error_data}")
+            except:
+                self.fail(f"Expected 201, got {response.status_code}: {response.content}")
         data = response.json()
         # print("🐍 File: tests/test_api.py | Line: 102 | setUp ~ data", data)
         self.assertEqual(response.status_code, 201)

@@ -409,12 +409,8 @@ class ProjectAPITestCase(TestCase):
             equipment=self.equipment,
             status="생산 완료",
             quantity=5,
-            start_date=datetime(
-                datetime.combine(date.today() - timedelta(days=3), datetime.min.time())
-            ),
-            end_date=datetime(
-                datetime.combine(date.today(), datetime.min.time())
-            ),
+            start_date=datetime.combine(date.today() - timedelta(days=3), datetime.min.time()),
+            end_date=datetime.combine(date.today(), datetime.min.time()),
             avg_production_time=30,  # 평균 생산 시간 추가
         )
 

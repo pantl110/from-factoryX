@@ -1,4 +1,5 @@
 from django.test import TestCase
+from unittest.mock import Mock, patch
 from user.api import router as user_router
 from tax.api_cash_receipt import router
 from ninja.testing import TestAsyncClient
@@ -12,6 +13,14 @@ from datetime import date
 
 class TestTaxService(TestCase):
     def setUp(self):
+        # Mock BAROBILL_CASHBILL_CLIENT
+        self.barobill_mock = Mock()
+        self.barobill_mock.service = Mock()
+        self.barobill_mock.service.GetPeriodCashBillSalesListEx = Mock(return_value=[])
+        
+        self.patcher = patch('django.conf.settings.BAROBILL_CASHBILL_CLIENT', self.barobill_mock)
+        self.patcher.start()
+        
         self.client = TestAsyncClient(router)
         self.auth_client = TestAsyncClient(user_router)
         self.user = User.objects.create_user(
@@ -263,3 +272,7 @@ class TestTaxService(TestCase):
         self.assertEqual(linked1.cash_receipt_id, self.cash_receipt.id)
         self.assertIsNone(linked2.cash_receipt_id)
         self.assertEqual(new_candidate.cash_receipt_id, self.cash_receipt.id)
+    
+    def tearDown(self):
+        """테스트 후 정리"""
+        self.patcher.stop()

@@ -322,7 +322,7 @@ async def get_tax_invoice_by_material_history(request, material_history_id: int)
                     dict(
                         material_name=h.material.name,
                         spec=h.material.spec,
-                        quantity=h.quantity,
+                        quantity=int(h.quantity),  # Decimal을 int로 변환
                         unit=h.material.unit,
                         price=h.price or 0,
                         transaction_amount=invoice.transaction_amount,

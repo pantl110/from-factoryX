@@ -48,8 +48,8 @@ class CronProductionStatusTestCase(TestCase):
             spec="10x10x10",
         )
 
-        # 프로젝트 생성 (생산 대기 상태)
-        self.project = Project.objects.create(status="pending")  # 생산 대기
+        # 프로젝트 생성 (생산 중 상태) - 크론 명령어는 생산 중인 프로젝트만 처리
+        self.project = Project.objects.create(status="production")  # 생산 중
 
         # 견적서 생성
         self.quotation = Quotation.objects.create(
@@ -161,8 +161,8 @@ class CronProductionStatusTestCase(TestCase):
 
     def test_multiple_plans_same_equipment(self):
         """같은 설비를 사용하는 여러 프로젝트 계획 테스트"""
-        # 두 번째 프로젝트와 계획 생성
-        project2 = Project.objects.create(status="pending")
+        # 두 번째 프로젝트와 계획 생성 (생산 중 상태)
+        project2 = Project.objects.create(status="production")
         plan_start = datetime.now()
         plan2 = ProjectPlan.objects.create(
             project=project2,
@@ -220,7 +220,8 @@ class CronProductionStatusTestCase(TestCase):
         """트랜잭션 롤백 테스트"""
         # 원래 상태 저장
         original_equipment_status = self.equipment.status
-        original_project_status = self.project.status
+        # 프로젝트는 이미 'production' 상태이므로 변경되지 않을 수 있음
+        # 설비 상태만 확인
 
         # 명령어 실행
         out = io.StringIO()
@@ -230,9 +231,10 @@ class CronProductionStatusTestCase(TestCase):
         self.equipment.refresh_from_db()
         self.project.refresh_from_db()
 
-        # 변경된 상태 확인
+        # 설비 상태는 변경되어야 함 (standby -> running)
         self.assertNotEqual(self.equipment.status, original_equipment_status)
-        self.assertNotEqual(self.project.status, original_project_status)
+        # 프로젝트 상태는 이미 production이므로 변경되지 않을 수 있음
+        self.assertEqual(self.project.status, "production")
 
         # 트랜잭션이 정상적으로 처리되었는지 확인
         output = out.getvalue()

@@ -243,7 +243,8 @@ async def register_production_from_refund_log(
 
         else:
             # 기존 plan이 없는 경우: 생산 계획 생성
-            avg_production_time = refund_product.average_production_time or 30  # 기본값 30초
+            # None을 보존하기 위해 or 30을 사용하지 않음 (스케줄링은 함수 내부에서 처리)
+            avg_production_time = refund_product.average_production_time
             project_plan, default_equipment = await recommend_equipment_and_create_plan(
                 project=project,
                 quotation_product=quotation_product,

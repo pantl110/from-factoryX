@@ -304,20 +304,21 @@ async def recommend_equipment_and_create_plan(
     Returns:
         (생성된 ProjectPlan, 사용된 FactoryEquipment)
     """
-    # 제품 평균 생산 시간 결정
-    if product_avg_production_time is None:
+    # 제품 평균 생산 시간 결정 (스케줄링용 - None이면 기본값 30 사용)
+    scheduling_avg_time = product_avg_production_time
+    if scheduling_avg_time is None:
         product = await sync_to_async(lambda: quotation_product.product)()
-        product_avg_production_time = product.average_production_time or 30
+        scheduling_avg_time = product.average_production_time or 30
     else:
         # None 이 아니지만 0 이나 falsy 인 경우도 기본값 보정
-        if not product_avg_production_time:
-            product_avg_production_time = 30
+        if not scheduling_avg_time:
+            scheduling_avg_time = 30
 
-    # 설비 추천
+    # 설비 추천 (스케줄링용 시간 사용)
     result = await recommend_equipment(
         factory_id=factory_id,
         quantity=quantity,
-        avg_production_time=product_avg_production_time,
+        avg_production_time=scheduling_avg_time,
         additional_plans_by_equipment=additional_plans_by_equipment,
     )
     if not result:
@@ -325,13 +326,13 @@ async def recommend_equipment_and_create_plan(
 
     equipment, recommended_start_date = result
 
-    # 생산 계획 생성
+    # 생산 계획 생성 (원본 product_avg_production_time 전달하여 None 보존)
     project_plan = await create_production_plan(
         project=project,
         quotation_product=quotation_product,
         equipment=equipment,
         quantity=quantity,
-        product_avg_production_time=product_avg_production_time,
+        product_avg_production_time=product_avg_production_time,  # 원본 값 전달 (None 보존)
         status=status,
         defective_quantity=defective_quantity,
         start_date=recommended_start_date,

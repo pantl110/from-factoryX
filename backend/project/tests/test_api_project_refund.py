@@ -1089,7 +1089,7 @@ class ProjectRefundAPITestCase(TestCase):
         )
 
         self.assertEqual(response.status_code, 400)
-        self.assertIn("사용 가능한 장비가 없습니다", response.json().get("detail", ""))
+        self.assertIn("가동 가능한 설비가 없습니다", response.json().get("detail", ""))
 
     def test_register_production_from_refund_without_auth(self):
         """인증 없이 반품 생산 등록 시도 테스트"""

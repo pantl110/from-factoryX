@@ -1,4 +1,5 @@
 from django.test import TestCase
+from unittest.mock import Mock, patch
 from user.api import router as user_router
 from tax.api import router
 from ninja.testing import TestAsyncClient
@@ -10,6 +11,15 @@ from datetime import date
 
 class TestTaxService(TestCase):
     def setUp(self):
+        # Mock BAROBILL_CLIENT
+        self.barobill_mock = Mock()
+        self.barobill_mock.service = Mock()
+        self.barobill_mock.service.GetPeriodTaxInvoiceSalesList = Mock(return_value=[])
+        self.barobill_mock.get_type = Mock(return_value=Mock())
+        
+        self.patcher = patch('django.conf.settings.BAROBILL_CLIENT', self.barobill_mock)
+        self.patcher.start()
+        
         self.client = TestAsyncClient(router)
         self.auth_client = TestAsyncClient(user_router)
         self.user = User.objects.create_user(

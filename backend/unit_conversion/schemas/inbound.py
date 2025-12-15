@@ -12,8 +12,8 @@ class UnitConversionCreateSchema(Schema):
     product_id: Optional[int] = None
     from_unit: Optional[str] = None
     to_unit: Optional[str] = None
-    from_quantity: Optional[Decimal] = 1  
-    to_quantity: Optional[Decimal] = 1    
+    from_quantity: Optional[Decimal] = Decimal("1")
+    to_quantity: Optional[Decimal] = Decimal("1")    
     decimal_rule: DecimalRuleType = 'round'
 
 
