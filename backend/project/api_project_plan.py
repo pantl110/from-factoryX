@@ -5,8 +5,8 @@ from asgiref.sync import sync_to_async
 from api.security import jwt_auth
 from django.db import models
 from django.conf import settings
-from datetime import datetime
-from decimal import Decimal
+from datetime import datetime, date, timedelta
+from decimal import Decimal, ROUND_HALF_UP
 from project.schemas.inbound import (
     ProjectPlanCreateOrUpdateIn,
     ProjectPlanListFilter,
@@ -23,8 +23,7 @@ from document.schemas.outbound import TodayProductionPlanOut
 from project.models import Project, ProjectPlan, ProjectLog
 from document.models import Quotation, QuotationProduct
 from factory.models import FactoryEquipment
-from stock.models import Product
-from datetime import date, timedelta
+from stock.models import Product, Material, MaterialProduct
 from typing import List
 from factory.utils import is_factory_member
 from dateutil.relativedelta import relativedelta
@@ -35,7 +34,6 @@ from project.utils import (
 )
 from factory.eq_utils import get_equipment_by_id
 from project.plan_utils import get_plan_by_id
-from project.utils import get_date_from_datetime
 from django.utils import timezone
 from scheduling.api import update_work_instruction_for_factory
 from document.utils import create_work_instruction_history
@@ -150,13 +148,13 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
                 # 불량률 계산: (불량품 수량 / 생산 수량)
                 defect_rate = Decimal(payload.defective_quantity) / Decimal(payload.quantity)
                 # 최신 불량률로 buffer_rate 업데이트 (누적하지 않음)
-                from decimal import ROUND_HALF_UP
                 new_buffer_rate = defect_rate.quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
                 product_obj.buffer_rate = new_buffer_rate
                 await product_obj.asave()
 
             # 오늘 생산하는 Plan이면 WorkInstruction 갱신
-            if get_date_from_datetime(plan.start_date) == timezone.localdate():
+            today = date.today() if not settings.USE_TZ else timezone.localdate()
+            if plan.start_date.date() == today:
                 await sync_to_async(update_work_instruction_for_factory)(equipment.factory_id)
             
             # WorkInstruction history 기록
@@ -254,7 +252,7 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
             if (
                 old_start_date
                 and plan.start_date
-                and get_date_from_datetime(old_start_date) != get_date_from_datetime(plan.start_date)
+                and old_start_date.date() != plan.start_date.date()
                 and project.status != Project.ProjectStatus.pending
             ):
                 change_message = f"생산 일자가 {old_start_date.strftime('%m/%d')}일에서 {plan.start_date.strftime('%m/%d')}일로 변경되었어요"
@@ -266,9 +264,9 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
                 )
 
             # 알림 전송 (프로젝트가 생산대기 상태가 아닐 때)
-            today = timezone.localdate()
-            if ((payload.start_date and get_date_from_datetime(payload.start_date) == today) or (
-                old_start_date and get_date_from_datetime(old_start_date) == today
+            today = date.today() if not settings.USE_TZ else timezone.localdate()
+            if ((payload.start_date and payload.start_date.date() == today) or (
+                old_start_date and old_start_date.date() == today
             )) and project.status != Project.ProjectStatus.pending:
                 client_name = "-"
                 try:
@@ -333,7 +331,8 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
         )
 
         # 오늘 생산하는 Plan이면 WorkInstruction 갱신
-        if get_date_from_datetime(plan.start_date) == timezone.localdate():
+        today = date.today() if not settings.USE_TZ else timezone.localdate()
+        if plan.start_date.date() == today:
             await sync_to_async(update_work_instruction_for_factory)(equipment.factory_id)
             
             # WorkInstruction history 기록 (추가)
@@ -381,7 +380,7 @@ async def list_today_production_plans(request):
 
     try:
         # Django 설정의 TIME_ZONE 기준으로 오늘 날짜 계산
-        today_local = timezone.localdate()
+        today_local = date.today() if not settings.USE_TZ else timezone.localdate()
 
         @sync_to_async
         def get_today_plans():
@@ -452,7 +451,7 @@ async def get_dashboard(request):
     await is_factory_member(int(factory_id), user)
 
     try:
-        today = timezone.localdate()
+        today = date.today() if not settings.USE_TZ else timezone.localdate()
         current_month_start = today.replace(day=1)
         current_month_end = (current_month_start + relativedelta(months=1)) - timedelta(
             days=1
@@ -499,7 +498,6 @@ async def get_dashboard(request):
             )
 
             # 3. 재고 수량이 안전재고보다 낮은 원자재 개수
-            from stock.models import Material
 
             shortage_materials_count = Material.objects.filter(
                 factory_id=int(factory_id), current_stock__lt=models.F("standard_stock")
@@ -583,8 +581,6 @@ async def get_dashboard(request):
                         product_revenue = qp.quantity * qp.unit_price
 
                         # 원자재 비용 계산
-                        from stock.models import MaterialProduct
-
                         material_products = MaterialProduct.objects.filter(
                             product=qp.product
                         )
@@ -716,7 +712,8 @@ async def delete_project_plan(request, plan_id: int):
         raise HttpError(404, "해당 생산 계획을 찾을 수 없습니다.")
 
     # 삭제 전에 오늘 생산하는 Plan이면 WorkInstruction 갱신 및 history 기록
-    if get_date_from_datetime(plan.start_date) == timezone.localdate():
+    today = date.today() if not settings.USE_TZ else timezone.localdate()
+    if plan.start_date.date() == today:
         # WorkInstruction history 기록 (삭제)
         @sync_to_async
         def record_deletion_history():

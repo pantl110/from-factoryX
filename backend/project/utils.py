@@ -12,40 +12,6 @@ if TYPE_CHECKING:
     from document.models import QuotationProduct
 
 
-def get_date_from_datetime(dt):
-    """
-    datetime 객체에서 date를 안전하게 추출합니다.
-    naive datetime인 경우 aware datetime으로 변환 후 date를 반환합니다.
-    
-    Args:
-        dt: datetime 또는 date 객체 (None 가능)
-    
-    Returns:
-        date 객체 또는 None
-    """
-    if dt is None:
-        return None
-    # date 객체인 경우 그대로 반환 (datetime은 date의 서브클래스이므로 먼저 datetime 체크)
-    if isinstance(dt, date) and not isinstance(dt, datetime):
-        return dt
-    # datetime 객체인 경우 처리
-    if isinstance(dt, datetime):
-        # naive datetime인지 확인 (utcoffset() 메서드로 확인)
-        try:
-            if dt.tzinfo is None:
-                # naive datetime인 경우 aware로 변환
-                dt = timezone.make_aware(dt)
-            return timezone.localtime(dt).date()
-        except (ValueError, AttributeError, TypeError):
-            # 오류 발생 시 최후의 수단: datetime에서 직접 date 추출
-            try:
-                return dt.date()
-            except Exception:
-                return dt
-    # 그 외의 경우 (예: 문자열 등)는 그대로 반환
-    return dt
-
-
 async def get_project_by_id(project_id):
     try:
         project = (

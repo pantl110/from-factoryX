@@ -1,8 +1,7 @@
 from ninja import Schema, FilterSchema, Field
-from datetime import date
+from datetime import date, datetime
 from typing import Optional, List
 from enum import Enum
-from datetime import datetime
 from pydantic import field_validator
 from project.models import ProjectPlan
 from django.db.models import Q
@@ -197,6 +196,17 @@ class ProjectPlanCreateOrUpdateIn(Schema):
     )
     # total_amount: int  # 총 주문 수량 (buffer_rate 계산 용)
     # total_quantity: int  # 총 생산 수량 (buffer_rate 계산 용)
+
+    @field_validator("start_date", "end_date", mode="after")
+    @classmethod
+    def ensure_naive_datetime(cls, v):
+        """datetime을 naive datetime으로 변환 (USE_TZ=False 환경 대응)"""
+        if isinstance(v, datetime):
+            # timezone-aware인 경우 naive로 변환
+            if v.tzinfo is not None:
+                # timezone 정보 제거 (UTC offset을 제거하고 naive datetime으로 변환)
+                return v.replace(tzinfo=None)
+        return v
 
     @field_validator("status")
     @classmethod
