@@ -3,6 +3,7 @@ import React from 'react';
 interface MoBtnProps {
   text: string;
   icon?: React.ReactNode;
+  iconPosition?: 'left' | 'right';
   variant: 'ghost' | 'outline' | 'primary' | 'secondary' | 'outline-primary';
   width?: string;
   height?: string;
@@ -15,6 +16,7 @@ interface MoBtnProps {
 const MoBtn = ({
   text,
   icon,
+  iconPosition = 'right',
   variant,
   width = 'w-fit',
   big = false,
@@ -42,8 +44,14 @@ const MoBtn = ({
         ${big ? 'text-m-Heading-5c' : 'text-m-Body-4'}
       `}
     >
+      {iconPosition === 'left' &&
+        icon &&
+        React.cloneElement(icon as React.ReactElement<{ size: number }>, {
+          size: 16,
+        })}
       {text}
-      {icon &&
+      {iconPosition === 'right' &&
+        icon &&
         React.cloneElement(icon as React.ReactElement<{ size: number }>, {
           size: 16,
         })}

@@ -11,6 +11,7 @@ import {
   BarcodeFormat,
   BrowserMultiFormatReader,
 } from '@zxing/library';
+import { MoBtn } from '@/ui';
 
 interface PointOfInterestModel {
   x: number;
@@ -585,17 +586,16 @@ const BarcodeScannerContent = () => {
       <div className="px-7 pb-8 pt-4 flex flex-col gap-4 bg-wh">
         {/* 바코드 인식 실패 메시지 */}
         {barcodeError && (
-          <div className="flex flex-col items-center gap-2 p-4 bg-red-50 rounded-lg border border-red-200">
+          <div className="flex flex-col items-center gap-2 p-4 bg-red-8 rounded-[8px] border border-red">
             <WarningCircle size={24} className="text-red" />
-            <p className="text-red text-center m-Body-2 whitespace-pre-line">
+            <p className="text-dg text-center m-Body-2 whitespace-pre-line">
               {barcodeError}
             </p>
-            <button
+            <MoBtn
+              text="다시 촬영"
+              variant="primary"
               onClick={handleCameraButtonClick}
-              className="mt-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-8 transition-colors m-Body-1"
-            >
-              다시 촬영
-            </button>
+            />
           </div>
         )}
 
@@ -613,14 +613,16 @@ const BarcodeScannerContent = () => {
 
         {/* 카메라 앱으로 촬영 버튼 - 모바일에서만 표시 */}
         {isMobile && (
-          <button
+          <MoBtn
+            text={isProcessing ? '인식 중...' : '카메라 앱으로 촬영'}
+            icon={<Camera />}
+            iconPosition="left"
+            variant="primary"
+            width="w-full"
+            big
             onClick={handleCameraButtonClick}
             disabled={isProcessing}
-            className="flex items-center justify-center gap-2 px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary-8 transition-colors m-Body-1 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <Camera size={20} />
-            {isProcessing ? '인식 중...' : '카메라 앱으로 촬영'}
-          </button>
+          />
         )}
 
         {/* 숨겨진 파일 input - 모바일에서만 capture 속성 사용 */}
