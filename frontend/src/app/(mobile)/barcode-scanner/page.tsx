@@ -1,12 +1,12 @@
 'use client';
 
 import { useZxing } from 'react-zxing';
-import { useEffect, useState, Suspense } from 'react';
+import { useEffect, useState, Suspense, useMemo } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { WarningCircle } from '@phosphor-icons/react';
 import Spinner from '@/ui/spinner';
 import Topbar from '@/app/(mobile)/topbar';
-import { DecodeHintType } from '@zxing/library';
+import { DecodeHintType, BarcodeFormat } from '@zxing/library';
 
 interface PointOfInterestModel {
   x: number;
@@ -31,6 +31,14 @@ const BarcodeScannerContent = () => {
   );
   const [isProcessing, setIsProcessing] = useState(false);
   const [lastScannedCode, setLastScannedCode] = useState<string | null>(null);
+
+  // 모바일 디바이스 감지
+  const isMobile = useMemo(() => {
+    if (typeof window === 'undefined') return false;
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
+  }, []);
 
   const handleFocusPoint = async (
     video: HTMLVideoElement,
@@ -88,6 +96,63 @@ const BarcodeScannerContent = () => {
     }
   };
 
+  // 모바일 디바이스에 최적화된 카메라 제약 조건
+  const cameraConstraints = useMemo(() => {
+    if (isMobile) {
+      // 모바일: 더 유연한 제약 조건
+      return {
+        video: {
+          facingMode: 'environment', // 후면 카메라 우선
+          // 모바일에서는 ideal 대신 min/max 사용하여 더 유연하게
+          width: { min: 320, ideal: 640, max: 1920 },
+          height: { min: 240, ideal: 480, max: 1080 },
+          aspectRatio: { ideal: 16 / 9 },
+        },
+      };
+    }
+    // 데스크톱: 기존 설정 유지
+    return {
+      video: {
+        facingMode: 'environment',
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+      },
+    };
+  }, [isMobile]);
+
+  // 모바일 디바이스에 최적화된 디코딩 힌트
+  const decodeHints = useMemo(() => {
+    const hints = new Map();
+
+    // 더 강력한 디코딩 시도
+    hints.set(DecodeHintType.TRY_HARDER, true);
+
+    // 모바일에서 인식률 향상을 위한 추가 힌트
+    if (isMobile) {
+      // 가능한 모든 바코드 형식 허용
+      hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+        BarcodeFormat.EAN_13,
+        BarcodeFormat.EAN_8,
+        BarcodeFormat.UPC_A,
+        BarcodeFormat.UPC_E,
+        BarcodeFormat.CODE_128,
+        BarcodeFormat.CODE_39,
+        BarcodeFormat.CODE_93,
+        BarcodeFormat.ITF,
+        BarcodeFormat.CODABAR,
+        BarcodeFormat.QR_CODE,
+        BarcodeFormat.DATA_MATRIX,
+        BarcodeFormat.PDF_417,
+      ]);
+
+      // 모바일에서 더 많은 시도 허용
+      hints.set(DecodeHintType.ASSUME_GS1, false);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return hints as any;
+  }, [isMobile]);
+
   const { ref } = useZxing({
     onDecodeResult(result) {
       const scannedText = result.getText();
@@ -142,17 +207,8 @@ const BarcodeScannerContent = () => {
       setIsScanning(false);
     },
     paused: isProcessing, // 처리 중이면 스캔 일시정지
-    // 내장 카메라 직접 사용 설정
-    constraints: {
-      video: {
-        facingMode: 'environment', // 후면 카메라 우선, 없으면 전면 카메라 사용
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
-      },
-    },
-    // 모든 방향에서 바코드 인식 가능하도록 설정
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    hints: new Map([[DecodeHintType.TRY_HARDER, true]]) as any,
+    constraints: cameraConstraints,
+    hints: decodeHints,
   });
 
   useEffect(() => {
