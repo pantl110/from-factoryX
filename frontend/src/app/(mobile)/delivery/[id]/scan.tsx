@@ -11,8 +11,8 @@ const Scan = () => {
 
   const handleScanClick = () => {
     // 바코드 스캔 페이지로 이동
-    // 스캔 완료 후 현재 페이지로 돌아오도록 callback 설정
-    const callbackUrl = `/delivery/${deliveryId}`;
+    // 스캔 완료 후 스캔 결과(detail) 페이지로 이동하도록 callback 설정
+    const callbackUrl = `/delivery/${deliveryId}/detail`;
     router.push(
       `/barcode-scanner?callback=${encodeURIComponent(callbackUrl)}&title=${encodeURIComponent('바코드 스캔')}`
     );

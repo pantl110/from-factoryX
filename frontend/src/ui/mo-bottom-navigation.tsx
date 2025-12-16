@@ -4,9 +4,14 @@ import { useRouter } from 'next/navigation';
 interface MoBottomNavigationProps {
   type: 'income' | 'outcome' | 'delivery' | 'scan';
   onClick: () => void;
+  onConfirm?: () => void;
 }
 
-const MoBottomNavigation = ({ type, onClick }: MoBottomNavigationProps) => {
+const MoBottomNavigation = ({
+  type,
+  onClick,
+  onConfirm,
+}: MoBottomNavigationProps) => {
   const router = useRouter();
   return (
     <div className="fixed bottom-0 z-30 w-full bg-wh px-3 pt-5 pb-6 border-t border-bg shadow-[0px_1px_22px_0px_rgba(0,0,0,0.06)] flex flex-col gap-2">
@@ -16,7 +21,7 @@ const MoBottomNavigation = ({ type, onClick }: MoBottomNavigationProps) => {
           variant="outline"
           big
           width="w-full"
-          onClick={() => router.back()}
+          onClick={onConfirm || (() => router.back())}
         />
       )}
 
