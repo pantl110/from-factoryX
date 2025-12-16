@@ -1466,13 +1466,13 @@ class ProjectAPITestCase(TestCase):
         # print(f"Actual earliest_start_date: {data['earliest_start_date']}")
         # print(f"Actual latest_end_date: {data['latest_end_date']}")
 
-        # timezone을 고려한 검증 (한국 시간을 UTC로 변환한 값으로 검증)
+        # USE_TZ=False 환경에서는 naive datetime이므로 날짜 그대로 검증
         self.assertIn(
-            "2025-06-03", data["earliest_start_date"]
-        )  # 한국 6/4 00:00 → UTC 6/3 15:00
+            "2025-06-04", data["earliest_start_date"]
+        )  # USE_TZ=False에서는 naive datetime
         self.assertIn(
-            "2025-06-09", data["latest_end_date"]
-        )  # 한국 6/10 00:00 → UTC 6/9 15:00
+            "2025-06-10", data["latest_end_date"]
+        )  # USE_TZ=False에서는 naive datetime
 
     def test_get_project_status_multiple_plans(self):
         """여러 생산 계획이 있는 프로젝트 상태 조회 테스트"""
@@ -1639,10 +1639,11 @@ class ProjectAPITestCase(TestCase):
         if data["due_date"] is not None:
             self.assertIsInstance(data["due_date"], str)
 
-        # 날짜 형식 확인 (ISO 8601 형식: YYYY-MM-DDTHH:MM:SSZ 또는 +09:00)
+        # 날짜 형식 확인 (USE_TZ=False 환경에서는 timezone 정보 없음)
         import re
 
-        datetime_pattern = r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(Z|[+-]\d{2}:\d{2})$"
+        # USE_TZ=False 환경에서는 YYYY-MM-DDTHH:MM:SS 형식 (timezone 없음)
+        datetime_pattern = r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}$"
         self.assertIsNotNone(re.match(datetime_pattern, data["earliest_start_date"]))
         self.assertIsNotNone(re.match(datetime_pattern, data["latest_end_date"]))
         # due_date는 date 형식이므로 다른 패턴 사용
@@ -1675,13 +1676,14 @@ class ProjectAPITestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
 
-        # 가장 빠른 시작일과 가장 늦은 마감일 확인 (한국 시간을 UTC로 변환한 값으로 검증)
+        # 가장 빠른 시작일과 가장 늦은 마감일 확인 (USE_TZ=False에서는 naive datetime)
+        # i가 0부터 9까지이므로 earliest는 6/1, latest는 6/19 (i=9일 때 end_date=6/19)
         self.assertIn(
-            "2025-05-31", data["earliest_start_date"]
-        )  # 가장 빠른 시작일 (한국 6/1 00:00 → UTC 5/31 15:00)
+            "2025-06-01", data["earliest_start_date"]
+        )  # 가장 빠른 시작일 (USE_TZ=False에서는 naive datetime)
         self.assertIn(
-            "2025-06-18", data["latest_end_date"]
-        )  # 가장 늦은 마감일 (한국 6/10 23:59 → UTC 6/10 14:59)
+            "2025-06-19", data["latest_end_date"]
+        )  # 가장 늦은 마감일 (i=9일 때 end_date=6/19)
 
     def test_manufactured_to_delivery_success(self):
         """생산완료에서 납품으로 처리하는 API 테스트 - 성공 케이스"""

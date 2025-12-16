@@ -16,7 +16,23 @@ class TestTaxService(TestCase):
         # Mock BAROBILL_CASHBILL_CLIENT
         self.barobill_mock = Mock()
         self.barobill_mock.service = Mock()
-        self.barobill_mock.service.GetPeriodCashBillSalesListEx = Mock(return_value=[])
+        
+        # Mock 객체를 실제 API 응답 구조처럼 생성
+        mock_sales_result = Mock()
+        mock_sales_result.CurrentPage = 1
+        mock_sales_result.SimpleCashBillExList = None
+        
+        mock_purchase_result = Mock()
+        mock_purchase_result.CurrentPage = 1
+        mock_purchase_result.SimpleCashBillExList = None
+        
+        self.barobill_mock.service.GetPeriodCashBillSalesListEx = Mock(return_value=mock_sales_result)
+        self.barobill_mock.service.GetPeriodCashBillPurchaseListEx = Mock(return_value=mock_purchase_result)
+        
+        # GetCashBillExNK Mock
+        mock_detail = Mock()
+        mock_detail.FranchiseCorpNum = "1663301345"
+        self.barobill_mock.service.GetCashBillExNK = Mock(return_value=mock_detail)
         
         self.patcher = patch('django.conf.settings.BAROBILL_CASHBILL_CLIENT', self.barobill_mock)
         self.patcher.start()

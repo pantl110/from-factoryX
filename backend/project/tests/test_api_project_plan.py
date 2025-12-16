@@ -3,13 +3,14 @@ from django.contrib.auth import get_user_model
 from factory.models import Factory, FactoryClient, FactoryEquipment, FactoryMember
 from project.models import Project, ProjectPlan, ProjectLog
 from document.models import Quotation, QuotationProduct
-from stock.models import Product, Material, MaterialHistory
+from stock.models import Product, Material, MaterialHistory, MaterialProduct
 import json
 import jwt
 from django.conf import settings
 from datetime import timedelta, date, datetime
 from django.utils import timezone
 from decimal import Decimal
+from dateutil.relativedelta import relativedelta
 
 User = get_user_model()
 
@@ -63,10 +64,6 @@ class ProjectPlanAPITestCase(TestCase):
         )
 
         # FactoryMember 생성 (권한 검증을 위해)
-        from factory.models import FactoryMember
-        from django.utils import timezone
-        from dateutil.relativedelta import relativedelta
-
         # 한 달 전에 가입한 것으로 설정
         one_month_ago = datetime.now() - relativedelta(months=1)
         self.factory_member = FactoryMember.objects.create(
@@ -660,8 +657,6 @@ class ProjectPlanAPITestCase(TestCase):
         plan = ProjectPlan.objects.get(id=plan_id)
         # 시간대 변환으로 인해 날짜 부분만 비교
         # UTC 변환으로 인해 1일 차이가 날 수 있으므로 허용
-        from datetime import timedelta
-
         self.assertIn(plan.start_date.date(), [date(2024, 3, 1), date(2024, 2, 29)])
         self.assertIn(plan.end_date.date(), [date(2024, 3, 31), date(2024, 3, 30)])
 
@@ -1046,8 +1041,6 @@ class DashboardAPITestCase(TestCase):
         )
 
         # 제품-원자재 연결 생성
-        from stock.models import MaterialProduct
-
         self.material_product = MaterialProduct.objects.create(
             product=self.product,
             material=self.material,
@@ -1055,10 +1048,6 @@ class DashboardAPITestCase(TestCase):
         )
 
         # FactoryMember 생성
-        from factory.models import FactoryMember
-        from django.utils import timezone
-        from dateutil.relativedelta import relativedelta
-
         # 한 달 전에 가입한 것으로 설정
         one_month_ago = datetime.now() - relativedelta(months=1)
         self.factory_member = FactoryMember.objects.create(
@@ -1085,9 +1074,6 @@ class DashboardAPITestCase(TestCase):
 
     def create_test_projects(self):
         """테스트용 프로젝트들 생성"""
-        from django.utils import timezone
-        from dateutil.relativedelta import relativedelta
-
         today = date.today()
         current_month_start = today.replace(day=1)
 
@@ -1218,8 +1204,9 @@ class MobileDashboardCountTestCase(TestCase):
     def test_get_mobile_dashboard_counts_empty_data(self):
         """데이터가 없어도 기본 지표가 0으로 반환되는지 확인"""
         url = "/v2/project-plan/dashboard-mobile"
+        today = date.today()
         response = self.client.get(
-            url, {"factory_id": self.factory.id}, **self._auth_headers()
+            url, {"factory_id": self.factory.id, "base_date": today.strftime("%Y-%m-%d")}, **self._auth_headers()
         )
 
         self.assertEqual(response.status_code, 200)

@@ -187,7 +187,7 @@ def send_verification_email(email, code, verification_type):
 
 인증 코드: {code}
 
-이 코드는 5분간 유효합니다.
+이 코드는 3분간 유효합니다.
 
 감사합니다.
         """
@@ -200,7 +200,7 @@ def send_verification_email(email, code, verification_type):
 
 인증 코드: {code}
 
-이 코드는 5분간 유효합니다.
+이 코드는 3분간 유효합니다.
 
 감사합니다.
         """
@@ -242,7 +242,7 @@ def create_verification_code(email, verification_type):
 
     # 새 인증 코드 생성
     code = generate_verification_code()
-    expires_at = datetime.now() + timedelta(minutes=5)  # 5분 후 만료
+    expires_at = datetime.now() + timedelta(minutes=3)  # 3분 후 만료
 
     verification = EmailVerification.objects.create(
         email=email,

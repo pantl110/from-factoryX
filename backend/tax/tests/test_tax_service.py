@@ -14,7 +14,38 @@ class TestTaxService(TestCase):
         # Mock BAROBILL_CLIENT
         self.barobill_mock = Mock()
         self.barobill_mock.service = Mock()
-        self.barobill_mock.service.GetPeriodTaxInvoiceSalesList = Mock(return_value=[])
+        
+        # Mock 객체를 실제 API 응답 구조처럼 생성
+        mock_sales_result = Mock()
+        mock_sales_result.CurrentPage = 1
+        mock_sales_result.SimpleTaxInvoiceExList = None
+        
+        mock_purchase_result = Mock()
+        mock_purchase_result.CurrentPage = 1
+        mock_purchase_result.SimpleTaxInvoiceExList = None
+        
+        self.barobill_mock.service.GetPeriodTaxInvoiceSalesList = Mock(return_value=mock_sales_result)
+        self.barobill_mock.service.GetPeriodTaxInvoicePurchaseList = Mock(return_value=mock_purchase_result)
+        
+        # GetTaxInvoiceNK Mock
+        mock_invoice_detail = Mock()
+        mock_invoice_detail.TaxInvoiceType = 1
+        mock_invoice_detail.WriteDate = "20240101"
+        mock_invoice_detail.AmountTotal = 10000
+        mock_invoice_detail.TaxTotal = 1000
+        mock_invoice_detail.PurposeType = 1
+        mock_invoice_detail.TaxInvoiceTradeLineItems = Mock()
+        mock_invoice_detail.TaxInvoiceTradeLineItems.TaxInvoiceTradeLineItem = []
+        self.barobill_mock.service.GetTaxInvoiceNK = Mock(return_value=mock_invoice_detail)
+        
+        # RegistAndIssueTaxInvoice Mock - 정수 반환
+        self.barobill_mock.service.RegistAndIssueTaxInvoice = Mock(return_value=1)
+        
+        # GetTaxInvoiceStateEX Mock
+        mock_state_result = Mock()
+        mock_state_result.BarobillState = 1
+        self.barobill_mock.service.GetTaxInvoiceStateEX = Mock(return_value=mock_state_result)
+        
         self.barobill_mock.get_type = Mock(return_value=Mock())
         
         self.patcher = patch('django.conf.settings.BAROBILL_CLIENT', self.barobill_mock)

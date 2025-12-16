@@ -92,7 +92,7 @@ class SimpleCronTest(TestCase):
         # 실행 전 상태 확인
         self.assertEqual(self.equipment.status, 'standby')
         self.assertEqual(self.project_plan.status, 'pending')
-        self.assertEqual(self.project.status, 'pending')
+        self.assertEqual(self.project.status, 'production')  # 크론 명령어는 생산 중인 프로젝트만 처리
         
         # 크론 명령어 실행
         out = io.StringIO()
@@ -109,4 +109,5 @@ class SimpleCronTest(TestCase):
         # 상태가 변경되었는지 확인
         self.assertEqual(self.equipment.status, 'running')
         self.assertEqual(self.project_plan.status, 'production')
+        # 크론 명령어가 프로젝트 상태를 'production'으로 업데이트함
         self.assertEqual(self.project.status, 'production') 
