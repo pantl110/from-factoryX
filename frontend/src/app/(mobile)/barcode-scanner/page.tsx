@@ -104,7 +104,7 @@ const BarcodeScannerContent = () => {
     }
   };
 
-  // 이미지 파일에서 바코드 인식
+  // 이미지 파일에서 바코드 인식 (개선된 버전)
   const handleImageDecode = async (file: File) => {
     if (!file) return;
 
@@ -135,16 +135,62 @@ const BarcodeScannerContent = () => {
         codeReaderRef.current = new BrowserMultiFormatReader(hints);
       }
 
-      // 이미지를 Data URL로 변환
-      const imageUrl = await new Promise<string>((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = reject;
-        reader.readAsDataURL(file);
+      // 이미지를 HTMLImageElement로 로드 (더 안정적인 방법)
+      const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = URL.createObjectURL(file);
       });
 
-      // 이미지에서 바코드 디코딩
-      const result = await codeReaderRef.current.decodeFromImageUrl(imageUrl);
+      // 이미지에서 바코드 디코딩 시도
+      let result = null;
+      let lastError: Error | null = null;
+
+      // 여러 각도로 시도 (원본, 90도, 180도, 270도 회전)
+      const rotations = [0, 90, 180, 270];
+
+      for (const rotation of rotations) {
+        try {
+          // 회전이 필요한 경우 Canvas로 변환
+          let imageToDecode: HTMLImageElement | HTMLCanvasElement = image;
+
+          if (rotation !== 0) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            if (!ctx) continue;
+
+            // 회전에 따라 캔버스 크기 조정
+            if (rotation === 90 || rotation === 270) {
+              canvas.width = image.height;
+              canvas.height = image.width;
+            } else {
+              canvas.width = image.width;
+              canvas.height = image.height;
+            }
+
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate((rotation * Math.PI) / 180);
+            ctx.drawImage(image, -image.width / 2, -image.height / 2);
+            imageToDecode = canvas;
+          }
+
+          // 바코드 디코딩 시도
+          result = await codeReaderRef.current.decodeFromImageElement(
+            imageToDecode as HTMLImageElement
+          );
+
+          if (result && result.getText()) {
+            break; // 성공하면 루프 종료
+          }
+        } catch (err) {
+          lastError = err instanceof Error ? err : new Error(String(err));
+          continue; // 다음 회전 시도
+        }
+      }
+
+      // URL 정리
+      URL.revokeObjectURL(image.src);
 
       if (result && result.getText()) {
         const scannedText = result.getText();
@@ -155,7 +201,7 @@ const BarcodeScannerContent = () => {
         url.searchParams.set('scanned_code', scannedText);
         router.push(url.pathname + url.search);
       } else {
-        throw new Error('바코드를 찾을 수 없습니다.');
+        throw lastError || new Error('바코드를 찾을 수 없습니다.');
       }
     } catch {
       // 바코드 인식 실패
