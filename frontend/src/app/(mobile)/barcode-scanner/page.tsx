@@ -99,23 +99,35 @@ const BarcodeScannerContent = () => {
   // 모바일 디바이스에 최적화된 카메라 제약 조건
   const cameraConstraints = useMemo(() => {
     if (isMobile) {
-      // 모바일: 더 유연한 제약 조건
+      // 모바일: 최대 해상도 사용 (네이티브 앱 수준의 화질 추구)
+      // 최신 스마트폰은 4K까지 지원하지만, 웹 브라우저에서는 보통 1080p~4K까지 가능
       return {
         video: {
           facingMode: 'environment', // 후면 카메라 우선
-          // 모바일에서는 ideal 대신 min/max 사용하여 더 유연하게
-          width: { min: 320, ideal: 640, max: 1920 },
-          height: { min: 240, ideal: 480, max: 1080 },
+          // 최대 해상도로 설정하여 네이티브 앱 수준의 화질 확보
+          width: {
+            min: 640,
+            ideal: 1920, // Full HD 이상
+            max: 3840, // 4K까지 시도
+          },
+          height: {
+            min: 480,
+            ideal: 1080, // Full HD 이상
+            max: 2160, // 4K까지 시도
+          },
+          // 프레임레이트도 높게 설정하여 더 부드러운 스캔
+          frameRate: { ideal: 30, max: 60 },
           aspectRatio: { ideal: 16 / 9 },
         },
       };
     }
-    // 데스크톱: 기존 설정 유지
+    // 데스크톱: 고해상도 설정
     return {
       video: {
         facingMode: 'environment',
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
+        width: { ideal: 1920, max: 3840 },
+        height: { ideal: 1080, max: 2160 },
+        frameRate: { ideal: 30, max: 60 },
       },
     };
   }, [isMobile]);
@@ -290,35 +302,60 @@ const BarcodeScannerContent = () => {
     };
   }, [ref]);
 
-  // 비디오가 준비되면 자동 초점 활성화
+  // 비디오가 준비되면 자동 초점 활성화 및 최대 해상도 확인
   useEffect(() => {
     const video = ref.current;
     if (!video) {
       return;
     }
 
-    const setupAutofocus = () => {
+    const setupAutofocus = async () => {
       const stream = video.srcObject as MediaStream | null;
       if (!stream) return;
 
       const videoTrack = stream.getVideoTracks()[0];
       if (!videoTrack) return;
 
+      // 현재 해상도 확인
+      const currentSettings = videoTrack.getSettings();
+      const currentWidth = currentSettings.width || 0;
+      const currentHeight = currentSettings.height || 0;
+
+      // 사용 가능한 최대 해상도 확인
+      const capabilities = videoTrack.getCapabilities();
+      const maxWidth = capabilities.width?.max || 1920;
+      const maxHeight = capabilities.height?.max || 1080;
+
+      // 현재 해상도가 최대보다 낮으면 업그레이드 시도
+      if (currentWidth < maxWidth || currentHeight < maxHeight) {
+        try {
+          await videoTrack.applyConstraints({
+            width: { ideal: Math.min(maxWidth, 3840) },
+            height: { ideal: Math.min(maxHeight, 2160) },
+            frameRate: { ideal: 30 },
+          });
+        } catch (err) {
+          // 해상도 업그레이드 실패는 무시 (기기 제한)
+          // eslint-disable-next-line no-console
+          console.log('Failed to upgrade resolution:', err);
+        }
+      }
+
       // continuous autofocus 활성화 (가장 안정적)
-      videoTrack
-        .applyConstraints({
+      try {
+        await videoTrack.applyConstraints({
           advanced: [
             {
               focusMode: 'continuous',
             } as ExtendedMediaTrackConstraintSetType,
           ],
-        } as unknown as MediaTrackConstraints)
-        .catch(() => {
-          // 초점 설정 실패는 무시 (모든 기기에서 지원하지 않음)
-        });
+        } as unknown as MediaTrackConstraints);
+      } catch {
+        // 초점 설정 실패는 무시 (모든 기기에서 지원하지 않음)
+      }
     };
 
-    // 비디오가 로드되면 초점 설정
+    // 비디오가 로드되면 초점 설정 및 해상도 확인
     if (video.readyState >= 2) {
       setupAutofocus();
     } else {
