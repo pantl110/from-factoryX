@@ -1,11 +1,7 @@
 'use client';
 
 import { TaxDocumentType } from '@/types/status-type';
-import MiniBtn from '@/ui/mini-btn';
-import { useState } from 'react';
-import CreatTaxPanel from './create-tax-panel';
-import useMemberStore from '@/store/member-store';
-import useSubscriptionStore from '@/store/subscription-store';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 interface MainTitleSecProps {
   selectedTaxType: TaxDocumentType | null;
@@ -16,65 +12,52 @@ const MainTitleSec = ({
   selectedTaxType,
   setSelectedTaxType,
 }: MainTitleSecProps) => {
-  const factoryId = useMemberStore((state) => state.factoryId);
-  const role = useMemberStore((state) => state.role);
-  const tabs: string[] = ['전체', '매출', '매입'];
-  const isPartnersSubscription = useSubscriptionStore((state) =>
-    state.isPartnersSubscription()
-  );
-  const [isCreatTaxPanelOpen, setIsCreatTaxPanelOpen] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const tabs: string[] = ['매출', '매입', '현금영수증'];
+
+  const handleTabClick = (tab: string) => {
+    if (tab === '매출') {
+      setSelectedTaxType('sales');
+      router.push('/tax/list?tab=sales');
+    } else if (tab === '매입') {
+      setSelectedTaxType('purchase');
+      router.push('/tax/list?tab=purchase');
+    } else if (tab === '현금영수증') {
+      setSelectedTaxType(null);
+      router.push('/tax/list?tab=receipt');
+    }
+  };
+
+  const currentTab = searchParams.get('tab');
+  const isReceiptTab = currentTab === 'receipt';
 
   return (
-    <>
-      <div className="flex flex-col gap-8 pt-10 pr-10 pl-10">
-        <div className="flex items-center justify-between relative">
-          <div className="Heading-1 text-dg">세금계산서 내역</div>
-          <MiniBtn
-            text="세금계산서 생성하기"
-            variant="primary"
-            onClick={() => {
-              setIsCreatTaxPanelOpen(true);
-            }}
-            disabled={
-              !factoryId ||
-              role === 'viewer' ||
-              role === 'prod_manager' ||
-              !isPartnersSubscription
-            }
-          />
-        </div>
+    <div className="flex flex-col gap-8 pt-10 pr-10 pl-10">
+      <div className="flex items-center justify-between relative">
+        <div className="Heading-1 text-dg">채권 · 채무 관리</div>
+      </div>
 
-        <div className="flex gap-4 items-center Heading-3">
-          {tabs.map((tab) => (
+      <div className="flex gap-4 items-center Heading-3">
+        {tabs.map((tab) => {
+          const isActive =
+            (tab === '매출' && currentTab === 'sales') ||
+            (tab === '매입' && currentTab === 'purchase') ||
+            (tab === '현금영수증' && isReceiptTab) ||
+            // 쿼리 파라미터가 없을 때 기본값으로 매출 탭 활성화
+            (tab === '매출' && !currentTab && selectedTaxType === 'sales');
+          return (
             <button
               key={tab}
-              className={`${
-                (tab === '전체' && selectedTaxType === null) ||
-                (tab === '매출' && selectedTaxType === 'sales') ||
-                (tab === '매입' && selectedTaxType === 'purchase')
-                  ? 'text-dg'
-                  : 'text-gr'
-              } cursor-pointer`}
-              onClick={() => {
-                if (tab === '매출') {
-                  setSelectedTaxType('sales');
-                } else if (tab === '매입') {
-                  setSelectedTaxType('purchase');
-                } else {
-                  setSelectedTaxType(null);
-                }
-              }}
+              className={`${isActive ? 'text-dg' : 'text-gr'} cursor-pointer`}
+              onClick={() => handleTabClick(tab)}
             >
               {tab}
             </button>
-          ))}
-        </div>
+          );
+        })}
       </div>
-
-      {isCreatTaxPanelOpen && (
-        <CreatTaxPanel onClose={() => setIsCreatTaxPanelOpen(false)} />
-      )}
-    </>
+    </div>
   );
 };
 

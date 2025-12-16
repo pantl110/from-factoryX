@@ -76,9 +76,8 @@ const SideBar = ({ onVisibilityChange }: SideBarProps) => {
             path="/tax"
             hasDropdown={true}
             dropdownItems={[
-              { label: '세금계산서 내역', path: '/tax/list' },
-              { label: '세금계산서 임시보관함', path: '/tax/draft' },
-              { label: '현금영수증', path: '/tax/receipt' },
+              { label: '세금계산서 작성함', path: '/tax/draft' },
+              { label: '채권 · 채무 관리', path: '/tax/list' },
             ]}
           />
           <SideBarItem icon={Files} label="문서함" path="/document" />

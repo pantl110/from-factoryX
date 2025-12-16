@@ -3,10 +3,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Suspense } from 'react';
 import { useDebounce } from 'use-debounce';
+import { useSearchParams } from 'next/navigation';
 import MainTitleSec from './main-title-sec';
 import TableHeader from './table-header';
 import TableItem from './table-item';
 import TaxDetailPanel from '../tax-detail-panel';
+import ReceiptList from './receipt/receipt-list';
 import { TaxDocumentType } from '@/types/status-type';
 import Spinner from '@/ui/spinner';
 import SearchInput from '@/ui/search-input';
@@ -28,9 +30,19 @@ const TaxPageContent = () => {
   const factoryId = useMemberStore((state) => state.factoryId);
   // 구독 상태 확인
   const { isPartnersSubscription } = useSubscriptionStore();
+  const searchParams = useSearchParams();
+
+  // URL 쿼리 파라미터에서 탭 정보 읽기
+  const tabParam = searchParams.get('tab');
+  const initialTaxType: TaxDocumentType | null =
+    tabParam === 'receipt'
+      ? null
+      : tabParam === 'purchase'
+        ? 'purchase'
+        : 'sales';
 
   const [selectedTaxType, setSelectedTaxType] =
-    useState<TaxDocumentType | null>(null);
+    useState<TaxDocumentType | null>(initialTaxType);
   const [selectedItem, setSelectedItem] =
     useState<PublishedTaxInvoiceResponseModel | null>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
@@ -102,7 +114,6 @@ const TaxPageContent = () => {
       } else if (selectedTaxType === 'purchase') {
         params.tax_invoice_type = 'purchase';
       }
-      // null(전체 탭)일 때는 tax_invoice_type 파라미터를 보내지 않음
 
       // 기본적으로는 숨김 항목 제외, 숨긴 목록 보기 버튼을 누르면 숨김 항목만 표시
       if (showHidden) {
@@ -144,10 +155,27 @@ const TaxPageContent = () => {
     ]
   );
 
-  // factoryId 초기화
+  // URL 쿼리 파라미터 변경 시 탭 업데이트
   useEffect(() => {
-    fetchTaxData(1);
-  }, [fetchTaxData]);
+    const tabParam = searchParams.get('tab');
+    const newTaxType: TaxDocumentType | null =
+      tabParam === 'receipt'
+        ? null
+        : tabParam === 'purchase'
+          ? 'purchase'
+          : 'sales';
+    if (newTaxType !== selectedTaxType) {
+      setSelectedTaxType(newTaxType);
+    }
+  }, [searchParams, selectedTaxType]);
+
+  // factoryId 초기화 및 탭에 따른 데이터 로드
+  useEffect(() => {
+    if (selectedTaxType !== null) {
+      // 세금계산서 탭
+      fetchTaxData(1);
+    }
+  }, [fetchTaxData, selectedTaxType]);
 
   // 탭 변경 시 페이지와 체크박스 상태 리셋
   useEffect(() => {
@@ -155,44 +183,62 @@ const TaxPageContent = () => {
     setAllChecked(false);
     setSearchQuery(''); // 검색어 초기화
     // showHidden 상태는 유지 (탭 변경 시에도 숨김 목록 보기 상태 유지)
-    fetchTaxData(1); // 탭 변경 시에도 API 호출
+    if (selectedTaxType !== null) {
+      fetchTaxData(1);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTaxType]);
 
-  // showHidden 상태 변경 시 데이터 새로 가져오기
+  // showHidden 상태 변경 시 데이터 새로 가져오기 (세금계산서 탭일 때만)
   useEffect(() => {
-    setCurrentPage(1);
-    setAllChecked(false);
-    fetchTaxData(1);
+    if (selectedTaxType !== null) {
+      setCurrentPage(1);
+      setAllChecked(false);
+      fetchTaxData(1);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showHidden]);
+  }, [showHidden, selectedTaxType]);
 
   // 페이지 변경 시
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    fetchTaxData(page);
+    if (selectedTaxType !== null) {
+      fetchTaxData(page);
+    }
   };
 
   // 페이지 유효성 관리 (숨김이나 비어 있는 페이지 처리)
   useEffect(() => {
-    if (totalPages > 0 && currentPage > totalPages) {
-      setCurrentPage(totalPages);
-      fetchTaxData(totalPages);
-      return;
-    }
+    if (selectedTaxType !== null) {
+      // 세금계산서 탭
+      if (totalPages > 0 && currentPage > totalPages) {
+        setCurrentPage(totalPages);
+        fetchTaxData(totalPages);
+        return;
+      }
 
-    if (!isLoading && currentPage > 1 && taxData.length === 0) {
-      const previousPage = currentPage - 1;
-      setCurrentPage(previousPage);
-      fetchTaxData(previousPage);
+      if (!isLoading && currentPage > 1 && taxData.length === 0) {
+        const previousPage = currentPage - 1;
+        setCurrentPage(previousPage);
+        fetchTaxData(previousPage);
+      }
     }
-  }, [totalPages, currentPage, fetchTaxData, isLoading, taxData.length]);
+  }, [
+    totalPages,
+    currentPage,
+    fetchTaxData,
+    isLoading,
+    taxData.length,
+    selectedTaxType,
+  ]);
 
   // 시작일자 정렬 방향 변경
   const handleSortClick = () => {
     setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
     setCurrentPage(1); // 정렬 변경 시 페이지 1로 리셋
-    fetchTaxData(1); // 정렬 변경 시에도 API 호출
+    if (selectedTaxType !== null) {
+      fetchTaxData(1);
+    }
   };
 
   // 검색어 변경 시
@@ -218,7 +264,9 @@ const TaxPageContent = () => {
     toggleOne,
     setAllChecked,
     isAllChecked,
-  } = useCheckAll(taxData.map((item) => item.id));
+  } = useCheckAll(
+    selectedTaxType === null ? [] : taxData.map((item) => item.id)
+  );
 
   const handleToggleHidden = () => {
     // "취소" 버튼일 때는 체크박스만 해제
@@ -297,99 +345,110 @@ const TaxPageContent = () => {
           setSelectedTaxType={setSelectedTaxType}
         />
         <div className="px-10 pb-10">
-          <div className="flex items-center justify-between pb-4">
-            <SearchInput
-              value={searchQuery}
-              onChange={handleSearchChange}
-              placeholder="세금계산서 거래처나 제품명을 검색하세요."
-            />
-            {/* 숨김 버튼: 숨김 목록 보기 중이거나, 일반 목록에서 데이터가 없고 숨김 데이터도 없을 때 */}
-            {(showHidden || (!showHidden && hasItem)) &&
-              role &&
-              !['viewer', 'prod_manager'].includes(role) && (
-                <div className="flex gap-1">
-                  <MiniBtn
-                    text={checkedCount === 0 ? '숨긴 목록 보기' : '취소'}
-                    textColor="text-dg"
-                    borderColor={showHidden ? 'border-none' : 'border-lg'}
-                    bgColor={showHidden ? 'bg-bg' : 'bg-white'}
-                    hoverColor="hover:bg-bg"
-                    onClick={handleToggleHidden}
-                  />
-                  <MiniBtn
-                    text={
-                      checkedCount === 0
-                        ? showHidden
-                          ? '복구하기'
-                          : '숨기기'
-                        : checkedCount === taxData.length
-                          ? showHidden
-                            ? '전체 항목 복구하기'
-                            : '전체 항목 숨기기'
-                          : showHidden
-                            ? `${checkedCount}개 항목 복구하기`
-                            : `${checkedCount}개 항목 숨기기`
-                    }
-                    variant={checkedCount > 0 ? 'red' : 'primary'}
-                    onClick={handleHideRestore}
-                    disabled={checkedCount === 0 || isHideRestoreLoading}
-                  />
-                </div>
-              )}
-          </div>
-
-          {isLoading ? (
-            <div className="flex items-center justify-center h-100">
-              <Spinner />
-            </div>
-          ) : (
-            <>
-              {/* 테이블 */}
-              {taxData.length === 0 ? (
-                <EmptySpace
-                  title={
-                    showHidden
-                      ? '아직 숨긴 세금계산서가 없어요.'
-                      : hasItem
-                        ? '세금계산서가 숨겨진 상태예요.'
-                        : '아직 등록된 세금계산서가 없어요.'
-                  }
-                  description={
-                    showHidden
-                      ? '표시하지 않을 세금계산서를 숨기면 이곳에서 다시 볼 수 있어요.'
-                      : hasItem
-                        ? "숨긴 세금계산서를 다시 보려면, 상단의 '숨긴 목록 보기' 버튼을 눌러 복구해 주세요."
-                        : '세금계산서를 생성하면 이곳에서 확인할 수 있어요.'
-                  }
-                  height="h-50"
-                  className="mt-2"
-                />
-              ) : (
-                <div className="w-full overflow-x-auto overflow-y-hidden">
-                  <TableHeader
-                    checkedCount={checkedCount}
-                    onToggleAll={toggleAll}
-                    onSortClick={handleSortClick}
-                    sortDirection={sortDirection}
-                    isAllChecked={isAllChecked}
-                  />
-                  {taxData?.map((item) => (
-                    <TableItem
-                      key={item.id}
-                      onItemClick={() => handleOpenPanel(item)}
-                      item={item}
-                      onToggle={() => toggleOne(item.id)}
-                      isChecked={isChecked(item.id)}
+          {/* 세금계산서 탭일 때만 검색 input과 버튼 영역 표시 */}
+          {selectedTaxType !== null && (
+            <div className="flex items-center justify-between pb-4">
+              <SearchInput
+                value={searchQuery}
+                onChange={handleSearchChange}
+                placeholder="세금계산서 거래처나 제품명을 검색하세요."
+              />
+              {/* 숨김 버튼: 숨김 목록 보기 중이거나, 일반 목록에서 데이터가 없고 숨김 데이터도 없을 때 */}
+              {(showHidden || (!showHidden && hasItem)) &&
+                role &&
+                !['viewer', 'prod_manager'].includes(role) && (
+                  <div className="flex gap-1">
+                    <MiniBtn
+                      text={checkedCount === 0 ? '숨긴 목록 보기' : '취소'}
+                      textColor="text-dg"
+                      borderColor={showHidden ? 'border-none' : 'border-lg'}
+                      bgColor={showHidden ? 'bg-bg' : 'bg-white'}
+                      hoverColor="hover:bg-bg"
+                      onClick={handleToggleHidden}
                     />
-                  ))}
+                    <MiniBtn
+                      text={
+                        checkedCount === 0
+                          ? showHidden
+                            ? '복구하기'
+                            : '숨기기'
+                          : checkedCount === taxData.length
+                            ? showHidden
+                              ? '전체 항목 복구하기'
+                              : '전체 항목 숨기기'
+                            : showHidden
+                              ? `${checkedCount}개 항목 복구하기`
+                              : `${checkedCount}개 항목 숨기기`
+                      }
+                      variant={checkedCount > 0 ? 'red' : 'primary'}
+                      onClick={handleHideRestore}
+                      disabled={checkedCount === 0 || isHideRestoreLoading}
+                    />
+                  </div>
+                )}
+            </div>
+          )}
+
+          {selectedTaxType === null ? (
+            // 현금영수증 탭
+            <ReceiptList />
+          ) : (
+            // 세금계산서 탭
+            <>
+              {isLoading ? (
+                <div className="flex items-center justify-center h-100">
+                  <Spinner />
                 </div>
-              )}
-              {totalPages >= 2 && (
-                <Pagination
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={handlePageChange}
-                />
+              ) : (
+                <>
+                  {/* 테이블 */}
+                  {taxData.length === 0 ? (
+                    <EmptySpace
+                      title={
+                        showHidden
+                          ? '아직 숨긴 세금계산서가 없어요.'
+                          : hasItem
+                            ? '세금계산서가 숨겨진 상태예요.'
+                            : '아직 등록된 세금계산서가 없어요.'
+                      }
+                      description={
+                        showHidden
+                          ? '표시하지 않을 세금계산서를 숨기면 이곳에서 다시 볼 수 있어요.'
+                          : hasItem
+                            ? "숨긴 세금계산서를 다시 보려면, 상단의 '숨긴 목록 보기' 버튼을 눌러 복구해 주세요."
+                            : '세금계산서를 생성하면 이곳에서 확인할 수 있어요.'
+                      }
+                      height="h-50"
+                      className="mt-2"
+                    />
+                  ) : (
+                    <div className="w-full overflow-x-auto overflow-y-hidden">
+                      <TableHeader
+                        checkedCount={checkedCount}
+                        onToggleAll={toggleAll}
+                        onSortClick={handleSortClick}
+                        sortDirection={sortDirection}
+                        isAllChecked={isAllChecked}
+                      />
+                      {taxData?.map((item) => (
+                        <TableItem
+                          key={item.id}
+                          onItemClick={() => handleOpenPanel(item)}
+                          item={item}
+                          onToggle={() => toggleOne(item.id)}
+                          isChecked={isChecked(item.id)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  {totalPages >= 2 && (
+                    <Pagination
+                      currentPage={currentPage}
+                      totalPages={totalPages}
+                      onPageChange={handlePageChange}
+                    />
+                  )}
+                </>
               )}
             </>
           )}

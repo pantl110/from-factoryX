@@ -1,4 +1,4 @@
-import ReceiptDetailPanel from '@/app/(with-layout)/tax/receipt/modals/receipt-detail-panel';
+import ReceiptDetailPanel from '@/app/(with-layout)/tax/list/receipt/modals/receipt-detail-panel';
 import TaxDetailPanel from '@/app/(with-layout)/tax/tax-detail-panel';
 import { MaterialHistoryResponseModel } from '@/types/data-model';
 import MiniBtn from '@/ui/mini-btn';
