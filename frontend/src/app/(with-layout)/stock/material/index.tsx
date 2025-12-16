@@ -181,11 +181,11 @@ const Material = ({
         />
         {materialList.length > 0 && !isViewer && hasSubscription() && (
           <div className="flex gap-1">
-            <MiniBtn
+            {/* <MiniBtn
               text="취소"
               variant="whiteOutline"
               onClick={() => setAllChecked(false)}
-            />
+            /> */}
             <MiniBtn
               text={getDeleteButtonText()}
               variant={checkedCount > 0 ? 'red' : 'whiteOutline'}
