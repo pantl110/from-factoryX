@@ -1,12 +1,16 @@
 'use client';
 
 import { useZxing } from 'react-zxing';
-import { useEffect, useState, Suspense, useMemo } from 'react';
+import { useEffect, useState, Suspense, useMemo, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { WarningCircle } from '@phosphor-icons/react';
+import { WarningCircle, Camera } from '@phosphor-icons/react';
 import Spinner from '@/ui/spinner';
 import Topbar from '@/app/(mobile)/topbar';
-import { DecodeHintType, BarcodeFormat } from '@zxing/library';
+import {
+  DecodeHintType,
+  BarcodeFormat,
+  BrowserMultiFormatReader,
+} from '@zxing/library';
 
 interface PointOfInterestModel {
   x: number;
@@ -31,6 +35,9 @@ const BarcodeScannerContent = () => {
   );
   const [isProcessing, setIsProcessing] = useState(false);
   const [lastScannedCode, setLastScannedCode] = useState<string | null>(null);
+  const [barcodeError, setBarcodeError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
 
   // 모바일 디바이스 감지
   const isMobile = useMemo(() => {
@@ -96,28 +103,111 @@ const BarcodeScannerContent = () => {
     }
   };
 
+  // 이미지 파일에서 바코드 인식
+  const handleImageDecode = async (file: File) => {
+    if (!file) return;
+
+    setIsProcessing(true);
+    setBarcodeError(null);
+
+    try {
+      // BrowserMultiFormatReader 초기화 (한 번만)
+      if (!codeReaderRef.current) {
+        const hints = new Map();
+        hints.set(DecodeHintType.TRY_HARDER, true);
+        if (isMobile) {
+          hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+            BarcodeFormat.EAN_13,
+            BarcodeFormat.EAN_8,
+            BarcodeFormat.UPC_A,
+            BarcodeFormat.UPC_E,
+            BarcodeFormat.CODE_128,
+            BarcodeFormat.CODE_39,
+            BarcodeFormat.CODE_93,
+            BarcodeFormat.ITF,
+            BarcodeFormat.CODABAR,
+            BarcodeFormat.QR_CODE,
+            BarcodeFormat.DATA_MATRIX,
+            BarcodeFormat.PDF_417,
+          ]);
+        }
+        codeReaderRef.current = new BrowserMultiFormatReader(hints);
+      }
+
+      // 이미지를 Data URL로 변환
+      const imageUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+      });
+
+      // 이미지에서 바코드 디코딩
+      const result = await codeReaderRef.current.decodeFromImageUrl(imageUrl);
+
+      if (result && result.getText()) {
+        const scannedText = result.getText();
+        setLastScannedCode(scannedText);
+
+        // 스캔된 바코드를 쿼리 파라미터로 전달하여 이전 페이지로 즉시 이동
+        const url = new URL(callbackUrl, window.location.origin);
+        url.searchParams.set('scanned_code', scannedText);
+        router.push(url.pathname + url.search);
+      } else {
+        throw new Error('바코드를 찾을 수 없습니다.');
+      }
+    } catch {
+      // 바코드 인식 실패
+      setBarcodeError(
+        '바코드를 인식할 수 없습니다.\n다시 촬영해주세요.\n\n• 바코드가 선명하게 보이는지 확인해주세요\n• 바코드가 사진 중앙에 있는지 확인해주세요\n• 조명이 충분한지 확인해주세요'
+      );
+      setIsProcessing(false);
+    }
+  };
+
+  // 파일 선택 핸들러
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleImageDecode(file);
+    }
+    // input 초기화 (같은 파일을 다시 선택할 수 있도록)
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  // 카메라 앱 열기
+  const handleCameraButtonClick = () => {
+    fileInputRef.current?.click();
+  };
+
   // 모바일 디바이스에 최적화된 카메라 제약 조건
   const cameraConstraints = useMemo(() => {
     if (isMobile) {
       // 모바일: 최대 해상도 사용 (네이티브 앱 수준의 화질 추구)
-      // 최신 스마트폰은 4K까지 지원하지만, 웹 브라우저에서는 보통 1080p~4K까지 가능
+      // 주의: 웹 브라우저는 네이티브 앱만큼의 화질을 제공할 수 없습니다.
+      // 브라우저 보안 정책과 성능 제약으로 인해 제한이 있습니다.
       return {
         video: {
           facingMode: 'environment', // 후면 카메라 우선
-          // 최대 해상도로 설정하여 네이티브 앱 수준의 화질 확보
+          // 최대 해상도로 설정 (브라우저가 허용하는 최대치까지)
+          // ideal을 높게 설정하여 브라우저가 가능한 최고 해상도 선택하도록 유도
           width: {
-            min: 640,
-            ideal: 1920, // Full HD 이상
+            min: 1280, // 최소값도 높게 설정
+            ideal: 3840, // 4K를 ideal로 설정 (최대한 높은 해상도 요청)
             max: 3840, // 4K까지 시도
           },
           height: {
-            min: 480,
-            ideal: 1080, // Full HD 이상
+            min: 720, // 최소값도 높게 설정
+            ideal: 2160, // 4K를 ideal로 설정
             max: 2160, // 4K까지 시도
           },
           // 프레임레이트도 높게 설정하여 더 부드러운 스캔
-          frameRate: { ideal: 30, max: 60 },
+          frameRate: { ideal: 60, max: 60 }, // 최대 프레임레이트 요청
           aspectRatio: { ideal: 16 / 9 },
+          // 추가 품질 향상 옵션
+          resizeMode: 'none', // 리사이즈 없이 원본 해상도 유지
         },
       };
     }
@@ -326,14 +416,50 @@ const BarcodeScannerContent = () => {
       const maxWidth = capabilities.width?.max || 1920;
       const maxHeight = capabilities.height?.max || 1080;
 
+      // 디버깅: 현재 해상도와 최대 해상도 로깅
+      // eslint-disable-next-line no-console
+      console.log('Current resolution:', currentWidth, 'x', currentHeight);
+      // eslint-disable-next-line no-console
+      console.log('Max available resolution:', maxWidth, 'x', maxHeight);
+
       // 현재 해상도가 최대보다 낮으면 업그레이드 시도
+      // exact 값을 사용하여 최대한 높은 해상도 강제 시도
       if (currentWidth < maxWidth || currentHeight < maxHeight) {
         try {
+          // 먼저 ideal로 시도
           await videoTrack.applyConstraints({
-            width: { ideal: Math.min(maxWidth, 3840) },
-            height: { ideal: Math.min(maxHeight, 2160) },
-            frameRate: { ideal: 30 },
+            width: { ideal: maxWidth },
+            height: { ideal: maxHeight },
+            frameRate: { ideal: 30, max: 60 },
           });
+
+          // 적용 후 실제 해상도 확인
+          const newSettings = videoTrack.getSettings();
+          // eslint-disable-next-line no-console
+          console.log(
+            'Upgraded resolution:',
+            newSettings.width,
+            'x',
+            newSettings.height
+          );
+
+          // 여전히 낮으면 exact 값으로 강제 시도 (일부 브라우저에서만 작동)
+          if (
+            newSettings.width &&
+            newSettings.height &&
+            (newSettings.width < maxWidth || newSettings.height < maxHeight)
+          ) {
+            try {
+              await videoTrack.applyConstraints({
+                width: { exact: maxWidth },
+                height: { exact: maxHeight },
+              });
+              // eslint-disable-next-line no-console
+              console.log('Forced exact resolution:', maxWidth, 'x', maxHeight);
+            } catch {
+              // exact 값 실패는 정상 (브라우저가 지원하지 않을 수 있음)
+            }
+          }
         } catch (err) {
           // 해상도 업그레이드 실패는 무시 (기기 제한)
           // eslint-disable-next-line no-console
@@ -366,6 +492,16 @@ const BarcodeScannerContent = () => {
       video.removeEventListener('loadedmetadata', setupAutofocus);
     };
   }, [ref]);
+
+  // 컴포넌트 언마운트 시 codeReader 정리
+  useEffect(() => {
+    return () => {
+      if (codeReaderRef.current) {
+        codeReaderRef.current.reset();
+        codeReaderRef.current = null;
+      }
+    };
+  }, []);
 
   return (
     <div className="fixed inset-0 z-50 bg-wh flex flex-col">
@@ -445,12 +581,57 @@ const BarcodeScannerContent = () => {
         )}
       </div>
 
-      {/* 하단 안내 */}
-      <div className="px-7 pb-8 pt-4 flex flex-col gap-2 bg-wh">
-        <p className="text-dg m-Body-2 text-center">
-          바코드를 카메라 중앙에 맞춰주세요.
-        </p>
-        <p className="text-sv m-Caption text-center">자동으로 인식됩니다.</p>
+      {/* 하단 안내 및 버튼 */}
+      <div className="px-7 pb-8 pt-4 flex flex-col gap-4 bg-wh">
+        {/* 바코드 인식 실패 메시지 */}
+        {barcodeError && (
+          <div className="flex flex-col items-center gap-2 p-4 bg-red-50 rounded-lg border border-red-200">
+            <WarningCircle size={24} className="text-red" />
+            <p className="text-red text-center m-Body-2 whitespace-pre-line">
+              {barcodeError}
+            </p>
+            <button
+              onClick={handleCameraButtonClick}
+              className="mt-2 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-8 transition-colors m-Body-1"
+            >
+              다시 촬영
+            </button>
+          </div>
+        )}
+
+        {/* 실시간 스캔 안내 */}
+        {!barcodeError && (
+          <>
+            <p className="text-dg m-Body-2 text-center">
+              바코드를 카메라 중앙에 맞춰주세요.
+            </p>
+            <p className="text-sv m-Caption text-center">
+              자동으로 인식됩니다.
+            </p>
+          </>
+        )}
+
+        {/* 카메라 앱으로 촬영 버튼 - 모바일에서만 표시 */}
+        {isMobile && (
+          <button
+            onClick={handleCameraButtonClick}
+            disabled={isProcessing}
+            className="flex items-center justify-center gap-2 px-4 py-3 bg-primary text-white rounded-lg hover:bg-primary-8 transition-colors m-Body-1 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Camera size={20} />
+            {isProcessing ? '인식 중...' : '카메라 앱으로 촬영'}
+          </button>
+        )}
+
+        {/* 숨겨진 파일 input - 모바일에서만 capture 속성 사용 */}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          {...(isMobile ? { capture: 'environment' } : {})}
+          onChange={handleFileSelect}
+          style={{ display: 'none' }}
+        />
       </div>
     </div>
   );
