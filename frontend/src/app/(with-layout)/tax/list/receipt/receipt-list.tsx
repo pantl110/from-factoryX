@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useMemo } from 'react';
 import { useDebounce } from 'use-debounce';
 import { SearchInput, Spinner, EmptySpace } from '@/ui';
 import TableItem from './table-item';
@@ -24,44 +24,42 @@ const ReceiptList = ({ className = '' }: ReceiptListProps) => {
   const [isPanelOpen, setIsPanelOpen] = useState(false); // 패널 열기/닫기 상태 관리
 
   // 공장 ID 가져오기
-  const { factoryId } = useMemberStore();
-  const { getCashReceipts, cashReceipts, isLoading, totalPages } =
-    useGetCashReceipts();
+  const factoryId = useMemberStore((state) => state.factoryId);
 
-  // 디바운싱된 검색어 (500ms 지연)
+  // 디바운싱된 검색어 (300ms 지연)
   const [debouncedSearchQuery] = useDebounce(searchQuery, 300);
 
   const itemsPerPage = 10;
 
-  // 현금영수증 데이터 가져오기
-  const fetchCashReceiptData = useCallback(
-    async (page: number = 1) => {
-      if (!factoryId) return;
-
-      const order = sortOrder === 'desc' ? 'desc' : 'asc';
-      await getCashReceipts({
-        factory_id: factoryId,
-        order,
-        q: debouncedSearchQuery || undefined,
-        page,
-        page_size: itemsPerPage,
-      });
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [sortOrder, debouncedSearchQuery, factoryId, getCashReceipts]
+  // useQuery 파라미터 구성
+  const queryParams = useMemo(
+    () => ({
+      order: sortOrder,
+      q: debouncedSearchQuery || undefined,
+      page: currentPage,
+      page_size: itemsPerPage,
+    }),
+    [sortOrder, debouncedSearchQuery, currentPage, itemsPerPage]
   );
 
-  // 초기 데이터 로드 및 의존성 변경 시 데이터 가져오기
-  useEffect(() => {
-    fetchCashReceiptData(currentPage);
-  }, [fetchCashReceiptData, currentPage]);
+  // 현금영수증 데이터 조회 (useQuery 사용)
+  const {
+    data: cashReceiptData,
+    isLoading,
+    isFetching,
+  } = useGetCashReceipts(queryParams, {
+    enabled: !!factoryId,
+  });
 
-  // 검색어 디바운싱
-  useEffect(() => {
-    setCurrentPage(1);
-    fetchCashReceiptData(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debouncedSearchQuery]);
+  // cashReceipts와 totalPages 추출
+  const cashReceipts = useMemo(
+    () => cashReceiptData?.data || [],
+    [cashReceiptData?.data]
+  );
+  const totalPages = useMemo(
+    () => cashReceiptData?.pageCnt || 1,
+    [cashReceiptData?.pageCnt]
+  );
 
   // 거래일자 정렬 핸들러
   const handleDateSort = () => {
@@ -103,7 +101,7 @@ const ReceiptList = ({ className = '' }: ReceiptListProps) => {
           />
         </div>
 
-        {isLoading ? (
+        {isLoading || isFetching ? (
           <div className="flex justify-center items-center h-100">
             <Spinner />
           </div>

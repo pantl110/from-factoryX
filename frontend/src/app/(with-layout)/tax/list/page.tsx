@@ -1,9 +1,10 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { Suspense } from 'react';
 import { useDebounce } from 'use-debounce';
 import { useSearchParams } from 'next/navigation';
+import { useQueryClient } from '@tanstack/react-query';
 import MainTitleSec from './main-title-sec';
 import TableHeader from './table-header';
 import TableItem from './table-item';
@@ -27,7 +28,6 @@ import useSubscriptionStore from '@/store/subscription-store';
 
 const TaxPageContent = () => {
   const role = useMemberStore((state) => state.role);
-  const factoryId = useMemberStore((state) => state.factoryId);
   // 구독 상태 확인
   const { isPartnersSubscription } = useSubscriptionStore();
   const searchParams = useSearchParams();
@@ -50,110 +50,136 @@ const TaxPageContent = () => {
   const [showHidden, setShowHidden] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(0);
   const [hasItem, setHasItem] = useState(false); // 세금계산서 데이터 존재 여부
 
-  const { getPublishedTaxInvoices, isLoading } = useGetPublishedTaxInvoices();
+  const queryClient = useQueryClient();
   const { updateTaxInvoice: updateTaxInvoiceApi } = useUpdateTaxInvoice();
   const [isHideRestoreLoading, setIsHideRestoreLoading] = useState(false); // 숨기기/복구 작업 중 로딩 상태
-  const [taxData, setTaxData] = useState<PublishedTaxInvoiceResponseModel[]>(
-    []
-  );
-  // 디바운싱된 검색어 (500ms 지연)
-  const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
+
+  // 디바운싱된 검색어 (300ms 지연)
+  const [debouncedSearchQuery] = useDebounce(searchQuery, 300);
 
   // 페이지네이션 설정
   const itemsPerPage = 10;
 
-  // 숨김 데이터 존재 여부 확인 (일반 목록에 데이터가 없을 때만 호출됨)
-  const checkHiddenDataExists = async () => {
-    try {
-      const hiddenResult = await getPublishedTaxInvoices({
-        ordering:
-          sortDirection === 'desc' ? '-transaction_date' : 'transaction_date',
-        page: 1,
-        page_size: 1, // 1개만 확인
-        is_hidden: true,
-      });
-
-      if (hiddenResult.success && hiddenResult.data) {
-        const hasHiddenData = hiddenResult.data.data.length > 0;
-        setHasItem(hasHiddenData);
-      } else {
-        setHasItem(false);
-      }
-    } catch {
-      setHasItem(false);
+  // useQuery 파라미터 구성
+  const queryParams = useMemo(() => {
+    if (selectedTaxType === null) {
+      return {}; // 현금영수증 탭일 때는 빈 객체 반환
     }
-  };
 
-  // API에서 세금계산서 데이터 가져오기
-  const fetchTaxData = useCallback(
-    async (page: number = 1) => {
-      const params: {
-        ordering: string;
-        page: number;
-        page_size: number;
-        q?: string;
-        tax_invoice_type?: 'sales' | 'purchase';
-        is_hidden?: boolean;
-      } = {
-        ordering:
-          sortDirection === 'desc' ? '-transaction_date' : 'transaction_date',
-        page,
-        page_size: itemsPerPage,
-      };
+    return {
+      ordering:
+        sortDirection === 'desc' ? '-transaction_date' : 'transaction_date',
+      page: currentPage,
+      page_size: itemsPerPage,
+      q: debouncedSearchQuery || undefined,
+      tax_invoice_type: selectedTaxType,
+      is_hidden: showHidden,
+    };
+  }, [
+    selectedTaxType,
+    sortDirection,
+    currentPage,
+    debouncedSearchQuery,
+    showHidden,
+  ]);
 
-      if (debouncedSearchQuery) {
-        params.q = debouncedSearchQuery;
-      }
+  // 세금계산서 데이터 조회 (useQuery 사용)
+  const isTaxQueryEnabled = selectedTaxType !== null;
+  const {
+    data: taxInvoiceData,
+    isLoading,
+    isFetching,
+  } = useGetPublishedTaxInvoices(queryParams, {
+    enabled: isTaxQueryEnabled,
+  });
 
-      // 매출/매입 탭에 따른 필터링
-      if (selectedTaxType === 'sales') {
-        params.tax_invoice_type = 'sales';
-      } else if (selectedTaxType === 'purchase') {
-        params.tax_invoice_type = 'purchase';
-      }
-
-      // 기본적으로는 숨김 항목 제외, 숨긴 목록 보기 버튼을 누르면 숨김 항목만 표시
-      if (showHidden) {
-        params.is_hidden = true; // 숨김 항목만 표시
-      } else {
-        params.is_hidden = false; // 숨김 항목 제외 (일반 목록 표시)
-      }
-
-      const result = await getPublishedTaxInvoices(params);
-      if (result.success && result.data) {
-        setTaxData(result.data.data);
-        setTotalPages(result.data.pageCnt);
-
-        if (showHidden) {
-          // 숨김 목록 보기 중일 때는 현재 데이터가 있으면 true
-          setHasItem(result.data.data.length > 0);
-        } else {
-          // 일반 목록 보기 중일 때
-          if (result.data.data.length > 0) {
-            // 일반 목록에 데이터가 있으면 무조건 true
-            setHasItem(true);
-          } else {
-            // 일반 목록에 데이터가 없으면 숨김 목록 확인
-            await checkHiddenDataExists();
-          }
-        }
-      } else {
-        // API 요청 실패 시에는 hasItem을 false로 설정
-        setHasItem(false);
-      }
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [
-      sortDirection,
-      selectedTaxType,
-      showHidden,
-      debouncedSearchQuery,
-      factoryId,
-    ]
+  // 숨김 데이터 존재 여부 확인용 쿼리 (일반 목록에 데이터가 없을 때만 호출됨)
+  const taxDataLength = taxInvoiceData?.data.length ?? 0;
+  const shouldCheckHidden = useMemo(
+    () =>
+      selectedTaxType !== null &&
+      !showHidden &&
+      taxDataLength === 0 &&
+      !isLoading &&
+      !isFetching,
+    [selectedTaxType, showHidden, taxDataLength, isLoading, isFetching]
   );
+
+  const hiddenCheckParams = useMemo(() => {
+    if (!shouldCheckHidden || !selectedTaxType) {
+      return {}; // 빈 객체 반환 (enabled가 false이므로 실행되지 않음)
+    }
+    return {
+      ordering:
+        sortDirection === 'desc' ? '-transaction_date' : 'transaction_date',
+      page: 1,
+      page_size: 1,
+      tax_invoice_type: selectedTaxType,
+      is_hidden: true,
+    };
+  }, [shouldCheckHidden, selectedTaxType, sortDirection]);
+
+  const { data: hiddenCheckData } = useGetPublishedTaxInvoices(
+    hiddenCheckParams,
+    { enabled: shouldCheckHidden }
+  );
+
+  // taxData와 totalPages 추출
+  const taxData = useMemo(
+    () => taxInvoiceData?.data || [],
+    [taxInvoiceData?.data]
+  );
+  const totalPages = useMemo(
+    () => taxInvoiceData?.pageCnt || 0,
+    [taxInvoiceData?.pageCnt]
+  );
+
+  // useCheckAll의 itemIds를 메모이제이션하여 불필요한 재생성 방지
+  const itemIds = useMemo(
+    () => (selectedTaxType === null ? [] : taxData.map((item) => item.id)),
+    [selectedTaxType, taxData]
+  );
+
+  const {
+    checkedCount,
+    isChecked,
+    toggleAll,
+    toggleOne,
+    setAllChecked,
+    isAllChecked,
+  } = useCheckAll(itemIds);
+
+  // setAllChecked의 최신 참조를 유지하기 위한 ref
+  const setAllCheckedRef = useRef(setAllChecked);
+  useEffect(() => {
+    setAllCheckedRef.current = setAllChecked;
+  }, [setAllChecked]);
+
+  // hasItem 상태 업데이트
+  useEffect(() => {
+    if (selectedTaxType === null) return;
+
+    if (showHidden) {
+      // 숨김 목록 보기 중일 때는 현재 데이터가 있으면 true
+      setHasItem(taxData.length > 0);
+    } else {
+      // 일반 목록 보기 중일 때
+      if (taxData.length > 0) {
+        // 일반 목록에 데이터가 있으면 무조건 true
+        setHasItem(true);
+      } else {
+        // 일반 목록에 데이터가 없으면 숨김 목록 확인
+        setHasItem((hiddenCheckData?.data.length || 0) > 0);
+      }
+    }
+  }, [
+    showHidden,
+    taxData.length,
+    hiddenCheckData?.data.length,
+    selectedTaxType,
+  ]);
 
   // URL 쿼리 파라미터 변경 시 탭 업데이트
   useEffect(() => {
@@ -166,45 +192,28 @@ const TaxPageContent = () => {
           : 'sales';
     if (newTaxType !== selectedTaxType) {
       setSelectedTaxType(newTaxType);
+      // 탭 변경 시 페이지와 체크박스 상태 리셋
+      setCurrentPage(1);
+      setSearchQuery(''); // 검색어 초기화
+      // 체크박스는 selectedTaxType이 변경되면 useCheckAll의 itemIds가 변경되므로 자동으로 리셋됨
     }
   }, [searchParams, selectedTaxType]);
 
-  // factoryId 초기화 및 탭에 따른 데이터 로드
-  useEffect(() => {
-    if (selectedTaxType !== null) {
-      // 세금계산서 탭
-      fetchTaxData(1);
-    }
-  }, [fetchTaxData, selectedTaxType]);
-
-  // 탭 변경 시 페이지와 체크박스 상태 리셋
-  useEffect(() => {
-    setCurrentPage(1);
-    setAllChecked(false);
-    setSearchQuery(''); // 검색어 초기화
-    // showHidden 상태는 유지 (탭 변경 시에도 숨김 목록 보기 상태 유지)
-    if (selectedTaxType !== null) {
-      fetchTaxData(1);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedTaxType]);
-
-  // showHidden 상태 변경 시 데이터 새로 가져오기 (세금계산서 탭일 때만)
+  // showHidden 상태 변경 시 페이지 리셋
   useEffect(() => {
     if (selectedTaxType !== null) {
       setCurrentPage(1);
-      setAllChecked(false);
-      fetchTaxData(1);
+      // 체크박스는 showHidden 변경 시에도 자동으로 리셋되지 않으므로 명시적으로 리셋
+      // checkedCount가 0보다 클 때만 리셋하여 불필요한 호출 방지
+      if (checkedCount > 0) {
+        setAllCheckedRef.current(false);
+      }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [showHidden, selectedTaxType]);
+  }, [showHidden, selectedTaxType, checkedCount]);
 
-  // 페이지 변경 시
+  // 페이지 변경 핸들러
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    if (selectedTaxType !== null) {
-      fetchTaxData(page);
-    }
   };
 
   // 페이지 유효성 관리 (숨김이나 비어 있는 페이지 처리)
@@ -213,21 +222,24 @@ const TaxPageContent = () => {
       // 세금계산서 탭
       if (totalPages > 0 && currentPage > totalPages) {
         setCurrentPage(totalPages);
-        fetchTaxData(totalPages);
         return;
       }
 
-      if (!isLoading && currentPage > 1 && taxData.length === 0) {
+      if (
+        !isLoading &&
+        !isFetching &&
+        currentPage > 1 &&
+        taxData.length === 0
+      ) {
         const previousPage = currentPage - 1;
         setCurrentPage(previousPage);
-        fetchTaxData(previousPage);
       }
     }
   }, [
     totalPages,
     currentPage,
-    fetchTaxData,
     isLoading,
+    isFetching,
     taxData.length,
     selectedTaxType,
   ]);
@@ -236,9 +248,6 @@ const TaxPageContent = () => {
   const handleSortClick = () => {
     setSortDirection((prev) => (prev === 'asc' ? 'desc' : 'asc'));
     setCurrentPage(1); // 정렬 변경 시 페이지 1로 리셋
-    if (selectedTaxType !== null) {
-      fetchTaxData(1);
-    }
   };
 
   // 검색어 변경 시
@@ -256,17 +265,6 @@ const TaxPageContent = () => {
     setSelectedItem(null);
     setIsPanelOpen(false);
   };
-
-  const {
-    checkedCount,
-    isChecked,
-    toggleAll,
-    toggleOne,
-    setAllChecked,
-    isAllChecked,
-  } = useCheckAll(
-    selectedTaxType === null ? [] : taxData.map((item) => item.id)
-  );
 
   const handleToggleHidden = () => {
     // "취소" 버튼일 때는 체크박스만 해제
@@ -319,7 +317,9 @@ const TaxPageContent = () => {
 
       if (successCount > 0) {
         // 성공적으로 업데이트된 경우 데이터 새로고침
-        fetchTaxData(currentPage);
+        queryClient.invalidateQueries({
+          queryKey: ['published-tax-invoices'],
+        });
         setAllChecked(false); // 체크박스 상태 리셋
         setSearchQuery(''); // 검색어 초기화
       } else {
@@ -395,7 +395,7 @@ const TaxPageContent = () => {
           ) : (
             // 세금계산서 탭
             <>
-              {isLoading ? (
+              {isLoading || isFetching ? (
                 <div className="flex items-center justify-center h-100">
                   <Spinner />
                 </div>

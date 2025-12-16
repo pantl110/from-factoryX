@@ -25,8 +25,6 @@ import {
 import {
   ProjectResponseModel,
   DashboardResponseModel,
-  PublishedTaxInvoiceResponseModel,
-  PublishedTaxInvoiceListResponseModel,
 } from '@/types/data-model';
 import useMemberStore from '@/store/member-store';
 import { TodayProductionPlanModel } from './type';
@@ -41,9 +39,17 @@ const DashboardPageContent = () => {
   const { getDashboard, isLoading: isDashboardLoading } = useGetDashboard();
   const { getTodayProductionPlans, isLoading: isTodayPlansLoading } =
     useGetTodayProductionPlans();
+  const { factoryId, initializeFactoryId } = useMemberStore();
 
-  const { getPublishedTaxInvoices, isLoading: isTaxInvoicesLoading } =
-    useGetPublishedTaxInvoices();
+  const { data: taxInvoicesQueryData, isLoading: isTaxInvoicesLoading } =
+    useGetPublishedTaxInvoices(
+      {
+        page: 1,
+        page_size: 5,
+        ordering: '-transaction_date',
+      },
+      { enabled: Boolean(factoryId) }
+    );
   const [quotationProjectsData, setQuotationProjectsData] = useState<
     ProjectResponseModel[]
   >([]);
@@ -61,10 +67,7 @@ const DashboardPageContent = () => {
     TodayProductionPlanModel[]
   >([]);
 
-  const [taxInvoicesData, setTaxInvoicesData] = useState<
-    PublishedTaxInvoiceResponseModel[]
-  >([]);
-  const { factoryId, initializeFactoryId } = useMemberStore();
+  const taxInvoicesData = taxInvoicesQueryData?.data || [];
 
   // 모든 데이터 로딩 상태를 통합
   const isLoading =
@@ -164,30 +167,6 @@ const DashboardPageContent = () => {
             setTodayProductionPlans(result.data);
           } else {
             setTodayProductionPlans([]);
-          }
-        }
-      );
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [factoryId]);
-
-  // 세금계산서 데이터 가져오기 (최신 5개)
-  useEffect(() => {
-    if (factoryId) {
-      getPublishedTaxInvoices({
-        page: 1,
-        page_size: 5,
-        ordering: '-transaction_date',
-      }).then(
-        (result: {
-          success: boolean;
-          data?: PublishedTaxInvoiceListResponseModel;
-        }) => {
-          if (result.success && result.data) {
-            const invoices = result.data.data || [];
-            setTaxInvoicesData(invoices);
-          } else {
-            setTaxInvoicesData([]);
           }
         }
       );

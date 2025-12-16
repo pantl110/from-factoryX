@@ -1,20 +1,19 @@
 'use client';
 
-import { useState, Suspense, useEffect } from 'react';
+import { useState, Suspense, useEffect, useMemo } from 'react';
 import { useDebounce } from 'use-debounce';
 import MainTitleSec from './main-title-sec';
 import DocumentTable from './document-table';
 import Pagination from '@/components/pagination';
 import { DocumentType } from './types';
-import Spinner from '@/ui/spinner';
+import { Spinner, SearchInput } from '@/ui';
 import { useGetPublishedTaxInvoices, useGetWorkInstructions } from '@/hooks';
 import {
-  PublishedTaxInvoiceResponseModel,
   ProjectResponseModel,
   WorkInstructionsResponseModel,
 } from '@/types/data-model';
-import useGetProjects from '@/hooks/project/use-get-projects';
-import SearchInput from '@/ui/search-input';
+import { useGetProjects, PublishedTaxInvoiceParamsModel } from '@/hooks';
+import useMemberStore from '@/store/member-store';
 
 const DocumentPageContent = () => {
   const [selectedType, setSelectedType] = useState<DocumentType>('주문서');
@@ -40,11 +39,53 @@ const DocumentPageContent = () => {
   // 디바운스된 검색어 (500ms)
   const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
 
+  const factoryId = useMemberStore((state) => state.factoryId);
   const { getProjects, isLoading: isProjectDataLoading } = useGetProjects();
-  const { getPublishedTaxInvoices, isLoading: isTaxDataLoading } =
-    useGetPublishedTaxInvoices();
   const { getWorkInstructions, isLoading: isWorkInstructionLoading } =
     useGetWorkInstructions();
+
+  // 세금계산서 쿼리 파라미터 구성
+  const taxInvoiceQueryParams =
+    useMemo((): PublishedTaxInvoiceParamsModel | null => {
+      const isTaxDocument =
+        selectedType === '매출 세금계산서' ||
+        selectedType === '매입 세금계산서';
+      if (!isTaxDocument) {
+        return null;
+      }
+
+      // 정렬 파라미터 구성
+      let ordering = '';
+      if (taxSortField === 'transaction_date') {
+        ordering =
+          taxSortDirection === 'asc' ? 'transaction_date' : '-transaction_date';
+      } else {
+        ordering = taxSortDirection === 'asc' ? 'created_at' : '-created_at';
+      }
+
+      return {
+        page: currentPage,
+        page_size: 10,
+        q: debouncedSearchQuery || undefined,
+        tax_invoice_type:
+          selectedType === '매출 세금계산서'
+            ? ('sales' as const)
+            : ('purchase' as const),
+        ordering,
+      };
+    }, [
+      selectedType,
+      currentPage,
+      debouncedSearchQuery,
+      taxSortField,
+      taxSortDirection,
+    ]);
+
+  // 세금계산서 데이터 조회 (useQuery 사용)
+  const { data: taxInvoiceData, isLoading: isTaxDataLoading } =
+    useGetPublishedTaxInvoices(taxInvoiceQueryParams || {}, {
+      enabled: taxInvoiceQueryParams !== null && !!factoryId,
+    });
 
   // 주문서 데이터 상태
   const [orderDocuments, setOrderDocuments] = useState<ProjectResponseModel[]>(
@@ -58,45 +99,26 @@ const DocumentPageContent = () => {
   const [transactionDocuments, setTransactionDocuments] = useState<
     ProjectResponseModel[]
   >([]);
-  // 세금계산서 데이터 상태
-  const [taxInvoices, setTaxInvoices] = useState<
-    PublishedTaxInvoiceResponseModel[]
-  >([]);
+  // 세금계산서 데이터 추출
+  const taxInvoices = useMemo(
+    () => taxInvoiceData?.data || [],
+    [taxInvoiceData?.data]
+  );
 
-  // 세금계산서 데이터 가져오기
+  // 세금계산서 totalPages 업데이트
   useEffect(() => {
     if (
-      selectedType === '매출 세금계산서' ||
-      selectedType === '매입 세금계산서'
+      (selectedType === '매출 세금계산서' ||
+        selectedType === '매입 세금계산서') &&
+      taxInvoiceData
     ) {
-      const fetchTaxData = async () => {
-        // 정렬 파라미터 구성
-        let ordering = '';
-        if (taxSortField === 'transaction_date') {
-          ordering =
-            taxSortDirection === 'asc'
-              ? 'transaction_date'
-              : '-transaction_date';
-        } else {
-          ordering = taxSortDirection === 'asc' ? 'created_at' : '-created_at';
-        }
+      setTotalPages(taxInvoiceData.pageCnt || 1);
+    }
+  }, [selectedType, taxInvoiceData]);
 
-        const result = await getPublishedTaxInvoices({
-          page: currentPage,
-          page_size: 10,
-          q: debouncedSearchQuery || undefined,
-          tax_invoice_type:
-            selectedType === '매출 세금계산서' ? 'sales' : 'purchase',
-          ordering,
-        });
-
-        if (result.success && result.data) {
-          setTaxInvoices(result.data.data || []);
-          setTotalPages(result.data.pageCnt || 1);
-        }
-      };
-      fetchTaxData();
-    } else if (selectedType === '주문서') {
+  // 다른 문서 타입 데이터 가져오기
+  useEffect(() => {
+    if (selectedType === '주문서') {
       const fetchOrderData = async () => {
         const result = await getProjects({
           status_exclude: 'quotation,confirmed,suspended',
@@ -153,11 +175,8 @@ const DocumentPageContent = () => {
     selectedType,
     currentPage,
     debouncedSearchQuery,
-    taxSortField,
-    taxSortDirection,
     projectSortDirection,
     workInstructionSortDirection,
-    getPublishedTaxInvoices,
     getProjects,
     getWorkInstructions,
   ]);

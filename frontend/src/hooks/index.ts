@@ -84,6 +84,7 @@ export { default as useTaxApi } from './tax/use-tax-api';
 export { default as useCreateTaxInvoice } from './tax/use-create-tax-invoice';
 export { default as useGetTaxInvoiceState } from './tax/use-get-tax-invoice-state';
 export { default as useGetPublishedTaxInvoices } from './tax/use-get-published-tax-invoices';
+export type { PublishedTaxInvoiceParamsModel } from './tax/use-get-published-tax-invoices';
 export { default as useUpdateTaxInvoice } from './tax/use-update-tax-invoice';
 export { default as useGetPendingTaxInvoices } from './tax/use-get-pending-tax-invoices';
 export { default as useGetUnlinkedTaxInvoices } from './tax/use-get-unlinked-tax-invoices';
@@ -102,7 +103,7 @@ export {
 } from './tax/barobil/use-barobill';
 
 // Cash receipt related hooks
-export { useGetCashReceipts } from './tax/cash-receipt/use-get-cash-receipts';
+export { default as useGetCashReceipts } from './tax/cash-receipt/use-get-cash-receipts';
 export { default as useGetCashReceiptDetail } from './tax/cash-receipt/use-get-cash-receipt-detail';
 export { default as useUpdateMaterialHistory } from './tax/cash-receipt/use-update-material-history';
 

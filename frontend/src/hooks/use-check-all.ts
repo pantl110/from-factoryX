@@ -38,9 +38,12 @@ export function useCheckAll<T extends string | number>(itemIds: T[]) {
   }, []);
 
   // 외부에서 체크 상태를 직접 세팅하고 싶을 때
-  const setAllChecked = (checked: boolean) => {
-    setCheckedIds(checked ? itemIds : []);
-  };
+  const setAllChecked = useCallback(
+    (checked: boolean) => {
+      setCheckedIds(checked ? itemIds : []);
+    },
+    [itemIds]
+  );
 
   return {
     checkedIds,
