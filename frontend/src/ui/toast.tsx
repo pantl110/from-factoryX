@@ -22,7 +22,7 @@ const Toast = ({ icon, text, subtext, type, isVisible = true }: ToastProps) => {
           {icon}
           <p className="Me_Body-1">{text}</p>
         </div>
-        <p className="Re_Body-1 text-dg">{subtext}</p>
+        <p className="Re_Body-1 text-[#363636]">{subtext}</p>
       </div>
     </div>
   );

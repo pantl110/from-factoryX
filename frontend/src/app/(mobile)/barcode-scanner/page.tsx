@@ -586,16 +586,11 @@ const BarcodeScannerContent = () => {
       <div className="px-7 pb-8 pt-4 flex flex-col gap-4 bg-wh">
         {/* 바코드 인식 실패 메시지 */}
         {barcodeError && (
-          <div className="flex flex-col items-center gap-2 p-4 bg-red-8 rounded-[8px] border border-red">
+          <div className="flex flex-col items-center gap-2 p-4 bg-wh rounded-[8px] border border-red shadow-[4px_4px_20px_-12px_rgba(243,18,96,1)">
             <WarningCircle size={24} className="text-red" />
-            <p className="text-dg text-center m-Body-2 whitespace-pre-line">
+            <p className="text-[#363636] text-center m-Body-2 whitespace-pre-line">
               {barcodeError}
             </p>
-            <MoBtn
-              text="다시 촬영"
-              variant="primary"
-              onClick={handleCameraButtonClick}
-            />
           </div>
         )}
 
