@@ -25,6 +25,7 @@ import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
 import NotAllowed from '../not-allowed';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
+import AccountsPanel from './accounts-panel';
 
 const TaxPageContent = () => {
   const role = useMemberStore((state) => state.role);
@@ -455,13 +456,14 @@ const TaxPageContent = () => {
         </div>
       </div>
 
-      {/* 디테일 판넬 */}
+      {/* 매출채권채무 디테일 판넬 */}
       {isPanelOpen && selectedItem && (
-        <TaxDetailPanel
-          itemId={selectedItem.id}
-          onClose={handleClosePanel}
-          canLink={true}
-        />
+        // <TaxDetailPanel
+        //   itemId={selectedItem.id}
+        //   onClose={handleClosePanel}
+        //   canLink={true}
+        // />
+        <AccountsPanel onClose={handleClosePanel} />
       )}
     </>
   );

@@ -315,3 +315,21 @@ export const ExpiryStatusColorMap: Record<ExpiryStatusType, StatusColorModel> =
       color: 'secondary',
     },
   };
+
+  // 채권채무 상태
+  export type AccountsStatusType = 'pending' | 'partial' | 'completed' | 'overdue';
+  export const AccountsStatusMap: Record<AccountsStatusType, string> = {
+    pending: '대기',
+    partial: '일부',
+    completed: '완료',
+    overdue: '연체',
+  };
+  export const AccountsStatusColorMap: Record<
+    AccountsStatusType,
+    StatusColorModel
+  > = {
+    pending: { textColor: 'text-dg', bgColor: 'bg-bg', color: 'gray' },
+    partial: { textColor: 'text-orange', bgColor: 'bg-orange-8', color: 'orange' },
+    completed: { textColor: 'text-primary', bgColor: 'bg-primary-8', color: 'secondary' },
+    overdue: { textColor: 'text-red', bgColor: 'bg-red-8', color: 'red' },
+  };

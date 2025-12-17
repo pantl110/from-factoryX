@@ -59,7 +59,7 @@ const LinkModalTaxTable = ({
           )}
         </>
       ) : (
-        <NoHistoryBox text="연결할 자재가 없어요." />
+        <NoHistoryBox text="연결할 원자재 구매 내역이 없어요." />
       )}
     </div>
   );

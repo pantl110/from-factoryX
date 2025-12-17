@@ -19,7 +19,7 @@ const TableHeader = ({
   const isProdManager = role === 'prod_manager';
 
   return (
-    <div className="text-sv flex items-center w-full min-w-[1192px] h-12 border-t border-b border-[#eeeeee] Me_Body-1">
+    <div className="text-sv flex items-center w-full min-w-[1192px] h-12 border-t border-b border-lg Me_Body-1">
       <Checkbox
         isChecked={isAllChecked}
         onToggle={onToggleAll}
