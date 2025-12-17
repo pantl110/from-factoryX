@@ -123,7 +123,6 @@ const Product = ({
     isChecked,
     toggleAll,
     toggleOne,
-    setAllChecked,
     getDeleteButtonText,
   } = useCheckAll(productList.map((item: ProductResponseModel) => item.id));
 

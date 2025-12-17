@@ -3,9 +3,9 @@ import { RoundChip } from '@/ui';
 const TableItem = () => {
   return (
     <div className="flex items-center border-b border-lg h-14 w-full text-bl Me_Body-1">
-      <p className="flex-[0.8] px-3 text-dg truncate">
+      <div className="flex-[0.8] px-3 text-dg truncate">
         <RoundChip text="연체" variant="sm" color="red" />
-      </p>
+      </div>
       <p className="flex-1 px-3 text-dg truncate" title="15,000원">
         15,000원
       </p>

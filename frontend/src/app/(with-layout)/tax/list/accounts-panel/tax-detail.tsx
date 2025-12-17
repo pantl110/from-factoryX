@@ -1,7 +1,11 @@
-import { IconBtn, MiniBtn } from '@/ui';
+import { MiniBtn } from '@/ui';
 import { FileText } from '@phosphor-icons/react';
 
-const TaxDetail = () => {
+interface TaxDetailProps {
+  onOpenDetail: () => void;
+}
+
+const TaxDetail = ({ onOpenDetail }: TaxDetailProps) => {
   return (
     <div className="flex flex-col gap-3">
       <h3 className="Heading-3 h-10 flex items-center">매출 세금계산서</h3>
@@ -14,12 +18,16 @@ const TaxDetail = () => {
 
         {/* 정보 */}
         <div className="flex-1">
-          <p className="Me_Body-2 text-dg">전자세금계산서</p>
-          <p className="Re_Body-1 text-gr">승인번호 20241124-41000235-1132</p>
+          <p className="Me_Body-2 text-dg flex-1">전자세금계산서</p>
+          {/* <p className="Re_Body-1 text-gr">승인번호 20241124-41000235-1132</p> */}
         </div>
 
         {/* 버튼 */}
-        <MiniBtn text="상세보기" variant="whiteOutline" />
+        <MiniBtn
+          text="상세보기"
+          variant="whiteOutline"
+          onClick={onOpenDetail}
+        />
       </div>
     </div>
   );

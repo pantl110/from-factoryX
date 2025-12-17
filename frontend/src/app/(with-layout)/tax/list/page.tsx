@@ -8,7 +8,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import MainTitleSec from './main-title-sec';
 import TableHeader from './table-header';
 import TableItem from './table-item';
-import TaxDetailPanel from '../tax-detail-panel';
 import ReceiptList from './receipt/receipt-list';
 import { TaxDocumentType } from '@/types/status-type';
 import Spinner from '@/ui/spinner';
@@ -463,7 +462,7 @@ const TaxPageContent = () => {
         //   onClose={handleClosePanel}
         //   canLink={true}
         // />
-        <AccountsPanel onClose={handleClosePanel} />
+        <AccountsPanel onClose={handleClosePanel} itemId={selectedItem.id} />
       )}
     </>
   );
