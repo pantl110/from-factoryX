@@ -22,6 +22,12 @@ class FactoryClientOut(Schema):
     address: Optional[str]
     manager: Optional[str]
     note: Optional[str]
+    # 입금 확인 정보 (수주처용)
+    depositor_name: Optional[str] = None
+    # 지급 계좌 정보 (발주처용)
+    bank_name: Optional[str] = None
+    account_number: Optional[str] = None
+    account_holder: Optional[str] = None
 
 
 class NationalTaxServiceOut(ModelSchema):
@@ -137,7 +143,15 @@ class PaymentDetailOut(ModelSchema):
 class TaxInvoiceAccountOut(ModelSchema):
     # 세금계산서 정보까지 함께 내려주기 위해 중첩 스키마 추가
     tax_invoice: NationalTaxServiceOut
+    client: Optional[FactoryClientOut] = None
 
     class Meta:
         model = TaxInvoiceAccount
         fields = "__all__"
+
+    @staticmethod
+    def resolve_client(obj):
+        """tax_invoice의 client 정보를 반환"""
+        if obj.tax_invoice and obj.tax_invoice.client:
+            return obj.tax_invoice.client
+        return None

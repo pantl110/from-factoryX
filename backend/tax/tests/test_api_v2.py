@@ -21,6 +21,10 @@ class TaxAPIV2TestCase(TestCase):
             factory=self.factory,
             name="테스트 거래처",
             business_registration_number="123-45-67890",
+            bank_name="테스트은행",
+            account_number="123-456-789012",
+            account_holder="테스트 예금주",
+            depositor_name="테스트 입금자",
         )
         self.token = jwt.encode(
             {"user_id": self.user.id, "exp": datetime.now() + timedelta(hours=1)},
@@ -59,6 +63,19 @@ class TaxAPIV2TestCase(TestCase):
         self.assertEqual(data["tax_invoice"]["id"], tax_invoice.id)
         self.assertEqual(data["tax_invoice"]["transaction_amount"], 100000)
         self.assertEqual(data["tax_invoice"]["tax_amount"], 10000)
+
+        # client 정보가 포함되는지 검증
+        self.assertIn("client", data)
+        self.assertIsNotNone(data["client"])
+        self.assertEqual(data["client"]["id"], self.client_company.id)
+        self.assertEqual(data["client"]["name"], "테스트 거래처")
+        self.assertEqual(data["client"]["business_registration_number"], "123-45-67890")
+        
+        # 계좌 정보가 포함되는지 검증
+        self.assertEqual(data["client"]["bank_name"], "테스트은행")
+        self.assertEqual(data["client"]["account_number"], "123-456-789012")
+        self.assertEqual(data["client"]["account_holder"], "테스트 예금주")
+        self.assertEqual(data["client"]["depositor_name"], "테스트 입금자")
 
     def test_tax_invoice_account_auto_create_on_publish(self):
         """published 상태로 변경 시 TaxInvoiceAccount 자동 생성"""

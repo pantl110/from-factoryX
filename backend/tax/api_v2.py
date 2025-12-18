@@ -19,7 +19,7 @@ async def get_tax_invoice_account(request, tax_id: int):
     def get_account():
         try:
             account = TaxInvoiceAccount.objects.select_related(
-                "tax_invoice", "project"
+                "tax_invoice", "tax_invoice__client", "project"
             ).get(tax_invoice_id=tax_id)
             return account
         except TaxInvoiceAccount.DoesNotExist:
