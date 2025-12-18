@@ -9,6 +9,7 @@ import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import { ClientInfo } from './client-info';
 import { AccountInfo } from './account-info';
+import { DepositorInfo } from './depositor-info';
 
 interface ClientDetailPanelProps {
   clientId: number;
@@ -21,10 +22,10 @@ const ClientDetailPanel = ({
   onClose,
   refetchClient,
 }: ClientDetailPanelProps) => {
-  const { getClientDetail, clientDetail } = useGetClientDetail();
+  const factoryId = useMemberStore((state) => state.factoryId);
+  const { clientDetail, isLoading } = useGetClientDetail(clientId, factoryId);
   const { updateClient, isLoading: isUpdateLoading } = useUpdateClient();
 
-  const factoryId = useMemberStore((state) => state.factoryId);
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
@@ -51,15 +52,12 @@ const ClientDetailPanel = ({
       is_customer: false,
       is_supplier: false,
       note: '',
+      bank_name: '',
+      account_number: '',
+      account_holder: '',
+      depositor_name: '',
     },
   });
-
-  useEffect(() => {
-    if (clientId && factoryId) {
-      getClientDetail({ client_id: clientId, factory_id: factoryId });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [clientId, factoryId]);
 
   // clientDetail이 로드되면 폼에 기본값 설정
   useEffect(() => {
@@ -80,6 +78,10 @@ const ClientDetailPanel = ({
         is_customer: clientDetail.is_customer || false,
         is_supplier: clientDetail.is_supplier || false,
         note: clientDetail.note || '',
+        bank_name: clientDetail.bank_name || '',
+        account_number: clientDetail.account_number || '',
+        account_holder: clientDetail.account_holder || '',
+        depositor_name: clientDetail.depositor_name || '',
       });
     }
   }, [clientDetail, reset, clientId, factoryId]);
@@ -108,7 +110,8 @@ const ClientDetailPanel = ({
       title="거래처"
       onClose={onClose}
       headerButton={
-        (!clientDetail || isDirty) && (
+        (!clientDetail || isDirty) &&
+        !isLoading && (
           <MiniBtn
             text="저장"
             textColor="text-primary"
@@ -120,13 +123,32 @@ const ClientDetailPanel = ({
         )
       }
     >
-      <ClientInfo
-        control={control}
-        isViewer={isViewer}
-        hasSubscription={hasSubscription}
-        clientDetail={clientDetail}
-      />
-      <AccountInfo />
+      {isLoading ? null : (
+        <div className="flex flex-col gap-10">
+          <ClientInfo
+            control={control}
+            isViewer={isViewer}
+            hasSubscription={hasSubscription}
+            clientDetail={clientDetail}
+          />
+
+          {clientDetail?.is_customer && (
+            <DepositorInfo
+              control={control}
+              isViewer={isViewer}
+              hasSubscription={hasSubscription}
+            />
+          )}
+
+          {clientDetail?.is_supplier && (
+            <AccountInfo
+              control={control}
+              isViewer={isViewer}
+              hasSubscription={hasSubscription}
+            />
+          )}
+        </div>
+      )}
     </Panel>
   );
 };

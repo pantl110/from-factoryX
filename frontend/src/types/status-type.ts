@@ -318,12 +318,12 @@ export const ExpiryStatusColorMap: Record<ExpiryStatusType, StatusColorModel> =
 
 // 채권채무 상태
 export type AccountsStatusType =
-  | 'pending'
+  | 'waiting'
   | 'partial'
   | 'completed'
   | 'overdue';
 export const AccountsStatusMap: Record<AccountsStatusType, string> = {
-  pending: '대기',
+  waiting: '대기',
   partial: '일부',
   completed: '완료',
   overdue: '연체',
@@ -332,7 +332,7 @@ export const AccountsStatusColorMap: Record<
   AccountsStatusType,
   StatusColorModel
 > = {
-  pending: { textColor: 'text-dg', bgColor: 'bg-bg', color: 'gray' },
+  waiting: { textColor: 'text-dg', bgColor: 'bg-bg', color: 'gray' },
   partial: {
     textColor: 'text-orange',
     bgColor: 'bg-orange-8',
@@ -345,3 +345,11 @@ export const AccountsStatusColorMap: Record<
   },
   overdue: { textColor: 'text-red', bgColor: 'bg-red-8', color: 'red' },
 };
+
+// 세금계산서 채권/채무 수금 조건
+export type CollectionTermsType =
+  | 'INVOICE_30'
+  | 'INVOICE_EOM_NEXT'
+  | 'MONTH_END_25_NEXT'
+  | 'INSPECTION_30'
+  | 'CUSTOM';

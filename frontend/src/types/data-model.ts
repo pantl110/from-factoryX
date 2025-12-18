@@ -1,4 +1,25 @@
 // 데이터 모델
+import {
+  MemberRoleType,
+  MemberStatusType,
+  ProjectStatusType,
+  TaxStatusType,
+  EquipmentStatusType,
+  ProjectLogType,
+  OperationStatusType,
+  NotificationType,
+  NotificationCaseType,
+  TaxDocumentType,
+  TransactionType,
+  BarobillStateType,
+  NtsSendStateType,
+  SubscriptionStatusType,
+  PaymentStatusType,
+  InventoryStatusType,
+  MaterialStatusType,
+  AccountsStatusType,
+  CollectionTermsType,
+} from './status-type';
 
 // 공통
 export interface PaginationModel {
@@ -308,6 +329,12 @@ export interface ClientResponseModel {
   fax?: string;
   created_at?: string;
   updated_at?: string;
+  // 입금 확인 정보 (수주처용)
+  depositor_name?: string;
+  // 지급 계좌 정보 (발주처용)
+  bank_name?: string;
+  account_number?: string;
+  account_holder?: string;
 }
 
 // 거래처 목록 조회
@@ -329,9 +356,18 @@ export interface ClientUpdateModel {
   business_category?: string;
   address?: string;
   note?: string;
+
   // client_type?: ClientType;
   is_customer?: boolean;
   is_supplier?: boolean;
+
+  // 입금 확인 정보 (수주처용)
+  depositor_name?: string;
+
+  // 지급 계좌 정보 (발주처용)
+  bank_name?: string;
+  account_number?: string;
+  account_holder?: string;
 }
 
 //////////////////////
@@ -1556,6 +1592,24 @@ export interface CashReceiptSyncResponseModel {
 }
 
 //////////////////////
+// Tax Invoice Account API
+export interface TaxInvoiceAccountModel {
+  id: number;
+  created_at: string;
+  updated_at: string;
+  tax_invoice: PublishedTaxInvoiceResponseModel; // 세금계산서 전체 정보
+  project: number | null; // Project ID (nullable)
+  status: AccountsStatusType; // 'waiting' | 'overdue' | 'partial' | 'completed'
+  invoice_sent_count: number;
+  total_billed_amount: number;
+  outstanding_balance: number;
+  collection_terms: CollectionTermsType | null;
+  collection_terms_custom: string | null;
+  agreed_payment_date: string | null; // Date string
+  notes: string | null;
+}
+
+//////////////////////
 // Work Instruction API
 export interface WorkInstructionsPlanModel {
   avg_production_time: number;
@@ -1779,29 +1833,13 @@ export interface MaterialUsageListResponseModel extends PaginationModel {
   data: MaterialUsageResponseModel[];
 }
 
-import {
-  MemberRoleType,
-  MemberStatusType,
-  ProjectStatusType,
-  TaxStatusType,
-  EquipmentStatusType,
-  ProjectLogType,
-  OperationStatusType,
-  NotificationType,
-  NotificationCaseType,
-  TaxDocumentType,
-  TransactionType,
-  BarobillStateType,
-  NtsSendStateType,
-  SubscriptionStatusType,
-  PaymentStatusType,
-  InventoryStatusType,
-  MaterialStatusType,
-} from './status-type';
+
 
 export type {
   MemberRoleType,
   MemberStatusType,
   ProjectStatusType,
   TaxStatusType,
+  AccountsStatusType,
+  CollectionTermsType,
 } from './status-type';

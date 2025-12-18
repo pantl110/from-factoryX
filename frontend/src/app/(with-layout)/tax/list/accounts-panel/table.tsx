@@ -15,11 +15,10 @@ const Table = ({ isPurchase }: TableProps) => {
     <div>
       {/* 표 헤더 */}
       <div className="text-sv flex items-center w-full h-12 border-t border-b border-lg Me_Body-1">
-        <p className="flex-[0.8] px-3">{statusHeader}</p>
-        <p className="flex-1 px-3">{remainHeader}</p>
-        <p className="flex-1 px-3">{paidHeader}</p>
         <p className="flex-1 px-3">{dateHeader}</p>
-        <p className="flex-1 px-3">연체일수</p>
+        <p className="flex-1 px-3">{paidHeader}</p>
+        <p className="flex-1 px-3">{remainHeader}</p>
+        <p className="flex-1 px-3">연체여부</p>
       </div>
 
       {/* 표 내용 */}

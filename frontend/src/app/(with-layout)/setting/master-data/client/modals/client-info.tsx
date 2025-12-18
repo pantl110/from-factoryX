@@ -184,7 +184,7 @@ export const ClientInfo = ({
         </div>
         <div className="flex">
           <InfoLabelValue
-            label="거래처"
+            label="거래처 구분"
             value={
               <div className="flex gap-1">
                 {clientDetail?.is_customer === true && (
