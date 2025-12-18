@@ -164,23 +164,7 @@ async def get_factory_client(request, client_id: int):
     except FactoryClient.DoesNotExist:
         raise HttpError(404, "거래처 정보를 찾을 수 없습니다.")
 
-    return {
-        "id": client.id,
-        # "type": client.type,
-        "name": client.name,
-        "is_customer": client.is_customer,
-        "is_supplier": client.is_supplier,
-        "business_registration_number": client.business_registration_number,
-        "representative_name": client.representative_name,
-        "business_type": client.business_type,
-        "business_category": client.business_category,
-        "phone": client.phone,
-        "email": client.email,
-        "fax": client.fax,
-        "address": client.address,
-        "manager": client.manager,
-        "note": client.note,
-    }
+    return client
 
 
 # Factory Client Information Tab
@@ -222,28 +206,18 @@ async def update_factory_client(
         "address",
         "manager",
         "note",
+        # 입금 확인 정보 (수주처용)
+        "depositor_name",
+        # 지급 계좌 정보 (발주처용)
+        "bank_name",
+        "account_number",
+        "account_holder",
     ]:
         value = getattr(payload, field, None)
         if value is not None:
             setattr(client, field, value)
     await sync_to_async(client.save)()
-    return {
-        "id": client.id,
-        # "type": client.type,
-        "name": client.name,
-        "is_customer": client.is_customer,
-        "is_supplier": client.is_supplier,
-        "business_registration_number": client.business_registration_number,
-        "representative_name": client.representative_name,
-        "business_type": client.business_type,
-        "business_category": client.business_category,
-        "phone": client.phone,
-        "email": client.email,
-        "fax": client.fax,
-        "address": client.address,
-        "manager": client.manager,
-        "note": client.note,
-    }
+    return client
 
 
 # Factory Client Information Tab

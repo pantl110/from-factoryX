@@ -190,6 +190,32 @@ class FactoryClient(BaseModel):
         blank=True,
         help_text="비고",
     )
+    # 입금 확인 정보 (수주처용)
+    depositor_name = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        help_text="입금자명",
+    )
+    # 지급 계좌 정보 (발주처용)
+    bank_name = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        help_text="은행명",
+    )
+    account_number = models.CharField(
+        max_length=50,
+        null=True,
+        blank=True,
+        help_text="계좌번호",
+    )
+    account_holder = models.CharField(
+        max_length=100,
+        null=True,
+        blank=True,
+        help_text="예금주",
+    )
 
 
 class FactoryMember(BaseModel):

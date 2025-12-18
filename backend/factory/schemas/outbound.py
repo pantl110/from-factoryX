@@ -76,22 +76,10 @@ class FactoryClientOut(Schema):
 
 
 # (GET) Factory Client Detail
-class FactoryClientDetailOut(Schema):
-    id: int
-    # type: str
-    is_customer: bool
-    is_supplier: bool
-    name: str
-    business_registration_number: Optional[str]
-    representative_name: Optional[str]
-    business_type: Optional[str]
-    business_category: Optional[str]
-    phone: Optional[str]
-    email: Optional[str]
-    fax: Optional[str]
-    address: Optional[str]
-    manager: Optional[str]
-    note: Optional[str]
+class FactoryClientDetailOut(ModelSchema):
+    class Meta:
+        model = FactoryClient
+        fields = "__all__"
 
 
 class FactoryRowOut(ModelSchema):

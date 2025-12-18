@@ -116,6 +116,12 @@ class FactoryClientUpdateIn(Schema):
     address: Optional[str] = None
     manager: Optional[str] = None
     note: Optional[str] = None
+    # 입금 확인 정보 (수주처용)
+    depositor_name: Optional[str] = None
+    # 지급 계좌 정보 (발주처용)
+    bank_name: Optional[str] = None
+    account_number: Optional[str] = None
+    account_holder: Optional[str] = None
 
 
 # (GET) Factory Client Search Filter
