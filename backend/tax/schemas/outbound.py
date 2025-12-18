@@ -135,6 +135,9 @@ class PaymentDetailOut(ModelSchema):
 
 
 class TaxInvoiceAccountOut(ModelSchema):
+    # 세금계산서 정보까지 함께 내려주기 위해 중첩 스키마 추가
+    tax_invoice: NationalTaxServiceOut
+
     class Meta:
         model = TaxInvoiceAccount
         fields = "__all__"
