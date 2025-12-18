@@ -7,6 +7,7 @@ import { useGetTaxInvoiceDetail } from '@/hooks';
 import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
 import AccountInfo from './account-info';
 import Info from './info';
+import LinkProjectModal from './modals/link-project-modal';
 
 interface AccountsPanelProps {
   onClose: () => void;
@@ -15,6 +16,7 @@ interface AccountsPanelProps {
 
 const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
   const [isTaxDetailOpen, setIsTaxDetailOpen] = useState(false);
+  const [isLinkProjectModalOpen, setIsLinkProjectModalOpen] = useState(false);
   const [taxItem, setTaxItem] =
     useState<PublishedTaxInvoiceResponseModel | null>(null);
   const { getTaxInvoiceDetail } = useGetTaxInvoiceDetail();
@@ -31,12 +33,30 @@ const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
     fetchDetail();
   }, [itemId, getTaxInvoiceDetail]);
 
+  // 세금계산서 상세 판넬 관련 핸들러
   const handleOpenTaxDetail = () => {
     setIsTaxDetailOpen(true);
   };
-
   const handleCloseTaxDetail = () => {
     setIsTaxDetailOpen(false);
+  };
+
+  // 프로젝트 연결 모달 관련 핸들러
+  const handleOpenLinkProjectModal = () => {
+    setIsLinkProjectModalOpen(true);
+  };
+  const handleCloseLinkProjectModal = () => {
+    setIsLinkProjectModalOpen(false);
+  };
+  const handleLinkProjectSuccess = async () => {
+    // 프로젝트 연결 성공 후 세금계산서 정보 다시 불러오기
+    if (itemId) {
+      const result = await getTaxInvoiceDetail(itemId);
+      if (result.success && result.data) {
+        setTaxItem(result.data);
+      }
+    }
+    setIsLinkProjectModalOpen(false);
   };
 
   const isPurchase = taxItem?.tax_invoice_type === 'purchase';
@@ -57,6 +77,8 @@ const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
           <Info
             handleOpenTaxDetail={handleOpenTaxDetail}
             isPurchase={isPurchase}
+            projectId={taxItem?.project_id || null}
+            onOpenLinkProjectModal={handleOpenLinkProjectModal}
           />
 
           {/* 거래처 계좌 정보 - 매입일 때만 표시 */}
@@ -67,6 +89,7 @@ const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
         </div>
       </Panel>
 
+      {/* 세금계산서 상세 판넬 */}
       {isTaxDetailOpen && taxItem && (
         <OverlayView onClose={handleCloseTaxDetail}>
           <div className="w-full flex flex-col gap-6 px-8 pb-8">
@@ -81,6 +104,15 @@ const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
             <TaxDocumentView item={taxItem} />
           </div>
         </OverlayView>
+      )}
+
+      {/* 프로젝트 연결 모달 */}
+      {isLinkProjectModalOpen && (
+        <LinkProjectModal
+          taxId={itemId}
+          onClose={handleCloseLinkProjectModal}
+          onSuccess={handleLinkProjectSuccess}
+        />
       )}
     </>
   );

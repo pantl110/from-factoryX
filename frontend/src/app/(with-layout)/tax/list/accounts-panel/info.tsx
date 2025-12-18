@@ -8,15 +8,30 @@ import { TermType, TERM_LABEL_MAP } from './types';
 interface InfoProps {
   handleOpenTaxDetail: () => void;
   isPurchase: boolean;
+  projectId?: number | null;
+  onOpenLinkProjectModal: () => void;
 }
 
-const Info = ({ handleOpenTaxDetail, isPurchase }: InfoProps) => {
+const Info = ({
+  handleOpenTaxDetail,
+  isPurchase,
+  projectId,
+  onOpenLinkProjectModal,
+}: InfoProps) => {
   const accountsStatus: AccountsStatusType = 'pending';
   const sendCount = 3; // TODO: 실제 데이터로 교체 필요
 
   const title = isPurchase ? '매입채무 정보' : '매출채권 정보';
   const statusLabel = isPurchase ? '채무 상태' : '채권 상태';
   const remainLabel = isPurchase ? '미지급금(잔액)' : '미수금액(잔액)';
+
+  const handleProjectClick = () => {
+    if (projectId) {
+      window.open(`/production/${projectId}`, '_blank');
+    } else {
+      onOpenLinkProjectModal();
+    }
+  };
 
   const [isTermOpen, setIsTermOpen] = useState(false);
   const [termType, setTermType] = useState<TermType>('INVOICE_30');
@@ -35,7 +50,11 @@ const Info = ({ handleOpenTaxDetail, isPurchase }: InfoProps) => {
             variant="whiteOutline"
             onClick={handleOpenTaxDetail}
           />
-          <MiniBtn text="프로젝트 바로가기" variant="whiteOutline" />
+          <MiniBtn
+            text={projectId ? '프로젝트 바로가기' : '프로젝트 연결하기'}
+            variant="whiteOutline"
+            onClick={handleProjectClick}
+          />
         </div>
       </div>
 

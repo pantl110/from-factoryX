@@ -1383,6 +1383,9 @@ export interface PublishedTaxInvoiceResponseModel {
   transaction_type: TransactionType; // 거래 유형 ("receipt"/"invoice")
   transaction_date: string; // 거래 일자
 
+  // 프로젝트 관련
+  project_id?: number | null; // 프로젝트 ID (연결된 프로젝트 ID)
+
   // 거래처 관련
   client: number; // FactoryClient ID (ForeignKey)
   client_info: TaxClientInfoModel;
