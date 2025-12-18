@@ -126,7 +126,32 @@ class NationalTaxService(BaseModel):  # 거래명세서 같이 사용
             while NationalTaxService.objects.filter(mgt_key=new_key).exists():
                 new_key = "".join(random.choices("0123456789", k=20))
             self.mgt_key = new_key
-        return super().save(*args, **kwargs)
+        
+        # 이전 상태 확인을 위해 저장 전에 체크
+        was_published = False
+        if self.pk:
+            try:
+                old_instance = NationalTaxService.objects.get(pk=self.pk)
+                was_published = old_instance.publish_status == "published"
+            except NationalTaxService.DoesNotExist:
+                pass
+        
+        result = super().save(*args, **kwargs)
+        
+        # 발행 완료 상태가 되고, TaxInvoiceAccount가 없으면 자동 생성
+        if self.publish_status == "published" and not was_published:
+            if not TaxInvoiceAccount.objects.filter(tax_invoice=self).exists():
+                # transaction_amount(공급가액)와 tax_amount를 합산하여 total_billed_amount 계산
+                total_billed_amount = (self.transaction_amount or 0) + (self.tax_amount or 0)
+                TaxInvoiceAccount.objects.create(
+                    tax_invoice=self,
+                    status=AccountStatus.waiting,  # 채권/채무 상태를 대기로 초기화
+                    invoice_sent_count=0,  # 청구서 발송 횟수 초기화
+                    total_billed_amount=total_billed_amount,
+                    outstanding_balance=total_billed_amount,  # 미수금액은 청구금액과 동일하게 초기화
+                )
+        
+        return result
 
 
 # 국세청 API 현금 영수증 데이터 저장
@@ -268,4 +293,104 @@ class CashReceipt(BaseModel):
         null=True,
         blank=True,
         help_text="취소시 국세청 승인일자",
+    )
+
+
+# 세금계산서 채권/채무 정보
+class AccountStatus(models.TextChoices):
+    waiting = ("waiting", "대기")
+    overdue = ("overdue", "연체")
+    partial = ("partial", "일부")
+    completed = ("completed", "완료")
+
+
+class CollectionTerms(models.TextChoices):
+    invoice_30 = ("INVOICE_30", "세금계산서 발행 후 30일 이내 입금")
+    invoice_eom_next = ("INVOICE_EOM_NEXT", "세금계산서 발행 익월 말일 입금")
+    month_end_25_next = ("MONTH_END_25_NEXT", "당월 말일 마감, 익월 25일 지급")
+    inspection_30 = ("INSPECTION_30", "검수 완료 후 30일 이내 입금")
+    custom = ("CUSTOM", "직접 입력")
+
+
+class TaxInvoiceAccount(BaseModel):
+    """세금계산서 채권/채무 정보 (매출채권 또는 매입채무)"""
+    tax_invoice = models.OneToOneField(
+        NationalTaxService,
+        related_name="tax_invoice_account",
+        on_delete=models.CASCADE,
+        help_text="세금계산서",
+    )
+    project = models.ForeignKey(
+        "project.Project",
+        related_name="tax_invoice_accounts",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="프로젝트",
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=AccountStatus.choices,
+        default=AccountStatus.waiting,
+        help_text="채권/채무 상태",
+    )
+    invoice_sent_count = models.IntegerField(
+        default=0,
+        help_text="청구서 발송 횟수",
+    )
+    # 업체명은 tax_invoice.client.name에서 가져올 수 있음
+    total_billed_amount = models.IntegerField(
+        help_text="청구금액(합계)"
+    )
+    outstanding_balance = models.IntegerField(
+        default=0,
+        help_text="미수금액(잔액)"
+    )
+    collection_terms = models.CharField(
+        max_length=50,
+        choices=CollectionTerms.choices,
+        null=True,
+        blank=True,
+        help_text="수금 조건",
+    )
+    collection_terms_custom = models.CharField(
+        max_length=200,
+        null=True,
+        blank=True,
+        help_text="수금 조건 직접 입력 (collection_terms가 CUSTOM일 때만 사용)",
+    )
+    agreed_payment_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="약정 입금일",
+    )
+    notes = models.TextField(
+        null=True,
+        blank=True,
+        help_text="특이사항",
+    )
+
+
+
+# 회수/지급 상세 내역
+class PaymentDetail(BaseModel):
+    """회수/지급 상세 내역 (매출채권의 경우 회수, 매입채무의 경우 지급)"""
+    tax_invoice_account = models.ForeignKey(
+        TaxInvoiceAccount,
+        related_name="payment_details",
+        on_delete=models.CASCADE,
+        help_text="세금계산서 채권/채무",
+    )
+    payment_date = models.DateField(
+        help_text="입금일/지급일"
+    )
+    amount_received = models.IntegerField(
+        help_text="받은 금액/지급 금액"
+    )
+    outstanding_amount_at_payment = models.IntegerField(
+        help_text="미수금액/미지급금액"
+    )
+    overdue_days = models.IntegerField(
+        default=0,
+        help_text="연체일수"
     )

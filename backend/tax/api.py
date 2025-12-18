@@ -41,7 +41,6 @@ from barobill.barobill_state import (
 from datetime import datetime
 from typing import List
 from factory.schemas.outbound import FactoryRowOut, FactoryClientRowOut
-from stock.schemas.outbound import ProductRowOut
 from websocket.utils import send_notification_to_factory
 from stock.models import MaterialHistory
 

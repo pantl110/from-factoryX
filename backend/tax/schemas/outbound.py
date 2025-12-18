@@ -1,7 +1,7 @@
 from datetime import date
 from typing import List, Optional
 from ninja import Schema, ModelSchema, Field
-from tax.models import NationalTaxService, CashReceipt
+from tax.models import NationalTaxService, CashReceipt, TaxInvoiceAccount, PaymentDetail
 from stock.schemas.outbound import ProductOut
 
 
@@ -125,4 +125,16 @@ class CashReceiptDetailWithMaterialOut(ModelSchema):
 
     class Meta:
         model = CashReceipt
+        fields = "__all__"
+
+
+class PaymentDetailOut(ModelSchema):
+    class Meta:
+        model = PaymentDetail
+        fields = "__all__"
+
+
+class TaxInvoiceAccountOut(ModelSchema):
+    class Meta:
+        model = TaxInvoiceAccount
         fields = "__all__"
