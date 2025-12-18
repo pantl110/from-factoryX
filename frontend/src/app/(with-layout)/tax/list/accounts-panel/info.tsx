@@ -75,7 +75,7 @@ const Info = ({
               </div>
             }
           />
-          <InfoLabelValue label="예금주" value="홍길동" />
+          <InfoLabelValue label="입금자명" value="홍길동" />
         </div>
         <div className="flex">
           <InfoLabelValue label="청구금액(합계)" value="15,000원" />

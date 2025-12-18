@@ -67,7 +67,7 @@ const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
       <Panel
         title={panelTitle}
         onClose={onClose}
-        headerButton={<MiniBtn text="저장하기" variant="secondary" />}
+        headerButton={<MiniBtn text="저장" variant="secondary" />}
       >
         <div className="flex flex-col gap-10">
           {/* 매출 세금계산서 */}

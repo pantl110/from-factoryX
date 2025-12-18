@@ -515,7 +515,7 @@ const MasterData = () => {
           padding="px-4"
         />
         <Chip
-          text={`단위 변환 관리${typeof unitTotal === 'number' ? ` ${unitTotal}` : ''}`}
+          text={`단위 변환${typeof unitTotal === 'number' ? ` ${unitTotal}` : ''}`}
           textColor={settingChip === 'unit' ? 'text-bg' : 'text-dg'}
           bgColor={settingChip === 'unit' ? 'bg-dg' : 'bg-transparent'}
           radius="rounded-full"
