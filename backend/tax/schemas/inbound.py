@@ -124,7 +124,6 @@ class TaxToMaterialHistoryIn(Schema):
 
 class TaxInvoiceAccountUpdateIn(Schema):
     """매출 채권/채무 정보 수정 스키마"""
-    project_id: Optional[int] = Field(None, description="프로젝트 ID")
     status: Optional[str] = Field(None, description="채권/채무 상태 (waiting, overdue, partial, completed)")
     invoice_sent_count: Optional[int] = Field(None, description="청구서 발송 횟수")
     total_billed_amount: Optional[int] = Field(None, description="청구금액(합계)")

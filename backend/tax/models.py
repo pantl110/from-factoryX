@@ -320,14 +320,6 @@ class TaxInvoiceAccount(BaseModel):
         on_delete=models.CASCADE,
         help_text="세금계산서",
     )
-    project = models.ForeignKey(
-        "project.Project",
-        related_name="tax_invoice_accounts",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        help_text="프로젝트",
-    )
     status = models.CharField(
         max_length=20,
         choices=AccountStatus.choices,

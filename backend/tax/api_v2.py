@@ -20,25 +20,13 @@ async def update_tax_invoice_account(request, tax_id: int, payload: TaxInvoiceAc
     def update_account():
         try:
             account = TaxInvoiceAccount.objects.select_related(
-                "tax_invoice", "tax_invoice__client", "project"
+                "tax_invoice", "tax_invoice__client"
             ).get(tax_invoice_id=tax_id)
         except TaxInvoiceAccount.DoesNotExist:
             raise HttpError(404, "해당 세금계산서의 채권/채무 정보를 찾을 수 없습니다.")
         
         # 필드 업데이트
         update_data = payload.dict(exclude_unset=True)
-        
-        # project_id를 project로 변환
-        if "project_id" in update_data:
-            project_id = update_data.pop("project_id")
-            if project_id is not None:
-                from project.models import Project
-                try:
-                    account.project = Project.objects.get(id=project_id)
-                except Project.DoesNotExist:
-                    raise HttpError(400, f"프로젝트 ID {project_id}를 찾을 수 없습니다.")
-            else:
-                account.project = None
         
         # 나머지 필드 업데이트
         for field, value in update_data.items():
@@ -65,7 +53,7 @@ async def get_tax_invoice_account(request, tax_id: int):
             from project.models import Project
 
             account = TaxInvoiceAccount.objects.select_related(
-                "tax_invoice", "tax_invoice__client", "project"
+                "tax_invoice", "tax_invoice__client"
             ).get(tax_invoice_id=tax_id)
 
             # 하나의 세금계산서에는 하나의 프로젝트만 연결된다는 전제 하에
