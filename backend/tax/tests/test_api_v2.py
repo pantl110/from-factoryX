@@ -46,10 +46,19 @@ class TaxAPIV2TestCase(TestCase):
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
+
+        # 채권/채무 기본 정보 검증
         self.assertEqual(data["total_billed_amount"], 110000)
         self.assertEqual(data["outstanding_balance"], 110000)
         self.assertEqual(data["invoice_sent_count"], 0)
         self.assertEqual(data["status"], "waiting")
+
+        # 세금계산서 전체 정보가 중첩 객체로 포함되는지 검증
+        self.assertIn("tax_invoice", data)
+        self.assertIsInstance(data["tax_invoice"], dict)
+        self.assertEqual(data["tax_invoice"]["id"], tax_invoice.id)
+        self.assertEqual(data["tax_invoice"]["transaction_amount"], 100000)
+        self.assertEqual(data["tax_invoice"]["tax_amount"], 10000)
 
     def test_tax_invoice_account_auto_create_on_publish(self):
         """published 상태로 변경 시 TaxInvoiceAccount 자동 생성"""
