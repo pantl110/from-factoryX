@@ -107,6 +107,11 @@ class ProjectFilter(FilterSchema):
         q="printed_at__isnull",
         description="거래명세서 출력 여부 (printed_at 필드 기준 True: 출력 안됨, False: 출력됨)",
     )
+    tax_invoice__isnull: Optional[bool] = Field(
+        None,
+        q="tax_invoice__isnull",
+        description="세금계산서 연결 여부 (True: 연결 안됨, False: 연결됨)",
+    )
 
     def filter_status(self, value):
         q = Q()
