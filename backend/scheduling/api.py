@@ -201,8 +201,14 @@ async def tax_invoice_state_check(request):
                 ["publish_status", "barobill_state", "nts_send_state"],
             )
 
+    @sync_to_async
+    def save_tax_invoice_with_account(tax_invoice):
+        """published 상태로 변경 시 TaxInvoiceAccount 자동 생성을 위해 save() 호출"""
+        tax_invoice.save()
+
     tax_invoices = await get_tax_invoice()
     tax_invoices_to_update = []
+    tax_invoices_to_save = []
 
     for tax_invoice in tax_invoices:
         result = get_state_barobill_tax_invoice(
@@ -227,9 +233,18 @@ async def tax_invoice_state_check(request):
             tax_invoice.publish_status = new_status
             tax_invoice.barobill_state = barobill_state
             tax_invoice.nts_send_state = nts_send_state
-            tax_invoices_to_update.append(tax_invoice)
+            
+            # published로 변경되는 경우 save()를 호출하여 TaxInvoiceAccount 자동 생성
+            if new_status == PublishStatus.published:
+                tax_invoices_to_save.append(tax_invoice)
+            else:
+                tax_invoices_to_update.append(tax_invoice)
 
-    # 한 번에 모든 변경사항을 DB에 반영
+    # published로 변경되는 경우 개별적으로 save() 호출 # TaxInvoiceAccount 자동 생성을 위해
+    for tax_invoice in tax_invoices_to_save:
+        await save_tax_invoice_with_account(tax_invoice)
+    
+    # 나머지는 bulk_update로 처리
     await bulk_update_tax_invoices(tax_invoices_to_update)
 
     return {"tax_invoices": len(tax_invoices_to_update)}
