@@ -52,6 +52,15 @@ class TaxInvoiceAccountAdmin(admin.ModelAdmin):
     search_fields = ("id", "tax_invoice__id", "project__name")
     autocomplete_fields = ("tax_invoice", "project")
 
+    def save_model(self, request, obj, form, change):
+        # tax_invoice가 선택되었고 project가 없으면, tax_invoice와 연결된 project를 자동 설정
+        if obj.tax_invoice and not obj.project:
+            # tax_invoice와 연결된 project가 있으면 자동으로 설정
+            linked_project = obj.tax_invoice.projects.first()
+            if linked_project:
+                obj.project = linked_project
+        super().save_model(request, obj, form, change)
+
 
 @admin.register(PaymentDetail)
 class PaymentDetailAdmin(admin.ModelAdmin):
