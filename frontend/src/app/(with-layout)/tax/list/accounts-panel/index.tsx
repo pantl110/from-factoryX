@@ -1,15 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { IconBtn, MiniBtn, OverlayView, Panel, Spinner } from '@/ui';
+import React, { useState, useEffect, useRef } from 'react';
+import { IconBtn, MiniBtn, OverlayView, Panel, Toast } from '@/ui';
 import TableArea from './table-area';
 import TaxDocumentView from '@/app/(with-layout)/document/tax-document-view';
-import { X } from '@phosphor-icons/react';
-import { useGetTaxInvoiceAccount } from '@/hooks';
+import { WarningCircle, X } from '@phosphor-icons/react';
+import {
+  useGetTaxInvoiceAccount,
+  useToast,
+  useUpdateTaxInvoiceAccount,
+} from '@/hooks';
 import { TaxInvoiceAccountModel } from '@/types/data-model';
-import Info from './info';
+import Info, { InfoHandleModel } from './info';
 import LinkProjectModal from './modals/link-project-modal';
 import { DepositorInfoDisplay } from './depositor-info-display';
 import { AccountInfoDisplay } from './account-info-display';
 import ClientDetailPanel from '@/app/(with-layout)/setting/master-data/client/modals/client-detail-panel';
+import { isValidDateString, formatISODate } from '@/utils';
 
 interface AccountsPanelProps {
   onClose: () => void;
@@ -17,12 +22,25 @@ interface AccountsPanelProps {
 }
 
 const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
+  // 모달, 판넬 상태
   const [isTaxDetailOpen, setIsTaxDetailOpen] = useState(false);
   const [isLinkProjectModalOpen, setIsLinkProjectModalOpen] = useState(false);
   const [isClientDetailPanelOpen, setIsClientDetailPanelOpen] = useState(false);
-  const [isFormDirty, setIsFormDirty] = useState(false);
+
+  // 데이터 상태
   const [account, setAccount] = useState<TaxInvoiceAccountModel | null>(null);
+
+  // 토스트 상태
+  const { showToast, isToastOpen, isVisible } = useToast();
+  const [errorText, setErrorText] = useState('');
+  const [errorSubtext, setErrorSubtext] = useState('');
+
+  // 폼 상태
+  const [isFormDirty, setIsFormDirty] = useState(false);
   const { getTaxInvoiceAccount, isLoading } = useGetTaxInvoiceAccount();
+  const { updateTaxInvoiceAccount, isLoading: isSaving } =
+    useUpdateTaxInvoiceAccount();
+  const infoRef = useRef<InfoHandleModel | null>(null);
 
   useEffect(() => {
     const fetchDetail = async () => {
@@ -83,13 +101,56 @@ const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
   const isPurchase = taxItem?.tax_invoice_type === 'purchase';
   const panelTitle = isPurchase ? '매입채무 관리' : '매출채권 관리';
 
+  const handleSave = async () => {
+    if (!account || !taxItem) return;
+    const values = infoRef.current?.getValues();
+    if (!values) return;
+
+    // 날짜 형식 검증
+    if (values.agreed_payment_date) {
+      const dateString = formatISODate(values.agreed_payment_date);
+      if (!isValidDateString(dateString)) {
+        setErrorText('유효한 납기일자를 입력해 주세요.');
+        setErrorSubtext('YYYY-MM-DD 형식으로 입력해 주세요.');
+        showToast();
+        return;
+      }
+    }
+
+    // PATCH 요청 시 세금계산서 account 번호가 아닌
+    // 세금계산서 id(tax id)를 path parameter로 전달
+    const result = await updateTaxInvoiceAccount(taxItem.id, {
+      collection_terms: values.collection_terms,
+      collection_terms_custom: values.collection_terms_custom,
+      agreed_payment_date: values.agreed_payment_date,
+      notes: values.notes,
+    });
+
+    if (result.success && result.data) {
+      setAccount(result.data);
+      setIsFormDirty(false);
+      onClose();
+    } else if (result.error) {
+      setErrorText('세금계산서 채권/채무 정보 저장에 실패했습니다.');
+      setErrorSubtext(result.error || '알 수 없는 오류가 발생했습니다.');
+      showToast();
+    }
+  };
+
   return (
     <>
       <Panel
         title={panelTitle}
         onClose={onClose}
         headerButton={
-          isFormDirty ? <MiniBtn text="저장" variant="secondary" /> : undefined
+          isFormDirty ? (
+            <MiniBtn
+              text="저장"
+              variant="secondary"
+              onClick={handleSave}
+              disabled={isSaving}
+            />
+          ) : undefined
         }
       >
         {isLoading ? (
@@ -98,6 +159,7 @@ const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
           <div className="flex flex-col gap-10">
             {/* 매출/매입 채권·채무 정보 */}
             <Info
+              ref={infoRef}
               handleOpenTaxDetail={handleOpenTaxDetail}
               isPurchase={isPurchase}
               projectId={taxItem?.project_id ?? null}
@@ -163,6 +225,16 @@ const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
           taxId={itemId}
           onClose={handleCloseLinkProjectModal}
           onSuccess={handleLinkProjectSuccess}
+        />
+      )}
+      {/* 토스트 */}
+      {isToastOpen && (
+        <Toast
+          icon={<WarningCircle size={20} className="text-red" />}
+          text={errorText}
+          subtext={errorSubtext}
+          type="red"
+          isVisible={isVisible}
         />
       )}
     </>

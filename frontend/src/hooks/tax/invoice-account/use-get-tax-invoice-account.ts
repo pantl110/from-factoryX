@@ -34,7 +34,9 @@ const useGetTaxInvoiceAccount = (): UseGetTaxInvoiceAccountReturnModel => {
 
       if (!response.ok) {
         if (response.status === 404) {
-          throw new Error('해당 세금계산서의 채권/채무 정보를 찾을 수 없습니다.');
+          throw new Error(
+            '해당 세금계산서의 채권/채무 정보를 찾을 수 없습니다.'
+          );
         }
         if (response.status === 403) {
           throw new Error('접근 권한이 없습니다.');
@@ -61,11 +63,10 @@ const useGetTaxInvoiceAccount = (): UseGetTaxInvoiceAccountReturnModel => {
       setError(null);
 
       try {
-        const data =
-          await queryClient.fetchQuery<TaxInvoiceAccountModel>({
-            queryKey: ['tax-invoice-account', taxId],
-            queryFn: () => fetchTaxInvoiceAccount(taxId),
-          });
+        const data = await queryClient.fetchQuery<TaxInvoiceAccountModel>({
+          queryKey: ['tax-invoice-account', taxId],
+          queryFn: () => fetchTaxInvoiceAccount(taxId),
+        });
 
         return {
           success: true,

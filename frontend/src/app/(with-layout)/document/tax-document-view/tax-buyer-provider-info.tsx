@@ -1,7 +1,6 @@
 import { TaxDocumentType, TransactionType } from '@/types/status-type';
 import InfoLabelValue from '@/ui/info-label-value';
 import { TaxClientInfoModel } from '@/types/data-model';
-import { formatISODate } from '@/utils';
 
 interface TaxBuyerProviderInfoProps {
   taxType: TaxDocumentType;

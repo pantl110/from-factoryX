@@ -92,7 +92,8 @@ export { default as useGetUnlinkedTaxInvoices } from './tax/use-get-unlinked-tax
 export { default as useLinkTaxInvoice } from './tax/use-link-tax-invoice';
 export { default as useGetTaxInvoiceByMaterialHistory } from './tax/use-get-tax-invoice-by-material-history';
 export { default as useGetTaxInvoiceDetail } from './tax/use-get-tax-invoice-detail';
-export { default as useGetTaxInvoiceAccount } from './tax/use-get-tax-invoice-account';
+export { default as useGetTaxInvoiceAccount } from './tax/invoice-account/use-get-tax-invoice-account';
+export { default as useUpdateTaxInvoiceAccount } from './tax/invoice-account/use-update-tax-invoice-account';
 export { default as usePublishTaxInvoice } from './tax/use-publish-tax-invoice';
 export { default as useCancelTaxInvoice } from './tax/use-cancel-tax-invoice';
 export { default as useDeleteTaxInvoice } from './tax/use-delete-tax-invoice';

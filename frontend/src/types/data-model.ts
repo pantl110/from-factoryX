@@ -1834,8 +1834,6 @@ export interface MaterialUsageListResponseModel extends PaginationModel {
   data: MaterialUsageResponseModel[];
 }
 
-
-
 export type {
   MemberRoleType,
   MemberStatusType,

@@ -1,5 +1,3 @@
-import { RoundChip } from '@/ui';
-
 const TableItem = () => {
   return (
     <div className="flex items-center border-b border-lg h-14 w-full text-bl Me_Body-1">
