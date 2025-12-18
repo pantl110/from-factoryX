@@ -6,14 +6,12 @@ import { formatISODate } from '@/utils';
 interface TaxBuyerProviderInfoProps {
   taxType: TaxDocumentType;
   clientInfo: TaxClientInfoModel;
-  updatedAt: string;
   transactionType: TransactionType;
 }
 
 const TaxBuyerProviderInfo = ({
   taxType,
   clientInfo,
-  updatedAt,
   transactionType,
 }: TaxBuyerProviderInfoProps) => {
   // clientInfo가 null인 경우 처리
@@ -32,14 +30,6 @@ const TaxBuyerProviderInfo = ({
             <InfoLabelValue label="종목" value="-" />
           </div>
           <InfoLabelValue label="사업장 주소" value="-" />
-          <InfoLabelValue label="작성일자" value={formatISODate(updatedAt)} />
-          <div className="flex">
-            <InfoLabelValue label="문서 상태" chip={{ status: taxType }} />
-            <InfoLabelValue
-              label="구분"
-              value={transactionType === 'receipt' ? '영수' : '청구'}
-            />
-          </div>
         </div>
       </div>
     );
@@ -71,7 +61,6 @@ const TaxBuyerProviderInfo = ({
           />
         </div>
         <InfoLabelValue label="사업장 주소" value={clientInfo.address || '-'} />
-        <InfoLabelValue label="작성일자" value={formatISODate(updatedAt)} />
         <div className="flex">
           <InfoLabelValue label="문서 상태" chip={{ status: taxType }} />
           <InfoLabelValue

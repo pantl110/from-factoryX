@@ -1403,8 +1403,8 @@ export interface TaxLineItemModel {
 export interface PublishedTaxInvoiceResponseModel {
   // BaseModel 상속 필드
   id: number; // Primary Key
-  created_at: string; // 생성일
-  updated_at: string; // 수정일
+  created_at: string; // 세금계산서 생성일
+  updated_at: string; // 세금계산서 상태가 published일 때, publish_status가 updated된 일자 (=> 세금계산서 발행일)
 
   // User 관련
   user: number; // User ID (ForeignKey)
@@ -1598,6 +1598,7 @@ export interface TaxInvoiceAccountModel {
   created_at: string;
   updated_at: string;
   tax_invoice: PublishedTaxInvoiceResponseModel; // 세금계산서 전체 정보
+  client: ClientResponseModel | null; // 거래처 정보 (tax_invoice의 client 정보)
   project: number | null; // Project ID (nullable)
   status: AccountsStatusType; // 'waiting' | 'overdue' | 'partial' | 'completed'
   invoice_sent_count: number;

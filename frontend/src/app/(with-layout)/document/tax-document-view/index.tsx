@@ -8,6 +8,7 @@ import TaxBuyerProviderInfo from './tax-buyer-provider-info';
 import OrderItemInfo from './order-item-info';
 import PurchaseItemInfo from './purchase-item-info';
 import { useGetTaxInvoiceDetail } from '@/hooks';
+import DocInfo from './doc-info';
 
 interface TaxDocumentViewProps {
   taxId?: number | null;
@@ -57,12 +58,20 @@ const TaxDocumentView = ({
     );
   }
 
+  // 세금계산서 상태가 published이면 발행일(발행 완료 일자)로 updated_at 사용
+  const publishDate =
+    item.publish_status === 'published' ? item.updated_at : null;
+
   return (
     <div className="flex flex-col gap-6">
+      <DocInfo
+        taxType={item.tax_invoice_type}
+        transactionType={item.transaction_type}
+        publishDate={publishDate}
+      />
       <TaxBuyerProviderInfo
         taxType={item.tax_invoice_type}
         clientInfo={item.client_info}
-        updatedAt={item.updated_at}
         transactionType={item.transaction_type}
       />
       {item.tax_invoice_type === 'sales' && (

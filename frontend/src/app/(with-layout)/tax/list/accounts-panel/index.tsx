@@ -9,6 +9,7 @@ import Info from './info';
 import LinkProjectModal from './modals/link-project-modal';
 import { DepositorInfoDisplay } from './depositor-info-display';
 import { AccountInfoDisplay } from './account-info-display';
+import ClientDetailPanel from '@/app/(with-layout)/setting/master-data/client/modals/client-detail-panel';
 
 interface AccountsPanelProps {
   onClose: () => void;
@@ -18,6 +19,8 @@ interface AccountsPanelProps {
 const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
   const [isTaxDetailOpen, setIsTaxDetailOpen] = useState(false);
   const [isLinkProjectModalOpen, setIsLinkProjectModalOpen] = useState(false);
+  const [isClientDetailPanelOpen, setIsClientDetailPanelOpen] = useState(false);
+  const [isFormDirty, setIsFormDirty] = useState(false);
   const [account, setAccount] = useState<TaxInvoiceAccountModel | null>(null);
   const { getTaxInvoiceAccount, isLoading } = useGetTaxInvoiceAccount();
 
@@ -59,6 +62,23 @@ const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
     setIsLinkProjectModalOpen(false);
   };
 
+  // 거래처 상세 판넬 관련 핸들러
+  const handleOpenClientDetailPanel = () => {
+    setIsClientDetailPanelOpen(true);
+  };
+  const handleCloseClientDetailPanel = () => {
+    setIsClientDetailPanelOpen(false);
+  };
+  const handleRefetchClient = async () => {
+    // 거래처 정보 업데이트 후 세금계산서 정보 다시 불러오기
+    if (itemId) {
+      const result = await getTaxInvoiceAccount(itemId);
+      if (result.success && result.data) {
+        setAccount(result.data);
+      }
+    }
+  };
+
   const taxItem = account?.tax_invoice;
   const isPurchase = taxItem?.tax_invoice_type === 'purchase';
   const panelTitle = isPurchase ? '매입채무 관리' : '매출채권 관리';
@@ -68,7 +88,9 @@ const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
       <Panel
         title={panelTitle}
         onClose={onClose}
-        headerButton={<MiniBtn text="저장" variant="secondary" />}
+        headerButton={
+          isFormDirty ? <MiniBtn text="저장" variant="secondary" /> : undefined
+        }
       >
         {isLoading ? (
           <></>
@@ -78,32 +100,26 @@ const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
             <Info
               handleOpenTaxDetail={handleOpenTaxDetail}
               isPurchase={isPurchase}
-              projectId={account?.project ?? taxItem?.project_id ?? null}
+              projectId={taxItem?.project_id ?? null}
               onOpenLinkProjectModal={handleOpenLinkProjectModal}
               account={account}
+              onOpenClientDetailPanel={handleOpenClientDetailPanel}
+              onIsDirtyChange={setIsFormDirty}
             />
 
             {/* 입금 확인 정보 (매출) / 지급 계좌 정보 (매입) */}
-            {taxItem?.client_info && (
+            {account?.client && (
               <>
-                {!isPurchase && taxItem.client_info.is_customer && (
+                {!isPurchase && account.client.is_customer && (
                   <DepositorInfoDisplay
-                    depositorName={
-                      (taxItem.client_info as any).depositor_name || undefined
-                    }
+                    depositorName={account.client.depositor_name || undefined}
                   />
                 )}
-                {isPurchase && taxItem.client_info.is_supplier && (
+                {isPurchase && account.client.is_supplier && (
                   <AccountInfoDisplay
-                    bankName={
-                      (taxItem.client_info as any).bank_name || undefined
-                    }
-                    accountNumber={
-                      (taxItem.client_info as any).account_number || undefined
-                    }
-                    accountHolder={
-                      (taxItem.client_info as any).account_holder || undefined
-                    }
+                    bankName={account.client.bank_name || undefined}
+                    accountNumber={account.client.account_number || undefined}
+                    accountHolder={account.client.account_holder || undefined}
                   />
                 )}
               </>
@@ -130,6 +146,15 @@ const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
             <TaxDocumentView item={taxItem} />
           </div>
         </OverlayView>
+      )}
+
+      {/* 거래처 상세 판넬 */}
+      {isClientDetailPanelOpen && account?.client && (
+        <ClientDetailPanel
+          clientId={account.client.id}
+          onClose={handleCloseClientDetailPanel}
+          refetchClient={handleRefetchClient}
+        />
       )}
 
       {/* 프로젝트 연결 모달 */}
