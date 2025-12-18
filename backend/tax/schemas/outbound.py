@@ -1,6 +1,6 @@
 from datetime import date
 from typing import List, Optional
-from ninja import Schema, ModelSchema
+from ninja import Schema, ModelSchema, Field
 from tax.models import NationalTaxService, CashReceipt
 from stock.schemas.outbound import ProductOut
 
@@ -25,6 +25,8 @@ class FactoryClientOut(Schema):
 
 
 class NationalTaxServiceOut(ModelSchema):
+    project_id: Optional[int] = Field(default=None, description="연결된 프로젝트 ID")
+
     class Meta:
         model = NationalTaxService
         fields = "__all__"

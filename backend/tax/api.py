@@ -673,6 +673,17 @@ async def get_tax_invoice(request, tax_id: int):
     tax_service = await get_tax_service_by_id(tax_id)
     member = await is_factory_member(tax_service.factory.id, user)
     # 멤버 권한 검증 추가해야함
+    
+    # 연결된 프로젝트 ID 가져오기
+    @sync_to_async
+    def get_project_id():
+        project = tax_service.projects.first()
+        return project.id if project else None
+    
+    project_id = await get_project_id()
+    # 객체에 project_id 속성 추가 
+    tax_service.project_id = project_id
+    
     return tax_service
 
 
