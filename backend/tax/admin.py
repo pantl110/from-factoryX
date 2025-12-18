@@ -2,6 +2,12 @@ from django.contrib import admin
 from .models import NationalTaxService, CashReceipt, TaxInvoiceAccount, PaymentDetail
 
 
+class TaxInvoiceAccountInline(admin.StackedInline):
+    model = TaxInvoiceAccount
+    extra = 0
+    can_delete = False
+
+
 @admin.register(NationalTaxService)
 class NationalTaxServiceAdmin(admin.ModelAdmin):
     list_display = (
@@ -16,6 +22,7 @@ class NationalTaxServiceAdmin(admin.ModelAdmin):
         "transaction_type",
         "is_hidden",
     )
+    inlines = [TaxInvoiceAccountInline]
     list_filter = ("factory", "publish_status", "tax_invoice_type", "transaction_type")
     search_fields = ("id", "client__name", "factory__name", "mgt_key", "nts_send_key")
 
