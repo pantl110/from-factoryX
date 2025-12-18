@@ -37,14 +37,6 @@ class NationalTaxServiceOut(ModelSchema):
         model = NationalTaxService
         fields = "__all__"
 
-    @staticmethod
-    def resolve_project_id(obj):
-        """세금계산서와 연결된 단일 프로젝트 ID를 반환."""
-        first_project = obj.projects.first()
-        if first_project:
-            return first_project.id
-        return None
-
 
 class NationalTaxServiceDetailOut(ModelSchema):
     client: FactoryClientOut

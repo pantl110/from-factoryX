@@ -62,9 +62,20 @@ async def get_tax_invoice_account(request, tax_id: int):
     @sync_to_async
     def get_account():
         try:
+            from project.models import Project
+
             account = TaxInvoiceAccount.objects.select_related(
                 "tax_invoice", "tax_invoice__client", "project"
             ).get(tax_invoice_id=tax_id)
+
+            # 하나의 세금계산서에는 하나의 프로젝트만 연결된다는 전제 하에
+            # tax_invoice 인스턴스에 project_id 속성을 미리 세팅해 둔다.
+            project = Project.objects.filter(tax_invoice=account.tax_invoice).first()
+            if project:
+                setattr(account.tax_invoice, "project_id", project.id)
+            else:
+                setattr(account.tax_invoice, "project_id", None)
+
             return account
         except TaxInvoiceAccount.DoesNotExist:
             raise HttpError(404, "해당 세금계산서의 채권/채무 정보를 찾을 수 없습니다.")
