@@ -1,6 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from factory.models import Factory, FactoryClient, FactoryMember
+from project.models import Project
 from tax.models import NationalTaxService, TaxInvoiceAccount
 import jwt
 from django.conf import settings
@@ -76,6 +77,33 @@ class TaxAPIV2TestCase(TestCase):
         self.assertEqual(data["client"]["account_number"], "123-456-789012")
         self.assertEqual(data["client"]["account_holder"], "테스트 예금주")
         self.assertEqual(data["client"]["depositor_name"], "테스트 입금자")
+
+    def test_get_tax_invoice_account_includes_project_id_in_tax_invoice(self):
+        """세금계산서에 연결된 프로젝트 ID가 tax_invoice.project_id로 내려오는지 검증"""
+        tax_invoice = NationalTaxService.objects.create(
+            factory=self.factory,
+            client=self.client_company,
+            transaction_date=date(2025, 6, 4),
+            transaction_amount=200000,
+            tax_amount=20000,
+            publish_status="published",
+        )
+        project = Project.objects.create(
+            name="테스트 프로젝트",
+            tax_invoice=tax_invoice,
+        )
+
+        response = self.client.get(
+            f"/v2/tax/account/{tax_invoice.id}",
+            HTTP_AUTHORIZATION=f"Bearer {self.token}",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+
+        self.assertIn("tax_invoice", data)
+        self.assertIn("project_id", data["tax_invoice"])
+        self.assertEqual(data["tax_invoice"]["project_id"], project.id)
 
     def test_tax_invoice_account_auto_create_on_publish(self):
         """published 상태로 변경 시 TaxInvoiceAccount 자동 생성"""
