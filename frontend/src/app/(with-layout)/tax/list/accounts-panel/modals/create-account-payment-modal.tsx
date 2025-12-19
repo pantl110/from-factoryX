@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, FieldErrors } from 'react-hook-form';
 import { Input, Modal, MiniBtn, Toast } from '@/ui';
 import {
   formatDate,
@@ -81,7 +81,7 @@ const CreateAccountPaymentModal = ({
     return currentOutstanding - received;
   }, [account, watchedReceivedAmount]);
 
-  const onError = (errors: any) => {
+  const onError = (errors: FieldErrors<PaymentFormModel>) => {
     // react-hook-form validation 에러 발생 시 토스트 표시
     if (errors.paymentDate) {
       setErrorText(

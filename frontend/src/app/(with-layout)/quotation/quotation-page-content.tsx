@@ -809,12 +809,6 @@ const QuotationPageContent = () => {
                 : '견적 품목 정보'
             }
             productItems={quotationProducts}
-            supplyAmount={quotationProducts.reduce((total, product) => {
-              if (product.quantity && product.unit_price) {
-                return total + product.quantity * product.unit_price;
-              }
-              return total;
-            }, 0)}
             onClose={() => setIsPrintOpen(false)}
           />
         </OverlayView>
@@ -832,12 +826,6 @@ const QuotationPageContent = () => {
                 : '견적 품목 정보'
             }
             productItems={quotationProducts}
-            supplyAmount={quotationProducts.reduce((total, product) => {
-              if (product.quantity && product.unit_price) {
-                return total + product.quantity * product.unit_price;
-              }
-              return total;
-            }, 0)}
             quotationId={effectiveQuotationId ?? null}
             projectStatus={projectStatus}
             onClose={() => setIsEmailOpen(false)}

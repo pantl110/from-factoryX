@@ -4,10 +4,9 @@ import { calculateOverdueDays } from './utils';
 
 interface TableItemProps {
   item: PaymentDetailResponseModel;
-  isPurchase: boolean;
 }
 
-const TableItem = ({ item, isPurchase }: TableItemProps) => {
+const TableItem = ({ item }: TableItemProps) => {
   const expectedDate = item.expected_payment_date
     ? formatISODate(item.expected_payment_date)
     : '-';

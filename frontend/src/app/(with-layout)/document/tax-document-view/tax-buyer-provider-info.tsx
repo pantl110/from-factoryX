@@ -1,17 +1,15 @@
-import { TaxDocumentType, TransactionType } from '@/types/status-type';
+import { TaxDocumentType } from '@/types/status-type';
 import InfoLabelValue from '@/ui/info-label-value';
 import { TaxClientInfoModel } from '@/types/data-model';
 
 interface TaxBuyerProviderInfoProps {
   taxType: TaxDocumentType;
   clientInfo: TaxClientInfoModel;
-  transactionType: TransactionType;
 }
 
 const TaxBuyerProviderInfo = ({
   taxType,
   clientInfo,
-  transactionType,
 }: TaxBuyerProviderInfoProps) => {
   // clientInfo가 null인 경우 처리
   if (!clientInfo) {

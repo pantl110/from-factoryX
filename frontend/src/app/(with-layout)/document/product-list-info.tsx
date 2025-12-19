@@ -6,11 +6,13 @@ interface ProductListInfoProps {
   productListInfoTitle: string;
   productItems: QuotationProductDetailResponseModel[];
   supplyAmount: number;
+  taxAmount: number;
 }
 
 const ProductListInfo = ({
   productListInfoTitle,
   supplyAmount,
+  taxAmount,
   productItems,
 }: ProductListInfoProps) => {
   return (
@@ -38,7 +40,11 @@ const ProductListInfo = ({
         </tbody>
       </table>
 
-      <PriceInfo supplyAmount={supplyAmount} />
+      <PriceInfo
+        supplyAmount={supplyAmount}
+        taxAmount={taxAmount}
+        textColor="text-primary"
+      />
     </div>
   );
 };

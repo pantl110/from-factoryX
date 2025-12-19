@@ -13,6 +13,7 @@ interface QuotationDocumentViewProps {
   productListInfoTitle: string;
   productItems: QuotationProductDetailResponseModel[];
   supplyAmount: number;
+  taxAmount: number;
 }
 
 const QuotationDocumentView = ({
@@ -22,6 +23,7 @@ const QuotationDocumentView = ({
   productListInfoTitle,
   productItems,
   supplyAmount,
+  taxAmount,
 }: QuotationDocumentViewProps) => {
   return (
     <div className="flex flex-col gap-6">
@@ -31,6 +33,7 @@ const QuotationDocumentView = ({
         productListInfoTitle={productListInfoTitle}
         productItems={productItems}
         supplyAmount={supplyAmount}
+        taxAmount={taxAmount}
       />
     </div>
   );

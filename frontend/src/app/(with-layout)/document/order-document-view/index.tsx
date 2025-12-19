@@ -13,6 +13,7 @@ interface OrderDocumentViewProps {
   productListInfoTitle: string;
   productItems: QuotationProductDetailResponseModel[];
   supplyAmount: number;
+  taxAmount: number;
 }
 
 const OrderDocumentView = ({
@@ -22,6 +23,7 @@ const OrderDocumentView = ({
   productListInfoTitle,
   productItems,
   supplyAmount,
+  taxAmount,
 }: OrderDocumentViewProps) => {
   return (
     <div className="flex flex-col gap-6">
@@ -31,6 +33,7 @@ const OrderDocumentView = ({
         productListInfoTitle={productListInfoTitle}
         productItems={productItems}
         supplyAmount={supplyAmount}
+        taxAmount={taxAmount}
       />
     </div>
   );

@@ -14,13 +14,13 @@ const MainTitleSec = ({
 }: MainTitleSecProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const tabs: string[] = ['매출', '매입', '현금영수증'];
+  const tabs: string[] = ['매출 세금계산서', '매입 세금계산서', '현금영수증'];
 
   const handleTabClick = (tab: string) => {
-    if (tab === '매출') {
+    if (tab === '매출 세금계산서') {
       setSelectedTaxType('sales');
       router.push('/tax/list?tab=sales');
-    } else if (tab === '매입') {
+    } else if (tab === '매입 세금계산서') {
       setSelectedTaxType('purchase');
       router.push('/tax/list?tab=purchase');
     } else if (tab === '현금영수증') {
@@ -41,11 +41,13 @@ const MainTitleSec = ({
       <div className="flex gap-4 items-center Heading-3">
         {tabs.map((tab) => {
           const isActive =
-            (tab === '매출' && currentTab === 'sales') ||
-            (tab === '매입' && currentTab === 'purchase') ||
+            (tab === '매출 세금계산서' && currentTab === 'sales') ||
+            (tab === '매입 세금계산서' && currentTab === 'purchase') ||
             (tab === '현금영수증' && isReceiptTab) ||
             // 쿼리 파라미터가 없을 때 기본값으로 매출 탭 활성화
-            (tab === '매출' && !currentTab && selectedTaxType === 'sales');
+            (tab === '매출 세금계산서' &&
+              !currentTab &&
+              selectedTaxType === 'sales');
           return (
             <button
               key={tab}

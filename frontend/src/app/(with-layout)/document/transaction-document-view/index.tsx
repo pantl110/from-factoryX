@@ -13,6 +13,14 @@ const TransactionDocumentView = ({
   quotationData,
   lastDeliveryDate,
 }: TransactionDocumentViewProps) => {
+  const totalAmount = quotationData.products_info.reduce(
+    (sum, item) => sum + (item.unit_price * item.quantity || 0),
+    0
+  );
+  // 국세청 공식: 공급가액 = 합계금액 ÷ 1.1, 세액 = 합계금액 - 공급가액
+  const supplyAmount = Math.floor(totalAmount / 1.1);
+  const taxAmount = totalAmount - supplyAmount;
+
   return (
     <div className="flex flex-col gap-6">
       <DocumentViewTitle
@@ -48,10 +56,8 @@ const TransactionDocumentView = ({
           quantity: item.quantity,
           unit_price: item.unit_price,
         }))}
-        supplyAmount={quotationData.products_info.reduce(
-          (sum, item) => sum + (item.unit_price * item.quantity || 0),
-          0
-        )}
+        supplyAmount={supplyAmount}
+        taxAmount={taxAmount}
       />
     </div>
   );

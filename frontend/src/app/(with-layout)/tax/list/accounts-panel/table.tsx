@@ -101,7 +101,7 @@ const Table = ({ isPurchase, taxId }: TableProps) => {
 
           {/* 표 내용 */}
           {paymentDetails.map((item) => (
-            <TableItem key={item.id} item={item} isPurchase={isPurchase} />
+            <TableItem key={item.id} item={item} />
           ))}
 
           {/* 무한스크롤 트리거 및 로딩 표시 */}

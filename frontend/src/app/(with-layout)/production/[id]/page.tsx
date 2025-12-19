@@ -388,13 +388,29 @@ const ProductionPageContent = () => {
                   unit_price: p.unit_price,
                 })
               )}
-              supplyAmount={
-                projectStatus?.quotations[0].products_info.reduce(
-                  (sum: number, item: ProjectQuotationProductsInfoModel) =>
-                    sum + (item.unit_price * item.quantity || 0),
-                  0
-                ) || 0
-              }
+              supplyAmount={(() => {
+                // 국세청 공식: 합계금액에서 공급가액 계산
+                const totalAmount =
+                  projectStatus?.quotations[0].products_info.reduce(
+                    (sum: number, item: ProjectQuotationProductsInfoModel) =>
+                      sum + (item.unit_price * item.quantity || 0),
+                    0
+                  ) || 0;
+                // 국세청 공식: 공급가액 = 합계금액 ÷ 1.1
+                return Math.floor(totalAmount / 1.1);
+              })()}
+              taxAmount={(() => {
+                // 국세청 공식: 합계금액에서 공급가액과 세액 계산
+                const totalAmount =
+                  projectStatus?.quotations[0].products_info.reduce(
+                    (sum: number, item: ProjectQuotationProductsInfoModel) =>
+                      sum + (item.unit_price * item.quantity || 0),
+                    0
+                  ) || 0;
+                // 국세청 공식: 공급가액 = 합계금액 ÷ 1.1, 세액 = 합계금액 - 공급가액
+                const calculatedSupplyAmount = Math.floor(totalAmount / 1.1);
+                return totalAmount - calculatedSupplyAmount;
+              })()}
             />
           </div>
         )}
@@ -405,17 +421,6 @@ const ProductionPageContent = () => {
       {isAddReturnModalOpen && (
         <AddReturnModal
           onClose={() => setAddReturnModalOpen(false)}
-          // quotationProductData={projectStatus.quotations[0].products.map(
-          //   (p) => ({
-          //     productId: p.product.id,
-          //     product_code: p.product.code,
-          //     product_name: p.product.name,
-          //     spec: p.product.spec,
-          //     unit: p.product.unit,
-          //     quantity: p.quantity,
-          //     unit_price: p.unit_price,
-          //   })
-          // )}
           onProjectStatusChange={handleChangeStatus}
           onTabChange={(tab) => {
             // 탭 인덱스 찾기

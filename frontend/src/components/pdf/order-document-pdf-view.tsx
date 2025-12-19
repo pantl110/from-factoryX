@@ -11,6 +11,7 @@ interface OrderDocumentPDFViewProps {
   productListInfoTitle: string;
   productItems: QuotationProductDetailResponseModel[];
   supplyAmount: number;
+  taxAmount: number;
 }
 
 const OrderDocumentPDFView = ({
@@ -20,6 +21,7 @@ const OrderDocumentPDFView = ({
   productListInfoTitle,
   productItems,
   supplyAmount,
+  taxAmount,
 }: OrderDocumentPDFViewProps) => {
   return (
     <div className="pdf-container">
@@ -216,9 +218,7 @@ const OrderDocumentPDFView = ({
             <div className="pdf-summary-label">세액(VAT 10%)</div>
             <div className="pdf-summary-value-wrapper">
               <div className="pdf-summary-value">
-                {(
-                  supplyAmount && Math.floor(supplyAmount / 10)
-                )?.toLocaleString() || 0}
+                {taxAmount?.toLocaleString() || 0}
               </div>
               <div className="pdf-summary-unit">원</div>
             </div>
@@ -228,9 +228,7 @@ const OrderDocumentPDFView = ({
             <div className="pdf-summary-label">합계금액</div>
             <div className="pdf-summary-value-wrapper">
               <div className="pdf-summary-value">
-                {(
-                  supplyAmount && Math.floor(supplyAmount / 10) + supplyAmount
-                )?.toLocaleString() || 0}
+                {(supplyAmount + taxAmount)?.toLocaleString() || 0}
               </div>
               <div className="pdf-summary-unit">원</div>
             </div>

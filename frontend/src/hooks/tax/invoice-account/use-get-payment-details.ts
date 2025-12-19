@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { PaymentDetailListResponseModel } from '@/types/data-model';
 
-interface GetPaymentDetailsParams {
+interface GetPaymentDetailsParamsModel {
   page?: number;
   page_size?: number;
 }
@@ -12,7 +12,7 @@ interface GetPaymentDetailsParams {
 interface UseGetPaymentDetailsReturnModel {
   getPaymentDetails: (
     taxId: number,
-    params?: GetPaymentDetailsParams
+    params?: GetPaymentDetailsParamsModel
   ) => Promise<{
     success: boolean;
     data?: PaymentDetailListResponseModel;
@@ -28,7 +28,7 @@ const useGetPaymentDetails = (): UseGetPaymentDetailsReturnModel => {
   const queryClient = useQueryClient();
 
   const getPaymentDetails = useCallback(
-    async (taxId: number, params?: GetPaymentDetailsParams) => {
+    async (taxId: number, params?: GetPaymentDetailsParamsModel) => {
       setIsLoading(true);
       setError(null);
 

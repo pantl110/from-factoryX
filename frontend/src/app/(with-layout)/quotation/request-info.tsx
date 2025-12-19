@@ -314,7 +314,19 @@ const RequestInfo = ({
             </table>
           </div>
           <div className="mb-22 w-full flex justify-between items-center">
-            <PriceInfo supplyAmount={supplyAmount} />
+            <PriceInfo
+              supplyAmount={(() => {
+                // 국세청 공식: 합계금액에서 공급가액 계산
+                // supplyAmount는 합계금액(세금 포함)으로 간주
+                return Math.floor(supplyAmount / 1.1);
+              })()}
+              taxAmount={(() => {
+                // 국세청 공식: 합계금액에서 공급가액과 세액 계산
+                const calculatedSupplyAmount = Math.floor(supplyAmount / 1.1);
+                return supplyAmount - calculatedSupplyAmount;
+              })()}
+              textColor="text-primary"
+            />
           </div>
         </>
       ) : (

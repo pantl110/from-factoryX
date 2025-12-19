@@ -72,7 +72,6 @@ const TaxDocumentView = ({
       <TaxBuyerProviderInfo
         taxType={item.tax_invoice_type}
         clientInfo={item.client_info}
-        transactionType={item.transaction_type}
       />
       {item.tax_invoice_type === 'sales' && (
         <OrderItemInfo
