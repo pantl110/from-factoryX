@@ -45,7 +45,7 @@ const useGetPaymentDetails = (): UseGetPaymentDetailsReturnModel => {
               const queryParams = new URLSearchParams({
                 page: page.toString(),
                 page_size: pageSize.toString(),
-                type: type,
+                type,
               });
 
               const response = await fetch(

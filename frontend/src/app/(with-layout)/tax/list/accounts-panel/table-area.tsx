@@ -7,6 +7,7 @@ interface TableAreaProps {
   taxId: number;
   account: TaxInvoiceAccountModel | null;
   onOpenCreateAccountPaymentModal: () => void;
+  onOpenSendEmailModal: () => void;
   type?: 'tax' | 'cash-receipt';
 }
 
@@ -15,6 +16,7 @@ const TableArea = ({
   taxId,
   account,
   onOpenCreateAccountPaymentModal,
+  onOpenSendEmailModal,
   type = 'tax',
 }: TableAreaProps) => {
   const title = isPurchase ? '지급 상세 내역' : '회수 상세 내역';
@@ -36,6 +38,7 @@ const TableArea = ({
             <MiniBtn
               text="메일 보내기"
               variant="whiteOutline"
+              onClick={onOpenSendEmailModal}
               disabled={isCompleted}
             />
           )}

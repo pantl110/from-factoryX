@@ -35,7 +35,7 @@ const Table = ({ isPurchase, taxId, type = 'tax' }: TableProps) => {
       const result = await getPaymentDetails(taxId, {
         page: pageNumber,
         page_size: 10,
-        type: type,
+        type,
       });
 
       if (!result.success || !result.data) {

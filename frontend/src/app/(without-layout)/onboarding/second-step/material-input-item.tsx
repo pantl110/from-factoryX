@@ -63,7 +63,9 @@ const MaterialInputItem = ({
   }, [currentQuantity]);
 
   // 입력값 변경 핸들러
-  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleQuantityChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const { value } = e.target;
     const numericValue = removeComma(value);
 

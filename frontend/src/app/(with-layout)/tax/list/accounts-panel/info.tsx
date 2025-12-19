@@ -142,11 +142,13 @@ const Info = React.forwardRef<InfoHandleModel, InfoProps>(
                 onClick={handleOpenCashReceiptDetail}
               />
             )}
-            <MiniBtn
-              text={projectId ? '프로젝트 바로가기' : '프로젝트 연결하기'}
-              variant="whiteOutline"
-              onClick={handleProjectClick}
-            />
+            {!isPurchase && (
+              <MiniBtn
+                text={projectId ? '프로젝트 바로가기' : '프로젝트 연결하기'}
+                variant="whiteOutline"
+                onClick={handleProjectClick}
+              />
+            )}
           </div>
         </div>
 

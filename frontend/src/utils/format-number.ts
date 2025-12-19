@@ -158,7 +158,7 @@ export const formatFaxNumber = (value: string): string => {
 
 // 숫자와 소수점만 허용하는 키 이벤트 핸들러 (한글 입력 차단)
 export const handleNumberKeyDown = (
-  e: React.KeyboardEvent<HTMLInputElement>
+  e: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>
 ) => {
   const allowedKeys = [
     '0',

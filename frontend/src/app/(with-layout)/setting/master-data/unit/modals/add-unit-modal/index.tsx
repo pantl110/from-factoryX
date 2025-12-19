@@ -82,7 +82,8 @@ export const AddUnitModal = ({
 
   // 숫자 입력 핸들러 (콤마 포맷팅)
   const handleNumberChange =
-    (fieldName: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    (fieldName: string) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const result = handleQuantityInput(e.target.value);
       setValue(fieldName, result.displayValue);
     };

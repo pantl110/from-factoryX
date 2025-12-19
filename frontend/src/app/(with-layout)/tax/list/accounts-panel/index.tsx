@@ -7,11 +7,13 @@ import {
   useGetTaxInvoiceAccount,
   useToast,
   useUpdateTaxInvoiceAccount,
+  useSendEmailForAccount,
 } from '@/hooks';
 import { TaxInvoiceAccountModel } from '@/types/data-model';
 import Info, { InfoHandleModel } from './info';
 import LinkProjectModal from './modals/link-project-modal';
 import CreateAccountPaymentModal from './modals/create-account-payment-modal';
+import SendEmail from './modals/send-email-modal';
 import { DepositorInfoDisplay } from './depositor-info-display';
 import { AccountInfoDisplay } from './account-info-display';
 import ClientDetailPanel from '@/app/(with-layout)/setting/master-data/client/modals/client-detail-panel';
@@ -36,6 +38,7 @@ const AccountsPanel = ({
   const [isClientDetailPanelOpen, setIsClientDetailPanelOpen] = useState(false);
   const [isCreateAccountPaymentModalOpen, setIsCreateAccountPaymentModalOpen] =
     useState(false);
+  const [isSendEmailModalOpen, setIsSendEmailModalOpen] = useState(false);
 
   // 데이터 상태
   const [account, setAccount] = useState<TaxInvoiceAccountModel | null>(null);
@@ -50,6 +53,8 @@ const AccountsPanel = ({
   const { getTaxInvoiceAccount, isLoading } = useGetTaxInvoiceAccount();
   const { updateTaxInvoiceAccount, isLoading: isSaving } =
     useUpdateTaxInvoiceAccount();
+  const { sendEmailForAccount, isLoading: isSendingEmail } =
+    useSendEmailForAccount();
   const infoRef = useRef<InfoHandleModel | null>(null);
 
   useEffect(() => {
@@ -124,6 +129,36 @@ const AccountsPanel = ({
   };
   const handleCloseCreateAccountPaymentModal = () => {
     setIsCreateAccountPaymentModalOpen(false);
+  };
+
+  // 이메일 보내기 모달 관련 핸들러
+  const handleOpenSendEmailModal = () => {
+    setIsSendEmailModalOpen(true);
+  };
+  const handleCloseSendEmailModal = () => {
+    setIsSendEmailModalOpen(false);
+  };
+  const handleSendEmail = async (data: {
+    recipient: string;
+    subject: string;
+    content: string;
+  }) => {
+    if (!itemId) return;
+
+    const result = await sendEmailForAccount(itemId, data);
+
+    if (result.success && result.data) {
+      // 이메일 발송 성공 후 account 정보 다시 불러오기
+      const accountResult = await getTaxInvoiceAccount(itemId, type);
+      if (accountResult.success && accountResult.data) {
+        setAccount(accountResult.data);
+      }
+      handleCloseSendEmailModal();
+    } else if (result.error) {
+      setErrorText('이메일 발송에 실패했습니다.');
+      setErrorSubtext(result.error || '알 수 없는 오류가 발생했습니다.');
+      showToast();
+    }
   };
 
   const taxItem = account?.tax_invoice;
@@ -236,6 +271,7 @@ const AccountsPanel = ({
               onOpenCreateAccountPaymentModal={
                 handleOpenCreateAccountPaymentModal
               }
+              onOpenSendEmailModal={handleOpenSendEmailModal}
               type={type}
             />
           </div>
@@ -315,6 +351,16 @@ const AccountsPanel = ({
           }}
         />
       )}
+      {/* 이메일 보내기 모달 */}
+      {isSendEmailModalOpen && (
+        <SendEmail
+          onClose={handleCloseSendEmailModal}
+          account={account}
+          onSendEmail={handleSendEmail}
+          isLoading={isSendingEmail}
+        />
+      )}
+
       {/* 토스트 */}
       {isToastOpen && (
         <Toast
