@@ -116,17 +116,11 @@ const LinkProjectModal = ({
             setSelectedId={setSelectedId}
           />
           <div className="flex gap-2.5 pt-2 justify-end">
-            <MiniBtn
-              text="취소"
-              hoverColor="hover:bg-bg"
-              textColor="text-sv"
-              onClick={onClose}
-            />
+            <MiniBtn text="취소" variant="white" onClick={onClose} />
             <MiniBtn
               text="프로젝트 연결하기"
               hoverColor="hover:bg-primary-hover"
-              bgColor="bg-primary"
-              textColor="text-wh"
+              variant="primary"
               disabled={!selectedId || isLinking}
               onClick={handleLinkButtonClick}
             />

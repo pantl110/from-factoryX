@@ -2,12 +2,22 @@
 
 import { useState, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { PaymentDetailResponseModel } from '@/types/data-model';
+import {
+  PaymentDetailListResponseModel,
+} from '@/types/data-model';
+
+interface GetPaymentDetailsParams {
+  page?: number;
+  page_size?: number;
+}
 
 interface UseGetPaymentDetailsReturnModel {
-  getPaymentDetails: (taxId: number) => Promise<{
+  getPaymentDetails: (
+    taxId: number,
+    params?: GetPaymentDetailsParams
+  ) => Promise<{
     success: boolean;
-    data?: PaymentDetailResponseModel[];
+    data?: PaymentDetailListResponseModel;
     error?: string;
   }>;
   isLoading: boolean;
@@ -20,16 +30,24 @@ const useGetPaymentDetails = (): UseGetPaymentDetailsReturnModel => {
   const queryClient = useQueryClient();
 
   const getPaymentDetails = useCallback(
-    async (taxId: number) => {
+    async (taxId: number, params?: GetPaymentDetailsParams) => {
       setIsLoading(true);
       setError(null);
 
+      const page = params?.page ?? 1;
+      const pageSize = params?.page_size ?? 10;
+
       try {
-        const data = await queryClient.fetchQuery<PaymentDetailResponseModel[]>({
-          queryKey: ['payment-details', taxId],
+        const data = await queryClient.fetchQuery<PaymentDetailListResponseModel>({
+          queryKey: ['payment-details', taxId, page, pageSize],
           queryFn: async () => {
+            const queryParams = new URLSearchParams({
+              page: page.toString(),
+              page_size: pageSize.toString(),
+            });
+
             const response = await fetch(
-              `${process.env.NEXT_PUBLIC_API_URL}/v2/account-payment/${taxId}`,
+              `${process.env.NEXT_PUBLIC_API_URL}/v2/account-payment/${taxId}?${queryParams.toString()}`,
               {
                 method: 'GET',
                 headers: {
@@ -58,7 +76,7 @@ const useGetPaymentDetails = (): UseGetPaymentDetailsReturnModel => {
               throw new Error(errorMessage);
             }
 
-            const data: PaymentDetailResponseModel[] = await response.json();
+            const data: PaymentDetailListResponseModel = await response.json();
             return data;
           },
         });

@@ -15,37 +15,33 @@ const useGetProjectPlans = () => {
   const queryClient = useQueryClient();
   const factoryId = useMemberStore((state) => state.factoryId);
 
-  const fetchProjectPlans = async (
-    projectId: number
-  ): Promise<ProjectPlanModel[]> => {
-    if (!factoryId) {
-      throw new Error('공장 정보가 없습니다.');
-    }
-
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/v1/project-plan?project_id=${projectId}&factory_id=${factoryId}`,
-      {
-        method: 'GET',
-        credentials: 'include',
-      }
-    );
-
-    if (response.ok) {
-      const result: ProjectPlanModel[] = await response.json();
-      return result;
-    } else {
-      const errorData = await response.json();
-      const errorMessage =
-        errorData.detail || '프로젝트 계획 조회에 실패했습니다.';
-      throw new Error(errorMessage);
-    }
-  };
-
   const getProjectPlans = async (projectId: number) => {
     try {
       const data = await queryClient.fetchQuery({
         queryKey: PROJECT_PLANS_QUERY_KEY(projectId, factoryId),
-        queryFn: () => fetchProjectPlans(projectId),
+        queryFn: async () => {
+          if (!factoryId) {
+            throw new Error('공장 정보가 없습니다.');
+          }
+
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/v1/project-plan?project_id=${projectId}&factory_id=${factoryId}`,
+            {
+              method: 'GET',
+              credentials: 'include',
+            }
+          );
+
+          if (response.ok) {
+            const result: ProjectPlanModel[] = await response.json();
+            return result;
+          } else {
+            const errorData = await response.json();
+            const errorMessage =
+              errorData.detail || '프로젝트 계획 조회에 실패했습니다.';
+            throw new Error(errorMessage);
+          }
+        },
         staleTime: 0,
       });
       return { success: true, data };
@@ -83,26 +79,27 @@ export const useProjectPlansQuery = (projectId: number | null) => {
 
   return useQuery<ProjectPlanModel[], Error>({
     queryKey: PROJECT_PLANS_QUERY_KEY(projectId, factoryId),
-    queryFn: () => {
+    queryFn: async () => {
       if (!projectId || !factoryId) {
         throw new Error('프로젝트 ID 또는 공장 ID가 없습니다.');
       }
-      return fetch(
+
+      const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/v1/project-plan?project_id=${projectId}&factory_id=${factoryId}`,
         {
           method: 'GET',
           credentials: 'include',
         }
-      ).then(async (response) => {
-        if (response.ok) {
-          return response.json();
-        } else {
-          const errorData = await response.json();
-          const errorMessage =
-            errorData.detail || '프로젝트 계획 조회에 실패했습니다.';
-          throw new Error(errorMessage);
-        }
-      });
+      );
+
+      if (response.ok) {
+        return response.json();
+      } else {
+        const errorData = await response.json();
+        const errorMessage =
+          errorData.detail || '프로젝트 계획 조회에 실패했습니다.';
+        throw new Error(errorMessage);
+      }
     },
     enabled: !!projectId && !!factoryId,
     staleTime: 0,

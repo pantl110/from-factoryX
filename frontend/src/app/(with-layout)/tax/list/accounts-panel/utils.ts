@@ -65,3 +65,34 @@ export const getAgreedPaymentDateByCollectionTerm = (
 
   return null;
 };
+
+/**
+ * 입금일과 입금예정일을 비교하여 연체일수 계산
+ * @param paymentDate 입금일 (YYYY-MM-DD 형식)
+ * @param expectedPaymentDate 입금예정일 (YYYY-MM-DD 형식 또는 null)
+ * @returns 연체일수 (입금예정일이 없거나 입금일이 입금예정일보다 빠르면 0, 그 외에는 일수 차이)
+ */
+export const calculateOverdueDays = (
+  paymentDate: string,
+  expectedPaymentDate: string | null
+): number => {
+  if (!expectedPaymentDate) return 0;
+
+  const payment = new Date(paymentDate);
+  const expected = new Date(expectedPaymentDate);
+
+  // 유효하지 않은 날짜인 경우 0 반환
+  if (isNaN(payment.getTime()) || isNaN(expected.getTime())) return 0;
+
+  // 입금일이 입금예정일보다 빠르거나 같으면 연체 없음
+  if (payment <= expected) return 0;
+
+  // 입금일 - 입금예정일 = 연체일수
+  const diffTime = payment.getTime() - expected.getTime();
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  // NaN이거나 유효하지 않은 숫자인 경우 0 반환
+  if (isNaN(diffDays) || !isFinite(diffDays)) return 0;
+
+  return diffDays;
+};

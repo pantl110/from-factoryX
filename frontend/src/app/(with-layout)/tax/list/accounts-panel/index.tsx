@@ -11,6 +11,7 @@ import {
 import { TaxInvoiceAccountModel } from '@/types/data-model';
 import Info, { InfoHandleModel } from './info';
 import LinkProjectModal from './modals/link-project-modal';
+import CreateAccountPaymentModal from './modals/create-account-payment-modal';
 import { DepositorInfoDisplay } from './depositor-info-display';
 import { AccountInfoDisplay } from './account-info-display';
 import ClientDetailPanel from '@/app/(with-layout)/setting/master-data/client/modals/client-detail-panel';
@@ -26,6 +27,8 @@ const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
   const [isTaxDetailOpen, setIsTaxDetailOpen] = useState(false);
   const [isLinkProjectModalOpen, setIsLinkProjectModalOpen] = useState(false);
   const [isClientDetailPanelOpen, setIsClientDetailPanelOpen] = useState(false);
+  const [isCreateAccountPaymentModalOpen, setIsCreateAccountPaymentModalOpen] =
+    useState(false);
 
   // 데이터 상태
   const [account, setAccount] = useState<TaxInvoiceAccountModel | null>(null);
@@ -95,6 +98,14 @@ const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
         setAccount(result.data);
       }
     }
+  };
+
+  // 지급 정보 입력 모달 관련 핸들러
+  const handleOpenCreateAccountPaymentModal = () => {
+    setIsCreateAccountPaymentModalOpen(true);
+  };
+  const handleCloseCreateAccountPaymentModal = () => {
+    setIsCreateAccountPaymentModalOpen(false);
   };
 
   const taxItem = account?.tax_invoice;
@@ -188,7 +199,14 @@ const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
             )}
 
             {/* 회수/지급 상세 내역 */}
-            <TableArea isPurchase={isPurchase} />
+            <TableArea
+              isPurchase={isPurchase}
+              taxId={itemId}
+              account={account}
+              onOpenCreateAccountPaymentModal={
+                handleOpenCreateAccountPaymentModal
+              }
+            />
           </div>
         )}
       </Panel>
@@ -225,6 +243,23 @@ const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
           taxId={itemId}
           onClose={handleCloseLinkProjectModal}
           onSuccess={handleLinkProjectSuccess}
+        />
+      )}
+
+      {/* 지급 정보 입력 모달 */}
+      {isCreateAccountPaymentModalOpen && (
+        <CreateAccountPaymentModal
+          onClose={handleCloseCreateAccountPaymentModal}
+          account={account}
+          onSuccess={async () => {
+            // 지급 정보 저장 후 account 정보 다시 불러오기
+            if (itemId) {
+              const result = await getTaxInvoiceAccount(itemId);
+              if (result.success && result.data) {
+                setAccount(result.data);
+              }
+            }
+          }}
         />
       )}
       {/* 토스트 */}

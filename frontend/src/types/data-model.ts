@@ -1631,6 +1631,10 @@ export interface PaymentDetailResponseModel {
   updated_at?: string;
 }
 
+export interface PaymentDetailListResponseModel extends PaginationModel {
+  data: PaymentDetailResponseModel[];
+}
+
 //////////////////////
 // Work Instruction API
 export interface WorkInstructionsPlanModel {
