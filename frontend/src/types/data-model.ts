@@ -1524,6 +1524,7 @@ export interface CashReceiptResponseModel {
   transaction_date: string;
   client_name: string;
   product_names: string[];
+  item_name: string;
   transaction_amount: number;
   tax_amount: number;
   total_amount: number;

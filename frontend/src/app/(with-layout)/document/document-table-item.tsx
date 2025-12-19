@@ -148,10 +148,20 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
             <p
               className="px-3 flex-[1.5] truncate"
               title={getProductNamesDisplay(
-                cashReceiptData.product_names || []
+                cashReceiptData.item_name
+                  ? cashReceiptData.item_name
+                      .split(',')
+                      .map((s: string) => s.trim())
+                  : []
               )}
             >
-              {getProductNamesDisplay(cashReceiptData.product_names || [])}
+              {getProductNamesDisplay(
+                cashReceiptData.item_name
+                  ? cashReceiptData.item_name
+                      .split(',')
+                      .map((s: string) => s.trim())
+                  : []
+              )}
             </p>
             <p
               className="px-3 flex-[1.5] truncate"

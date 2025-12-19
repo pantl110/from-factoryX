@@ -37,9 +37,9 @@ export const DocumentTypeColorMap: Record<
     color: 'red',
   },
   현금영수증: {
-    bgColor: 'bg-orange-8',
-    textColor: 'text-orange',
-    color: 'orange',
+    bgColor: 'bg-red-8',
+    textColor: 'text-red',
+    color: 'red',
   },
 };
 

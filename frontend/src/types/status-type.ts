@@ -347,7 +347,4 @@ export const AccountsStatusColorMap: Record<
 };
 
 // 세금계산서 채권/채무 수금 조건
-export type CollectionTermsType =
-  | 'INVOICE_30'
-  | 'INVOICE_EOM_NEXT'
-  | 'CUSTOM';
+export type CollectionTermsType = 'INVOICE_30' | 'INVOICE_EOM_NEXT' | 'CUSTOM';
