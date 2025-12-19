@@ -60,13 +60,6 @@ const TaxBuyerProviderInfo = ({
           />
         </div>
         <InfoLabelValue label="사업장 주소" value={clientInfo.address || '-'} />
-        <div className="flex">
-          <InfoLabelValue label="문서 상태" chip={{ status: taxType }} />
-          <InfoLabelValue
-            label="구분"
-            value={transactionType === 'receipt' ? '영수' : '청구'}
-          />
-        </div>
       </div>
     </div>
   );

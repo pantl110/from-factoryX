@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
+import { useInfiniteQuery } from '@tanstack/react-query';
 import TableItem from './table-item';
-import { useGetPaymentDetails } from '@/hooks';
+import { useGetPaymentDetails, useInfiniteScroll } from '@/hooks';
 import { PaymentDetailResponseModel } from '@/types/data-model';
 import { NoHistoryBox } from '@/ui';
 
@@ -12,47 +13,78 @@ interface TableProps {
 }
 
 const Table = ({ isPurchase, taxId }: TableProps) => {
-  const { getPaymentDetails, isLoading } = useGetPaymentDetails();
-  const [paymentDetails, setPaymentDetails] = useState<
-    PaymentDetailResponseModel[]
-  >([]);
+  const { getPaymentDetails } = useGetPaymentDetails();
 
-  useEffect(() => {
-    const fetchPaymentDetails = async () => {
-      if (!taxId) return;
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage = false,
+    isLoading,
+    isFetchingNextPage,
+  } = useInfiniteQuery<{
+    items: PaymentDetailResponseModel[];
+    nextPage: number | null;
+  }>({
+    queryKey: ['payment-details', taxId],
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => lastPage.nextPage,
+    queryFn: async ({ pageParam = 1 }) => {
+      const pageNumber =
+        typeof pageParam === 'number' ? pageParam : Number(pageParam) || 1;
       const result = await getPaymentDetails(taxId, {
-        page: 1,
+        page: pageNumber,
         page_size: 10,
       });
-      if (result.success && result.data) {
-        // 페이지네이션 응답에서 data 배열 추출
-        setPaymentDetails(result.data.data || []);
-      } else {
-        // Reset to empty array on error
-        setPaymentDetails([]);
-      }
-    };
 
-    fetchPaymentDetails();
-  }, [taxId, getPaymentDetails]);
+      if (!result.success || !result.data) {
+        return { items: [], nextPage: null };
+      }
+
+      const items = result.data.data || [];
+      const currentPage = result.data.curPage ?? pageNumber;
+      const totalPages = result.data.pageCnt || 1;
+      const nextPage = currentPage < totalPages ? currentPage + 1 : null;
+
+      return {
+        items,
+        nextPage,
+      };
+    },
+    enabled: !!taxId,
+  });
+
+  const paymentDetails = useMemo(
+    () => data?.pages.flatMap((page) => page.items) ?? [],
+    [data]
+  );
+
+  // 무한스크롤 hook
+  const loadMoreRef = useInfiniteScroll<HTMLDivElement>({
+    enabled: true,
+    hasMore: hasNextPage,
+    isLoading: isLoading && paymentDetails.length === 0,
+    isFetchingMore: isFetchingNextPage,
+    onLoadMore: () => {
+      if (hasNextPage) {
+        fetchNextPage();
+      }
+    },
+  });
 
   const remainHeader = isPurchase ? '미지급금(잔액)' : '미수금액(잔액)';
   const paidHeader = isPurchase ? '지급 금액' : '받은 금액';
   const expectedDateHeader = isPurchase ? '지급예정일' : '입금예정일';
   const dateHeader = isPurchase ? '지급일' : '입금일';
 
-  if (isLoading) {
+  const isInitialLoading = isLoading && paymentDetails.length === 0;
+
+  if (isInitialLoading) {
     return null;
   }
 
-  // Ensure paymentDetails is always an array
-  const safePaymentDetails = Array.isArray(paymentDetails)
-    ? paymentDetails
-    : [];
-
   return (
-    <div>
-      {safePaymentDetails.length === 0 ? (
+    <div className="max-h-[600px] overflow-y-auto">
+      {paymentDetails.length === 0 ? (
         <NoHistoryBox
           text={isPurchase ? '지급 내역이 없습니다.' : '입금 내역이 없습니다.'}
         />
@@ -68,12 +100,19 @@ const Table = ({ isPurchase, taxId }: TableProps) => {
           </div>
 
           {/* 표 내용 */}
-          {safePaymentDetails.map((item) => (
+          {paymentDetails.map((item) => (
             <TableItem key={item.id} item={item} isPurchase={isPurchase} />
           ))}
 
-          {/* 페이지네이션 */}
-          {/* <Pagination ... /> */}
+          {/* 무한스크롤 트리거 및 로딩 표시 */}
+          {hasNextPage && (
+            <div
+              ref={loadMoreRef}
+              className="h-14 flex items-center justify-center"
+            >
+              {isFetchingNextPage && <div className="text-dg">로딩 중...</div>}
+            </div>
+          )}
         </>
       )}
     </div>

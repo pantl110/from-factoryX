@@ -110,7 +110,6 @@ const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
 
   const taxItem = account?.tax_invoice;
   const isPurchase = taxItem?.tax_invoice_type === 'purchase';
-  const panelTitle = isPurchase ? '매입채무 관리' : '매출채권 관리';
 
   const handleSave = async () => {
     if (!account || !taxItem) return;
@@ -151,7 +150,7 @@ const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
   return (
     <>
       <Panel
-        title={panelTitle}
+        title="채권 · 채무 관리"
         onClose={onClose}
         headerButton={
           isFormDirty ? (

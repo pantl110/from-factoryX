@@ -1615,7 +1615,6 @@ export interface TaxInvoiceAccountModel {
 export interface PaymentDetailCreateModel {
   payment_date: string; // Date string (YYYY-MM-DD)
   amount_received: number;
-  outstanding_amount_at_payment: number;
   expected_payment_date: string | null; // Date string (YYYY-MM-DD) or null
 }
 

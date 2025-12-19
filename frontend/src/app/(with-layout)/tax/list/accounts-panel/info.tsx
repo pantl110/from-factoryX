@@ -205,7 +205,7 @@ const Info = React.forwardRef<InfoHandleModel, InfoProps>(
                   control={control}
                   render={() => (
                     <InfoLabelValue
-                      label={isPurchase ? '지급 조건' : '수금 조건'}
+                      label="결제 조건"
                       value={
                         <div
                           className="flex items-center justify-between w-full cursor-pointer"

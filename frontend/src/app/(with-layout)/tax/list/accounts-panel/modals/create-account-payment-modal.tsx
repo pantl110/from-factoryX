@@ -154,6 +154,12 @@ const CreateAccountPaymentModal = ({
 
     // 지급금액이 미수금액보다 큰지 검증
     if (outstandingBalance < 0) {
+      setError('receivedAmount', {
+        type: 'manual',
+        message: `${
+          isPurchase ? '지급 금액' : '받은 금액'
+        }은 ${account.outstanding_balance.toLocaleString()}원 이하여야 합니다.`,
+      });
       setErrorText(
         isPurchase
           ? '지급 금액이 미지급액보다 큽니다.'
@@ -174,7 +180,6 @@ const CreateAccountPaymentModal = ({
     const result = await createPaymentDetail(taxId, {
       payment_date: data.paymentDate,
       amount_received: amountReceived,
-      outstanding_amount_at_payment: outstandingBalance,
       expected_payment_date:
         data.expectedPaymentDate && data.expectedPaymentDate.trim() !== ''
           ? data.expectedPaymentDate
