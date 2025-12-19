@@ -139,4 +139,4 @@ class PaymentDetailCreateIn(Schema):
     payment_date: date = Field(..., description="입금일/지급일")
     expected_payment_date: Optional[date] = Field(None, description="입금예정일")
     amount_received: int = Field(..., description="받은 금액/지급 금액")
-    outstanding_amount_at_payment: int = Field(..., description="미수금액/미지급금액")
+    # outstanding_amount_at_payment는 백엔드에서 자동 계산됨

@@ -5,6 +5,7 @@ from asgiref.sync import sync_to_async
 from typing import List
 from datetime import date
 from django.db.models import F
+from django.db import transaction
 from api.security import jwt_auth
 from api.pagination import CustomPageNumberPagination
 from tax.models import TaxInvoiceAccount, PaymentDetail, AccountStatus
@@ -35,40 +36,45 @@ async def create_payment_detail(request, tax_id: int, payload: PaymentDetailCrea
                 f"지급금액({payload.amount_received:,}원)이 미수금액({account.outstanding_balance:,}원)보다 큽니다."
             )
         
-        # PaymentDetail 생성
-        payment = PaymentDetail.objects.create(
-            tax_invoice_account=account,
-            payment_date=payload.payment_date,
-            amount_received=payload.amount_received,
-            outstanding_amount_at_payment=payload.outstanding_amount_at_payment,
-            expected_payment_date=payload.expected_payment_date,
-        )
-        
-        # outstanding_balance에서 지급금액만큼 차감
-        account.outstanding_balance -= payload.amount_received
-        
-        # 상태 업데이트 로직
-        today = date.today()
-        
-        # 1. agreed_payment_date가 오늘보다 과거이고 outstanding_balance > 0이면 무조건 overdue
-        if (
-            account.agreed_payment_date 
-            and account.agreed_payment_date < today 
-            and account.outstanding_balance > 0
-        ):
-            account.status = AccountStatus.overdue
-        # 2. outstanding_balance가 0이면 completed
-        elif account.outstanding_balance == 0:
-            account.status = AccountStatus.completed
-        # 3. outstanding_balance > 0이고 total_billed_amount보다 작으면 partial
-        elif (
-            account.outstanding_balance > 0 
-            and account.outstanding_balance < account.total_billed_amount
-        ):
-            account.status = AccountStatus.partial
-        
-        account.save()
-        return payment
+        # 트랜잭션으로 묶어서 PaymentDetail 생성 실패 시 차감/상태 업데이트가 실행되지 않도록 함
+        with transaction.atomic():
+            # 지급 후 미지급액 자동 계산 (지급 전 미지급액 - 지급 금액)
+            outstanding_amount_after_payment = account.outstanding_balance - payload.amount_received
+            
+            # PaymentDetail 생성
+            payment = PaymentDetail.objects.create(
+                tax_invoice_account=account,
+                payment_date=payload.payment_date,
+                amount_received=payload.amount_received,
+                outstanding_amount_at_payment=outstanding_amount_after_payment,
+                expected_payment_date=payload.expected_payment_date,
+            )
+            
+            # outstanding_balance에서 지급금액만큼 차감
+            account.outstanding_balance -= payload.amount_received
+            
+            # 상태 업데이트 로직
+            today = date.today()
+            
+            # 1. agreed_payment_date가 오늘보다 과거이고 outstanding_balance > 0이면 무조건 overdue
+            if (
+                account.agreed_payment_date 
+                and account.agreed_payment_date < today 
+                and account.outstanding_balance > 0
+            ):
+                account.status = AccountStatus.overdue
+            # 2. outstanding_balance가 0이면 completed
+            elif account.outstanding_balance == 0:
+                account.status = AccountStatus.completed
+            # 3. outstanding_balance > 0이고 total_billed_amount보다 작으면 partial
+            elif (
+                account.outstanding_balance > 0 
+                and account.outstanding_balance < account.total_billed_amount
+            ):
+                account.status = AccountStatus.partial
+            
+            account.save()
+            return payment
     
     payment = await create_payment()
     return 201, payment
