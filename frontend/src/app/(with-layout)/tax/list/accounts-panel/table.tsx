@@ -10,9 +10,10 @@ import { NoHistoryBox } from '@/ui';
 interface TableProps {
   isPurchase: boolean;
   taxId: number;
+  type?: 'tax' | 'cash-receipt';
 }
 
-const Table = ({ isPurchase, taxId }: TableProps) => {
+const Table = ({ isPurchase, taxId, type = 'tax' }: TableProps) => {
   const { getPaymentDetails } = useGetPaymentDetails();
 
   const {
@@ -25,7 +26,7 @@ const Table = ({ isPurchase, taxId }: TableProps) => {
     items: PaymentDetailResponseModel[];
     nextPage: number | null;
   }>({
-    queryKey: ['payment-details', taxId],
+    queryKey: ['payment-details', taxId, type],
     initialPageParam: 1,
     getNextPageParam: (lastPage) => lastPage.nextPage,
     queryFn: async ({ pageParam = 1 }) => {
@@ -34,6 +35,7 @@ const Table = ({ isPurchase, taxId }: TableProps) => {
       const result = await getPaymentDetails(taxId, {
         page: pageNumber,
         page_size: 10,
+        type: type,
       });
 
       if (!result.success || !result.data) {

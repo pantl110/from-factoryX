@@ -21,12 +21,14 @@ interface AccountFormModel {
 
 interface InfoProps {
   handleOpenTaxDetail: () => void;
+  handleOpenCashReceiptDetail: () => void;
   isPurchase: boolean;
   projectId?: number | null;
   onOpenLinkProjectModal: () => void;
   account: TaxInvoiceAccountModel | null;
   onOpenClientDetailPanel: () => void;
   onIsDirtyChange?: (isDirty: boolean) => void;
+  type?: 'tax' | 'cash-receipt';
 }
 
 export interface InfoHandleModel {
@@ -37,12 +39,14 @@ const Info = React.forwardRef<InfoHandleModel, InfoProps>(
   (
     {
       handleOpenTaxDetail,
+      handleOpenCashReceiptDetail,
       isPurchase,
       projectId,
       onOpenLinkProjectModal,
       account,
       onOpenClientDetailPanel,
       onIsDirtyChange,
+      type = 'tax',
     },
     ref
   ) => {
@@ -124,11 +128,20 @@ const Info = React.forwardRef<InfoHandleModel, InfoProps>(
         <div className="flex justify-between">
           <h3 className="Heading-3 h-10 flex items-center">{title}</h3>
           <div className="flex gap-2">
-            <MiniBtn
-              text="세금계산서 상세보기"
-              variant="whiteOutline"
-              onClick={handleOpenTaxDetail}
-            />
+            {type === 'tax' && (
+              <MiniBtn
+                text="세금계산서 상세보기"
+                variant="whiteOutline"
+                onClick={handleOpenTaxDetail}
+              />
+            )}
+            {type === 'cash-receipt' && (
+              <MiniBtn
+                text="현금영수증 상세보기"
+                variant="whiteOutline"
+                onClick={handleOpenCashReceiptDetail}
+              />
+            )}
             <MiniBtn
               text={projectId ? '프로젝트 바로가기' : '프로젝트 연결하기'}
               variant="whiteOutline"

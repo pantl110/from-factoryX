@@ -5,7 +5,10 @@ import { useQueryClient } from '@tanstack/react-query';
 import { TaxInvoiceAccountModel } from '@/types/data-model';
 
 interface UseGetTaxInvoiceAccountReturnModel {
-  getTaxInvoiceAccount: (taxId: number) => Promise<{
+  getTaxInvoiceAccount: (
+    id: number,
+    type: 'tax' | 'cash-receipt'
+  ) => Promise<{
     success: boolean;
     data?: TaxInvoiceAccountModel;
     error?: string;
@@ -20,24 +23,24 @@ const useGetTaxInvoiceAccount = (): UseGetTaxInvoiceAccountReturnModel => {
   const queryClient = useQueryClient();
 
   const getTaxInvoiceAccount = useCallback(
-    async (taxId: number) => {
+    async (id: number, type: 'tax' | 'cash-receipt') => {
       setIsLoading(true);
       setError(null);
 
       try {
+        // type 쿼리 파라미터는 필수
+        const url = `${process.env.NEXT_PUBLIC_API_URL}/v2/account/${id}?type=${type}`;
+
         const data = await queryClient.fetchQuery<TaxInvoiceAccountModel>({
-          queryKey: ['tax-invoice-account', taxId],
+          queryKey: ['tax-invoice-account', id, type],
           queryFn: async () => {
-            const response = await fetch(
-              `${process.env.NEXT_PUBLIC_API_URL}/v2/account/${taxId}`,
-              {
-                method: 'GET',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                credentials: 'include',
-              }
-            );
+            const response = await fetch(url, {
+              method: 'GET',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              credentials: 'include',
+            });
 
             if (!response.ok) {
               if (response.status === 404) {

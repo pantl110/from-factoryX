@@ -7,6 +7,7 @@ interface TableAreaProps {
   taxId: number;
   account: TaxInvoiceAccountModel | null;
   onOpenCreateAccountPaymentModal: () => void;
+  type?: 'tax' | 'cash-receipt';
 }
 
 const TableArea = ({
@@ -14,6 +15,7 @@ const TableArea = ({
   taxId,
   account,
   onOpenCreateAccountPaymentModal,
+  type = 'tax',
 }: TableAreaProps) => {
   const title = isPurchase ? '지급 상세 내역' : '회수 상세 내역';
   const inputButtonText = isPurchase
@@ -47,7 +49,7 @@ const TableArea = ({
       </div>
 
       {/* 표 */}
-      <Table isPurchase={isPurchase} taxId={taxId} />
+      <Table isPurchase={isPurchase} taxId={taxId} type={type} />
     </div>
   );
 };

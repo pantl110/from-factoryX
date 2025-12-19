@@ -14,7 +14,8 @@ interface UpdateTaxInvoiceAccountPayloadModel {
 
 interface UseUpdateTaxInvoiceAccountReturnModel {
   updateTaxInvoiceAccount: (
-    taxId: number,
+    id: number,
+    type: 'tax' | 'cash-receipt',
     payload: UpdateTaxInvoiceAccountPayloadModel
   ) => Promise<{
     success: boolean;
@@ -32,22 +33,26 @@ const useUpdateTaxInvoiceAccount =
     const queryClient = useQueryClient();
 
     const updateTaxInvoiceAccount = useCallback(
-      async (taxId: number, payload: UpdateTaxInvoiceAccountPayloadModel) => {
+      async (
+        id: number,
+        type: 'tax' | 'cash-receipt',
+        payload: UpdateTaxInvoiceAccountPayloadModel
+      ) => {
         setIsLoading(true);
         setError(null);
 
         try {
-          const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/v2/account/${taxId}`,
-            {
-              method: 'PATCH',
-              headers: {
-                'Content-Type': 'application/json',
-              },
-              credentials: 'include',
-              body: JSON.stringify(payload),
-            }
-          );
+          // type 쿼리 파라미터는 필수
+          const url = `${process.env.NEXT_PUBLIC_API_URL}/v2/account/${id}?type=${type}`;
+
+          const response = await fetch(url, {
+            method: 'PATCH',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify(payload),
+          });
 
           if (!response.ok) {
             const errorData = await response.json().catch(() => ({}));
@@ -61,7 +66,7 @@ const useUpdateTaxInvoiceAccount =
 
           // React Query 캐시 업데이트
           queryClient.setQueryData<TaxInvoiceAccountModel>(
-            ['tax-invoice-account', taxId],
+            ['tax-invoice-account', id, type],
             (prev) => (prev ? { ...prev, ...data } : data)
           );
 

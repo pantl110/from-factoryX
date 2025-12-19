@@ -9,7 +9,7 @@ import Pagination from '@/components/pagination';
 import { useGetCashReceipts } from '@/hooks';
 import { CashReceiptResponseModel } from '@/types/data-model';
 import useMemberStore from '@/store/member-store';
-import ReceiptDetailPanel from './modals/receipt-detail-panel';
+import AccountsPanel from '../accounts-panel';
 
 interface ReceiptListProps {
   className?: string;
@@ -152,11 +152,12 @@ const ReceiptList = ({ className = '' }: ReceiptListProps) => {
           </div>
         )}
 
-        {/* 현금영수증 상세 패널 */}
+        {/* 매입채무 패널 */}
         {isPanelOpen && selectedItem && (
-          <ReceiptDetailPanel
+          <AccountsPanel
             onClose={handlePanelClose}
             itemId={selectedItem.id}
+            type="cash-receipt"
           />
         )}
       </div>

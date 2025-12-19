@@ -21,15 +21,20 @@ interface CreateAccountPaymentModalProps {
   onClose: () => void;
   account: TaxInvoiceAccountModel | null;
   onSuccess?: () => void;
+  type?: 'tax' | 'cash-receipt';
 }
 
 const CreateAccountPaymentModal = ({
   onClose,
   account,
   onSuccess,
+  type = 'tax',
 }: CreateAccountPaymentModalProps) => {
   // 매입 여부 확인
-  const isPurchase = account?.tax_invoice?.tax_invoice_type === 'purchase';
+  const isPurchase =
+    type === 'cash-receipt'
+      ? account?.cash_receipt?.cash_receipt_type === 'purchase'
+      : account?.tax_invoice?.tax_invoice_type === 'purchase';
 
   // account의 약정 입금일을 기본값으로 설정
   const defaultAgreedDate = useMemo(() => {
@@ -174,10 +179,15 @@ const CreateAccountPaymentModal = ({
       return;
     }
 
-    const taxId = account.tax_invoice.id;
+    const taxId =
+      type === 'cash-receipt'
+        ? account.cash_receipt?.id
+        : account.tax_invoice?.id;
+    if (!taxId) return;
+
     const amountReceived = parseInt(data.receivedAmount.replace(/,/g, '')) || 0;
 
-    const result = await createPaymentDetail(taxId, {
+    const result = await createPaymentDetail(taxId, type, {
       payment_date: data.paymentDate,
       amount_received: amountReceived,
       expected_payment_date:

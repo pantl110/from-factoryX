@@ -10,6 +10,7 @@ import {
 interface UseCreatePaymentDetailReturnModel {
   createPaymentDetail: (
     taxId: number,
+    type: 'tax' | 'cash-receipt',
     payload: PaymentDetailCreateModel
   ) => Promise<{
     success: boolean;
@@ -26,22 +27,24 @@ const useCreatePaymentDetail = (): UseCreatePaymentDetailReturnModel => {
   const queryClient = useQueryClient();
 
   const createPaymentDetail = useCallback(
-    async (taxId: number, payload: PaymentDetailCreateModel) => {
+    async (
+      taxId: number,
+      type: 'tax' | 'cash-receipt',
+      payload: PaymentDetailCreateModel
+    ) => {
       setIsLoading(true);
       setError(null);
 
       try {
-        const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/v2/account-payment/${taxId}`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-            body: JSON.stringify(payload),
-          }
-        );
+        const url = `${process.env.NEXT_PUBLIC_API_URL}/v2/account-payment/${taxId}?type=${type}`;
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include',
+          body: JSON.stringify(payload),
+        });
 
         if (!response.ok) {
           if (response.status === 404) {
@@ -70,11 +73,11 @@ const useCreatePaymentDetail = (): UseCreatePaymentDetailReturnModel => {
 
         // React Query 캐시 무효화 (목록 새로고침)
         queryClient.invalidateQueries({
-          queryKey: ['payment-details', taxId],
+          queryKey: ['payment-details', taxId, type],
         });
         // 채권/채무 정보도 업데이트되므로 무효화
         queryClient.invalidateQueries({
-          queryKey: ['tax-invoice-account', taxId],
+          queryKey: ['tax-invoice-account', taxId, type],
         });
 
         return {

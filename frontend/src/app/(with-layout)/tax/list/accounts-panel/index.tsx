@@ -15,16 +15,23 @@ import CreateAccountPaymentModal from './modals/create-account-payment-modal';
 import { DepositorInfoDisplay } from './depositor-info-display';
 import { AccountInfoDisplay } from './account-info-display';
 import ClientDetailPanel from '@/app/(with-layout)/setting/master-data/client/modals/client-detail-panel';
+import ReceiptDetailPanel from '../receipt/modals/receipt-detail-panel';
 import { isValidDateString, formatISODate } from '@/utils';
 
 interface AccountsPanelProps {
   onClose: () => void;
   itemId: number;
+  type?: 'tax' | 'cash-receipt'; // 기본값: 'tax'
 }
 
-const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
+const AccountsPanel = ({
+  onClose,
+  itemId,
+  type = 'tax',
+}: AccountsPanelProps) => {
   // 모달, 판넬 상태
   const [isTaxDetailOpen, setIsTaxDetailOpen] = useState(false);
+  const [isCashReceiptDetailOpen, setIsCashReceiptDetailOpen] = useState(false);
   const [isLinkProjectModalOpen, setIsLinkProjectModalOpen] = useState(false);
   const [isClientDetailPanelOpen, setIsClientDetailPanelOpen] = useState(false);
   const [isCreateAccountPaymentModalOpen, setIsCreateAccountPaymentModalOpen] =
@@ -48,14 +55,17 @@ const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
   useEffect(() => {
     const fetchDetail = async () => {
       if (!itemId) return;
-      const result = await getTaxInvoiceAccount(itemId);
+      const result = await getTaxInvoiceAccount(itemId, type);
       if (result.success && result.data) {
         setAccount(result.data);
+      } else {
+        // account가 없으면 null로 설정하여 빈 화면 표시
+        setAccount(null);
       }
     };
 
     fetchDetail();
-  }, [itemId, getTaxInvoiceAccount]);
+  }, [itemId, type, getTaxInvoiceAccount]);
 
   // 세금계산서 상세 판넬 관련 핸들러
   const handleOpenTaxDetail = () => {
@@ -63,6 +73,14 @@ const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
   };
   const handleCloseTaxDetail = () => {
     setIsTaxDetailOpen(false);
+  };
+
+  // 현금영수증 상세 판넬 관련 핸들러
+  const handleOpenCashReceiptDetail = () => {
+    setIsCashReceiptDetailOpen(true);
+  };
+  const handleCloseCashReceiptDetail = () => {
+    setIsCashReceiptDetailOpen(false);
   };
 
   // 프로젝트 연결 모달 관련 핸들러
@@ -75,7 +93,7 @@ const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
   const handleLinkProjectSuccess = async () => {
     // 프로젝트 연결 성공 후 세금계산서 정보 다시 불러오기
     if (itemId) {
-      const result = await getTaxInvoiceAccount(itemId);
+      const result = await getTaxInvoiceAccount(itemId, type);
       if (result.success && result.data) {
         setAccount(result.data);
       }
@@ -93,7 +111,7 @@ const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
   const handleRefetchClient = async () => {
     // 거래처 정보 업데이트 후 세금계산서 정보 다시 불러오기
     if (itemId) {
-      const result = await getTaxInvoiceAccount(itemId);
+      const result = await getTaxInvoiceAccount(itemId, type);
       if (result.success && result.data) {
         setAccount(result.data);
       }
@@ -109,10 +127,20 @@ const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
   };
 
   const taxItem = account?.tax_invoice;
-  const isPurchase = taxItem?.tax_invoice_type === 'purchase';
+  const cashReceiptItem = account?.cash_receipt;
+  // 현금영수증의 경우 cash_receipt_type을 확인하여 매입 여부 판단
+  // 세금계산서의 경우 tax_invoice_type을 확인
+  const isPurchase =
+    type === 'cash-receipt'
+      ? cashReceiptItem?.cash_receipt_type === 'purchase'
+      : taxItem?.tax_invoice_type === 'purchase';
 
   const handleSave = async () => {
-    if (!account || !taxItem) return;
+    if (!account) return;
+    // 세금계산서 또는 현금영수증 ID 확인
+    const itemId = type === 'cash-receipt' ? cashReceiptItem?.id : taxItem?.id;
+    if (!itemId) return;
+
     const values = infoRef.current?.getValues();
     if (!values) return;
 
@@ -127,9 +155,8 @@ const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
       }
     }
 
-    // PATCH 요청 시 세금계산서 account 번호가 아닌
-    // 세금계산서 id(tax id)를 path parameter로 전달
-    const result = await updateTaxInvoiceAccount(taxItem.id, {
+    // PATCH 요청 시 세금계산서 또는 현금영수증 ID를 path parameter로 전달
+    const result = await updateTaxInvoiceAccount(itemId, type, {
       collection_terms: values.collection_terms,
       collection_terms_custom: values.collection_terms_custom,
       agreed_payment_date: values.agreed_payment_date,
@@ -163,7 +190,7 @@ const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
           ) : undefined
         }
       >
-        {isLoading ? (
+        {isLoading || !account ? (
           <></>
         ) : (
           <div className="flex flex-col gap-10">
@@ -171,12 +198,16 @@ const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
             <Info
               ref={infoRef}
               handleOpenTaxDetail={handleOpenTaxDetail}
+              handleOpenCashReceiptDetail={handleOpenCashReceiptDetail}
               isPurchase={isPurchase}
-              projectId={taxItem?.project_id ?? null}
+              projectId={
+                type === 'cash-receipt' ? null : (taxItem?.project_id ?? null)
+              }
               onOpenLinkProjectModal={handleOpenLinkProjectModal}
               account={account}
               onOpenClientDetailPanel={handleOpenClientDetailPanel}
               onIsDirtyChange={setIsFormDirty}
+              type={type}
             />
 
             {/* 입금 확인 정보 (매출) / 지급 계좌 정보 (매입) */}
@@ -205,6 +236,7 @@ const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
               onOpenCreateAccountPaymentModal={
                 handleOpenCreateAccountPaymentModal
               }
+              type={type}
             />
           </div>
         )}
@@ -227,6 +259,27 @@ const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
         </OverlayView>
       )}
 
+      {/* 현금영수증 상세 판넬 */}
+      {isCashReceiptDetailOpen && cashReceiptItem && (
+        <OverlayView onClose={handleCloseCashReceiptDetail}>
+          <div className="w-full flex flex-col gap-6 px-8 pb-8">
+            {/* top 고정 부위*/}
+            <div className="sticky pt-8 top-0 bg-wh">
+              <div className="flex justify-between h-13 border-b border-lg">
+                <h3 className="Heading-3">현금영수증</h3>
+                <IconBtn icon={X} onClick={handleCloseCashReceiptDetail} />
+              </div>
+            </div>
+
+            <ReceiptDetailPanel
+              itemId={cashReceiptItem.id}
+              onClose={handleCloseCashReceiptDetail}
+              showPanel={false}
+            />
+          </div>
+        </OverlayView>
+      )}
+
       {/* 거래처 상세 판넬 */}
       {isClientDetailPanelOpen && account?.client && (
         <ClientDetailPanel
@@ -236,8 +289,8 @@ const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
         />
       )}
 
-      {/* 프로젝트 연결 모달 */}
-      {isLinkProjectModalOpen && (
+      {/* 프로젝트 연결 모달 - 세금계산서일 때만 표시 */}
+      {isLinkProjectModalOpen && type === 'tax' && (
         <LinkProjectModal
           taxId={itemId}
           onClose={handleCloseLinkProjectModal}
@@ -250,10 +303,11 @@ const AccountsPanel = ({ onClose, itemId }: AccountsPanelProps) => {
         <CreateAccountPaymentModal
           onClose={handleCloseCreateAccountPaymentModal}
           account={account}
+          type={type}
           onSuccess={async () => {
             // 지급 정보 저장 후 account 정보 다시 불러오기
             if (itemId) {
-              const result = await getTaxInvoiceAccount(itemId);
+              const result = await getTaxInvoiceAccount(itemId, type);
               if (result.success && result.data) {
                 setAccount(result.data);
               }

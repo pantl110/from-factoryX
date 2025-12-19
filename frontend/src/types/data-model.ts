@@ -1598,8 +1598,9 @@ export interface TaxInvoiceAccountModel {
   id: number;
   created_at: string;
   updated_at: string;
-  tax_invoice: PublishedTaxInvoiceResponseModel; // 세금계산서 전체 정보
-  client: ClientResponseModel | null; // 거래처 정보 (tax_invoice의 client 정보)
+  tax_invoice: PublishedTaxInvoiceResponseModel | null; // 세금계산서 전체 정보 (현금영수증인 경우 null)
+  cash_receipt: CashReceiptDetailResponseModel | null; // 현금영수증 전체 정보 (세금계산서인 경우 null)
+  client: ClientResponseModel | null; // 거래처 정보
   project: number | null; // Project ID (nullable)
   status: AccountsStatusType; // 'waiting' | 'overdue' | 'partial' | 'completed'
   invoice_sent_count: number;

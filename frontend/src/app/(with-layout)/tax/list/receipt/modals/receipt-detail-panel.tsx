@@ -11,9 +11,14 @@ import useMemberStore from '@/store/member-store';
 interface ReceiptDetailPanelProps {
   onClose: () => void;
   itemId: number;
+  showPanel?: boolean; // Panel 컴포넌트 사용 여부 (기본값: true)
 }
 
-const ReceiptDetailPanel = ({ onClose, itemId }: ReceiptDetailPanelProps) => {
+const ReceiptDetailPanel = ({
+  onClose,
+  itemId,
+  showPanel = true,
+}: ReceiptDetailPanelProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
 
@@ -33,6 +38,84 @@ const ReceiptDetailPanel = ({ onClose, itemId }: ReceiptDetailPanelProps) => {
   }, [getCashReceiptDetail, itemId]);
   if (!itemId || itemId === 0) return null;
 
+  const content = (
+    <>
+      {isLoading || error ? null : (
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-3">
+            <h3 className="Heading-3 h-10 items-center flex">거래 정보</h3>
+            <div>
+              <InfoLabelValue
+                label="거래일자"
+                value={cashReceipt?.transaction_date}
+              />
+              <InfoLabelValue
+                label="승인번호"
+                value={cashReceipt?.nts_confirm_num}
+              />
+              <InfoLabelValue
+                label="거래구분"
+                value={cashReceipt?.trade_type}
+              />
+              <InfoLabelValue
+                label="거래용도"
+                value={cashReceipt?.trade_usage}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <h3 className="Heading-3 h-10 items-center flex">구매처 정보</h3>
+            <div>
+              <InfoLabelValue
+                label="업체명"
+                value={cashReceipt?.client_info.name}
+              />
+              <InfoLabelValue
+                label="사업자등록번호"
+                value={cashReceipt?.client_info.business_registration_number}
+              />
+              <InfoLabelValue
+                label="대표자명"
+                value={cashReceipt?.client_info.representative_name}
+              />
+              <InfoLabelValue
+                label="사업장 주소"
+                value={cashReceipt?.client_info.address}
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <h3 className="Heading-3 h-10 items-center flex">구매 자재 정보</h3>
+            <PriceInfo
+              supplyAmount={cashReceipt?.transaction_amount || 0}
+              taxAmount={cashReceipt?.tax_amount || 0}
+              textColor={'text-red'}
+            />
+          </div>
+        </div>
+      )}
+    </>
+  );
+
+  if (!showPanel) {
+    return (
+      <>
+        {content}
+        {/* material history 연결 모달 */}
+        {isLinkReceiptModalOpen && (
+          <LinkReceiptModal
+            onClose={() => setIsLinkReceiptModalOpen(false)}
+            supplyAmount={cashReceipt?.transaction_amount || 0}
+            taxAmount={cashReceipt?.tax_amount || 0}
+            receiptId={cashReceipt?.id || 0}
+          />
+        )}
+      </>
+    );
+  }
+
   return (
     <>
       <Panel
@@ -51,70 +134,7 @@ const ReceiptDetailPanel = ({ onClose, itemId }: ReceiptDetailPanelProps) => {
           />
         }
       >
-        {isLoading || error ? null : (
-          <>
-            <div className="flex flex-col gap-6">
-              <div className="flex flex-col gap-3">
-                <h3 className="Heading-3 h-10 items-center flex">거래 정보</h3>
-                <div>
-                  <InfoLabelValue
-                    label="거래일자"
-                    value={cashReceipt?.transaction_date}
-                  />
-                  <InfoLabelValue
-                    label="승인번호"
-                    value={cashReceipt?.nts_confirm_num}
-                  />
-                  <InfoLabelValue
-                    label="거래구분"
-                    value={cashReceipt?.trade_type}
-                  />
-                  <InfoLabelValue
-                    label="거래용도"
-                    value={cashReceipt?.trade_usage}
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-3">
-                <h3 className="Heading-3 h-10 items-center flex">
-                  구매처 정보
-                </h3>
-                <div>
-                  <InfoLabelValue
-                    label="업체명"
-                    value={cashReceipt?.client_info.name}
-                  />
-                  <InfoLabelValue
-                    label="사업자등록번호"
-                    value={
-                      cashReceipt?.client_info.business_registration_number
-                    }
-                  />
-                  <InfoLabelValue
-                    label="대표자명"
-                    value={cashReceipt?.client_info.representative_name}
-                  />
-                  <InfoLabelValue
-                    label="사업장 주소"
-                    value={cashReceipt?.client_info.address}
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col gap-3">
-                <h3 className="Heading-3 h-10 items-center flex">
-                  구매 자재 정보
-                </h3>
-                <PriceInfo
-                  supplyAmount={cashReceipt?.transaction_amount || 0}
-                  taxAmount={cashReceipt?.tax_amount || 0}
-                  textColor={'text-red'}
-                />
-              </div>
-            </div>
-          </>
-        )}
+        {content}
       </Panel>
 
       {/* material history 연결 모달 */}

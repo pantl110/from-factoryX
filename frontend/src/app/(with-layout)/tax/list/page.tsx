@@ -457,12 +457,11 @@ const TaxPageContent = () => {
 
       {/* 매출채권채무 디테일 판넬 */}
       {isPanelOpen && selectedItem && (
-        // <TaxDetailPanel
-        //   itemId={selectedItem.id}
-        //   onClose={handleClosePanel}
-        //   canLink={true}
-        // />
-        <AccountsPanel onClose={handleClosePanel} itemId={selectedItem.id} />
+        <AccountsPanel
+          onClose={handleClosePanel}
+          itemId={selectedItem.id}
+          type="tax"
+        />
       )}
     </>
   );

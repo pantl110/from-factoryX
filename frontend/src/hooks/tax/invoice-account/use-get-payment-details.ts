@@ -7,6 +7,7 @@ import { PaymentDetailListResponseModel } from '@/types/data-model';
 interface GetPaymentDetailsParamsModel {
   page?: number;
   page_size?: number;
+  type?: 'tax' | 'cash-receipt';
 }
 
 interface UseGetPaymentDetailsReturnModel {
@@ -34,15 +35,17 @@ const useGetPaymentDetails = (): UseGetPaymentDetailsReturnModel => {
 
       const page = params?.page ?? 1;
       const pageSize = params?.page_size ?? 10;
+      const type = params?.type ?? 'tax';
 
       try {
         const data =
           await queryClient.fetchQuery<PaymentDetailListResponseModel>({
-            queryKey: ['payment-details', taxId, page, pageSize],
+            queryKey: ['payment-details', taxId, type, page, pageSize],
             queryFn: async () => {
               const queryParams = new URLSearchParams({
                 page: page.toString(),
                 page_size: pageSize.toString(),
+                type: type,
               });
 
               const response = await fetch(
