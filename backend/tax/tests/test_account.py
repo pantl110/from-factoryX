@@ -11,7 +11,7 @@ from datetime import datetime, timedelta, date
 User = get_user_model()
 
 
-class TaxAPIV2TestCase(TestCase):
+class TaxAccountTestCase(TestCase):
     def setUp(self):
         self.user = User.objects.create_user(
             username="testuser", email="test@example.com", password="testpass123"
@@ -45,7 +45,7 @@ class TaxAPIV2TestCase(TestCase):
         )
 
         response = self.client.get(
-            f"/v2/tax/account/{tax_invoice.id}",
+            f"/v2/account/{tax_invoice.id}",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
 
@@ -94,7 +94,7 @@ class TaxAPIV2TestCase(TestCase):
         )
 
         response = self.client.get(
-            f"/v2/tax/account/{tax_invoice.id}",
+            f"/v2/account/{tax_invoice.id}",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
 
@@ -141,7 +141,7 @@ class TaxAPIV2TestCase(TestCase):
     def test_get_tax_invoice_account_not_found(self):
         """존재하지 않는 채권/채무 정보 조회"""
         response = self.client.get(
-            "/v2/tax/account/99999",
+            "/v2/account/99999",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
         self.assertEqual(response.status_code, 404)

@@ -1,16 +1,17 @@
 from ninja import Router
 from ninja.errors import HttpError
 from asgiref.sync import sync_to_async
+from datetime import date
 from api.security import jwt_auth
-from tax.models import TaxInvoiceAccount
+from tax.models import TaxInvoiceAccount, AccountStatus
 from tax.schemas.outbound import TaxInvoiceAccountOut
 from tax.schemas.inbound import TaxInvoiceAccountUpdateIn
 
-router = Router(tags=["Tax V2"], auth=jwt_auth)
+router = Router(tags=["Tax Account"], auth=jwt_auth)
 
 
 @router.patch(
-    "/account/{tax_id}",
+    "/{tax_id}",
     summary="[U] 세금계산서 채권/채무 정보 수정",
     description="세금계산서 ID로 채권/채무 정보를 수정합니다.",
     response={200: TaxInvoiceAccountOut, 404: dict, 400: dict, 500: dict},
@@ -33,6 +34,15 @@ async def update_tax_invoice_account(request, tax_id: int, payload: TaxInvoiceAc
             if hasattr(account, field):
                 setattr(account, field, value)
         
+        # 약정입금일이 오늘보다 과거이고 미수금액이 0보다 크면 상태를 overdue로 변경
+        today = date.today()
+        if (
+            account.agreed_payment_date 
+            and account.agreed_payment_date < today 
+            and account.outstanding_balance > 0
+        ):
+            account.status = AccountStatus.overdue
+        
         account.save()
         return account
     
@@ -41,7 +51,7 @@ async def update_tax_invoice_account(request, tax_id: int, payload: TaxInvoiceAc
 
 
 @router.get(
-    "/account/{tax_id}",
+    "/{tax_id}",
     summary="[C] 세금계산서 채권/채무 정보 조회",
     description="세금계산서 ID로 채권/채무 정보를 조회합니다.",
     response={200: TaxInvoiceAccountOut, 404: dict, 500: dict},

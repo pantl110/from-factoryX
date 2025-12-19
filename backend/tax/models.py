@@ -307,8 +307,6 @@ class AccountStatus(models.TextChoices):
 class CollectionTerms(models.TextChoices):
     invoice_30 = ("INVOICE_30", "세금계산서 발행 후 30일 이내 입금")
     invoice_eom_next = ("INVOICE_EOM_NEXT", "세금계산서 발행 익월 말일 입금")
-    month_end_25_next = ("MONTH_END_25_NEXT", "당월 말일 마감, 익월 25일 지급")
-    inspection_30 = ("INSPECTION_30", "검수 완료 후 30일 이내 입금")
     custom = ("CUSTOM", "직접 입력")
 
 
@@ -382,7 +380,8 @@ class PaymentDetail(BaseModel):
     outstanding_amount_at_payment = models.IntegerField(
         help_text="미수금액/미지급금액"
     )
-    overdue_days = models.IntegerField(
-        default=0,
-        help_text="연체일수"
+    expected_payment_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text="입금예정일"
     )

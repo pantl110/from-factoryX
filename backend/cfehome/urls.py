@@ -45,7 +45,8 @@ from project.api_project_log import router as projectLog_router
 from project.api_project_refund import router as projectRefund_router
 from barobill.api import router as barobill_router
 from tax.api import router as tax_router
-from tax.api_v2 import router as taxV2_router
+from tax.api_account import router as tax_account_router
+from tax.api_account_payment import router as tax_account_payment_router
 from tax.api_cash_receipt import router as cashReceipt_router
 from subscription.api import router as subscription_router
 from notification.api import router as notification_router
@@ -99,7 +100,8 @@ base_api.add_router("v1/project", project_router)  # v1 프로젝트 API
 base_api.add_router("v2/material-usage", materialUsage_router)
 base_api.add_router("v1/barobill", barobill_router)
 base_api.add_router("v1/tax", tax_router)
-base_api.add_router("v2/tax", taxV2_router)
+base_api.add_router("v2/account", tax_account_router)
+base_api.add_router("v2/account-payment", tax_account_payment_router)
 base_api.add_router("v1/receipt", cashReceipt_router)
 base_api.add_router("v1/subscription", subscription_router)
 base_api.add_router("v1/notification", notification_router)

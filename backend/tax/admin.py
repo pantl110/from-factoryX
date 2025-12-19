@@ -67,7 +67,7 @@ class PaymentDetailAdmin(admin.ModelAdmin):
         "payment_date",
         "amount_received",
         "outstanding_amount_at_payment",
-        "overdue_days",
+        "expected_payment_date",
     )
-    list_filter = ("payment_date", "overdue_days")
+    list_filter = ("payment_date", "expected_payment_date")
     search_fields = ("id", "tax_invoice_account__id", "tax_invoice_account__tax_invoice__id")

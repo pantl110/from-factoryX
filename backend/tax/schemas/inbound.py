@@ -132,3 +132,11 @@ class TaxInvoiceAccountUpdateIn(Schema):
     collection_terms_custom: Optional[str] = Field(None, description="수금 조건 직접 입력")
     agreed_payment_date: Optional[date] = Field(None, description="약정 입금일")
     notes: Optional[str] = Field(None, description="특이사항")
+
+
+class PaymentDetailCreateIn(Schema):
+    """회수/지급 상세내역 생성 스키마"""
+    payment_date: date = Field(..., description="입금일/지급일")
+    expected_payment_date: Optional[date] = Field(None, description="입금예정일")
+    amount_received: int = Field(..., description="받은 금액/지급 금액")
+    outstanding_amount_at_payment: int = Field(..., description="미수금액/미지급금액")
