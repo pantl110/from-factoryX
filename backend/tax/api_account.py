@@ -1,6 +1,7 @@
-from ninja import Router
+from ninja import Router, Query
 from ninja.errors import HttpError
 from asgiref.sync import sync_to_async
+from typing import Literal
 from datetime import date
 from api.security import jwt_auth
 from tax.models import TaxInvoiceAccount, AccountStatus
@@ -11,20 +12,32 @@ router = Router(tags=["Tax Account"], auth=jwt_auth)
 
 
 @router.patch(
-    "/{tax_id}",
-    summary="[U] 세금계산서 채권/채무 정보 수정",
-    description="세금계산서 ID로 채권/채무 정보를 수정합니다.",
+    "/{id}",
+    summary="[U] 채권/채무 정보 수정",
+    description="세금계산서 또는 현금영수증 ID로 채권/채무 정보를 수정합니다.",
     response={200: TaxInvoiceAccountOut, 404: dict, 400: dict, 500: dict},
 )
-async def update_tax_invoice_account(request, tax_id: int, payload: TaxInvoiceAccountUpdateIn):
+async def update_tax_invoice_account(
+    request, 
+    id: int, 
+    payload: TaxInvoiceAccountUpdateIn,
+    type: Literal["tax", "cash-receipt"] = Query(..., description="타입: tax(세금계산서) 또는 cash-receipt(현금영수증)")
+):
     @sync_to_async
     def update_account():
         try:
-            account = TaxInvoiceAccount.objects.select_related(
-                "tax_invoice", "tax_invoice__client"
-            ).get(tax_invoice_id=tax_id)
+            if type == "tax":
+                account = TaxInvoiceAccount.objects.select_related(
+                    "tax_invoice", "tax_invoice__client"
+                ).get(tax_invoice_id=id)
+                error_msg = "해당 세금계산서의 채권/채무 정보를 찾을 수 없습니다."
+            else:  # cash-receipt
+                account = TaxInvoiceAccount.objects.select_related(
+                    "cash_receipt", "cash_receipt__client"
+                ).get(cash_receipt_id=id)
+                error_msg = "해당 현금영수증의 채권/채무 정보를 찾을 수 없습니다."
         except TaxInvoiceAccount.DoesNotExist:
-            raise HttpError(404, "해당 세금계산서의 채권/채무 정보를 찾을 수 없습니다.")
+            raise HttpError(404, error_msg)
         
         # 필드 업데이트
         update_data = payload.dict(exclude_unset=True)
@@ -51,32 +64,44 @@ async def update_tax_invoice_account(request, tax_id: int, payload: TaxInvoiceAc
 
 
 @router.get(
-    "/{tax_id}",
-    summary="[C] 세금계산서 채권/채무 정보 조회",
-    description="세금계산서 ID로 채권/채무 정보를 조회합니다.",
+    "/{id}",
+    summary="[C] 채권/채무 정보 조회",
+    description="세금계산서 또는 현금영수증 ID로 채권/채무 정보를 조회합니다.",
     response={200: TaxInvoiceAccountOut, 404: dict, 500: dict},
 )
-async def get_tax_invoice_account(request, tax_id: int):
+async def get_tax_invoice_account(
+    request, 
+    id: int,
+    type: Literal["tax", "cash-receipt"] = Query(..., description="타입: tax(세금계산서) 또는 cash-receipt(현금영수증)")
+):
     @sync_to_async
     def get_account():
         try:
-            from project.models import Project
-
-            account = TaxInvoiceAccount.objects.select_related(
-                "tax_invoice", "tax_invoice__client"
-            ).get(tax_invoice_id=tax_id)
-
-            # 하나의 세금계산서에는 하나의 프로젝트만 연결된다는 전제 하에
-            # tax_invoice 인스턴스에 project_id 속성을 미리 세팅해 둔다.
-            project = Project.objects.filter(tax_invoice=account.tax_invoice).first()
-            if project:
-                setattr(account.tax_invoice, "project_id", project.id)
-            else:
-                setattr(account.tax_invoice, "project_id", None)
+            if type == "tax":
+                from project.models import Project
+                
+                account = TaxInvoiceAccount.objects.select_related(
+                    "tax_invoice", "tax_invoice__client"
+                ).get(tax_invoice_id=id)
+                
+                # 하나의 세금계산서에는 하나의 프로젝트만 연결된다는 전제 하에
+                # tax_invoice 인스턴스에 project_id 속성을 미리 세팅해 둔다.
+                project = Project.objects.filter(tax_invoice=account.tax_invoice).first()
+                if project:
+                    setattr(account.tax_invoice, "project_id", project.id)
+                else:
+                    setattr(account.tax_invoice, "project_id", None)
+                
+                error_msg = "해당 세금계산서의 채권/채무 정보를 찾을 수 없습니다."
+            else:  # cash-receipt
+                account = TaxInvoiceAccount.objects.select_related(
+                    "cash_receipt", "cash_receipt__client"
+                ).get(cash_receipt_id=id)
+                error_msg = "해당 현금영수증의 채권/채무 정보를 찾을 수 없습니다."
 
             return account
         except TaxInvoiceAccount.DoesNotExist:
-            raise HttpError(404, "해당 세금계산서의 채권/채무 정보를 찾을 수 없습니다.")
+            raise HttpError(404, error_msg)
     
     account = await get_account()
     return account

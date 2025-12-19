@@ -1,8 +1,8 @@
-from ninja import Router
+from ninja import Router, Query
 from ninja.errors import HttpError
 from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
-from typing import List
+from typing import List, Literal
 from datetime import date
 from django.db.models import F
 from django.db import transaction
@@ -16,18 +16,28 @@ router = Router(tags=["Tax Account Payment"], auth=jwt_auth)
 
 
 @router.post(
-    "/{tax_id}",
-    summary="[C] 세금계산서 회수/지급 상세내역 생성",
-    description="세금계산서 ID로 회수/지급 상세내역을 생성합니다.",
+    "/{id}",
+    summary="[C] 회수/지급 상세내역 생성",
+    description="세금계산서 또는 현금영수증 ID로 회수/지급 상세내역을 생성합니다.",
     response={201: PaymentDetailOut, 404: dict, 400: dict, 500: dict},
 )
-async def create_payment_detail(request, tax_id: int, payload: PaymentDetailCreateIn):
+async def create_payment_detail(
+    request, 
+    id: int, 
+    payload: PaymentDetailCreateIn,
+    type: Literal["tax", "cash-receipt"] = Query(..., description="타입: tax(세금계산서) 또는 cash-receipt(현금영수증)")
+):
     @sync_to_async
     def create_payment():
         try:
-            account = TaxInvoiceAccount.objects.get(tax_invoice_id=tax_id)
+            if type == "tax":
+                account = TaxInvoiceAccount.objects.get(tax_invoice_id=id)
+                error_msg = "해당 세금계산서의 채권/채무 정보를 찾을 수 없습니다."
+            else:  # cash-receipt
+                account = TaxInvoiceAccount.objects.get(cash_receipt_id=id)
+                error_msg = "해당 현금영수증의 채권/채무 정보를 찾을 수 없습니다."
         except TaxInvoiceAccount.DoesNotExist:
-            raise HttpError(404, "해당 세금계산서의 채권/채무 정보를 찾을 수 없습니다.")
+            raise HttpError(404, error_msg)
         
         # 미수금액이 0보다 작아지게 만드는 금액인지 체크
         if account.outstanding_balance < payload.amount_received:
@@ -81,9 +91,9 @@ async def create_payment_detail(request, tax_id: int, payload: PaymentDetailCrea
 
 
 @router.get(
-    "/{tax_id}",
-    summary="[C] 세금계산서 회수/지급 상세내역 조회",
-    description="세금계산서 ID로 회수/지급 상세내역을 조회합니다. 입금예정일 기준 최신순으로 정렬됩니다.",
+    "/{id}",
+    summary="[C] 회수/지급 상세내역 조회",
+    description="세금계산서 또는 현금영수증 ID로 회수/지급 상세내역을 조회합니다. 입금예정일 기준 최신순으로 정렬됩니다.",
     response={
         200: List[PaymentDetailOut],
         404: dict,
@@ -91,11 +101,20 @@ async def create_payment_detail(request, tax_id: int, payload: PaymentDetailCrea
     },
 )
 @paginate(CustomPageNumberPagination)
-async def get_payment_details(request, tax_id: int):
+async def get_payment_details(
+    request, 
+    id: int,
+    type: Literal["tax", "cash-receipt"] = Query(..., description="타입: tax(세금계산서) 또는 cash-receipt(현금영수증)")
+):
     @sync_to_async
     def get_payments():
         try:
-            account = TaxInvoiceAccount.objects.get(tax_invoice_id=tax_id)
+            if type == "tax":
+                account = TaxInvoiceAccount.objects.get(tax_invoice_id=id)
+                error_msg = "해당 세금계산서의 채권/채무 정보를 찾을 수 없습니다."
+            else:  # cash-receipt
+                account = TaxInvoiceAccount.objects.get(cash_receipt_id=id)
+                error_msg = "해당 현금영수증의 채권/채무 정보를 찾을 수 없습니다."
             # 입금예정일 기준 내림차순 정렬 (null 값은 마지막에)
             payments = PaymentDetail.objects.filter(
                 tax_invoice_account=account
@@ -105,7 +124,7 @@ async def get_payment_details(request, tax_id: int):
             )
             return list(payments)
         except TaxInvoiceAccount.DoesNotExist:
-            raise HttpError(404, "해당 세금계산서의 채권/채무 정보를 찾을 수 없습니다.")
+            raise HttpError(404, error_msg)
     
     payments = await get_payments()
     return payments
