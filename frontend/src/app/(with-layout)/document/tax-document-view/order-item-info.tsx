@@ -5,11 +5,13 @@ import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
 interface OrderItemInfoProps {
   lineItems: PublishedTaxInvoiceResponseModel['line_items'];
   transactionAmount: number;
+  taxAmount: number;
 }
 
 const OrderItemInfo = ({
   lineItems,
   transactionAmount,
+  taxAmount,
 }: OrderItemInfoProps) => {
   return (
     <div className="flex flex-col gap-3">
@@ -21,8 +23,7 @@ const OrderItemInfo = ({
           <p className="px-3 flex-2">규격</p>
           <p className="px-3 flex-1">수량</p>
           <p className="px-3 flex-1">단가</p>
-          <p className="px-3 flex-1">공급가액</p>
-          <p className="px-3 flex-1">세액</p>
+          <p className="px-3 flex-1">합계금액</p>
         </div>
 
         {lineItems.map((lineItem, index) => (
@@ -30,7 +31,11 @@ const OrderItemInfo = ({
         ))}
       </div>
 
-      <PriceInfo supplyAmount={transactionAmount} textColor={'text-primary'} />
+      <PriceInfo
+        supplyAmount={transactionAmount}
+        taxAmount={taxAmount}
+        textColor={'text-primary'}
+      />
     </div>
   );
 };

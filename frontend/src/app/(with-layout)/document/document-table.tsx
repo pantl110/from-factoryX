@@ -4,6 +4,7 @@ import {
   PublishedTaxInvoiceResponseModel,
   ProjectResponseModel,
   WorkInstructionsResponseModel,
+  CashReceiptResponseModel,
 } from '@/types/data-model';
 import NoHistoryBox from '@/ui/no-history-box';
 
@@ -11,7 +12,8 @@ interface DocumentTableProps {
   data:
     | PublishedTaxInvoiceResponseModel[]
     | ProjectResponseModel[]
-    | WorkInstructionsResponseModel[];
+    | WorkInstructionsResponseModel[]
+    | CashReceiptResponseModel[];
   selectedType: string;
   onTaxSortChange?: (
     field: 'transaction_date' | 'created_at',
@@ -23,6 +25,8 @@ interface DocumentTableProps {
   projectSortDirection?: 'asc' | 'desc';
   onWorkInstructionSortClick?: (direction: 'asc' | 'desc') => void;
   workInstructionSortDirection?: 'asc' | 'desc';
+  onCashReceiptSortClick?: (direction: 'asc' | 'desc') => void;
+  cashReceiptSortDirection?: 'asc' | 'desc';
 }
 
 const DocumentTable = ({
@@ -35,6 +39,8 @@ const DocumentTable = ({
   projectSortDirection = 'desc',
   onWorkInstructionSortClick,
   workInstructionSortDirection = 'desc',
+  onCashReceiptSortClick,
+  cashReceiptSortDirection = 'desc',
 }: DocumentTableProps) => {
   const handleTaxSortClick = (field: 'transaction_date' | 'created_at') => {
     let newDirection: 'asc' | 'desc';
@@ -56,10 +62,15 @@ const DocumentTable = ({
       workInstructionSortDirection === 'asc' ? 'desc' : 'asc';
     onWorkInstructionSortClick?.(newDirection);
   };
+  const handleCashReceiptSortClick = () => {
+    const newDirection = cashReceiptSortDirection === 'asc' ? 'desc' : 'asc';
+    onCashReceiptSortClick?.(newDirection);
+  };
 
   const taxData = data as PublishedTaxInvoiceResponseModel[];
   const projectData = data as ProjectResponseModel[];
   const workInstructionData = data as WorkInstructionsResponseModel[];
+  const cashReceiptData = data as CashReceiptResponseModel[];
 
   return (
     <>
@@ -75,23 +86,36 @@ const DocumentTable = ({
             {selectedType === '매출 세금계산서' ||
             selectedType === '매입 세금계산서' ? (
               <>
-                <p className="px-3 flex-2">업체명</p>
-                <p className="px-3 flex-2">제품명</p>
-                <p className="px-3 flex-2">공급가액</p>
-                <p className="px-3 flex-2">세액</p>
-                <p className="px-3 flex-2">합계금액</p>
+                <p className="px-3 flex-1">문서유형</p>
+                <p className="px-3 flex-[1.5]">업체명</p>
+                <p className="px-3 flex-[1.5]">제품명</p>
+                <p className="px-3 flex-[1.5]">합계금액</p>
                 <div
-                  className="px-3 w-[150px] h-full flex items-center gap-1 hover:bg-bg cursor-pointer"
+                  className="px-3 flex-1 h-full flex items-center gap-1 hover:bg-bg cursor-pointer"
                   onClick={() => handleTaxSortClick('transaction_date')}
                 >
                   <p className="">작성일자</p>
                   <CaretUpDownIcon size={21} className="text-sv" />
                 </div>
                 <div
-                  className="px-3 w-[150px] h-full flex items-center gap-1 hover:bg-bg cursor-pointer"
+                  className="px-3 flex-1 h-full flex items-center gap-1 hover:bg-bg cursor-pointer"
                   onClick={() => handleTaxSortClick('created_at')}
                 >
-                  <p className="">등록일자</p>
+                  <p className="">발행일자</p>
+                  <CaretUpDownIcon size={21} className="text-sv" />
+                </div>
+              </>
+            ) : selectedType === '현금영수증' ? (
+              <>
+                <p className="px-3 flex-1">문서유형</p>
+                <p className="px-3 flex-[1.5]">업체명</p>
+                <p className="px-3 flex-[1.5]">제품명</p>
+                <p className="px-3 flex-[1.5]">합계금액</p>
+                <div
+                  className="px-3 flex-1 h-full flex items-center gap-1 hover:bg-bg cursor-pointer"
+                  onClick={handleCashReceiptSortClick}
+                >
+                  <p className="">작성일자</p>
                   <CaretUpDownIcon size={21} className="text-sv" />
                 </div>
               </>
@@ -136,6 +160,15 @@ const DocumentTable = ({
           {(selectedType === '매출 세금계산서' ||
             selectedType === '매입 세금계산서') &&
             taxData.map((item) => (
+              <DocumentTableItem
+                key={item.id}
+                data={item}
+                documentType={selectedType}
+              />
+            ))}
+
+          {selectedType === '현금영수증' &&
+            cashReceiptData.map((item) => (
               <DocumentTableItem
                 key={item.id}
                 data={item}

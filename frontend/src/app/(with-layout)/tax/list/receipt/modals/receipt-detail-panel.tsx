@@ -108,19 +108,11 @@ const ReceiptDetailPanel = ({ onClose, itemId }: ReceiptDetailPanelProps) => {
                 </h3>
                 <PriceInfo
                   supplyAmount={cashReceipt?.transaction_amount || 0}
+                  taxAmount={cashReceipt?.tax_amount || 0}
                   textColor={'text-red'}
                 />
               </div>
             </div>
-
-            {/* line items 없음 */}
-            {/* <PurchaseItemInfo
-              lineItems={[]}
-              transactionAmount={cashReceipt?.transaction_amount || 0}
-              canLink={true}
-              setIsLinkModalOpen={() => {}}
-              setSelectedLineItem={() => {}}
-            /> */}
           </>
         )}
       </Panel>

@@ -18,6 +18,7 @@ const MainTitleSec = ({ selectedType, setSelectedType }: MainTitleSecProps) => {
         '거래명세서',
         '매출 세금계산서',
         '매입 세금계산서',
+        '현금영수증',
       ]
     : ['주문서', '생산지시서', '거래명세서'];
 

@@ -5,6 +5,7 @@ import { TaxLineItemModel } from '@/types/data-model';
 interface PurchaseItemInfoProps {
   lineItems: TaxLineItemModel[];
   transactionAmount: number;
+  taxAmount: number;
   canLink?: boolean;
   setIsLinkModalOpen?: (isOpen: boolean) => void;
   setSelectedLineItem?: (lineItem: TaxLineItemModel | null) => void;
@@ -13,6 +14,7 @@ interface PurchaseItemInfoProps {
 const PurchaseItemInfo = ({
   lineItems,
   transactionAmount,
+  taxAmount,
   canLink,
   setIsLinkModalOpen,
   setSelectedLineItem,
@@ -28,9 +30,8 @@ const PurchaseItemInfo = ({
           <p className="px-3 flex-1">수량</p>
           <p className="px-3 flex-1">단가</p>
           <p className={`px-3 ${canLink ? 'flex-[1.5]' : 'flex-1'}`}>
-            공급가액
+            합계금액
           </p>
-          <p className={`px-3 ${canLink ? 'flex-[1.5]' : 'flex-1'}`}>세액</p>
           {canLink && <p className="px-3 flex-[1.5]">연결하기</p>}
         </div>
 
@@ -45,7 +46,11 @@ const PurchaseItemInfo = ({
         ))}
       </div>
 
-      <PriceInfo supplyAmount={transactionAmount} textColor={'text-red'} />
+      <PriceInfo
+        supplyAmount={transactionAmount}
+        taxAmount={taxAmount}
+        textColor={'text-red'}
+      />
     </div>
   );
 };

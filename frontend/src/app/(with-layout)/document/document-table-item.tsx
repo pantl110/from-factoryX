@@ -2,6 +2,7 @@ import {
   PublishedTaxInvoiceResponseModel,
   ProjectResponseModel,
   WorkInstructionsResponseModel,
+  CashReceiptResponseModel,
 } from '@/types/data-model';
 import { DocumentType, DocumentTypeColorMap } from './types';
 import { useState } from 'react';
@@ -11,6 +12,7 @@ import TaxDocumentView from './tax-document-view';
 import TransactionDocumentView from './transaction-document-view';
 import OrderDocumentView from './order-document-view';
 import ProductionDocumentView from './production-document-view';
+import ReceiptDetailPanel from '@/app/(with-layout)/tax/list/receipt/modals/receipt-detail-panel';
 import {
   formatISODate,
   getLastDeliveryDate,
@@ -23,7 +25,8 @@ interface DocumentTableItemProps {
   data:
     | ProjectResponseModel
     | PublishedTaxInvoiceResponseModel
-    | WorkInstructionsResponseModel;
+    | WorkInstructionsResponseModel
+    | CashReceiptResponseModel;
   documentType: DocumentType;
 }
 
@@ -33,6 +36,7 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
   const [isWorkInstructionPanelOpen, setIsWorkInstructionPanelOpen] =
     useState(false);
   const [isTaxPanelOpen, setIsTaxPanelOpen] = useState(false);
+  const [isCashReceiptPanelOpen, setIsCashReceiptPanelOpen] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({
     left: 0,
     top: 0,
@@ -48,6 +52,7 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
   const taxData = data as PublishedTaxInvoiceResponseModel;
   const projectData = data as ProjectResponseModel;
   const workInstructionData = data as WorkInstructionsResponseModel;
+  const cashReceiptData = data as CashReceiptResponseModel;
 
   // 항목 클릭 시
   const handleItemClick = () => {
@@ -62,6 +67,8 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
       documentType === '매입 세금계산서'
     ) {
       setIsTaxPanelOpen(true);
+    } else if (documentType === '현금영수증') {
+      setIsCashReceiptPanelOpen(true);
     }
   };
 
@@ -81,14 +88,21 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
         {documentType === '매출 세금계산서' ||
         documentType === '매입 세금계산서' ? (
           <>
+            <div className="pl-2 pr-4 flex-1">
+              <RoundChip
+                text={documentType}
+                variant="defaultSmall"
+                color={color}
+              />
+            </div>
             <p
-              className="px-3 flex-1 truncate"
+              className="px-3 flex-[1.5] truncate"
               title={taxData.client_info.name || '-'}
             >
               {taxData.client_info.name || '-'}
             </p>
             <p
-              className="px-3 flex-1 truncate"
+              className="px-3 flex-[1.5] truncate"
               title={getProductNamesDisplay(
                 taxData.line_items?.map((p) => p.name) || []
               )}
@@ -98,19 +112,7 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
               )}
             </p>
             <p
-              className="px-3 flex-1 truncate"
-              title={taxData.transaction_amount?.toLocaleString() || '-'}
-            >
-              {taxData.transaction_amount?.toLocaleString() || '-'}
-            </p>
-            <p
-              className="px-3 flex-1 truncate"
-              title={taxData.tax_amount?.toLocaleString() || '-'}
-            >
-              {taxData.tax_amount?.toLocaleString() || '-'}
-            </p>
-            <p
-              className="px-3 flex-1 truncate"
+              className="px-3 flex-[1.5] truncate"
               title={
                 (
                   taxData.transaction_amount + taxData.tax_amount
@@ -121,16 +123,49 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
                 taxData.transaction_amount + taxData.tax_amount
               )?.toLocaleString() || '-'}
             </p>
-            <p className="px-3 w-[150px]">
+            <p className="px-3 flex-1">
               {formatISODate(taxData.transaction_date) || '-'}
             </p>
-            <p className="px-3 w-[150px]">
+            <p className="px-3 flex-1">
               {formatISODate(taxData.created_at) || '-'}
+            </p>
+          </>
+        ) : documentType === '현금영수증' ? (
+          <>
+            <div className="pl-2 pr-4 flex-1">
+              <RoundChip
+                text={documentType}
+                variant="defaultSmall"
+                color={color}
+              />
+            </div>
+            <p
+              className="px-3 flex-[1.5] truncate"
+              title={cashReceiptData.client_name || '-'}
+            >
+              {cashReceiptData.client_name || '-'}
+            </p>
+            <p
+              className="px-3 flex-[1.5] truncate"
+              title={getProductNamesDisplay(
+                cashReceiptData.product_names || []
+              )}
+            >
+              {getProductNamesDisplay(cashReceiptData.product_names || [])}
+            </p>
+            <p
+              className="px-3 flex-[1.5] truncate"
+              title={cashReceiptData.total_amount?.toLocaleString() || '-'}
+            >
+              {cashReceiptData.total_amount?.toLocaleString() || '-'}
+            </p>
+            <p className="px-3 flex-1">
+              {formatISODate(cashReceiptData.transaction_date) || '-'}
             </p>
           </>
         ) : documentType === '생산지시서' ? (
           <>
-            <div className="px-3 flex-[0.5]">
+            <div className="pl-2 pr-4 flex-[0.5]">
               <RoundChip
                 text={documentType}
                 variant="defaultSmall"
@@ -243,7 +278,7 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
           </>
         ) : projectData ? (
           <>
-            <div className="px-3 flex-[0.5]">
+            <div className="pl-2 pr-4 flex-[0.5]">
               <RoundChip
                 text={documentType}
                 variant="defaultSmall"
@@ -347,6 +382,13 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
         >
           <TaxDocumentView taxId={data.id} />
         </Panel>
+      )}
+      {/* 현금영수증 디테일 판넬 */}
+      {isCashReceiptPanelOpen && (
+        <ReceiptDetailPanel
+          itemId={cashReceiptData.id}
+          onClose={() => setIsCashReceiptPanelOpen(false)}
+        />
       )}
     </>
   );

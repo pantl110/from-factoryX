@@ -43,15 +43,11 @@ const PurchaseTableTiem = ({
       </p>
       <p
         className={`${canLink ? 'flex-[1.5]' : 'flex-1'} px-3 truncate`}
-        title={Number(lineItem.amount).toLocaleString()}
+        title={(
+          Number(lineItem.amount) + Number(lineItem.tax)
+        ).toLocaleString()}
       >
-        {Number(lineItem.amount).toLocaleString()}
-      </p>
-      <p
-        className={`${canLink ? 'flex-[1.5]' : 'flex-1'} px-3 truncate`}
-        title={Number(lineItem.tax).toLocaleString()}
-      >
-        {Number(lineItem.tax).toLocaleString()}
+        {(Number(lineItem.amount) + Number(lineItem.tax)).toLocaleString()}
       </p>
       {canLink && (
         <div className="px-3 flex-[1.5]">

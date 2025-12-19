@@ -7,7 +7,11 @@ import DocumentTable from './document-table';
 import Pagination from '@/components/pagination';
 import { DocumentType } from './types';
 import { Spinner, SearchInput } from '@/ui';
-import { useGetPublishedTaxInvoices, useGetWorkInstructions } from '@/hooks';
+import {
+  useGetPublishedTaxInvoices,
+  useGetWorkInstructions,
+  useGetCashReceipts,
+} from '@/hooks';
 import {
   ProjectResponseModel,
   WorkInstructionsResponseModel,
@@ -35,6 +39,10 @@ const DocumentPageContent = () => {
   // 생산지시서 정렬 방향
   const [workInstructionSortDirection, setWorkInstructionSortDirection] =
     useState<'asc' | 'desc'>('desc');
+  // 현금영수증 정렬 방향
+  const [cashReceiptSortDirection, setCashReceiptSortDirection] = useState<
+    'asc' | 'desc'
+  >('desc');
 
   // 디바운스된 검색어 (500ms)
   const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
@@ -87,6 +95,35 @@ const DocumentPageContent = () => {
       enabled: taxInvoiceQueryParams !== null && !!factoryId,
     });
 
+  // 현금영수증 쿼리 파라미터 구성
+  const cashReceiptQueryParams = useMemo((): {
+    page: number;
+    page_size: number;
+    q?: string;
+    order: 'asc' | 'desc';
+  } | null => {
+    if (selectedType !== '현금영수증') {
+      return null;
+    }
+    return {
+      page: currentPage,
+      page_size: 10,
+      q: debouncedSearchQuery || undefined,
+      order: cashReceiptSortDirection,
+    };
+  }, [
+    selectedType,
+    currentPage,
+    debouncedSearchQuery,
+    cashReceiptSortDirection,
+  ]);
+
+  // 현금영수증 데이터 조회
+  const { data: cashReceiptData, isLoading: isCashReceiptLoading } =
+    useGetCashReceipts(cashReceiptQueryParams || {}, {
+      enabled: cashReceiptQueryParams !== null && !!factoryId,
+    });
+
   // 주문서 데이터 상태
   const [orderDocuments, setOrderDocuments] = useState<ProjectResponseModel[]>(
     []
@@ -104,6 +141,11 @@ const DocumentPageContent = () => {
     () => taxInvoiceData?.data || [],
     [taxInvoiceData?.data]
   );
+  // 현금영수증 데이터 추출
+  const cashReceipts = useMemo(
+    () => cashReceiptData?.data || [],
+    [cashReceiptData?.data]
+  );
 
   // 세금계산서 totalPages 업데이트
   useEffect(() => {
@@ -115,6 +157,13 @@ const DocumentPageContent = () => {
       setTotalPages(taxInvoiceData.pageCnt || 1);
     }
   }, [selectedType, taxInvoiceData]);
+
+  // 현금영수증 totalPages 업데이트
+  useEffect(() => {
+    if (selectedType === '현금영수증' && cashReceiptData) {
+      setTotalPages(cashReceiptData.pageCnt || 1);
+    }
+  }, [selectedType, cashReceiptData]);
 
   // 다른 문서 타입 데이터 가져오기
   useEffect(() => {
@@ -187,6 +236,7 @@ const DocumentPageContent = () => {
   const isTransactionDocument = selectedType === '거래명세서';
   const isTaxDocument =
     selectedType === '매출 세금계산서' || selectedType === '매입 세금계산서';
+  const isCashReceipt = selectedType === '현금영수증';
   const currentData = isOrderDocument
     ? orderDocuments
     : isWorkInstructions
@@ -195,7 +245,9 @@ const DocumentPageContent = () => {
         ? transactionDocuments
         : isTaxDocument
           ? taxInvoices
-          : [];
+          : isCashReceipt
+            ? cashReceipts
+            : [];
 
   // 탭 변경 핸들러
   const handleTabChange = (type: DocumentType) => {
@@ -227,7 +279,11 @@ const DocumentPageContent = () => {
 
           {(isTaxDocument && isTaxDataLoading) ||
           (isWorkInstructions && isWorkInstructionLoading) ||
-          (!isTaxDocument && !isWorkInstructions && isProjectDataLoading) ? (
+          (isCashReceipt && isCashReceiptLoading) ||
+          (!isTaxDocument &&
+            !isWorkInstructions &&
+            !isCashReceipt &&
+            isProjectDataLoading) ? (
             <div className="flex justify-center items-center h-100">
               <Spinner />
             </div>
@@ -255,6 +311,12 @@ const DocumentPageContent = () => {
                 setCurrentPage(1);
               }}
               workInstructionSortDirection={workInstructionSortDirection}
+              // 현금영수증 정렬
+              onCashReceiptSortClick={(direction) => {
+                setCashReceiptSortDirection(direction);
+                setCurrentPage(1);
+              }}
+              cashReceiptSortDirection={cashReceiptSortDirection}
             />
           )}
           {totalPages >= 2 && (

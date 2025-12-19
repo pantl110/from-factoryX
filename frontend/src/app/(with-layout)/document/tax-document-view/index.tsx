@@ -78,12 +78,14 @@ const TaxDocumentView = ({
         <OrderItemInfo
           lineItems={item.line_items}
           transactionAmount={item.transaction_amount}
+          taxAmount={item.tax_amount}
         />
       )}
       {item.tax_invoice_type === 'purchase' && (
         <PurchaseItemInfo
           lineItems={item.line_items}
           transactionAmount={item.transaction_amount}
+          taxAmount={item.tax_amount}
           canLink={canLink}
           setIsLinkModalOpen={setIsLinkModalOpen}
           setSelectedLineItem={setSelectedLineItem}
