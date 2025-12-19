@@ -5,7 +5,7 @@ from tax.api_cash_receipt import router
 from ninja.testing import TestAsyncClient
 from user.models import User, EmailVerification
 from factory.models import Factory, FactoryClient, FactoryMember
-from tax.models import CashReceipt
+from tax.models import CashReceipt, TaxInvoiceAccount
 from stock.models import Material, MaterialHistory
 from asgiref.sync import sync_to_async
 from datetime import date
@@ -288,6 +288,86 @@ class TestTaxService(TestCase):
         self.assertEqual(linked1.cash_receipt_id, self.cash_receipt.id)
         self.assertIsNone(linked2.cash_receipt_id)
         self.assertEqual(new_candidate.cash_receipt_id, self.cash_receipt.id)
+    
+    async def test_cash_receipt_account_creation(self):
+        """현금영수증 동기화 시 account가 자동 생성되는지 테스트"""
+        headers = await self.authenticate()
+        
+        # Mock 데이터에 현금영수증 추가
+        mock_cash_receipt = Mock()
+        mock_cash_receipt.TradeDate = "20250101"
+        mock_cash_receipt.NTSConfirmNum = "TEST_CASH_001"
+        mock_cash_receipt.Amount = "11000"
+        mock_cash_receipt.Tax = "1000"
+        mock_cash_receipt.ServiceCharge = "0"
+        
+        mock_detail = Mock()
+        mock_detail.FranchiseCorpNum = "1663301345"
+        mock_detail.FranchiseCorpName = "테스트 회사"
+        mock_detail.FranchiseCEOName = "테스트 대표"
+        mock_detail.FranchiseAddr = "테스트 주소"
+        mock_detail.FranchiseTel = "010-1234-5678"
+        mock_detail.IdentityNum = "1663301345"
+        mock_detail.TradeType = "승인거래"
+        mock_detail.TradeUsage = "소득공제"
+        mock_detail.TradeMethod = "사업자번호"
+        mock_detail.ItemName = "테스트 품목"
+        mock_detail.CancelType = None
+        mock_detail.CancelNTSConfirmNum = None
+        mock_detail.CancelNTSConfirmDate = None
+        
+        mock_sales_list = Mock()
+        mock_sales_list.SimpleCashBillEx = [mock_cash_receipt]
+        
+        mock_sales_result = Mock()
+        mock_sales_result.CurrentPage = 1
+        mock_sales_result.SimpleCashBillExList = mock_sales_list
+        
+        self.barobill_mock.service.GetPeriodCashBillSalesListEx = Mock(return_value=mock_sales_result)
+        self.barobill_mock.service.GetCashBillExNK = Mock(return_value=mock_detail)
+        
+        # 현금영수증 동기화
+        response = await self.client.post(f"/{self.factory.id}/sync", headers=headers)
+        self.assertEqual(response.status_code, 200)
+        
+        # 동기화된 현금영수증 조회
+        cash_receipts = await sync_to_async(list)(
+            CashReceipt.objects.filter(factory=self.factory, nts_confirm_num="TEST_CASH_001")
+        )
+        self.assertGreater(len(cash_receipts), 0, "현금영수증이 생성되지 않았습니다.")
+        
+        # 각 현금영수증에 대해 account가 생성되었는지 확인
+        for cash_receipt in cash_receipts:
+            account_exists = await sync_to_async(
+                TaxInvoiceAccount.objects.filter(cash_receipt=cash_receipt).exists
+            )()
+            self.assertTrue(
+                account_exists, 
+                f"현금영수증 {cash_receipt.id}에 대한 account가 생성되지 않았습니다."
+            )
+            
+            if account_exists:
+                account = await sync_to_async(TaxInvoiceAccount.objects.get)(cash_receipt=cash_receipt)
+                expected_total = (
+                    (cash_receipt.transaction_amount or 0) 
+                    + (cash_receipt.tax_amount or 0) 
+                    + (cash_receipt.service_charge or 0)
+                )
+                self.assertEqual(
+                    account.total_billed_amount, 
+                    expected_total, 
+                    f"total_billed_amount가 올바르게 계산되지 않았습니다. 예상: {expected_total}, 실제: {account.total_billed_amount}"
+                )
+                self.assertEqual(
+                    account.outstanding_balance, 
+                    expected_total, 
+                    f"outstanding_balance가 올바르게 설정되지 않았습니다. 예상: {expected_total}, 실제: {account.outstanding_balance}"
+                )
+                self.assertEqual(account.status, "waiting", "account 상태가 올바르게 설정되지 않았습니다.")
+                print(f"✅ 현금영수증 {cash_receipt.id}의 account 생성 확인 완료")
+                print(f"   - total_billed_amount: {account.total_billed_amount}")
+                print(f"   - outstanding_balance: {account.outstanding_balance}")
+                print(f"   - status: {account.status}")
     
     def tearDown(self):
         """테스트 후 정리"""

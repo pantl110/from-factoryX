@@ -12,7 +12,8 @@ from tax.schemas.outbound import (
 from tax.schemas.inbound import CashToMaterialHistoryIn
 from api.security import jwt_auth
 from ninja import Query
-from tax.models import CashReceipt
+from tax.models import CashReceipt, TaxInvoiceAccount, AccountStatus
+from tax.utils import create_accounts_for_cash_receipts, TaxInvoiceAccount, AccountStatus
 from datetime import date
 from factory.utils import get_factory_by_id
 from django.conf import settings
@@ -165,6 +166,9 @@ async def sync_cash_receipts(request, factory_id: int):
             )
         # 매출 현금영수증 저장
         sale_cash_receipts = await CashReceipt.objects.abulk_create(sale_cash_receipts)
+        
+        # 매출 현금영수증에 대한 account 생성
+        await create_accounts_for_cash_receipts(sale_cash_receipts)
 
     purchase_cash_receipts = []
 
@@ -230,6 +234,9 @@ async def sync_cash_receipts(request, factory_id: int):
         purchase_cash_receipts = await CashReceipt.objects.abulk_create(
             purchase_cash_receipts
         )
+        
+        # 매입 현금영수증에 대한 account 생성
+        await create_accounts_for_cash_receipts(purchase_cash_receipts)
 
     # 알림 전송
     receipts = sale_cash_receipts + purchase_cash_receipts

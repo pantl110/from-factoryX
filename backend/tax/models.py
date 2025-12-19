@@ -316,7 +316,17 @@ class TaxInvoiceAccount(BaseModel):
         NationalTaxService,
         related_name="tax_invoice_account",
         on_delete=models.CASCADE,
+        null=True,
+        blank=True,
         help_text="세금계산서",
+    )
+    cash_receipt = models.OneToOneField(
+        "CashReceipt",
+        related_name="cash_receipt_account",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        help_text="현금영수증",
     )
     status = models.CharField(
         max_length=20,
