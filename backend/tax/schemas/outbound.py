@@ -73,6 +73,7 @@ class AllCashReceiptOut(Schema):
     transaction_amount: int
     tax_amount: int
     total_amount: int
+    item_name: Optional[str] = None
 
 
 class TaxInvoiceMaterialInfoOut(Schema):

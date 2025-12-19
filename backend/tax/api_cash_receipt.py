@@ -307,6 +307,7 @@ async def list_cash_receipts(
                     transaction_amount=receipt.transaction_amount,
                     tax_amount=receipt.tax_amount,
                     total_amount=total_amount,
+                    item_name=receipt.item_name,
                 )
             )
         return result
