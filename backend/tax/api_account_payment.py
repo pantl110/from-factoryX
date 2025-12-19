@@ -71,14 +71,18 @@ async def create_payment_detail(request, tax_id: int, payload: PaymentDetailCrea
         return payment
     
     payment = await create_payment()
-    return payment
+    return 201, payment
 
 
 @router.get(
     "/{tax_id}",
     summary="[C] 세금계산서 회수/지급 상세내역 조회",
     description="세금계산서 ID로 회수/지급 상세내역을 조회합니다. 입금예정일 기준 최신순으로 정렬됩니다.",
-    response=List[PaymentDetailOut],
+    response={
+        200: List[PaymentDetailOut],
+        404: dict,
+        500: dict,
+    },
 )
 @paginate(CustomPageNumberPagination)
 async def get_payment_details(request, tax_id: int):
