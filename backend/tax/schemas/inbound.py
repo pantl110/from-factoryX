@@ -140,3 +140,10 @@ class PaymentDetailCreateIn(Schema):
     expected_payment_date: Optional[date] = Field(None, description="입금예정일")
     amount_received: int = Field(..., description="받은 금액/지급 금액")
     # outstanding_amount_at_payment는 백엔드에서 자동 계산됨
+
+
+class SendEmailIn(Schema):
+    """이메일 발송 스키마"""
+    recipient: str = Field(..., description="수신자 이메일 주소")
+    subject: str = Field(..., description="이메일 제목")
+    content: str = Field(..., description="이메일 내용")

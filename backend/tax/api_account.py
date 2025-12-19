@@ -3,12 +3,61 @@ from ninja.errors import HttpError
 from asgiref.sync import sync_to_async
 from typing import Literal
 from datetime import date
+from django.conf import settings
+from django.core.mail import send_mail
 from api.security import jwt_auth
 from tax.models import TaxInvoiceAccount, AccountStatus
 from tax.schemas.outbound import TaxInvoiceAccountOut
-from tax.schemas.inbound import TaxInvoiceAccountUpdateIn
+from tax.schemas.inbound import TaxInvoiceAccountUpdateIn, SendEmailIn
 
 router = Router(tags=["Tax Account"], auth=jwt_auth)
+
+
+@router.post(
+    "/send-email/{id}",
+    summary="[C] 이메일 발송",
+    description="매출 세금계산서 채권/채무 정보와 관련하여 이메일을 발송하고 청구서 발송 횟수를 증가시킵니다.",
+    response={200: dict, 400: dict, 404: dict, 500: dict},
+)
+async def send_email_for_account(
+    request,
+    id: int,
+    payload: SendEmailIn,
+):
+    @sync_to_async
+    def send_email():
+        # 매출 세금계산서의 TaxInvoiceAccount 조회
+        try:
+            account = TaxInvoiceAccount.objects.get(tax_invoice_id=id)
+        except TaxInvoiceAccount.DoesNotExist:
+            raise HttpError(404, "해당 세금계산서의 채권/채무 정보를 찾을 수 없습니다.")
+        
+        # 이메일 발송
+        try:
+            from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@factory-x.com")
+            
+            send_mail(
+                payload.subject,
+                payload.content,
+                from_email,
+                [payload.recipient],
+                fail_silently=False,
+            )
+            
+            # 청구서 발송 횟수 증가
+            account.invoice_sent_count += 1
+            account.save()
+            
+            return {
+                "message": "이메일이 성공적으로 발송되었습니다.",
+                "recipient": payload.recipient,
+                "invoice_sent_count": account.invoice_sent_count
+            }
+        except Exception as e:
+            raise HttpError(500, f"이메일 발송 중 오류가 발생했습니다: {str(e)}")
+    
+    result = await send_email()
+    return result
 
 
 @router.patch(

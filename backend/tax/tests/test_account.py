@@ -1,5 +1,6 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
+from unittest.mock import patch, MagicMock
 from factory.models import Factory, FactoryClient, FactoryMember
 from project.models import Project
 from tax.models import NationalTaxService, TaxInvoiceAccount, CashReceipt, AccountStatus
@@ -234,6 +235,115 @@ class TaxAccountTestCase(TestCase):
         self.assertEqual(data["status"], "partial")
         self.assertEqual(data["invoice_sent_count"], 2)
         self.assertEqual(data["notes"], "테스트 메모")
+
+    @patch('tax.api_account.send_mail')
+    def test_send_email_for_account(self, mock_send_mail):
+        """이메일 발송 및 invoice_sent_count 증가 테스트"""
+        tax_invoice = NationalTaxService.objects.create(
+            factory=self.factory,
+            client=self.client_company,
+            transaction_date=date(2025, 6, 4),
+            transaction_amount=100000,
+            tax_amount=10000,
+            publish_status="published",
+        )
+        account = TaxInvoiceAccount.objects.get(tax_invoice=tax_invoice)
+        initial_count = account.invoice_sent_count
+
+        response = self.client.post(
+            f"/v2/account/send-email/{tax_invoice.id}",
+            data=json.dumps({
+                "recipient": "client@example.com",
+                "subject": "채권 안내",
+                "content": "안녕하세요.",
+            }),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {self.token}",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["invoice_sent_count"], initial_count + 1)
+        account.refresh_from_db()
+        self.assertEqual(account.invoice_sent_count, initial_count + 1)
+
+    def test_send_email_for_account_not_found(self):
+        """존재하지 않는 세금계산서 ID로 이메일 발송 시도"""
+        response = self.client.post(
+            "/v2/account/send-email/99999",
+            data=json.dumps({
+                "recipient": "client@example.com",
+                "subject": "채권 안내",
+                "content": "안녕하세요.",
+            }),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {self.token}",
+        )
+        self.assertEqual(response.status_code, 404)
+
+    @patch('tax.api_account.send_mail')
+    def test_send_email_multiple_times_increases_count(self, mock_send_mail):
+        """여러 번 이메일 발송 시 invoice_sent_count가 계속 증가하는지 테스트"""
+        tax_invoice = NationalTaxService.objects.create(
+            factory=self.factory,
+            client=self.client_company,
+            transaction_date=date(2025, 6, 4),
+            transaction_amount=100000,
+            tax_amount=10000,
+            publish_status="published",
+        )
+        account = TaxInvoiceAccount.objects.get(tax_invoice=tax_invoice)
+        initial_count = account.invoice_sent_count
+
+        payload = {
+            "recipient": "client@example.com",
+            "subject": "채권 안내",
+            "content": "안녕하세요.",
+        }
+
+        for i in range(3):
+            response = self.client.post(
+                f"/v2/account/send-email/{tax_invoice.id}",
+                data=json.dumps(payload),
+                content_type="application/json",
+                HTTP_AUTHORIZATION=f"Bearer {self.token}",
+            )
+            self.assertEqual(response.status_code, 200)
+            self.assertEqual(response.json()["invoice_sent_count"], initial_count + i + 1)
+
+        account.refresh_from_db()
+        self.assertEqual(account.invoice_sent_count, initial_count + 3)
+
+    @patch('tax.api_account.send_mail')
+    def test_send_email_failure_does_not_increase_count(self, mock_send_mail):
+        """이메일 발송 실패 시 invoice_sent_count가 증가하지 않는지 테스트"""
+        tax_invoice = NationalTaxService.objects.create(
+            factory=self.factory,
+            client=self.client_company,
+            transaction_date=date(2025, 6, 4),
+            transaction_amount=100000,
+            tax_amount=10000,
+            publish_status="published",
+        )
+        account = TaxInvoiceAccount.objects.get(tax_invoice=tax_invoice)
+        initial_count = account.invoice_sent_count
+
+        mock_send_mail.side_effect = Exception("이메일 발송 실패")
+
+        response = self.client.post(
+            f"/v2/account/send-email/{tax_invoice.id}",
+            data=json.dumps({
+                "recipient": "client@example.com",
+                "subject": "채권 안내",
+                "content": "안녕하세요.",
+            }),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {self.token}",
+        )
+
+        self.assertEqual(response.status_code, 500)
+        account.refresh_from_db()
+        self.assertEqual(account.invoice_sent_count, initial_count)
 
     def test_get_cash_receipt_account_not_found(self):
         """존재하지 않는 현금영수증 채권/채무 정보 조회"""
