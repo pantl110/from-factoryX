@@ -18,55 +18,6 @@ const useGetUnlinkedProjects = () => {
   const factoryId = useMemberStore((state) => state.factoryId);
   const queryClient = useQueryClient();
 
-  const fetchUnlinkedProjects = useCallback(
-    async (
-      params: GetUnlinkedProjectsModel
-    ): Promise<ProjectListResponseModel> => {
-      if (!factoryId) {
-        throw new Error('Factory ID를 찾을 수 없습니다.');
-      }
-
-      const queryParams = new URLSearchParams({
-        factory_id: factoryId.toString(),
-        tax_invoice__isnull: 'true', // 세금계산서가 연결되지 않은 프로젝트만 조회
-        ...(params.page && { page: params.page.toString() }),
-        ...(params.page_size && { page_size: params.page_size.toString() }),
-        ...(params.search && { search: params.search }),
-        ...(params.order_by && { order_by: params.order_by }),
-      });
-
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v2/project?${queryParams.toString()}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-        }
-      );
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error('프로젝트를 찾을 수 없습니다.');
-        }
-        if (response.status === 403) {
-          throw new Error('접근 권한이 없습니다.');
-        }
-
-        const errorData = await response.json().catch(() => ({}));
-        const errorMessage =
-          (errorData as { detail?: string })?.detail ||
-          '프로젝트 조회에 실패했습니다.';
-        throw new Error(errorMessage);
-      }
-
-      const data: ProjectListResponseModel = await response.json();
-      return data;
-    },
-    [factoryId]
-  );
-
   const getUnlinkedProjects = useCallback(
     async (params: GetUnlinkedProjectsModel) => {
       setIsLoading(true);
@@ -82,7 +33,51 @@ const useGetUnlinkedProjects = () => {
             params.page_size,
             params.order_by,
           ],
-          queryFn: () => fetchUnlinkedProjects(params),
+          queryFn: async () => {
+            if (!factoryId) {
+              throw new Error('Factory ID를 찾을 수 없습니다.');
+            }
+
+            const queryParams = new URLSearchParams({
+              factory_id: factoryId.toString(),
+              tax_invoice__isnull: 'true', // 세금계산서가 연결되지 않은 프로젝트만 조회
+              ...(params.page && { page: params.page.toString() }),
+              ...(params.page_size && {
+                page_size: params.page_size.toString(),
+              }),
+              ...(params.search && { search: params.search }),
+              ...(params.order_by && { order_by: params.order_by }),
+            });
+
+            const response = await fetch(
+              `${process.env.NEXT_PUBLIC_API_URL}/v2/project?${queryParams.toString()}`,
+              {
+                method: 'GET',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                credentials: 'include',
+              }
+            );
+
+            if (!response.ok) {
+              if (response.status === 404) {
+                throw new Error('프로젝트를 찾을 수 없습니다.');
+              }
+              if (response.status === 403) {
+                throw new Error('접근 권한이 없습니다.');
+              }
+
+              const errorData = await response.json().catch(() => ({}));
+              const errorMessage =
+                (errorData as { detail?: string })?.detail ||
+                '프로젝트 조회에 실패했습니다.';
+              throw new Error(errorMessage);
+            }
+
+            const data: ProjectListResponseModel = await response.json();
+            return data;
+          },
         });
 
         return { success: true, data };
@@ -97,7 +92,7 @@ const useGetUnlinkedProjects = () => {
         setIsLoading(false);
       }
     },
-    [fetchUnlinkedProjects, queryClient, factoryId]
+    [queryClient, factoryId]
   );
 
   return { getUnlinkedProjects, isLoading, error };

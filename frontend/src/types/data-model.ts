@@ -1611,6 +1611,27 @@ export interface TaxInvoiceAccountModel {
 }
 
 //////////////////////
+// Payment Detail API
+export interface PaymentDetailCreateModel {
+  payment_date: string; // Date string (YYYY-MM-DD)
+  amount_received: number;
+  outstanding_amount_at_payment: number;
+  expected_payment_date: string | null; // Date string (YYYY-MM-DD) or null
+}
+
+export interface PaymentDetailResponseModel {
+  id: number;
+  tax_invoice_account: number; // TaxInvoiceAccount ID
+  payment_date: string; // Date string (YYYY-MM-DD)
+  amount_received: number;
+  outstanding_amount_at_payment: number;
+  overdue_days: number;
+  expected_payment_date: string | null; // Date string (YYYY-MM-DD) or null
+  created_at?: string;
+  updated_at?: string;
+}
+
+//////////////////////
 // Work Instruction API
 export interface WorkInstructionsPlanModel {
   avg_production_time: number;

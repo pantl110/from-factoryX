@@ -38,7 +38,7 @@ const useUpdateTaxInvoiceAccount =
 
         try {
           const response = await fetch(
-            `${process.env.NEXT_PUBLIC_API_URL}/v2/tax/account/${taxId}`,
+            `${process.env.NEXT_PUBLIC_API_URL}/v2/account/${taxId}`,
             {
               method: 'PATCH',
               headers: {

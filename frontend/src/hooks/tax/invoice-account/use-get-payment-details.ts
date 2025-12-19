@@ -2,34 +2,34 @@
 
 import { useState, useCallback } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { TaxInvoiceAccountModel } from '@/types/data-model';
+import { PaymentDetailResponseModel } from '@/types/data-model';
 
-interface UseGetTaxInvoiceAccountReturnModel {
-  getTaxInvoiceAccount: (taxId: number) => Promise<{
+interface UseGetPaymentDetailsReturnModel {
+  getPaymentDetails: (taxId: number) => Promise<{
     success: boolean;
-    data?: TaxInvoiceAccountModel;
+    data?: PaymentDetailResponseModel[];
     error?: string;
   }>;
   isLoading: boolean;
   error: string | null;
 }
 
-const useGetTaxInvoiceAccount = (): UseGetTaxInvoiceAccountReturnModel => {
+const useGetPaymentDetails = (): UseGetPaymentDetailsReturnModel => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
-  const getTaxInvoiceAccount = useCallback(
+  const getPaymentDetails = useCallback(
     async (taxId: number) => {
       setIsLoading(true);
       setError(null);
 
       try {
-        const data = await queryClient.fetchQuery<TaxInvoiceAccountModel>({
-          queryKey: ['tax-invoice-account', taxId],
+        const data = await queryClient.fetchQuery<PaymentDetailResponseModel[]>({
+          queryKey: ['payment-details', taxId],
           queryFn: async () => {
             const response = await fetch(
-              `${process.env.NEXT_PUBLIC_API_URL}/v2/account/${taxId}`,
+              `${process.env.NEXT_PUBLIC_API_URL}/v2/account-payment/${taxId}`,
               {
                 method: 'GET',
                 headers: {
@@ -54,11 +54,11 @@ const useGetTaxInvoiceAccount = (): UseGetTaxInvoiceAccountReturnModel => {
               const errorData = await response.json().catch(() => ({}));
               const errorMessage =
                 (errorData as { detail?: string })?.detail ||
-                '세금계산서 채권/채무 정보 조회에 실패했습니다.';
+                '회수/지급 상세내역 조회에 실패했습니다.';
               throw new Error(errorMessage);
             }
 
-            const data: TaxInvoiceAccountModel = await response.json();
+            const data: PaymentDetailResponseModel[] = await response.json();
             return data;
           },
         });
@@ -85,10 +85,10 @@ const useGetTaxInvoiceAccount = (): UseGetTaxInvoiceAccountReturnModel => {
   );
 
   return {
-    getTaxInvoiceAccount,
+    getPaymentDetails,
     isLoading,
     error,
   };
 };
 
-export default useGetTaxInvoiceAccount;
+export default useGetPaymentDetails;

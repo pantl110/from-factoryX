@@ -17,35 +17,6 @@ const useGetTaxInvoiceDetail = (): UseGetTaxInvoiceDetailReturnModel => {
   const [error, setError] = useState<string | null>(null);
   const queryClient = useQueryClient();
 
-  const fetchTaxInvoiceDetail = useCallback(
-    async (taxId: number): Promise<PublishedTaxInvoiceResponseModel> => {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/tax/${taxId}`,
-        {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          credentials: 'include',
-        }
-      );
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error('세금계산서를 찾을 수 없습니다.');
-        }
-        if (response.status === 403) {
-          throw new Error('접근 권한이 없습니다.');
-        }
-        throw new Error('세금계산서 조회에 실패했습니다.');
-      }
-
-      const data: PublishedTaxInvoiceResponseModel = await response.json();
-      return data;
-    },
-    []
-  );
-
   const getTaxInvoiceDetail = useCallback(
     async (taxId: number) => {
       setIsLoading(true);
@@ -55,7 +26,32 @@ const useGetTaxInvoiceDetail = (): UseGetTaxInvoiceDetailReturnModel => {
         const data =
           await queryClient.fetchQuery<PublishedTaxInvoiceResponseModel>({
             queryKey: ['tax-invoice-detail', taxId],
-            queryFn: () => fetchTaxInvoiceDetail(taxId),
+            queryFn: async () => {
+              const response = await fetch(
+                `${process.env.NEXT_PUBLIC_API_URL}/v1/tax/${taxId}`,
+                {
+                  method: 'GET',
+                  headers: {
+                    'Content-Type': 'application/json',
+                  },
+                  credentials: 'include',
+                }
+              );
+
+              if (!response.ok) {
+                if (response.status === 404) {
+                  throw new Error('세금계산서를 찾을 수 없습니다.');
+                }
+                if (response.status === 403) {
+                  throw new Error('접근 권한이 없습니다.');
+                }
+                throw new Error('세금계산서 조회에 실패했습니다.');
+              }
+
+              const data: PublishedTaxInvoiceResponseModel =
+                await response.json();
+              return data;
+            },
           });
 
         return {
@@ -76,7 +72,7 @@ const useGetTaxInvoiceDetail = (): UseGetTaxInvoiceDetailReturnModel => {
         setIsLoading(false);
       }
     },
-    [fetchTaxInvoiceDetail, queryClient]
+    [queryClient]
   );
 
   return {

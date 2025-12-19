@@ -350,6 +350,4 @@ export const AccountsStatusColorMap: Record<
 export type CollectionTermsType =
   | 'INVOICE_30'
   | 'INVOICE_EOM_NEXT'
-  | 'MONTH_END_25_NEXT'
-  | 'INSPECTION_30'
   | 'CUSTOM';
