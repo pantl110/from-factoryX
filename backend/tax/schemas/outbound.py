@@ -141,9 +141,16 @@ class PaymentDetailOut(ModelSchema):
         fields = "__all__"
 
 
+class CashReceiptOut(ModelSchema):
+    class Meta:
+        model = CashReceipt
+        fields = "__all__"
+
+
 class TaxInvoiceAccountOut(ModelSchema):
     # 세금계산서 정보까지 함께 내려주기 위해 중첩 스키마 추가
-    tax_invoice: NationalTaxServiceOut
+    tax_invoice: Optional[NationalTaxServiceOut] = None
+    cash_receipt: Optional[CashReceiptOut] = None
     client: Optional[FactoryClientOut] = None
 
     class Meta:
@@ -151,8 +158,20 @@ class TaxInvoiceAccountOut(ModelSchema):
         fields = "__all__"
 
     @staticmethod
+    def resolve_tax_invoice(obj):
+        """tax_invoice가 있으면 반환, 없으면 None"""
+        return obj.tax_invoice if obj.tax_invoice else None
+
+    @staticmethod
+    def resolve_cash_receipt(obj):
+        """cash_receipt가 있으면 반환, 없으면 None"""
+        return obj.cash_receipt if obj.cash_receipt else None
+
+    @staticmethod
     def resolve_client(obj):
-        """tax_invoice의 client 정보를 반환"""
+        """tax_invoice 또는 cash_receipt의 client 정보를 반환"""
         if obj.tax_invoice and obj.tax_invoice.client:
             return obj.tax_invoice.client
+        if obj.cash_receipt and obj.cash_receipt.client:
+            return obj.cash_receipt.client
         return None

@@ -2,10 +2,11 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from factory.models import Factory, FactoryClient, FactoryMember
 from project.models import Project
-from tax.models import NationalTaxService, TaxInvoiceAccount
+from tax.models import NationalTaxService, TaxInvoiceAccount, CashReceipt, AccountStatus
 import jwt
 from django.conf import settings
 from datetime import datetime, timedelta, date
+import json
 
 
 User = get_user_model()
@@ -45,7 +46,7 @@ class TaxAccountTestCase(TestCase):
         )
 
         response = self.client.get(
-            f"/v2/account/{tax_invoice.id}",
+            f"/v2/account/{tax_invoice.id}?type=tax",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
 
@@ -94,7 +95,7 @@ class TaxAccountTestCase(TestCase):
         )
 
         response = self.client.get(
-            f"/v2/account/{tax_invoice.id}",
+            f"/v2/account/{tax_invoice.id}?type=tax",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
 
@@ -141,8 +142,104 @@ class TaxAccountTestCase(TestCase):
     def test_get_tax_invoice_account_not_found(self):
         """존재하지 않는 채권/채무 정보 조회"""
         response = self.client.get(
-            "/v2/account/99999",
+            "/v2/account/99999?type=tax",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
         self.assertEqual(response.status_code, 404)
         self.assertIn("채권/채무 정보를 찾을 수 없습니다", response.json()["detail"])
+
+    def test_get_cash_receipt_account(self):
+        """현금영수증 ID로 채권/채무 정보 조회"""
+        cash_receipt = CashReceipt.objects.create(
+            user=self.user,
+            factory=self.factory,
+            cash_receipt_type="sales",
+            transaction_date=date(2025, 6, 4),
+            client=self.client_company,
+            transaction_amount=100000,
+            tax_amount=10000,
+            service_charge=0,
+        )
+        # 현금영수증용 TaxInvoiceAccount 생성
+        TaxInvoiceAccount.objects.create(
+            cash_receipt=cash_receipt,
+            status=AccountStatus.waiting,
+            invoice_sent_count=0,
+            total_billed_amount=110000,
+            outstanding_balance=110000,
+        )
+
+        response = self.client.get(
+            f"/v2/account/{cash_receipt.id}?type=cash-receipt",
+            HTTP_AUTHORIZATION=f"Bearer {self.token}",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+
+        # 채권/채무 기본 정보 검증
+        self.assertEqual(data["total_billed_amount"], 110000)
+        self.assertEqual(data["outstanding_balance"], 110000)
+        self.assertEqual(data["invoice_sent_count"], 0)
+        self.assertEqual(data["status"], "waiting")
+
+        # 현금영수증 전체 정보가 중첩 객체로 포함되는지 검증
+        self.assertIn("cash_receipt", data)
+        self.assertIsInstance(data["cash_receipt"], dict)
+        self.assertEqual(data["cash_receipt"]["id"], cash_receipt.id)
+        self.assertEqual(data["cash_receipt"]["transaction_amount"], 100000)
+        self.assertEqual(data["cash_receipt"]["tax_amount"], 10000)
+
+        # client 정보가 포함되는지 검증
+        self.assertIn("client", data)
+        self.assertIsNotNone(data["client"])
+        self.assertEqual(data["client"]["id"], self.client_company.id)
+
+    def test_update_cash_receipt_account(self):
+        """현금영수증 채권/채무 정보 수정"""
+        cash_receipt = CashReceipt.objects.create(
+            user=self.user,
+            factory=self.factory,
+            cash_receipt_type="sales",
+            transaction_date=date(2025, 6, 4),
+            client=self.client_company,
+            transaction_amount=100000,
+            tax_amount=10000,
+            service_charge=0,
+        )
+        # 현금영수증용 TaxInvoiceAccount 생성
+        TaxInvoiceAccount.objects.create(
+            cash_receipt=cash_receipt,
+            status=AccountStatus.waiting,
+            invoice_sent_count=0,
+            total_billed_amount=110000,
+            outstanding_balance=110000,
+        )
+
+        payload = {
+            "status": "partial",
+            "invoice_sent_count": 2,
+            "notes": "테스트 메모",
+        }
+
+        response = self.client.patch(
+            f"/v2/account/{cash_receipt.id}?type=cash-receipt",
+            data=json.dumps(payload),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {self.token}",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["status"], "partial")
+        self.assertEqual(data["invoice_sent_count"], 2)
+        self.assertEqual(data["notes"], "테스트 메모")
+
+    def test_get_cash_receipt_account_not_found(self):
+        """존재하지 않는 현금영수증 채권/채무 정보 조회"""
+        response = self.client.get(
+            "/v2/account/99999?type=cash-receipt",
+            HTTP_AUTHORIZATION=f"Bearer {self.token}",
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertIn("현금영수증", response.json()["detail"])

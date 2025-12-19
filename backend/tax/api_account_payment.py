@@ -111,10 +111,8 @@ async def get_payment_details(
         try:
             if type == "tax":
                 account = TaxInvoiceAccount.objects.get(tax_invoice_id=id)
-                error_msg = "해당 세금계산서의 채권/채무 정보를 찾을 수 없습니다."
             else:  # cash-receipt
                 account = TaxInvoiceAccount.objects.get(cash_receipt_id=id)
-                error_msg = "해당 현금영수증의 채권/채무 정보를 찾을 수 없습니다."
             # 입금예정일 기준 내림차순 정렬 (null 값은 마지막에)
             payments = PaymentDetail.objects.filter(
                 tax_invoice_account=account
@@ -124,7 +122,10 @@ async def get_payment_details(
             )
             return list(payments)
         except TaxInvoiceAccount.DoesNotExist:
-            raise HttpError(404, error_msg)
+            if type == "tax":
+                raise HttpError(404, "해당 세금계산서의 채권/채무 정보를 찾을 수 없습니다.")
+            else:
+                raise HttpError(404, "해당 현금영수증의 채권/채무 정보를 찾을 수 없습니다.")
     
     payments = await get_payments()
     return payments

@@ -92,16 +92,17 @@ async def get_tax_invoice_account(
                 else:
                     setattr(account.tax_invoice, "project_id", None)
                 
-                error_msg = "해당 세금계산서의 채권/채무 정보를 찾을 수 없습니다."
+                return account
             else:  # cash-receipt
                 account = TaxInvoiceAccount.objects.select_related(
                     "cash_receipt", "cash_receipt__client"
                 ).get(cash_receipt_id=id)
-                error_msg = "해당 현금영수증의 채권/채무 정보를 찾을 수 없습니다."
-
-            return account
+                return account
         except TaxInvoiceAccount.DoesNotExist:
-            raise HttpError(404, error_msg)
+            if type == "tax":
+                raise HttpError(404, "해당 세금계산서의 채권/채무 정보를 찾을 수 없습니다.")
+            else:
+                raise HttpError(404, "해당 현금영수증의 채권/채무 정보를 찾을 수 없습니다.")
     
     account = await get_account()
     return account
