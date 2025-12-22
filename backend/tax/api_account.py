@@ -6,9 +6,10 @@ from datetime import date
 from django.conf import settings
 from django.core.mail import send_mail
 from api.security import jwt_auth
-from tax.models import TaxInvoiceAccount, AccountStatus
+from tax.models import TaxInvoiceAccount
 from tax.schemas.outbound import TaxInvoiceAccountOut
 from tax.schemas.inbound import TaxInvoiceAccountUpdateIn, SendEmailIn
+from tax.utils import update_account_balance_and_status
 
 router = Router(tags=["Tax Account"], auth=jwt_auth)
 
@@ -91,21 +92,25 @@ async def update_tax_invoice_account(
         # 필드 업데이트
         update_data = payload.dict(exclude_unset=True)
         
-        # 나머지 필드 업데이트
+        # outstanding_balance가 변경되는 경우
+        if "outstanding_balance" in update_data:
+            new_balance = update_data.pop("outstanding_balance")
+            update_account_balance_and_status(account, new_balance)
+        
+        # 나머지 필드 업데이트 (status는 제외 - 나중에 자동 계산)
+        status_value = None
+        if "status" in update_data:
+            status_value = update_data.pop("status")
+        
         for field, value in update_data.items():
             if hasattr(account, field):
                 setattr(account, field, value)
         
-        # 약정입금일이 오늘보다 과거이고 미수금액이 0보다 크면 상태를 overdue로 변경
-        today = date.today()
-        if (
-            account.agreed_payment_date 
-            and account.agreed_payment_date < today 
-            and account.outstanding_balance > 0
-        ):
-            account.status = AccountStatus.overdue
+        # agreed_payment_date, outstanding_balance, status 등이 변경된 경우 상태 재계산
+        # 약정 지급일이 지났으면 무조건 overdue로 설정 (status 수동 변경 무시)
+        if update_data or status_value is not None:
+            update_account_balance_and_status(account, account.outstanding_balance)
         
-        account.save()
         return account
     
     account = await update_account()
