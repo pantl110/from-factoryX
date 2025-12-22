@@ -207,6 +207,7 @@ class CashReceipt(BaseModel):
     )
     transaction_amount = models.IntegerField(help_text="공급 가액")
     tax_amount = models.IntegerField(help_text="세액")
+    is_hidden = models.BooleanField(default=False, help_text="숨김 여부")
     service_charge = models.IntegerField(
         default=0,
         help_text="봉사료",

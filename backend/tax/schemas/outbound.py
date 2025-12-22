@@ -98,6 +98,7 @@ class AllCashReceiptOut(Schema):
     tax_amount: int
     total_amount: int
     item_name: Optional[str] = None
+    account: Optional[TaxInvoiceAccountSimpleOut] = Field(default=None, description="채권/채무 정보")
 
 
 class TaxInvoiceMaterialInfoOut(Schema):

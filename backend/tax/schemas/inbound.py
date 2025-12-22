@@ -1,5 +1,5 @@
 from ninja import Schema, ModelSchema, Field, FilterSchema
-from tax.models import NationalTaxService, PublishStatus
+from tax.models import NationalTaxService, CashReceipt, PublishStatus
 from typing import List, Optional
 from datetime import date
 from pydantic import field_validator
@@ -111,6 +111,10 @@ class TaxInvoiceFilter(FilterSchema):
     publish_status: Optional[str] = Field(
         None, q="publish_status", description="발행 상태"
     )
+
+
+class CashReceiptUpdateIn(Schema):
+    is_hidden: Optional[bool] = Field(None, description="숨김 여부")
 
 
 class CashToMaterialHistoryIn(Schema):

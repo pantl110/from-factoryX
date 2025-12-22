@@ -9,7 +9,7 @@ from tax.schemas.outbound import (
     CashReceiptDetailOut,
     CashReceiptDetailWithMaterialOut,
 )
-from tax.schemas.inbound import CashToMaterialHistoryIn
+from tax.schemas.inbound import CashToMaterialHistoryIn, CashReceiptUpdateIn
 from api.security import jwt_auth
 from ninja import Query
 from tax.models import CashReceipt, TaxInvoiceAccount, AccountStatus
@@ -279,7 +279,7 @@ async def list_cash_receipts(
         def get_filtered_receipts():
             qs = CashReceipt.objects.filter(
                 client__factory_id=factory_id
-            ).prefetch_related("client")
+            ).prefetch_related("client", "cash_receipt_account")
             if q:
                 ids_client = list(
                     qs.filter(client__name__icontains=q).values_list("id", flat=True)
@@ -299,6 +299,8 @@ async def list_cash_receipts(
         result = []
         for receipt in receipts:
             total_amount = receipt.transaction_amount + receipt.tax_amount
+            # account 정보 가져오기 (prefetch_related로 가져온 경우 None일 수 있음)
+            account = getattr(receipt, 'cash_receipt_account', None)
             result.append(
                 AllCashReceiptOut(
                     id=receipt.id,
@@ -308,6 +310,7 @@ async def list_cash_receipts(
                     tax_amount=receipt.tax_amount,
                     total_amount=total_amount,
                     item_name=receipt.item_name,
+                    account=account,
                 )
             )
         return result
@@ -354,6 +357,55 @@ async def get_cash_receipt(request, cash_receipt_id: int):
         ).aget(id=cash_receipt_id)
     except CashReceipt.DoesNotExist:
         raise HttpError(404, "해당 현금영수증이 존재하지 않습니다.")
+    return cash_receipt
+
+
+@router.patch(
+    "/{cash_receipt_id}",
+    summary="[C] 현금영수증 수정",
+    description="현금영수증의 숨김 여부를 수정합니다.",
+    response={200: CashReceiptDetailOut, 400: dict, 404: dict, 500: dict},
+)
+async def update_cash_receipt(
+    request, cash_receipt_id: int, payload: CashReceiptUpdateIn
+):
+    user = request.auth
+
+    # 현금영수증 조회 및 권한 검증
+    @sync_to_async
+    def get_cash_receipt_for_update():
+        try:
+            return CashReceipt.objects.select_related("factory", "client").get(
+                id=cash_receipt_id
+            )
+        except CashReceipt.DoesNotExist:
+            raise HttpError(404, "해당 현금영수증이 존재하지 않습니다.")
+
+    cash_receipt = await get_cash_receipt_for_update()
+
+    # 공장 멤버 권한 검증
+    if cash_receipt.factory:
+        await is_factory_member(cash_receipt.factory.id, user)
+
+    @sync_to_async
+    def update_receipt():
+        data = payload.dict(exclude_unset=True)
+
+        # is_hidden 필드만 수정 가능
+        allowed_fields = {"is_hidden"}
+        data = {k: v for k, v in data.items() if k in allowed_fields}
+
+        if not data:
+            raise HttpError(400, "수정할 필드가 없습니다.")
+
+        for attr, value in data.items():
+            setattr(cash_receipt, attr, value)
+
+        cash_receipt.save()
+
+        return cash_receipt
+
+    cash_receipt = await update_receipt()
     return cash_receipt
 
 

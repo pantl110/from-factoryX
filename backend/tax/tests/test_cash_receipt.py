@@ -9,6 +9,9 @@ from tax.models import CashReceipt, TaxInvoiceAccount
 from stock.models import Material, MaterialHistory
 from asgiref.sync import sync_to_async
 from datetime import date
+import json
+import jwt
+from django.conf import settings
 
 
 class TestTaxService(TestCase):
@@ -39,6 +42,8 @@ class TestTaxService(TestCase):
         
         self.client = TestAsyncClient(router)
         self.auth_client = TestAsyncClient(user_router)
+        
+        # 사용자 생성 후 JWT 토큰 생성
         self.user = User.objects.create_user(
             email="test1@example.com",
             password="password1234!",
@@ -53,6 +58,7 @@ class TestTaxService(TestCase):
             verification_type=EmailVerification.TypeChoice.SIGNUP,
             is_verified=True,
         )
+        
         # 공장 생성
         self.factory = Factory.objects.create(
             name="다운테크",
@@ -115,6 +121,18 @@ class TestTaxService(TestCase):
             trade_usage="소득공제",
             trade_method="사업자번호",
             item_name="M8 볼트 세트",
+        )
+        
+        # JWT 토큰 생성
+        self.token = self.generate_jwt_token()
+    
+    def generate_jwt_token(self):
+        """JWT 토큰 생성"""
+        from datetime import datetime, timedelta
+        return jwt.encode(
+            {"user_id": self.user.id, "exp": datetime.now() + timedelta(hours=1)},
+            settings.SECRET_KEY,
+            algorithm="HS256",
         )
 
     async def authenticate(self):
@@ -368,6 +386,75 @@ class TestTaxService(TestCase):
                 print(f"   - total_billed_amount: {account.total_billed_amount}")
                 print(f"   - outstanding_balance: {account.outstanding_balance}")
                 print(f"   - status: {account.status}")
+    
+    async def test_update_cash_receipt_hidden_status(self):
+        """현금영수증 숨김 상태 변경 테스트 (PATCH API)"""
+        # is_hidden만 변경
+        response = await self.client.patch(
+            f"/{self.cash_receipt.id}",
+            json={"is_hidden": True},
+            headers={"Authorization": f"Bearer {self.token}"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        # 변경된 내용 확인
+        await sync_to_async(self.cash_receipt.refresh_from_db)()
+        self.assertTrue(self.cash_receipt.is_hidden)
+
+        # 다시 숨김 해제
+        response = await self.client.patch(
+            f"/{self.cash_receipt.id}",
+            json={"is_hidden": False},
+            headers={"Authorization": f"Bearer {self.token}"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        # 변경된 내용 확인
+        await sync_to_async(self.cash_receipt.refresh_from_db)()
+        self.assertFalse(self.cash_receipt.is_hidden)
+
+    async def test_update_cash_receipt_not_found(self):
+        """존재하지 않는 현금영수증 수정 시도 테스트"""
+        response = await self.client.patch(
+            "/99999",
+            json={"is_hidden": True},
+            headers={"Authorization": f"Bearer {self.token}"},
+        )
+
+        self.assertEqual(response.status_code, 404)
+        self.assertIn("해당 현금영수증이 존재하지 않습니다", response.json()["detail"])
+
+    async def test_update_cash_receipt_empty_payload(self):
+        """수정할 필드가 없을 때 테스트"""
+        response = await self.client.patch(
+            f"/{self.cash_receipt.id}",
+            json={},
+            headers={"Authorization": f"Bearer {self.token}"},
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("수정할 필드가 없습니다", response.json()["detail"])
+
+    async def test_update_cash_receipt_only_hidden_allowed(self):
+        """is_hidden 외 다른 필드 수정 시도 테스트"""
+        original_amount = self.cash_receipt.transaction_amount
+        
+        # 다른 필드 수정 시도 (현금영수증은 is_hidden만 수정 가능)
+        response = await self.client.patch(
+            f"/{self.cash_receipt.id}",
+            json={"transaction_amount": 99999, "is_hidden": True},
+            headers={"Authorization": f"Bearer {self.token}"},
+        )
+
+        # is_hidden만 수정되고 transaction_amount는 무시됨
+        self.assertEqual(response.status_code, 200)
+        
+        # transaction_amount가 변경되지 않았는지 확인
+        await sync_to_async(self.cash_receipt.refresh_from_db)()
+        self.assertEqual(self.cash_receipt.transaction_amount, original_amount)
+        self.assertTrue(self.cash_receipt.is_hidden)
     
     def tearDown(self):
         """테스트 후 정리"""
