@@ -98,6 +98,7 @@ class AllCashReceiptOut(Schema):
     tax_amount: int
     total_amount: int
     item_name: Optional[str] = None
+    is_hidden: bool = Field(default=False, description="숨김 여부")
     account: Optional[TaxInvoiceAccountSimpleOut] = Field(default=None, description="채권/채무 정보")
 
 

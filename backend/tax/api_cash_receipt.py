@@ -277,7 +277,7 @@ async def list_cash_receipts(
         def get_filtered_receipts():
             qs = CashReceipt.objects.filter(
                 client__factory_id=factory_id
-            ).prefetch_related("client", "cash_receipt_account")
+            ).select_related("client", "cash_receipt_account")
             
             # FilterSchema를 사용하여 필터링
             qs = filters.filter(qs)
@@ -286,26 +286,29 @@ async def list_cash_receipts(
                 qs = qs.order_by("transaction_date")
             else:
                 qs = qs.order_by("-transaction_date")
-            return list(qs.distinct())
-
-        receipts = await get_filtered_receipts()
-        result = []
-        for receipt in receipts:
-            total_amount = receipt.transaction_amount + receipt.tax_amount
-            # account 정보 가져오기 (prefetch_related로 가져온 경우 None일 수 있음)
-            account = getattr(receipt, 'cash_receipt_account', None)
-            result.append(
-                AllCashReceiptOut(
-                    id=receipt.id,
-                    transaction_date=receipt.transaction_date,
-                    client_name=receipt.client.name,
-                    transaction_amount=receipt.transaction_amount,
-                    tax_amount=receipt.tax_amount,
-                    total_amount=total_amount,
-                    item_name=receipt.item_name,
-                    account=account,
+            
+            receipts = list(qs.distinct())
+            result = []
+            for receipt in receipts:
+                total_amount = receipt.transaction_amount + receipt.tax_amount
+                # select_related로 로드된 account (없으면 None)
+                account = receipt.cash_receipt_account if hasattr(receipt, 'cash_receipt_account') and receipt.cash_receipt_account else None
+                result.append(
+                    AllCashReceiptOut(
+                        id=receipt.id,
+                        transaction_date=receipt.transaction_date,
+                        client_name=receipt.client.name,
+                        transaction_amount=receipt.transaction_amount,
+                        tax_amount=receipt.tax_amount,
+                        total_amount=total_amount,
+                        item_name=receipt.item_name,
+                        is_hidden=receipt.is_hidden,
+                        account=account,
+                    )
                 )
-            )
+            return result
+
+        result = await get_filtered_receipts()
         return result
     except Exception as e:
         raise HttpError(500, f"현금영수증 검색 중 오류: {e}")
