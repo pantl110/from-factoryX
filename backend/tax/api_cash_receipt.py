@@ -360,16 +360,16 @@ async def get_cash_receipt(request, cash_receipt_id: int):
     "/{cash_receipt_id}",
     summary="[C] 현금영수증 수정",
     description="현금영수증의 숨김 여부를 수정합니다.",
-    response={200: CashReceiptDetailOut, 400: dict, 404: dict, 500: dict},
+    response={200: dict, 400: dict, 404: dict, 500: dict},
 )
 async def update_cash_receipt(
     request, cash_receipt_id: int, payload: CashReceiptUpdateIn
 ):
     user = request.auth
 
-    # 현금영수증 조회 및 권한 검증
+    # 현금영수증 조회
     @sync_to_async
-    def get_cash_receipt_for_update():
+    def get_cash_receipt():
         try:
             return CashReceipt.objects.select_related("factory", "client").get(
                 id=cash_receipt_id
@@ -377,7 +377,7 @@ async def update_cash_receipt(
         except CashReceipt.DoesNotExist:
             raise HttpError(404, "해당 현금영수증이 존재하지 않습니다.")
 
-    cash_receipt = await get_cash_receipt_for_update()
+    cash_receipt = await get_cash_receipt()
 
     # 공장 멤버 권한 검증
     if cash_receipt.factory:
@@ -399,10 +399,10 @@ async def update_cash_receipt(
 
         cash_receipt.save()
 
-        return cash_receipt
+        return {"is_hidden": cash_receipt.is_hidden}
 
-    cash_receipt = await update_receipt()
-    return cash_receipt
+    result = await update_receipt()
+    return result
 
 
 @router.patch(

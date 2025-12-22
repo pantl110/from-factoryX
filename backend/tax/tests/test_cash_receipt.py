@@ -397,6 +397,8 @@ class TestTaxService(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["is_hidden"], True)
 
         # 변경된 내용 확인
         await sync_to_async(self.cash_receipt.refresh_from_db)()
@@ -410,6 +412,8 @@ class TestTaxService(TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(data["is_hidden"], False)
 
         # 변경된 내용 확인
         await sync_to_async(self.cash_receipt.refresh_from_db)()

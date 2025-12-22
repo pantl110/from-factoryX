@@ -1,6 +1,7 @@
 from tax.models import NationalTaxService, CashReceipt, TaxInvoiceAccount, AccountStatus
 from ninja.errors import HttpError
 from tax.barobill_utils import get_state_barobill_tax_invoice
+from datetime import date
 
 
 async def get_tax_service_by_id(tax_service_id: int):
@@ -44,3 +45,33 @@ async def create_accounts_for_cash_receipts(cash_receipts: list[CashReceipt]):
     
     if accounts:
         await TaxInvoiceAccount.objects.abulk_create(accounts)
+
+
+def update_account_balance_and_status(account: TaxInvoiceAccount, new_balance: int):
+    """Account 잔액을 업데이트하고 상태를 자동으로 업데이트하는 함수"""
+    account.outstanding_balance = new_balance
+    
+    # 상태 업데이트 로직
+    today = date.today()
+    
+    # 1. agreed_payment_date가 오늘보다 과거이고 outstanding_balance > 0이면 무조건 overdue
+    if (
+        account.agreed_payment_date 
+        and account.agreed_payment_date < today 
+        and account.outstanding_balance > 0
+    ):
+        account.status = AccountStatus.overdue
+    # 2. outstanding_balance가 0이면 completed
+    elif account.outstanding_balance == 0:
+        account.status = AccountStatus.completed
+    # 3. outstanding_balance > 0이고 total_billed_amount보다 작으면 partial
+    elif (
+        account.outstanding_balance > 0 
+        and account.outstanding_balance < account.total_billed_amount
+    ):
+        account.status = AccountStatus.partial
+    # 4. 그 외의 경우는 waiting
+    else:
+        account.status = AccountStatus.waiting
+    
+    account.save()

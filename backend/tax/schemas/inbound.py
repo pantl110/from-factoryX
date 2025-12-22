@@ -157,8 +157,8 @@ class TaxInvoiceAccountUpdateIn(Schema):
     notes: Optional[str] = Field(None, description="특이사항")
 
 
-class PaymentDetailCreateIn(Schema):
-    """회수/지급 상세내역 생성 스키마"""
+class PaymentDetailIn(Schema):
+    """회수/지급 상세내역 스키마 (생성/수정 공통)"""
     payment_date: date = Field(..., description="입금일/지급일")
     expected_payment_date: Optional[date] = Field(None, description="입금예정일")
     amount_received: int = Field(..., description="받은 금액/지급 금액")

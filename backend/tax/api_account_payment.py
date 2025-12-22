@@ -8,9 +8,10 @@ from django.db.models import F
 from django.db import transaction
 from api.security import jwt_auth
 from api.pagination import CustomPageNumberPagination
-from tax.models import TaxInvoiceAccount, PaymentDetail, AccountStatus
+from tax.models import TaxInvoiceAccount, PaymentDetail
 from tax.schemas.outbound import PaymentDetailOut
-from tax.schemas.inbound import PaymentDetailCreateIn
+from tax.schemas.inbound import PaymentDetailIn
+from tax.utils import update_account_balance_and_status
 
 router = Router(tags=["Tax Account Payment"], auth=jwt_auth)
 
@@ -24,7 +25,7 @@ router = Router(tags=["Tax Account Payment"], auth=jwt_auth)
 async def create_payment_detail(
     request, 
     id: int, 
-    payload: PaymentDetailCreateIn,
+    payload: PaymentDetailIn,
     type: Literal["tax", "cash-receipt"] = Query(..., description="타입: tax(세금계산서) 또는 cash-receipt(현금영수증)")
 ):
     @sync_to_async
@@ -60,30 +61,9 @@ async def create_payment_detail(
                 expected_payment_date=payload.expected_payment_date,
             )
             
-            # outstanding_balance에서 지급금액만큼 차감
-            account.outstanding_balance -= payload.amount_received
+            # Account 잔액 차감 및 상태 업데이트
+            update_account_balance_and_status(account, outstanding_amount_after_payment)
             
-            # 상태 업데이트 로직
-            today = date.today()
-            
-            # 1. agreed_payment_date가 오늘보다 과거이고 outstanding_balance > 0이면 무조건 overdue
-            if (
-                account.agreed_payment_date 
-                and account.agreed_payment_date < today 
-                and account.outstanding_balance > 0
-            ):
-                account.status = AccountStatus.overdue
-            # 2. outstanding_balance가 0이면 completed
-            elif account.outstanding_balance == 0:
-                account.status = AccountStatus.completed
-            # 3. outstanding_balance > 0이고 total_billed_amount보다 작으면 partial
-            elif (
-                account.outstanding_balance > 0 
-                and account.outstanding_balance < account.total_billed_amount
-            ):
-                account.status = AccountStatus.partial
-            
-            account.save()
             return payment
     
     payment = await create_payment()
@@ -129,3 +109,96 @@ async def get_payment_details(
     
     payments = await get_payments()
     return payments
+
+
+@router.patch(
+    "/payment/{payment_id}",
+    summary="[U] 회수/지급 상세내역 수정",
+    description="회수/지급 상세내역을 수정하고 account 상태와 잔액을 업데이트합니다.",
+    response={200: PaymentDetailOut, 400: dict, 404: dict, 500: dict},
+)
+async def update_payment_detail(
+    request,
+    payment_id: int,
+    payload: PaymentDetailIn,
+):
+    @sync_to_async
+    def update_payment():
+        try:
+            payment = PaymentDetail.objects.select_related(
+                "tax_invoice_account"
+            ).get(id=payment_id)
+        except PaymentDetail.DoesNotExist:
+            raise HttpError(404, "해당 회수/지급 상세내역을 찾을 수 없습니다.")
+        
+        account = payment.tax_invoice_account
+        
+        # 트랜잭션으로 묶어서 일관성 유지
+        with transaction.atomic():
+            # amount_received가 변경되는 경우 잔액 재계산
+            old_amount = payment.amount_received
+            amount_diff = payload.amount_received - old_amount
+            
+            # 새로운 잔액 계산
+            new_outstanding_balance = account.outstanding_balance - amount_diff
+            
+            # 잔액이 음수가 되지 않도록 체크
+            if new_outstanding_balance < 0:
+                raise HttpError(
+                    400,
+                    f"수정 후 미수금액이 음수가 됩니다. (현재 미수금액: {account.outstanding_balance:,}원, 변경 금액: {amount_diff:+,}원)"
+                )
+            
+            # PaymentDetail 필드 업데이트
+            payment.payment_date = payload.payment_date
+            payment.expected_payment_date = payload.expected_payment_date
+            payment.amount_received = payload.amount_received
+            payment.outstanding_amount_at_payment = new_outstanding_balance
+            payment.save()
+            
+            # Account 잔액 및 상태 업데이트
+            update_account_balance_and_status(account, new_outstanding_balance)
+            
+            return payment
+    
+    payment = await update_payment()
+    return payment
+
+
+@router.delete(
+    "/payment/{payment_id}",
+    summary="[D] 회수/지급 상세내역 삭제",
+    description="회수/지급 상세내역을 삭제하고 account 상태와 잔액을 복구합니다.",
+    response={200: dict, 404: dict, 500: dict},
+)
+async def delete_payment_detail(
+    request,
+    payment_id: int,
+):
+    @sync_to_async
+    def delete_payment():
+        try:
+            payment = PaymentDetail.objects.select_related(
+                "tax_invoice_account"
+            ).get(id=payment_id)
+        except PaymentDetail.DoesNotExist:
+            raise HttpError(404, "해당 회수/지급 상세내역을 찾을 수 없습니다.")
+        
+        account = payment.tax_invoice_account
+        
+        # 트랜잭션으로 묶어서 일관성 유지
+        with transaction.atomic():
+            # 삭제할 금액 저장
+            amount_to_restore = payment.amount_received
+            
+            # PaymentDetail 삭제
+            payment.delete()
+            
+            # Account 잔액 복구 및 상태 업데이트
+            new_balance = account.outstanding_balance + amount_to_restore
+            update_account_balance_and_status(account, new_balance)
+            
+            return {"message": "회수/지급 상세내역이 삭제되었습니다."}
+    
+    result = await delete_payment()
+    return result
