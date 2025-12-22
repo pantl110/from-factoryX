@@ -1,6 +1,5 @@
-from tax.models import NationalTaxService, CashReceipt, TaxInvoiceAccount, AccountStatus
+from tax.models import NationalTaxService, CashReceipt, TaxInvoiceAccount, AccountStatus, PaymentDetail
 from ninja.errors import HttpError
-from tax.barobill_utils import get_state_barobill_tax_invoice
 from datetime import date
 
 
@@ -45,6 +44,27 @@ async def create_accounts_for_cash_receipts(cash_receipts: list[CashReceipt]):
     
     if accounts:
         await TaxInvoiceAccount.objects.abulk_create(accounts)
+
+
+def recalculate_payment_details_balance(account: TaxInvoiceAccount):
+    """모든 PaymentDetail의 outstanding_amount_at_payment를 날짜순으로 재계산"""
+    # payment_date 기준 오름차순 정렬 (가장 오래된 것부터)
+    payments = PaymentDetail.objects.filter(
+        tax_invoice_account=account
+    ).order_by("payment_date", "id")
+    
+    # 초기 잔액은 청구금액
+    current_balance = account.total_billed_amount
+    
+    # 날짜순으로 잔액 누적 차감
+    for payment in payments:
+        current_balance -= payment.amount_received
+        payment.outstanding_amount_at_payment = current_balance
+        payment.save(update_fields=["outstanding_amount_at_payment"])
+    
+    # 최종 잔액 업데이트
+    account.outstanding_balance = current_balance
+    account.save(update_fields=["outstanding_balance"])
 
 
 def update_account_balance_and_status(account: TaxInvoiceAccount, new_balance: int):

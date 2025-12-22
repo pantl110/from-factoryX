@@ -11,7 +11,7 @@ from api.pagination import CustomPageNumberPagination
 from tax.models import TaxInvoiceAccount, PaymentDetail
 from tax.schemas.outbound import PaymentDetailOut
 from tax.schemas.inbound import PaymentDetailIn
-from tax.utils import update_account_balance_and_status
+from tax.utils import update_account_balance_and_status, recalculate_payment_details_balance
 
 router = Router(tags=["Tax Account Payment"], auth=jwt_auth)
 
@@ -49,20 +49,20 @@ async def create_payment_detail(
         
         # 트랜잭션으로 묶어서 PaymentDetail 생성 실패 시 차감/상태 업데이트가 실행되지 않도록 함
         with transaction.atomic():
-            # 지급 후 미지급액 자동 계산 (지급 전 미지급액 - 지급 금액)
-            outstanding_amount_after_payment = account.outstanding_balance - payload.amount_received
-            
             # PaymentDetail 생성
             payment = PaymentDetail.objects.create(
                 tax_invoice_account=account,
                 payment_date=payload.payment_date,
                 amount_received=payload.amount_received,
-                outstanding_amount_at_payment=outstanding_amount_after_payment,
+                outstanding_amount_at_payment=0,  # 임시값, 재계산으로 업데이트됨
                 expected_payment_date=payload.expected_payment_date,
             )
             
-            # Account 잔액 차감 및 상태 업데이트
-            update_account_balance_and_status(account, outstanding_amount_after_payment)
+            # 모든 PaymentDetail의 잔액을 날짜순으로 재계산
+            recalculate_payment_details_balance(account)
+            
+            # Account 상태 업데이트
+            update_account_balance_and_status(account, account.outstanding_balance)
             
             return payment
     
@@ -73,7 +73,7 @@ async def create_payment_detail(
 @router.get(
     "/{id}",
     summary="[C] 회수/지급 상세내역 조회",
-    description="세금계산서 또는 현금영수증 ID로 회수/지급 상세내역을 조회합니다. 입금예정일 기준 최신순으로 정렬됩니다.",
+    description="세금계산서 또는 현금영수증 ID로 회수/지급 상세내역을 조회합니다. 지급일(payment_date) 기준 최신순으로 정렬되어 반환됩니다.",
     response={
         200: List[PaymentDetailOut],
         404: dict,
@@ -93,13 +93,10 @@ async def get_payment_details(
                 account = TaxInvoiceAccount.objects.get(tax_invoice_id=id)
             else:  # cash-receipt
                 account = TaxInvoiceAccount.objects.get(cash_receipt_id=id)
-            # 입금예정일 기준 내림차순 정렬 (null 값은 마지막에)
+            # payment_date(지급일) 기준 내림차순 정렬 (가장 최신 것부터)
             payments = PaymentDetail.objects.filter(
                 tax_invoice_account=account
-            ).order_by(
-                F("expected_payment_date").desc(nulls_last=True),
-                "-payment_date"
-            )
+            ).order_by("-payment_date", "-id")
             return list(payments)
         except TaxInvoiceAccount.DoesNotExist:
             if type == "tax":
@@ -135,29 +132,24 @@ async def update_payment_detail(
         
         # 트랜잭션으로 묶어서 일관성 유지
         with transaction.atomic():
-            # amount_received가 변경되는 경우 잔액 재계산
-            old_amount = payment.amount_received
-            amount_diff = payload.amount_received - old_amount
-            
-            # 새로운 잔액 계산
-            new_outstanding_balance = account.outstanding_balance - amount_diff
-            
-            # 잔액이 음수가 되지 않도록 체크
-            if new_outstanding_balance < 0:
-                raise HttpError(
-                    400,
-                    f"수정 후 미수금액이 음수가 됩니다. (현재 미수금액: {account.outstanding_balance:,}원, 변경 금액: {amount_diff:+,}원)"
-                )
-            
             # PaymentDetail 필드 업데이트
             payment.payment_date = payload.payment_date
             payment.expected_payment_date = payload.expected_payment_date
             payment.amount_received = payload.amount_received
-            payment.outstanding_amount_at_payment = new_outstanding_balance
             payment.save()
             
-            # Account 잔액 및 상태 업데이트
-            update_account_balance_and_status(account, new_outstanding_balance)
+            # 모든 PaymentDetail의 잔액을 날짜순으로 재계산
+            recalculate_payment_details_balance(account)
+            
+            # 잔액이 음수가 되지 않도록 체크
+            if account.outstanding_balance < 0:
+                raise HttpError(
+                    400,
+                    f"수정 후 미수금액이 음수가 됩니다. (현재 미수금액: {account.outstanding_balance:,}원)"
+                )
+            
+            # Account 상태 업데이트
+            update_account_balance_and_status(account, account.outstanding_balance)
             
             return payment
     
@@ -188,15 +180,14 @@ async def delete_payment_detail(
         
         # 트랜잭션으로 묶어서 일관성 유지
         with transaction.atomic():
-            # 삭제할 금액 저장
-            amount_to_restore = payment.amount_received
-            
             # PaymentDetail 삭제
             payment.delete()
             
-            # Account 잔액 복구 및 상태 업데이트
-            new_balance = account.outstanding_balance + amount_to_restore
-            update_account_balance_and_status(account, new_balance)
+            # 모든 PaymentDetail의 잔액을 날짜순으로 재계산
+            recalculate_payment_details_balance(account)
+            
+            # Account 상태 업데이트
+            update_account_balance_and_status(account, account.outstanding_balance)
             
             return {"message": "회수/지급 상세내역이 삭제되었습니다."}
     
