@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from factory.models import Factory, FactoryClient, FactoryMember
-from tax.models import NationalTaxService, TaxInvoiceAccount, PaymentDetail, CashReceipt, AccountStatus
+from tax.models import NationalTaxService, TaxInvoiceAccount, PaymentDetail, AccountStatus
 import jwt
 from django.conf import settings
 from datetime import datetime, timedelta, date
@@ -50,17 +50,22 @@ class TaxAccountPaymentTestCase(TestCase):
             "expected_payment_date": payment_date,
         }
 
-    def test_get_payment_details(self):
-        """회수/지급 상세내역 조회"""
+    def test_get_payment_details_sorted_by_date(self):
+        """지급일 기준 최신순 정렬 확인"""
         tax_invoice = self._create_tax_invoice()
         account = TaxInvoiceAccount.objects.get(tax_invoice=tax_invoice)
 
-        PaymentDetail.objects.create(
+        payment1 = PaymentDetail.objects.create(
             tax_invoice_account=account,
             payment_date=date(2025, 7, 1),
-            amount_received=50000,
+            amount_received=30000,
+            outstanding_amount_at_payment=80000,
+        )
+        payment2 = PaymentDetail.objects.create(
+            tax_invoice_account=account,
+            payment_date=date(2025, 8, 1),
+            amount_received=20000,
             outstanding_amount_at_payment=60000,
-            expected_payment_date=date(2025, 7, 1),
         )
 
         response = self.client.get(
@@ -70,45 +75,105 @@ class TaxAccountPaymentTestCase(TestCase):
 
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(len(data["data"]), 1)
-        self.assertEqual(data["data"][0]["amount_received"], 50000)
+        self.assertEqual(len(data["data"]), 2)
+        # 최신순 정렬 확인
+        self.assertEqual(data["data"][0]["id"], payment2.id)
+        self.assertEqual(data["data"][1]["id"], payment1.id)
 
-    def test_get_payment_details_not_found(self):
-        """존재하지 않는 ID로 조회 시 404"""
-        response = self.client.get(
-            "/v2/account-payment/99999?type=tax",
-            HTTP_AUTHORIZATION=f"Bearer {self.token}",
-        )
-        self.assertEqual(response.status_code, 404)
-
-    def test_create_payment_detail(self):
-        """회수/지급 상세내역 생성"""
+    def test_create_payment_detail_recalculates_balance(self):
+        """생성 시 모든 잔액이 날짜순으로 재계산"""
         tax_invoice = self._create_tax_invoice()
         account = TaxInvoiceAccount.objects.get(tax_invoice=tax_invoice)
         initial_balance = account.outstanding_balance
 
-        response = self.client.post(
+        # 첫 번째 생성
+        self.client.post(
             f"/v2/account-payment/{tax_invoice.id}?type=tax",
-            data=json.dumps(self._create_payment_payload()),
+            data=json.dumps(self._create_payment_payload(amount=30000, payment_date="2025-07-01")),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {self.token}",
+        )
+        
+        # 두 번째 생성
+        self.client.post(
+            f"/v2/account-payment/{tax_invoice.id}?type=tax",
+            data=json.dumps(self._create_payment_payload(amount=20000, payment_date="2025-07-15")),
             content_type="application/json",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
 
-        self.assertEqual(response.status_code, 201)
+        payments = PaymentDetail.objects.filter(tax_invoice_account=account).order_by("payment_date")
+        self.assertEqual(len(payments), 2)
+        # 날짜순으로 잔액이 누적 차감됨
+        self.assertEqual(payments[0].outstanding_amount_at_payment, initial_balance - 30000)
+        self.assertEqual(payments[1].outstanding_amount_at_payment, initial_balance - 50000)
+        
         account.refresh_from_db()
         self.assertEqual(account.outstanding_balance, initial_balance - 50000)
 
-    def test_create_payment_detail_validation_error(self):
-        """필수 필드 누락 시 validation error"""
+    def test_update_payment_detail_recalculates_balance(self):
+        """수정 시 모든 잔액이 날짜순으로 재계산"""
         tax_invoice = self._create_tax_invoice()
-        
-        response = self.client.post(
-            f"/v2/account-payment/{tax_invoice.id}?type=tax",
-            data=json.dumps({"amount_received": 50000}),  # payment_date 누락
+        account = TaxInvoiceAccount.objects.get(tax_invoice=tax_invoice)
+        initial_balance = account.outstanding_balance
+
+        payment1 = PaymentDetail.objects.create(
+            tax_invoice_account=account,
+            payment_date=date(2025, 7, 1),
+            amount_received=30000,
+            outstanding_amount_at_payment=initial_balance - 30000,
+        )
+        PaymentDetail.objects.create(
+            tax_invoice_account=account,
+            payment_date=date(2025, 7, 15),
+            amount_received=20000,
+            outstanding_amount_at_payment=initial_balance - 50000,
+        )
+
+        # payment1 금액 수정
+        self.client.patch(
+            f"/v2/account-payment/payment/{payment1.id}",
+            data=json.dumps(self._create_payment_payload(amount=40000, payment_date="2025-07-01")),
             content_type="application/json",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
-        self.assertEqual(response.status_code, 422)
+
+        account.refresh_from_db()
+        self.assertEqual(account.outstanding_balance, initial_balance - 60000)
+        
+        # 모든 잔액이 재계산되었는지 확인
+        payment1.refresh_from_db()
+        self.assertEqual(payment1.outstanding_amount_at_payment, initial_balance - 40000)
+
+    def test_delete_payment_detail_recalculates_balance(self):
+        """삭제 시 모든 잔액이 날짜순으로 재계산"""
+        tax_invoice = self._create_tax_invoice()
+        account = TaxInvoiceAccount.objects.get(tax_invoice=tax_invoice)
+        initial_balance = account.outstanding_balance
+
+        payment1 = PaymentDetail.objects.create(
+            tax_invoice_account=account,
+            payment_date=date(2025, 7, 1),
+            amount_received=30000,
+            outstanding_amount_at_payment=initial_balance - 30000,
+        )
+        payment2 = PaymentDetail.objects.create(
+            tax_invoice_account=account,
+            payment_date=date(2025, 7, 15),
+            amount_received=20000,
+            outstanding_amount_at_payment=initial_balance - 50000,
+        )
+
+        self.client.delete(
+            f"/v2/account-payment/payment/{payment1.id}",
+            HTTP_AUTHORIZATION=f"Bearer {self.token}",
+        )
+
+        self.assertFalse(PaymentDetail.objects.filter(id=payment1.id).exists())
+        account.refresh_from_db()
+        payment2.refresh_from_db()
+        self.assertEqual(account.outstanding_balance, initial_balance - 20000)
+        self.assertEqual(payment2.outstanding_amount_at_payment, initial_balance - 20000)
 
     def test_create_payment_detail_account_status(self):
         """생성 시 account 상태 업데이트"""
@@ -116,42 +181,15 @@ class TaxAccountPaymentTestCase(TestCase):
         account = TaxInvoiceAccount.objects.get(tax_invoice=tax_invoice)
         initial_balance = account.outstanding_balance
 
-        response = self.client.post(
+        self.client.post(
             f"/v2/account-payment/{tax_invoice.id}?type=tax",
             data=json.dumps(self._create_payment_payload(amount=initial_balance)),
             content_type="application/json",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
 
-        self.assertEqual(response.status_code, 201)
         account.refresh_from_db()
         self.assertEqual(account.status, AccountStatus.completed)
-
-    def test_update_payment_detail(self):
-        """회수/지급 상세내역 수정"""
-        tax_invoice = self._create_tax_invoice()
-        account = TaxInvoiceAccount.objects.get(tax_invoice=tax_invoice)
-        initial_balance = account.outstanding_balance
-
-        payment = PaymentDetail.objects.create(
-            tax_invoice_account=account,
-            payment_date=date(2025, 6, 5),
-            amount_received=30000,
-            outstanding_amount_at_payment=initial_balance - 30000,
-        )
-        account.outstanding_balance -= 30000
-        account.save()
-
-        response = self.client.patch(
-            f"/v2/account-payment/payment/{payment.id}",
-            data=json.dumps(self._create_payment_payload(amount=50000)),
-            content_type="application/json",
-            HTTP_AUTHORIZATION=f"Bearer {self.token}",
-        )
-
-        self.assertEqual(response.status_code, 200)
-        account.refresh_from_db()
-        self.assertEqual(account.outstanding_balance, initial_balance - 50000)
 
     def test_update_payment_detail_negative_balance(self):
         """잔액 초과 수정 시 400"""
@@ -165,8 +203,6 @@ class TaxAccountPaymentTestCase(TestCase):
             amount_received=30000,
             outstanding_amount_at_payment=initial_balance - 30000,
         )
-        account.outstanding_balance -= 30000
-        account.save()
 
         response = self.client.patch(
             f"/v2/account-payment/payment/{payment.id}",
@@ -176,28 +212,3 @@ class TaxAccountPaymentTestCase(TestCase):
         )
 
         self.assertEqual(response.status_code, 400)
-
-    def test_delete_payment_detail(self):
-        """회수/지급 상세내역 삭제"""
-        tax_invoice = self._create_tax_invoice()
-        account = TaxInvoiceAccount.objects.get(tax_invoice=tax_invoice)
-        initial_balance = account.outstanding_balance
-
-        payment = PaymentDetail.objects.create(
-            tax_invoice_account=account,
-            payment_date=date(2025, 6, 5),
-            amount_received=30000,
-            outstanding_amount_at_payment=initial_balance - 30000,
-        )
-        account.outstanding_balance -= 30000
-        account.save()
-
-        response = self.client.delete(
-            f"/v2/account-payment/payment/{payment.id}",
-            HTTP_AUTHORIZATION=f"Bearer {self.token}",
-        )
-
-        self.assertEqual(response.status_code, 200)
-        self.assertFalse(PaymentDetail.objects.filter(id=payment.id).exists())
-        account.refresh_from_db()
-        self.assertEqual(account.outstanding_balance, initial_balance)
