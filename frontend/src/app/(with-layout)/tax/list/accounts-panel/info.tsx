@@ -308,7 +308,12 @@ const Info = React.forwardRef<InfoHandleModel, InfoProps>(
                             <RoundChip
                               text={daysUntilPayment}
                               variant="sm"
-                              color="secondary"
+                              color={
+                                daysUntilPayment === 'D-0' ||
+                                daysUntilPayment.startsWith('D+')
+                                  ? 'red'
+                                  : 'secondary'
+                              }
                             />
                           )}
                           <input

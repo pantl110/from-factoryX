@@ -1,6 +1,8 @@
 import { PaymentDetailResponseModel } from '@/types/data-model';
 import { formatISODate } from '@/utils';
 import { calculateOverdueDays } from './utils';
+import { Trash } from '@phosphor-icons/react';
+import { IconBtn } from '@/ui';
 
 interface TableItemProps {
   item: PaymentDetailResponseModel;
@@ -22,7 +24,7 @@ const TableItem = ({ item }: TableItemProps) => {
   const overdueDays = overdueDaysCount > 0 ? `${overdueDaysCount}일` : '-';
 
   return (
-    <div className="flex items-center border-b border-lg h-14 w-full text-bl Me_Body-1">
+    <div className="flex items-center border-b border-lg h-14 w-full text-bl Me_Body-1 cursor-default">
       <p className="flex-1 px-3 text-dg truncate" title={expectedDate}>
         {expectedDate}
       </p>
@@ -46,6 +48,17 @@ const TableItem = ({ item }: TableItemProps) => {
       >
         {overdueDays}
       </p>
+      <div className="w-20 px-3 flex gap-2">
+        <IconBtn
+          icon={Trash}
+          iconSize={18}
+          hoverBg={false}
+          hoverText="text-red"
+          onClick={() => {
+            // onDelete?.(item.id);
+          }}
+        />
+      </div>
     </div>
   );
 };

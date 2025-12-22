@@ -101,12 +101,21 @@ const CreateAccountPaymentModal = ({
       setErrorSubtext('YYYY-MM-DD 형식으로 입력해 주세요.');
       showToast();
     } else if (errors.expectedPaymentDate) {
-      setErrorText(
-        isPurchase
-          ? '올바른 약정 지급일 형식을 입력해 주세요.'
-          : '올바른 약정 입금일 형식을 입력해 주세요.'
-      );
-      setErrorSubtext('YYYY-MM-DD 형식으로 입력해 주세요.');
+      if (errors.expectedPaymentDate.type === 'required') {
+        setErrorText(
+          isPurchase
+            ? '약정 지급일을 입력해 주세요.'
+            : '약정 입금일을 입력해 주세요.'
+        );
+        setErrorSubtext('');
+      } else {
+        setErrorText(
+          isPurchase
+            ? '올바른 약정 지급일 형식을 입력해 주세요.'
+            : '올바른 약정 입금일 형식을 입력해 주세요.'
+        );
+        setErrorSubtext('YYYY-MM-DD 형식으로 입력해 주세요.');
+      }
       showToast();
     } else if (errors.receivedAmount) {
       setErrorText(
@@ -142,11 +151,7 @@ const CreateAccountPaymentModal = ({
       return;
     }
 
-    if (
-      data.expectedPaymentDate &&
-      data.expectedPaymentDate.trim() !== '' &&
-      !isValidDateString(data.expectedPaymentDate)
-    ) {
+    if (!isValidDateString(data.expectedPaymentDate)) {
       setError('expectedPaymentDate', {
         type: 'manual',
         message: expectedDateError,
@@ -194,10 +199,7 @@ const CreateAccountPaymentModal = ({
     const result = await createPaymentDetail(taxId, type, {
       payment_date: data.paymentDate,
       amount_received: amountReceived,
-      expected_payment_date:
-        data.expectedPaymentDate && data.expectedPaymentDate.trim() !== ''
-          ? data.expectedPaymentDate
-          : null,
+      expected_payment_date: data.expectedPaymentDate,
     });
 
     if (result.success) {
@@ -230,6 +232,9 @@ const CreateAccountPaymentModal = ({
   const paymentDateRequired = isPurchase
     ? '지급일을 입력해 주세요.'
     : '입금일을 입력해 주세요.';
+  const expectedDateRequired = isPurchase
+    ? '약정 지급일을 입력해 주세요.'
+    : '약정 입금일을 입력해 주세요.';
   const amountRequired = isPurchase
     ? '지급 금액을 입력해 주세요.'
     : '받은 금액을 입력해 주세요.';
@@ -247,17 +252,16 @@ const CreateAccountPaymentModal = ({
               name="expectedPaymentDate"
               control={control}
               rules={{
+                required: expectedDateRequired,
                 validate: (value) => {
-                  if (value && value.trim() !== '') {
-                    return isValidDateString(value) || expectedDateError;
-                  }
-                  return true;
+                  return isValidDateString(value) || expectedDateError;
                 },
               }}
               render={({ field }) => (
                 <Input
                   label={expectedDateLabel}
                   placeholder="YYYY-MM-DD"
+                  required
                   value={field.value}
                   onChange={(e) => {
                     const formatted = formatDate(e.target.value);

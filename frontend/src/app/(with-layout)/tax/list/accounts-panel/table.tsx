@@ -93,12 +93,13 @@ const Table = ({ isPurchase, taxId, type = 'tax' }: TableProps) => {
       ) : (
         <>
           {/* 표 헤더 */}
-          <div className="text-sv flex items-center w-full h-12 border-t border-b border-lg Me_Body-1">
+          <div className="text-sv flex items-center w-full h-12 border-t border-b border-lg Me_Body-1 cursor-default">
             <p className="flex-1 px-3">{expectedDateHeader}</p>
             <p className="flex-1 px-3">{dateHeader}</p>
             <p className="flex-1 px-3">{paidHeader}</p>
             <p className="flex-1 px-3">{remainHeader}</p>
             <p className="flex-1 px-3">연체일</p>
+            <div className="w-20" />
           </div>
 
           {/* 표 내용 */}
