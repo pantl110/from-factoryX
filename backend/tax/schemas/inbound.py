@@ -113,6 +113,25 @@ class TaxInvoiceFilter(FilterSchema):
     )
 
 
+class CashReceiptFilter(FilterSchema):
+    q: Optional[str] = Field(
+        None,
+        q=["client__name__icontains", "item_name__icontains"],
+        description="거래처명 또는 품목명 통합 검색어",
+        expression_connector="OR",
+    )
+    start_date: Optional[date] = Field(
+        None, q="transaction_date__gte", description="거래일자 범위 시작일"
+    )
+    end_date: Optional[date] = Field(
+        None, q="transaction_date__lte", description="거래일자 범위 종료일"
+    )
+    is_hidden: Optional[bool] = Field(None, q="is_hidden", description="숨김 여부")
+    cash_receipt_type: Optional[str] = Field(
+        None, q="cash_receipt_type", description="현금영수증 유형 (sales-매출, purchase-매입)"
+    )
+
+
 class CashReceiptUpdateIn(Schema):
     is_hidden: Optional[bool] = Field(None, description="숨김 여부")
 

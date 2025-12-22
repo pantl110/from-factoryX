@@ -9,7 +9,7 @@ from tax.schemas.outbound import (
     CashReceiptDetailOut,
     CashReceiptDetailWithMaterialOut,
 )
-from tax.schemas.inbound import CashToMaterialHistoryIn, CashReceiptUpdateIn
+from tax.schemas.inbound import CashToMaterialHistoryIn, CashReceiptUpdateIn, CashReceiptFilter
 from api.security import jwt_auth
 from ninja import Query
 from tax.models import CashReceipt, TaxInvoiceAccount, AccountStatus
@@ -266,9 +266,7 @@ async def sync_cash_receipts(request, factory_id: int):
 async def list_cash_receipts(
     request,
     factory_id: int = Query(..., description="공장 ID"),
-    q: str = Query(None, description="거래처명 또는 품목명 통합 검색어"),
-    start_date: date = Query(None, description="시작일"),
-    end_date: date = Query(None, description="종료일"),
+    filters: CashReceiptFilter = Query(..., description="검색 필터"),
     order: str = Query(
         "desc", description="작성일자 정렬: desc(최신순), asc(오래된순)"
     ),
@@ -280,15 +278,10 @@ async def list_cash_receipts(
             qs = CashReceipt.objects.filter(
                 client__factory_id=factory_id
             ).prefetch_related("client", "cash_receipt_account")
-            if q:
-                ids_client = list(
-                    qs.filter(client__name__icontains=q).values_list("id", flat=True)
-                )
-                qs = qs.filter(id__in=ids_client)
-            if start_date:
-                qs = qs.filter(transaction_date__gte=start_date)
-            if end_date:
-                qs = qs.filter(transaction_date__lte=end_date)
+            
+            # FilterSchema를 사용하여 필터링
+            qs = filters.filter(qs)
+            
             if order == "asc":
                 qs = qs.order_by("transaction_date")
             else:
