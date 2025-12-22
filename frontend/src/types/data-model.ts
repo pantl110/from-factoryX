@@ -1443,6 +1443,18 @@ export interface PublishedTaxInvoiceResponseModel {
 
   // 세금계산서 제품 상세 // 바로빌 API로 세금계산서 발행 후 또는 동기화 시 저장
   line_items: TaxLineItemModel[];
+
+  //
+  account: TaxInvoiceAccountModel;
+}
+export interface TaxAccountModel {
+  id: number;
+  name: string;
+  code: string;
+  information: string;
+  chargeable_unit: string;
+  unit_price: string;
+  amount: string;
 }
 
 export interface PublishedTaxInvoiceListResponseModel extends PaginationModel {
@@ -1528,6 +1540,8 @@ export interface CashReceiptResponseModel {
   transaction_amount: number;
   tax_amount: number;
   total_amount: number;
+  account: TaxInvoiceAccountModel;
+  is_hidden: boolean;
 }
 
 export interface CashReceiptListResponseModel extends PaginationModel {

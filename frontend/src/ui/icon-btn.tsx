@@ -6,11 +6,11 @@ interface IconBtnProps {
   size?: string;
   iconSize?: number;
   iconColor?: string;
-  onClick: () => void;
+  onClick: (e?: React.MouseEvent<HTMLButtonElement>) => void;
   className?: string;
   groupHover?: boolean;
   rounded?: string;
-  hoverBg?: boolean;
+  hoverBg?: boolean | string;
   hoverText?: string | boolean;
 }
 
@@ -23,12 +23,12 @@ const IconBtn = ({
   groupHover,
   iconColor = 'text-sv',
   rounded = 'rounded-[8px]',
-  hoverBg = true,
+  hoverBg = 'hover:bg-bg',
   hoverText = false,
 }: IconBtnProps) => {
   return (
     <button
-      className={`group ${className} shrink-0 flex items-center justify-center ${size} ${rounded} ${hoverBg && 'hover:bg-bg'} transition-colors duration-200 ease-in-out ${groupHover ? `opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-in-out` : ''}`}
+      className={`group ${className} shrink-0 flex items-center justify-center ${size} ${rounded} ${hoverBg && hoverBg} transition-colors duration-200 ease-in-out ${groupHover ? `opacity-0 group-hover:opacity-100 transition-opacity duration-200 ease-in-out` : ''}`}
       onClick={onClick}
     >
       <Icon

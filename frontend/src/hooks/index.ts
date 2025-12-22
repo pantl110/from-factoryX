@@ -111,6 +111,7 @@ export {
 // Cash receipt related hooks
 export { default as useGetCashReceipts } from './tax/cash-receipt/use-get-cash-receipts';
 export { default as useGetCashReceiptDetail } from './tax/cash-receipt/use-get-cash-receipt-detail';
+export { default as useUpdateCashReceipt } from './tax/cash-receipt/use-update-cash-receipt';
 export { default as useUpdateMaterialHistory } from './tax/cash-receipt/use-update-material-history';
 
 // AWS related hooks

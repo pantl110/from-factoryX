@@ -1,15 +1,23 @@
-import { TaxDocumentTypeColorMap, TaxDocumentType } from '@/types/status-type';
+import {
+  TaxDocumentType,
+  AccountsStatusMap,
+  AccountsStatusColorMap,
+} from '@/types/status-type';
 import Checkbox from '@/ui/checkbox';
 import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
 import { getProductNamesDisplay } from '@/hooks';
-import { RoundChip } from '@/ui';
+import { IconBtn, MiniBtn, RoundChip } from '@/ui';
 import useMemberStore from '@/store/member-store';
+import router from 'next/router';
+import { ArrowLineUpRight } from '@phosphor-icons/react';
 
 interface TableItemProps {
   onItemClick?: () => void;
   item: PublishedTaxInvoiceResponseModel;
   onToggle: () => void;
   isChecked: boolean;
+  onOpenLinkProjectModal?: (taxId: number) => void;
+  taxType?: TaxDocumentType | null;
 }
 
 const TableItem = ({
@@ -17,26 +25,34 @@ const TableItem = ({
   item,
   onToggle,
   isChecked,
+  onOpenLinkProjectModal,
+  taxType,
 }: TableItemProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const isProdManager = role === 'prod_manager';
-  // Map Korean values to English for color lookup
-  const taxTypeMap: Record<string, TaxDocumentType> = {
-    매출: 'sales',
-    매입: 'purchase',
-    sales: 'sales',
-    purchase: 'purchase',
+
+  const handleToggle = () => {
+    onToggle();
   };
 
-  const mappedTaxType = taxTypeMap[item.tax_invoice_type] || 'sales';
-  const { color } = TaxDocumentTypeColorMap[mappedTaxType];
-  const chipColor = color || 'gray';
+  // 채권 상태 가져오기
+  const accountStatus = item.account.status || 'waiting';
+  const statusText =
+    AccountsStatusMap[accountStatus as keyof typeof AccountsStatusMap] ||
+    '대기';
+  const statusColor =
+    AccountsStatusColorMap[accountStatus as keyof typeof AccountsStatusColorMap]
+      ?.color || 'gray';
+
+  const handleRowClick = () => {
+    onItemClick?.();
+  };
 
   return (
     <div
       className="flex items-center border-b border-lg h-14 w-full min-w-[1192px] text-bl Me_Body-1 hover:bg-bg transition-colors duration-200 cursor-pointer"
-      onClick={onItemClick}
+      onClick={handleRowClick}
       role="button"
       tabIndex={0}
       onKeyDown={(e) => {
@@ -45,24 +61,20 @@ const TableItem = ({
     >
       <Checkbox
         isChecked={isChecked}
-        onToggle={onToggle}
+        onToggle={handleToggle}
         disabled={isProdManager || isViewer}
       />
-      <div className="px-3 flex-1">
-        <RoundChip
-          text={item.tax_invoice_type === 'sales' ? '매출' : '매입'}
-          variant="sm"
-          color={chipColor}
-        />
+      <div className="pl-2 pr-4 flex-1">
+        <RoundChip text={statusText} variant="sm" color={statusColor} />
       </div>
       <p
-        className="flex-2 px-3 text-dg truncate"
+        className="flex-[1.5] px-3 text-dg truncate"
         title={item.client_info?.name || '-'}
       >
         {item.client_info?.name || '-'}
       </p>
       <p
-        className="flex-2 px-3 text-dg truncate"
+        className="flex-[1.5] px-3 text-dg truncate"
         title={
           getProductNamesDisplay(
             item.line_items?.map((product) => product.name) || []
@@ -75,28 +87,66 @@ const TableItem = ({
       </p>
       <p
         className="flex-[1.5] px-3 text-dg truncate"
-        title={item.transaction_amount?.toLocaleString() || '0'}
+        title={item.account.total_billed_amount?.toLocaleString() || '0'}
       >
-        {item.transaction_amount?.toLocaleString() || '0'}
+        {item.account.total_billed_amount?.toLocaleString() || '0'}
       </p>
       <p
         className="flex-[1.5] px-3 text-dg truncate"
-        title={item.tax_amount?.toLocaleString() || '0'}
+        title={item.account.outstanding_balance?.toLocaleString() || '0'}
       >
-        {item.tax_amount?.toLocaleString() || '0'}
+        {item.account.outstanding_balance?.toLocaleString() || '0'}
       </p>
-      <p
-        className="flex-[1.5] px-3 text-dg truncate"
-        title={
-          (
-            (item.transaction_amount || 0) + (item.tax_amount || 0)
-          )?.toLocaleString() || '-'
-        }
-      >
-        {(
-          (item.transaction_amount || 0) + (item.tax_amount || 0)
-        )?.toLocaleString() || '-'}
-      </p>
+      {item.tax_invoice_type === 'sales' && (
+        <div className="pl-2 pr-4 flex-[1.5]">
+          <RoundChip
+            text={
+              item.account.invoice_sent_count === 0
+                ? '미발송'
+                : `${item.account.invoice_sent_count}회 발송`
+            }
+            variant="sm"
+            color={item.account.invoice_sent_count === 0 ? 'gray' : 'secondary'}
+          />
+        </div>
+      )}
+      <div className="px-3 flex-[1.5]">
+        {item.project_id ? (
+          <IconBtn
+            icon={ArrowLineUpRight}
+            iconSize={20}
+            size="w-9 h-9"
+            onClick={
+              taxType === 'purchase' || taxType === null
+                ? (e) => {
+                    e?.stopPropagation();
+                  }
+                : (e) => {
+                    e?.stopPropagation();
+                    router.push(`/production/${item.project_id}`);
+                  }
+            }
+            hoverBg="hover:bg-wh"
+          />
+        ) : (
+          <MiniBtn
+            text="연결하기"
+            variant="hoverWhite"
+            height="h-8"
+            onClick={
+              taxType === 'purchase' || taxType === null
+                ? (e) => {
+                    e?.stopPropagation();
+                  }
+                : (e) => {
+                    e.stopPropagation();
+                    onOpenLinkProjectModal?.(item.id);
+                  }
+            }
+            disabled={role === 'viewer' || role === 'prod_manager'}
+          />
+        )}
+      </div>
     </div>
   );
 };

@@ -11,25 +11,24 @@ const Checkbox = ({ isChecked, onToggle, disabled = false }: CheckboxProps) => {
     return null;
   }
 
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    onToggle();
+  };
+
   return (
     <div
-      className="flex items-center justify-center w-9 h-full"
-      onClick={(e) => {
-        e.stopPropagation();
-      }}
+      className="flex items-center justify-center w-9 h-full cursor-pointer"
+      onClick={handleClick}
     >
-      <div className="w-5 h-5 relative">
-        <Square
-          size={20}
-          className={`cursor-pointer ${isChecked ? 'text-primary' : 'text-sv'}`}
-          onClick={onToggle}
-        />
+      <div className="w-5 h-5 relative pointer-events-none">
+        <Square size={20} className={isChecked ? 'text-primary' : 'text-sv'} />
         {isChecked && (
           <Check
             size={12}
             weight="bold"
-            className="cursor-pointer z-10 text-primary absolute top-[3.8px] left-[3.8px]"
-            onClick={onToggle}
+            className="z-10 text-primary absolute top-[3.8px] left-[3.8px]"
           />
         )}
       </div>

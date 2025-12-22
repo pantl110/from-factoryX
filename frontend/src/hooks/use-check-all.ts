@@ -11,7 +11,10 @@ export function useCheckAll<T extends string | number>(itemIds: T[]) {
 
   const isAllChecked =
     itemIds.length > 0 && checkedIds.length === itemIds.length; // 전체 선택 여부
-  const isChecked = (id: T) => checkedIds.includes(id); // 개별 체크 여부
+  const isChecked = useCallback(
+    (id: T) => checkedIds.includes(id),
+    [checkedIds]
+  ); // 개별 체크 여부
   const checkedCount = checkedIds.length; // 선택된 항목 수
 
   // 삭제 버튼 텍스트 생성

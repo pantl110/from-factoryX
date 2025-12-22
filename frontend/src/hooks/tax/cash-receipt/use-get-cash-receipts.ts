@@ -2,8 +2,8 @@
 
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
 import useMemberStore from '@/store/member-store';
-import useTaxApi from '../use-tax-api';
 import { CashReceiptListResponseModel } from '@/types/data-model';
 
 export interface CashReceiptQueryParamsModel {
@@ -11,6 +11,7 @@ export interface CashReceiptQueryParamsModel {
   q?: string;
   page?: number;
   page_size?: number;
+  is_hidden?: boolean;
 }
 
 const useGetCashReceipts = (
@@ -18,7 +19,6 @@ const useGetCashReceipts = (
   options?: { enabled?: boolean }
 ) => {
   const factoryId = useMemberStore((state) => state.factoryId);
-  const { callTaxApi } = useTaxApi();
 
   const isQueryEnabled = useMemo(() => {
     if (options?.enabled === false) return false;
@@ -26,7 +26,11 @@ const useGetCashReceipts = (
   }, [factoryId, options?.enabled]);
 
   const queryParams = useMemo(() => {
-    const query: Record<string, string | number> = {};
+    const query: Record<string, string | number | boolean> = {};
+
+    if (factoryId) {
+      query.factory_id = factoryId;
+    }
 
     if (params.order) {
       query.order = params.order;
@@ -40,9 +44,19 @@ const useGetCashReceipts = (
     if (params.page_size) {
       query.page_size = params.page_size;
     }
+    if (params.is_hidden !== undefined) {
+      query.is_hidden = params.is_hidden;
+    }
 
     return query;
-  }, [params.order, params.q, params.page, params.page_size]);
+  }, [
+    factoryId,
+    params.order,
+    params.q,
+    params.page,
+    params.page_size,
+    params.is_hidden,
+  ]);
 
   return useQuery<CashReceiptListResponseModel>({
     queryKey: [
@@ -52,24 +66,22 @@ const useGetCashReceipts = (
       queryParams.q,
       queryParams.page,
       queryParams.page_size,
+      queryParams.is_hidden,
     ],
     queryFn: async () => {
       if (!factoryId) {
         throw new Error('Factory ID is not available');
       }
 
-      const result = await callTaxApi<CashReceiptListResponseModel>(
-        'cash-receipts-list',
+      const response = await axios.get<CashReceiptListResponseModel>(
+        `${process.env.NEXT_PUBLIC_API_URL}/v1/receipt`,
         {
-          queryParams,
+          params: queryParams,
+          withCredentials: true,
         }
       );
 
-      if (!result.success || !result.data) {
-        throw new Error(result.error || 'Failed to fetch cash receipts');
-      }
-
-      return result.data;
+      return response.data;
     },
     enabled: isQueryEnabled,
     staleTime: 1000 * 30, // 30초간 캐시 유지

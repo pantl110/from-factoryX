@@ -25,6 +25,7 @@ import NotAllowed from '../not-allowed';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import AccountsPanel from './accounts-panel';
+import LinkProjectModal from './accounts-panel/modals/link-project-modal';
 
 const TaxPageContent = () => {
   const role = useMemberStore((state) => state.role);
@@ -46,6 +47,10 @@ const TaxPageContent = () => {
   const [selectedItem, setSelectedItem] =
     useState<PublishedTaxInvoiceResponseModel | null>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [isLinkProjectModalOpen, setIsLinkProjectModalOpen] = useState(false);
+  const [selectedTaxIdForLink, setSelectedTaxIdForLink] = useState<
+    number | null
+  >(null);
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
   const [showHidden, setShowHidden] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -204,12 +209,10 @@ const TaxPageContent = () => {
     if (selectedTaxType !== null) {
       setCurrentPage(1);
       // 체크박스는 showHidden 변경 시에도 자동으로 리셋되지 않으므로 명시적으로 리셋
-      // checkedCount가 0보다 클 때만 리셋하여 불필요한 호출 방지
-      if (checkedCount > 0) {
-        setAllCheckedRef.current(false);
-      }
+      // showHidden이나 selectedTaxType이 변경될 때만 리셋 (checkedCount 변경 시에는 리셋하지 않음)
+      setAllCheckedRef.current(false);
     }
-  }, [showHidden, selectedTaxType, checkedCount]);
+  }, [showHidden, selectedTaxType]);
 
   // 페이지 변경 핸들러
   const handlePageChange = (page: number) => {
@@ -264,6 +267,23 @@ const TaxPageContent = () => {
   const handleClosePanel = () => {
     setSelectedItem(null);
     setIsPanelOpen(false);
+  };
+
+  // 프로젝트 연결 모달 상태
+  const handleOpenLinkProjectModal = (taxId: number) => {
+    setSelectedTaxIdForLink(taxId);
+    setIsLinkProjectModalOpen(true);
+  };
+  const handleCloseLinkProjectModal = () => {
+    setIsLinkProjectModalOpen(false);
+    setSelectedTaxIdForLink(null);
+  };
+  const handleLinkProjectSuccess = () => {
+    // 프로젝트 연결 성공 후 목록 새로고침
+    queryClient.invalidateQueries({
+      queryKey: ['published-tax-invoices'],
+    });
+    handleCloseLinkProjectModal();
   };
 
   const handleToggleHidden = () => {
@@ -429,6 +449,7 @@ const TaxPageContent = () => {
                         onSortClick={handleSortClick}
                         sortDirection={sortDirection}
                         isAllChecked={isAllChecked}
+                        taxType={selectedTaxType}
                       />
                       {taxData?.map((item) => (
                         <TableItem
@@ -437,6 +458,8 @@ const TaxPageContent = () => {
                           item={item}
                           onToggle={() => toggleOne(item.id)}
                           isChecked={isChecked(item.id)}
+                          onOpenLinkProjectModal={handleOpenLinkProjectModal}
+                          taxType={selectedTaxType}
                         />
                       ))}
                     </div>
@@ -461,6 +484,15 @@ const TaxPageContent = () => {
           onClose={handleClosePanel}
           itemId={selectedItem.id}
           type="tax"
+        />
+      )}
+
+      {/* 프로젝트 연결 모달 */}
+      {isLinkProjectModalOpen && selectedTaxIdForLink && (
+        <LinkProjectModal
+          taxId={selectedTaxIdForLink}
+          onClose={handleCloseLinkProjectModal}
+          onSuccess={handleLinkProjectSuccess}
         />
       )}
     </>

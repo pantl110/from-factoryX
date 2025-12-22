@@ -1,45 +1,104 @@
 import { CashReceiptResponseModel } from '@/types/data-model';
 import { getProductNamesDisplay } from '@/utils/get-product-names-display';
+import { AccountsStatusMap, AccountsStatusColorMap } from '@/types/status-type';
+import { RoundChip, MiniBtn, IconBtn } from '@/ui';
+import { ArrowLineUpRight } from '@phosphor-icons/react';
+import useMemberStore from '@/store/member-store';
+import Checkbox from '@/ui/checkbox';
 
 interface TableItemProps {
   item: CashReceiptResponseModel;
   onClick?: () => void;
+  onToggle?: () => void;
+  isChecked?: boolean;
 }
 
-const TableItem = ({ item, onClick }: TableItemProps) => {
+const TableItem = ({
+  item,
+  onClick,
+  onToggle = () => {},
+  isChecked = false,
+}: TableItemProps) => {
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+  const isProdManager = role === 'prod_manager';
+  const { account } = item;
+
+  // 채권 상태 가져오기
+  const accountStatus = account?.status || 'waiting';
+  const statusText =
+    AccountsStatusMap[accountStatus as keyof typeof AccountsStatusMap] ||
+    '대기';
+  const statusColor =
+    AccountsStatusColorMap[accountStatus as keyof typeof AccountsStatusColorMap]
+      ?.color || 'gray';
+
+  const handleRowClick = () => {
+    onClick?.();
+  };
+
   return (
     <div
-      className="flex items-center border-b border-lg h-14 w-full min-w-[1248px] text-bl Me_Body-1 hover:bg-bg transition-colors duration-200 cursor-pointer"
-      onClick={onClick}
+      className="flex items-center border-b border-lg h-14 w-full min-w-[1192px] text-bl Me_Body-1 hover:bg-bg transition-colors duration-200 cursor-pointer"
+      onClick={handleRowClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') onClick?.();
+      }}
     >
-      <p className="flex-1 px-3 text-dg">{item.transaction_date}</p>
-      <p className="flex-2 px-3 text-dg truncate" title={item.client_name}>
+      <Checkbox
+        isChecked={isChecked}
+        onToggle={onToggle}
+        disabled={isProdManager || isViewer}
+      />
+      <div className="pl-2 pr-4 flex-1">
+        <RoundChip text={statusText} variant="sm" color={statusColor} />
+      </div>
+      <p className="flex-[1.5] px-3 text-dg truncate" title={item.client_name}>
         {item.client_name}
       </p>
       <p
-        className="flex-2 px-3 text-dg truncate"
+        className="flex-[1.5] px-3 text-dg truncate"
         title={getProductNamesDisplay(item.product_names)}
       >
         {getProductNamesDisplay(item.product_names)}
       </p>
       <p
-        className="flex-1 px-3 text-dg truncate"
-        title={item.transaction_amount.toLocaleString()}
-      >
-        {item.transaction_amount.toLocaleString()}
-      </p>
-      <p
-        className="flex-1 px-3 text-dg truncate"
-        title={item.tax_amount.toLocaleString()}
-      >
-        {item.tax_amount.toLocaleString()}
-      </p>
-      <p
-        className="flex-1 px-3 text-dg truncate"
+        className="flex-[1.5] px-3 text-dg truncate"
         title={item.total_amount.toLocaleString()}
       >
         {item.total_amount.toLocaleString()}
       </p>
+      <p
+        className="flex-[1.5] px-3 text-dg truncate"
+        title={account?.outstanding_balance?.toLocaleString() || '0'}
+      >
+        {account?.outstanding_balance?.toLocaleString() || '0'}
+      </p>
+      <div className="px-3 flex-[1.5]">
+        {account?.project ? (
+          <IconBtn
+            icon={ArrowLineUpRight}
+            iconSize={20}
+            size="w-9 h-9"
+            onClick={(e) => {
+              e?.stopPropagation();
+            }}
+            hoverBg="hover:bg-wh"
+          />
+        ) : (
+          <MiniBtn
+            text="연결하기"
+            variant="hoverWhite"
+            height="h-8"
+            onClick={(e) => {
+              e.stopPropagation();
+            }}
+            disabled={role === 'viewer' || role === 'prod_manager'}
+          />
+        )}
+      </div>
     </div>
   );
 };

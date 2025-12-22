@@ -28,6 +28,7 @@ interface MiniBtnProps
     | 'red'
     | 'white'
     | 'whiteOutline'
+    | 'hoverWhite'
     | 'ghost';
   justifyBetween?: boolean;
   padding?: string;
@@ -89,9 +90,16 @@ const MiniBtn = ({
         };
       case 'whiteOutline':
         return {
-          bg: '',
+          bg: 'bg-wh',
           text: 'text-dg',
           hover: 'hover:bg-bg',
+          border: 'border border-lg',
+        };
+      case 'hoverWhite':
+        return {
+          bg: '',
+          text: 'text-dg',
+          hover: 'hover:bg-wh',
           border: 'border border-lg',
         };
       case 'ghost':
