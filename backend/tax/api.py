@@ -78,7 +78,7 @@ async def list_published_tax_invoices(
     def get_all_tax_invoices():
         queryset = NationalTaxService.objects.filter(
             factory_id=factory_id, publish_status="published"
-        ).prefetch_related("client")
+        ).prefetch_related("client", "tax_invoice_account")
         queryset = filters.filter(queryset)
         if ordering:
             queryset = queryset.order_by(ordering)

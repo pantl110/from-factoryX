@@ -30,12 +30,27 @@ class FactoryClientOut(Schema):
     account_holder: Optional[str] = None
 
 
+class TaxInvoiceAccountSimpleOut(ModelSchema):
+    """세금계산서 목록에서 사용하는 간단한 TaxInvoiceAccount 스키마 (순환 참조 방지)"""
+    class Meta:
+        model = TaxInvoiceAccount
+        exclude = ["tax_invoice", "cash_receipt"]
+
+
 class NationalTaxServiceOut(ModelSchema):
     project_id: Optional[int] = Field(default=None, description="연결된 프로젝트 ID")
+    account: Optional[TaxInvoiceAccountSimpleOut] = Field(default=None, description="채권/채무 정보")
 
     class Meta:
         model = NationalTaxService
         fields = "__all__"
+
+    @staticmethod
+    def resolve_account(obj):
+        """TaxInvoiceAccount 정보를 반환"""
+        if hasattr(obj, 'tax_invoice_account') and obj.tax_invoice_account:
+            return obj.tax_invoice_account
+        return None
 
 
 class NationalTaxServiceDetailOut(ModelSchema):

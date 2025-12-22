@@ -1,7 +1,7 @@
 from django.test import TestCase
 from django.contrib.auth import get_user_model
 from factory.models import Factory, FactoryClient, FactoryMember
-from tax.models import NationalTaxService
+from tax.models import NationalTaxService, TaxInvoiceAccount
 from project.models import Project
 import json
 import jwt
@@ -537,6 +537,18 @@ class TaxAPITestCase(TestCase):
         self.assertEqual(third_invoice["transaction_amount"], 300000)
         self.assertEqual(third_invoice["tax_amount"], 30000)
         # self.assertEqual(third_invoice["total_amount"], 330000)
+
+        # account 정보 검증 (published 세금계산서는 자동으로 TaxInvoiceAccount 생성됨)
+        for invoice_data in data["data"]:
+            self.assertIn("account", invoice_data)
+            if invoice_data["account"]:
+                account = invoice_data["account"]
+                self.assertIn("status", account)
+                self.assertIn("total_billed_amount", account)
+                self.assertIn("outstanding_balance", account)
+                # tax_invoice, cash_receipt는 제외되어야 함 (순환 참조 방지)
+                self.assertNotIn("tax_invoice", account)
+                self.assertNotIn("cash_receipt", account)
 
     def test_list_all_tax_invoices_multiple_products(self):
         """여러 품목이 있는 세금계산서 테스트"""
@@ -1127,6 +1139,31 @@ class TaxAPITestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(len(data["data"]), 2)
+
+    def test_list_published_tax_invoices_includes_account(self):
+        """발행된 세금계산서 목록에 account 정보가 포함되는지 테스트"""
+        tax_invoice = NationalTaxService.objects.create(
+            factory=self.factory,
+            client=self.client_company1,
+            transaction_date=date(2025, 6, 4),
+            transaction_amount=100000,
+            tax_amount=10000,
+            tax_invoice_type="sales",
+            publish_status="published",
+        )
+        account = TaxInvoiceAccount.objects.get(tax_invoice=tax_invoice)
+
+        url = f"/v1/tax/published?factory_id={self.factory.id}"
+        response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        invoice = next(item for item in data["data"] if item["id"] == tax_invoice.id)
+        
+        self.assertIn("account", invoice)
+        self.assertIsNotNone(invoice["account"])
+        self.assertEqual(invoice["account"]["id"], account.id)
+        self.assertEqual(invoice["account"]["status"], account.status)
 
     def test_list_pending_tax_invoices_all_status(self):
         """발행대기+임시저장 전체 조회 테스트"""
