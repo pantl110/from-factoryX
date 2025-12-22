@@ -83,7 +83,18 @@ async def list_published_tax_invoices(
         if ordering:
             queryset = queryset.order_by(ordering)
 
-        return list(queryset)
+        invoices = list(queryset)
+        # prefetch된 관계를 동기적으로 접근하여 객체에 직접 저장
+        for invoice in invoices:
+            if hasattr(invoice, 'tax_invoice_account'):
+                try:
+                    account = invoice.tax_invoice_account
+                    # 비동기 컨텍스트에서 접근할 수 있도록 객체에 직접 저장
+                    setattr(invoice, '_cached_account', account)
+                except Exception:
+                    setattr(invoice, '_cached_account', None)
+        
+        return invoices
 
     invoices = await get_all_tax_invoices()
 

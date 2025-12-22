@@ -48,8 +48,17 @@ class NationalTaxServiceOut(ModelSchema):
     @staticmethod
     def resolve_account(obj):
         """TaxInvoiceAccount 정보를 반환"""
-        if hasattr(obj, 'tax_invoice_account') and obj.tax_invoice_account:
-            return obj.tax_invoice_account
+        # 비동기 컨텍스트에서 안전하게 처리
+        # __dict__를 직접 확인하여 hasattr/getattr 호출 방지
+        try:
+            obj_dict = getattr(obj, '__dict__', {})
+            if '_cached_account' in obj_dict:
+                return obj_dict['_cached_account']
+        except Exception:
+            # 비동기 컨텍스트에서 접근 실패 시 None 반환
+            pass
+        
+        # 캐시되지 않은 경우 None 반환 (pending/unlinked API)
         return None
 
 
