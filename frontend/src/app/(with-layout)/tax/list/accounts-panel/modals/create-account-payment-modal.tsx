@@ -8,8 +8,15 @@ import {
   formatISODate,
   getToday,
 } from '@/utils';
-import { TaxInvoiceAccountModel } from '@/types/data-model';
-import { useCreatePaymentDetail, useToast } from '@/hooks';
+import {
+  TaxInvoiceAccountModel,
+  PaymentDetailResponseModel,
+} from '@/types/data-model';
+import {
+  useCreatePaymentDetail,
+  useUpdatePaymentDetail,
+  useToast,
+} from '@/hooks';
 import { WarningCircle } from '@phosphor-icons/react';
 
 interface PaymentFormModel {
@@ -23,6 +30,7 @@ interface CreateAccountPaymentModalProps {
   account: TaxInvoiceAccountModel | null;
   onSuccess?: () => void;
   type?: 'tax' | 'cash-receipt';
+  paymentDetail?: PaymentDetailResponseModel | null; // 수정 모드일 때 전달
 }
 
 const CreateAccountPaymentModal = ({
@@ -30,23 +38,42 @@ const CreateAccountPaymentModal = ({
   account,
   onSuccess,
   type = 'tax',
+  paymentDetail = null,
 }: CreateAccountPaymentModalProps) => {
+  const isEditMode = !!paymentDetail;
+
   // 매입 여부 확인
   const isPurchase =
     type === 'cash-receipt'
       ? account?.cash_receipt?.cash_receipt_type === 'purchase'
       : account?.tax_invoice?.tax_invoice_type === 'purchase';
 
-  // account의 약정 입금일을 기본값으로 설정
+  // 수정 모드일 때는 paymentDetail의 값 사용, 생성 모드일 때는 account의 약정 입금일 사용
   const defaultAgreedDate = useMemo(() => {
+    if (isEditMode && paymentDetail?.expected_payment_date) {
+      return formatISODate(paymentDetail.expected_payment_date);
+    }
     if (account?.agreed_payment_date) {
       return formatISODate(account.agreed_payment_date);
     }
     return '';
-  }, [account]);
+  }, [isEditMode, paymentDetail, account]);
 
-  // 오늘 날짜를 기본값으로 설정
-  const todayDate = useMemo(() => getToday(), []);
+  // 수정 모드일 때는 paymentDetail의 지급일 사용, 생성 모드일 때는 오늘 날짜 사용
+  const defaultPaymentDate = useMemo(() => {
+    if (isEditMode && paymentDetail?.payment_date) {
+      return formatISODate(paymentDetail.payment_date);
+    }
+    return getToday();
+  }, [isEditMode, paymentDetail]);
+
+  // 수정 모드일 때는 paymentDetail의 금액 사용
+  const defaultAmount = useMemo(() => {
+    if (isEditMode && paymentDetail?.amount_received) {
+      return paymentDetail.amount_received.toLocaleString();
+    }
+    return '';
+  }, [isEditMode, paymentDetail]);
 
   const {
     control,
@@ -58,22 +85,26 @@ const CreateAccountPaymentModal = ({
   } = useForm<PaymentFormModel>({
     defaultValues: {
       expectedPaymentDate: defaultAgreedDate,
-      paymentDate: todayDate,
-      receivedAmount: '',
+      paymentDate: defaultPaymentDate,
+      receivedAmount: defaultAmount,
     },
     mode: 'onChange',
   });
 
-  // account의 약정 입금일이 변경되면 폼 값 업데이트
+  // 값이 변경되면 폼 업데이트
   useEffect(() => {
     reset({
       expectedPaymentDate: defaultAgreedDate,
-      paymentDate: todayDate,
-      receivedAmount: '',
+      paymentDate: defaultPaymentDate,
+      receivedAmount: defaultAmount,
     });
-  }, [defaultAgreedDate, todayDate, reset]);
+  }, [defaultAgreedDate, defaultPaymentDate, defaultAmount, reset]);
 
-  const { createPaymentDetail, isLoading } = useCreatePaymentDetail();
+  const { createPaymentDetail, isLoading: isCreating } =
+    useCreatePaymentDetail();
+  const { updatePaymentDetail, isLoading: isUpdating } =
+    useUpdatePaymentDetail();
+  const isLoading = isCreating || isUpdating;
   const { showToast, isToastOpen, isVisible } = useToast();
   const [errorText, setErrorText] = useState('');
   const [errorSubtext, setErrorSubtext] = useState('');
@@ -81,14 +112,23 @@ const CreateAccountPaymentModal = ({
   const watchedReceivedAmount = watch('receivedAmount');
 
   // 받은 금액에 따라 미수금액(잔액) 자동 계산
+  // 수정 모드일 때는 기존 금액을 고려해야 함
   const outstandingBalance = useMemo(() => {
     if (!account) return 0;
     const currentOutstanding = account.outstanding_balance || 0;
     const received = watchedReceivedAmount
       ? parseInt(watchedReceivedAmount.replace(/,/g, '')) || 0
       : 0;
+
+    if (isEditMode && paymentDetail) {
+      // 수정 모드: 기존 금액을 빼고 새 금액을 더함
+      const oldAmount = paymentDetail.amount_received || 0;
+      return currentOutstanding + oldAmount - received;
+    }
+
+    // 생성 모드: 새 금액만 뺌
     return currentOutstanding - received;
-  }, [account, watchedReceivedAmount]);
+  }, [account, watchedReceivedAmount, isEditMode, paymentDetail]);
 
   const onError = (errors: FieldErrors<PaymentFormModel>) => {
     // react-hook-form validation 에러 발생 시 토스트 표시
@@ -188,19 +228,30 @@ const CreateAccountPaymentModal = ({
       return;
     }
 
-    const taxId =
-      type === 'cash-receipt'
-        ? account.cash_receipt?.id
-        : account.tax_invoice?.id;
-    if (!taxId) return;
-
     const amountReceived = parseInt(data.receivedAmount.replace(/,/g, '')) || 0;
 
-    const result = await createPaymentDetail(taxId, type, {
-      payment_date: data.paymentDate,
-      amount_received: amountReceived,
-      expected_payment_date: data.expectedPaymentDate,
-    });
+    let result;
+    if (isEditMode && paymentDetail) {
+      // 수정 모드
+      result = await updatePaymentDetail(paymentDetail.id, {
+        payment_date: data.paymentDate,
+        amount_received: amountReceived,
+        expected_payment_date: data.expectedPaymentDate,
+      });
+    } else {
+      // 생성 모드
+      const taxId =
+        type === 'cash-receipt'
+          ? account.cash_receipt?.id
+          : account.tax_invoice?.id;
+      if (!taxId) return;
+
+      result = await createPaymentDetail(taxId, type, {
+        payment_date: data.paymentDate,
+        amount_received: amountReceived,
+        expected_payment_date: data.expectedPaymentDate,
+      });
+    }
 
     if (result.success) {
       onSuccess?.();
@@ -208,15 +259,25 @@ const CreateAccountPaymentModal = ({
     } else {
       setErrorText(
         isPurchase
-          ? '지급 정보 저장에 실패했습니다.'
-          : '입금 정보 저장에 실패했습니다.'
+          ? isEditMode
+            ? '지급 정보 수정에 실패했습니다.'
+            : '지급 정보 저장에 실패했습니다.'
+          : isEditMode
+            ? '입금 정보 수정에 실패했습니다.'
+            : '입금 정보 저장에 실패했습니다.'
       );
       setErrorSubtext(result.error || '알 수 없는 오류가 발생했습니다.');
       showToast();
     }
   };
 
-  const title = isPurchase ? '지급 정보 입력' : '입금 정보 입력';
+  const title = isPurchase
+    ? isEditMode
+      ? '지급 정보 수정'
+      : '지급 정보 입력'
+    : isEditMode
+      ? '입금 정보 수정'
+      : '입금 정보 입력';
   const expectedDateLabel = isPurchase ? '약정 지급일' : '약정 입금일';
   const paymentDateLabel = isPurchase ? '지급일' : '입금일';
   const amountLabel = isPurchase ? '지급 금액' : '받은 금액';

@@ -40,7 +40,7 @@ const useUpdatePaymentDetail = (): UseUpdatePaymentDetailReturnModel => {
           }
         );
 
-        const data = response.data;
+        const { data } = response;
 
         // React Query 캐시 무효화 (모든 payment-details 쿼리 무효화)
         // taxId와 type을 정확히 알 수 없으므로 넓게 무효화
@@ -61,7 +61,7 @@ const useUpdatePaymentDetail = (): UseUpdatePaymentDetailReturnModel => {
 
         if (axios.isAxiosError(err)) {
           if (err.response) {
-            const status = err.response.status;
+            const { status } = err.response;
             const errorData = err.response.data as { detail?: string };
 
             if (status === 404) {
@@ -75,8 +75,7 @@ const useUpdatePaymentDetail = (): UseUpdatePaymentDetailReturnModel => {
               errorMessage = '서버 오류가 발생했습니다.';
             } else {
               errorMessage =
-                errorData?.detail ||
-                '회수/지급 상세내역 수정에 실패했습니다.';
+                errorData?.detail || '회수/지급 상세내역 수정에 실패했습니다.';
             }
           } else if (err.request) {
             errorMessage = '네트워크 오류가 발생했습니다.';
@@ -105,4 +104,3 @@ const useUpdatePaymentDetail = (): UseUpdatePaymentDetailReturnModel => {
 };
 
 export default useUpdatePaymentDetail;
-

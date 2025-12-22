@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { IconBtn, MiniBtn, OverlayView, Panel, Toast } from '@/ui';
+import { DeleteModal, IconBtn, MiniBtn, OverlayView, Panel, Toast } from '@/ui';
 import TableArea from './table-area';
 import TaxDocumentView from '@/app/(with-layout)/document/tax-document-view';
 import { WarningCircle, X } from '@phosphor-icons/react';
@@ -8,8 +8,12 @@ import {
   useToast,
   useUpdateTaxInvoiceAccount,
   useSendEmailForAccount,
+  useDeletePaymentDetail,
 } from '@/hooks';
-import { TaxInvoiceAccountModel } from '@/types/data-model';
+import {
+  TaxInvoiceAccountModel,
+  PaymentDetailResponseModel,
+} from '@/types/data-model';
 import Info, { InfoHandleModel } from './info';
 import LinkProjectModal from './modals/link-project-modal';
 import CreateAccountPaymentModal from './modals/create-account-payment-modal';
@@ -39,6 +43,13 @@ const AccountsPanel = ({
   const [isCreateAccountPaymentModalOpen, setIsCreateAccountPaymentModalOpen] =
     useState(false);
   const [isSendEmailModalOpen, setIsSendEmailModalOpen] = useState(false);
+  const [isDeleteAccountPaymentModalOpen, setIsDeleteAccountPaymentModalOpen] =
+    useState(false);
+  const [selectedPaymentId, setSelectedPaymentId] = useState<number | null>(
+    null
+  );
+  const [selectedPaymentDetail, setSelectedPaymentDetail] =
+    useState<PaymentDetailResponseModel | null>(null);
 
   // 데이터 상태
   const [account, setAccount] = useState<TaxInvoiceAccountModel | null>(null);
@@ -55,6 +66,8 @@ const AccountsPanel = ({
     useUpdateTaxInvoiceAccount();
   const { sendEmailForAccount, isLoading: isSendingEmail } =
     useSendEmailForAccount();
+  const { deletePaymentDetail, isLoading: isDeletingPayment } =
+    useDeletePaymentDetail();
   const infoRef = useRef<InfoHandleModel | null>(null);
 
   useEffect(() => {
@@ -125,10 +138,20 @@ const AccountsPanel = ({
 
   // 지급 정보 입력 모달 관련 핸들러
   const handleOpenCreateAccountPaymentModal = () => {
+    setSelectedPaymentDetail(null); // 생성 모드
     setIsCreateAccountPaymentModalOpen(true);
   };
   const handleCloseCreateAccountPaymentModal = () => {
     setIsCreateAccountPaymentModalOpen(false);
+    setSelectedPaymentDetail(null);
+  };
+
+  // 회수/지급 상세내역 수정 모달 관련 핸들러
+  const handleOpenEditAccountPaymentModal = (
+    paymentDetail: PaymentDetailResponseModel
+  ) => {
+    setSelectedPaymentDetail(paymentDetail);
+    setIsCreateAccountPaymentModalOpen(true);
   };
 
   // 이메일 보내기 모달 관련 핸들러
@@ -158,6 +181,37 @@ const AccountsPanel = ({
       setErrorText('이메일 발송에 실패했습니다.');
       setErrorSubtext(result.error || '알 수 없는 오류가 발생했습니다.');
       showToast();
+    }
+  };
+
+  // 회수/지급 상세내역 삭제 모달 관련 핸들러
+  const handleOpenDeleteAccountPaymentModal = (paymentId: number) => {
+    setSelectedPaymentId(paymentId);
+    setIsDeleteAccountPaymentModalOpen(true);
+  };
+  const handleCloseDeleteAccountPaymentModal = () => {
+    setIsDeleteAccountPaymentModalOpen(false);
+    setSelectedPaymentId(null);
+  };
+  const handleConfirmDeletePayment = async () => {
+    if (!selectedPaymentId) return;
+
+    const result = await deletePaymentDetail(selectedPaymentId);
+
+    if (result.success) {
+      // 삭제 성공 후 account 정보 다시 불러오기
+      if (itemId) {
+        const accountResult = await getTaxInvoiceAccount(itemId, type);
+        if (accountResult.success && accountResult.data) {
+          setAccount(accountResult.data);
+        }
+      }
+      handleCloseDeleteAccountPaymentModal();
+    } else if (result.error) {
+      setErrorText('회수/지급 상세내역 삭제에 실패했습니다.');
+      setErrorSubtext(result.error || '알 수 없는 오류가 발생했습니다.');
+      showToast();
+      handleCloseDeleteAccountPaymentModal();
     }
   };
 
@@ -272,6 +326,10 @@ const AccountsPanel = ({
                 handleOpenCreateAccountPaymentModal
               }
               onOpenSendEmailModal={handleOpenSendEmailModal}
+              onOpenDeleteAccountPaymentModal={
+                handleOpenDeleteAccountPaymentModal
+              }
+              onOpenEditAccountPaymentModal={handleOpenEditAccountPaymentModal}
               type={type}
             />
           </div>
@@ -334,14 +392,15 @@ const AccountsPanel = ({
         />
       )}
 
-      {/* 지급 정보 입력 모달 */}
+      {/* 지급 정보 입력/수정 모달 */}
       {isCreateAccountPaymentModalOpen && (
         <CreateAccountPaymentModal
           onClose={handleCloseCreateAccountPaymentModal}
           account={account}
           type={type}
+          paymentDetail={selectedPaymentDetail}
           onSuccess={async () => {
-            // 지급 정보 저장 후 account 정보 다시 불러오기
+            // 지급 정보 저장/수정 후 account 정보 다시 불러오기
             if (itemId) {
               const result = await getTaxInvoiceAccount(itemId, type);
               if (result.success && result.data) {
@@ -360,7 +419,14 @@ const AccountsPanel = ({
           isLoading={isSendingEmail}
         />
       )}
-
+      {/* 삭제 모달 */}
+      {isDeleteAccountPaymentModalOpen && (
+        <DeleteModal
+          onClose={handleCloseDeleteAccountPaymentModal}
+          onDelete={handleConfirmDeletePayment}
+          isLoading={isDeletingPayment}
+        />
+      )}
       {/* 토스트 */}
       {isToastOpen && (
         <Toast

@@ -2,12 +2,18 @@ import { MiniBtn } from '@/ui';
 import Table from './table';
 import { TaxInvoiceAccountModel } from '@/types/data-model';
 
+import { PaymentDetailResponseModel } from '@/types/data-model';
+
 interface TableAreaProps {
   isPurchase: boolean;
   taxId: number;
   account: TaxInvoiceAccountModel | null;
   onOpenCreateAccountPaymentModal: () => void;
   onOpenSendEmailModal: () => void;
+  onOpenDeleteAccountPaymentModal: (paymentId: number) => void;
+  onOpenEditAccountPaymentModal: (
+    paymentDetail: PaymentDetailResponseModel
+  ) => void;
   type?: 'tax' | 'cash-receipt';
 }
 
@@ -17,6 +23,8 @@ const TableArea = ({
   account,
   onOpenCreateAccountPaymentModal,
   onOpenSendEmailModal,
+  onOpenDeleteAccountPaymentModal,
+  onOpenEditAccountPaymentModal,
   type = 'tax',
 }: TableAreaProps) => {
   const title = isPurchase ? '지급 상세 내역' : '회수 상세 내역';
@@ -52,7 +60,13 @@ const TableArea = ({
       </div>
 
       {/* 표 */}
-      <Table isPurchase={isPurchase} taxId={taxId} type={type} />
+      <Table
+        isPurchase={isPurchase}
+        taxId={taxId}
+        type={type}
+        onOpenDeleteAccountPaymentModal={onOpenDeleteAccountPaymentModal}
+        onOpenEditAccountPaymentModal={onOpenEditAccountPaymentModal}
+      />
     </div>
   );
 };

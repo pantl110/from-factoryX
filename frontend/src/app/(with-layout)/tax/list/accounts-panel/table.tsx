@@ -6,15 +6,33 @@ import TableItem from './table-item';
 import { useGetPaymentDetails, useInfiniteScroll } from '@/hooks';
 import { PaymentDetailResponseModel } from '@/types/data-model';
 import { NoHistoryBox } from '@/ui';
+import useSubscriptionStore from '@/store/subscription-store';
+import useMemberStore from '@/store/member-store';
 
 interface TableProps {
   isPurchase: boolean;
   taxId: number;
   type?: 'tax' | 'cash-receipt';
+  onOpenDeleteAccountPaymentModal: (paymentId: number) => void;
+  onOpenEditAccountPaymentModal: (
+    paymentDetail: PaymentDetailResponseModel
+  ) => void;
 }
 
-const Table = ({ isPurchase, taxId, type = 'tax' }: TableProps) => {
+const Table = ({
+  isPurchase,
+  taxId,
+  type = 'tax',
+  onOpenDeleteAccountPaymentModal,
+  onOpenEditAccountPaymentModal,
+}: TableProps) => {
   const { getPaymentDetails } = useGetPaymentDetails();
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+  const isProdManager = role === 'prod_manager';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
 
   const {
     data,
@@ -99,12 +117,19 @@ const Table = ({ isPurchase, taxId, type = 'tax' }: TableProps) => {
             <p className="flex-1 px-3">{paidHeader}</p>
             <p className="flex-1 px-3">{remainHeader}</p>
             <p className="flex-1 px-3">연체일</p>
-            <div className="w-20" />
+            {!isViewer && !isProdManager && hasSubscription() && (
+              <p className="w-30 px-3">액션</p>
+            )}
           </div>
 
           {/* 표 내용 */}
           {paymentDetails.map((item) => (
-            <TableItem key={item.id} item={item} />
+            <TableItem
+              key={item.id}
+              item={item}
+              onOpenDeleteModal={onOpenDeleteAccountPaymentModal}
+              onOpenEditModal={onOpenEditAccountPaymentModal}
+            />
           ))}
 
           {/* 무한스크롤 트리거 및 로딩 표시 */}

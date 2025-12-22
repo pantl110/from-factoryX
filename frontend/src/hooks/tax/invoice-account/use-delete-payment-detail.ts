@@ -5,9 +5,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 
 interface UseDeletePaymentDetailReturnModel {
-  deletePaymentDetail: (
-    paymentId: number
-  ) => Promise<{
+  deletePaymentDetail: (paymentId: number) => Promise<{
     success: boolean;
     error?: string;
   }>;
@@ -51,7 +49,7 @@ const useDeletePaymentDetail = (): UseDeletePaymentDetailReturnModel => {
 
         if (axios.isAxiosError(err)) {
           if (err.response) {
-            const status = err.response.status;
+            const { status } = err.response;
             const errorData = err.response.data as { detail?: string };
 
             if (status === 404) {
@@ -62,8 +60,7 @@ const useDeletePaymentDetail = (): UseDeletePaymentDetailReturnModel => {
               errorMessage = '서버 오류가 발생했습니다.';
             } else {
               errorMessage =
-                errorData?.detail ||
-                '회수/지급 상세내역 삭제에 실패했습니다.';
+                errorData?.detail || '회수/지급 상세내역 삭제에 실패했습니다.';
             }
           } else if (err.request) {
             errorMessage = '네트워크 오류가 발생했습니다.';
@@ -92,4 +89,3 @@ const useDeletePaymentDetail = (): UseDeletePaymentDetailReturnModel => {
 };
 
 export default useDeletePaymentDetail;
-

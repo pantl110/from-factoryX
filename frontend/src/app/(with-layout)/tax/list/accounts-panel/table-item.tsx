@@ -1,14 +1,27 @@
 import { PaymentDetailResponseModel } from '@/types/data-model';
 import { formatISODate } from '@/utils';
 import { calculateOverdueDays } from './utils';
-import { Trash } from '@phosphor-icons/react';
+import { PencilSimple, Trash } from '@phosphor-icons/react';
 import { IconBtn } from '@/ui';
+import useMemberStore from '@/store/member-store';
+import useSubscriptionStore from '@/store/subscription-store';
 
 interface TableItemProps {
   item: PaymentDetailResponseModel;
+  onOpenDeleteModal: (paymentId: number) => void;
+  onOpenEditModal: (paymentDetail: PaymentDetailResponseModel) => void;
 }
 
-const TableItem = ({ item }: TableItemProps) => {
+const TableItem = ({
+  item,
+  onOpenDeleteModal,
+  onOpenEditModal,
+}: TableItemProps) => {
+  const role = useMemberStore((state) => state.role);
+  const isViewer = role === 'viewer';
+  const hasSubscription = useSubscriptionStore(
+    (state) => state.hasSubscription
+  );
   const expectedDate = item.expected_payment_date
     ? formatISODate(item.expected_payment_date)
     : '-';
@@ -48,17 +61,26 @@ const TableItem = ({ item }: TableItemProps) => {
       >
         {overdueDays}
       </p>
-      <div className="w-20 px-3 flex gap-2">
-        <IconBtn
-          icon={Trash}
-          iconSize={18}
-          hoverBg={false}
-          hoverText="text-red"
-          onClick={() => {
-            // onDelete?.(item.id);
-          }}
-        />
-      </div>
+      {!isViewer && hasSubscription() && (
+        <div className="w-30 px-3 flex gap-2">
+          <IconBtn
+            icon={PencilSimple}
+            size="w-9 h-9"
+            iconSize={16}
+            hoverBg={false}
+            hoverText="text-primary"
+            onClick={() => onOpenEditModal(item)}
+          />
+          <IconBtn
+            icon={Trash}
+            size="w-9 h-9"
+            iconSize={16}
+            hoverBg={false}
+            hoverText={true}
+            onClick={() => onOpenDeleteModal(item.id)}
+          />
+        </div>
+      )}
     </div>
   );
 };
