@@ -6,6 +6,7 @@ import {
   handleIntegerInput,
   isValidDateString,
   formatISODate,
+  getToday,
 } from '@/utils';
 import { TaxInvoiceAccountModel } from '@/types/data-model';
 import { useCreatePaymentDetail, useToast } from '@/hooks';
@@ -44,6 +45,9 @@ const CreateAccountPaymentModal = ({
     return '';
   }, [account]);
 
+  // 오늘 날짜를 기본값으로 설정
+  const todayDate = useMemo(() => getToday(), []);
+
   const {
     control,
     handleSubmit,
@@ -54,7 +58,7 @@ const CreateAccountPaymentModal = ({
   } = useForm<PaymentFormModel>({
     defaultValues: {
       expectedPaymentDate: defaultAgreedDate,
-      paymentDate: defaultAgreedDate,
+      paymentDate: todayDate,
       receivedAmount: '',
     },
     mode: 'onChange',
@@ -64,10 +68,10 @@ const CreateAccountPaymentModal = ({
   useEffect(() => {
     reset({
       expectedPaymentDate: defaultAgreedDate,
-      paymentDate: defaultAgreedDate,
+      paymentDate: todayDate,
       receivedAmount: '',
     });
-  }, [defaultAgreedDate, reset]);
+  }, [defaultAgreedDate, todayDate, reset]);
 
   const { createPaymentDetail, isLoading } = useCreatePaymentDetail();
   const { showToast, isToastOpen, isVisible } = useToast();
@@ -99,8 +103,8 @@ const CreateAccountPaymentModal = ({
     } else if (errors.expectedPaymentDate) {
       setErrorText(
         isPurchase
-          ? '올바른 지급예정일 형식을 입력해 주세요.'
-          : '올바른 입금예정일 형식을 입력해 주세요.'
+          ? '올바른 약정 지급일 형식을 입력해 주세요.'
+          : '올바른 약정 입금일 형식을 입력해 주세요.'
       );
       setErrorSubtext('YYYY-MM-DD 형식으로 입력해 주세요.');
       showToast();
@@ -149,8 +153,8 @@ const CreateAccountPaymentModal = ({
       });
       setErrorText(
         isPurchase
-          ? '올바른 지급예정일 형식을 입력해 주세요.'
-          : '올바른 입금예정일 형식을 입력해 주세요.'
+          ? '올바른 약정 지급일 형식을 입력해 주세요.'
+          : '올바른 약정 입금일 형식을 입력해 주세요.'
       );
       setErrorSubtext('YYYY-MM-DD 형식으로 입력해 주세요.');
       showToast();
@@ -211,15 +215,15 @@ const CreateAccountPaymentModal = ({
   };
 
   const title = isPurchase ? '지급 정보 입력' : '입금 정보 입력';
-  const expectedDateLabel = isPurchase ? '지급예정일' : '입금예정일';
+  const expectedDateLabel = isPurchase ? '약정 지급일' : '약정 입금일';
   const paymentDateLabel = isPurchase ? '지급일' : '입금일';
   const amountLabel = isPurchase ? '지급 금액' : '받은 금액';
   const amountPlaceholder = isPurchase
     ? '지급 금액을 입력하세요.'
     : '받은 금액을 입력하세요.';
   const expectedDateError = isPurchase
-    ? '올바른 지급예정일 형식을 입력해 주세요.'
-    : '올바른 입금예정일 형식을 입력해 주세요.';
+    ? '올바른 약정 지급일 형식을 입력해 주세요.'
+    : '올바른 약정 입금일 형식을 입력해 주세요.';
   const paymentDateError = isPurchase
     ? '올바른 지급일 형식을 입력해 주세요.'
     : '올바른 입금일 형식을 입력해 주세요.';

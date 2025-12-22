@@ -75,7 +75,7 @@ const Table = ({ isPurchase, taxId, type = 'tax' }: TableProps) => {
 
   const remainHeader = isPurchase ? '미지급금(잔액)' : '미수금액(잔액)';
   const paidHeader = isPurchase ? '지급 금액' : '받은 금액';
-  const expectedDateHeader = isPurchase ? '지급예정일' : '입금예정일';
+  const expectedDateHeader = isPurchase ? '약정 지급일' : '약정 입금일';
   const dateHeader = isPurchase ? '지급일' : '입금일';
 
   const isInitialLoading = isLoading && paymentDetails.length === 0;
