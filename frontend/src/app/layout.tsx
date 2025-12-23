@@ -29,8 +29,8 @@ const pretendard = localFont({
 });
 
 export const metadata = {
-  title: 'Factory_X',
-  description: 'Factory_X',
+  title: 'FactoryX',
+  description: 'FactoryX',
   icons: {
     icon: '/favicon.svg',
   },
