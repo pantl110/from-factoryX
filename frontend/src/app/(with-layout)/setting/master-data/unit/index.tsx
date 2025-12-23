@@ -7,7 +7,12 @@ import { UnitTableHeader } from './unit-table-header';
 import { UnitTableItem } from './unit-table-item';
 import { useState, useCallback, useMemo } from 'react';
 import DeleteModal from '@/ui/modal/delete-modal';
-import { useDeleteUnitConversionMutation, useCheckAll } from '@/hooks';
+import {
+  useDeleteUnitConversionMutation,
+  useCheckAll,
+  useUnitConversionApi,
+} from '@/hooks';
+import { AddUnitModal } from './modals/add-unit-modal';
 
 interface UnitProps {
   unitList: UnitConversionModel[];
@@ -37,6 +42,14 @@ const Unit = ({
 }: UnitProps) => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const deleteMutation = useDeleteUnitConversionMutation();
+
+  // 테이블 아이템 클릭 시 열릴 단위변환 모달 상태
+  const [isUnitModalOpenFromRow, setIsUnitModalOpenFromRow] = useState(false);
+  const [selectedUnitForModal, setSelectedUnitForModal] =
+    useState<UnitConversionModel | null>(null);
+
+  // 단위변환 상세 조회 훅 (특정 품목 기준)
+  const { getByMaterial, getByProduct } = useUnitConversionApi();
 
   // unitList의 id 배열
   const unitIds = useMemo(() => unitList.map((item) => item.id), [unitList]);
@@ -69,6 +82,34 @@ const Unit = ({
       // noop - error state is handled in hook consumer or toast layer
     }
   }, [checkedIds, deleteMutation, refetchUnit, setAllChecked]);
+
+  // 행 클릭 시: id(자재/제품 기준)가 있으면 해당 품목에 대한 단위변환 조회 훅으로 최신 값 채우기
+  const handleRowClick = useCallback(
+    async (unit: UnitConversionModel) => {
+      let detail: UnitConversionModel | null = null;
+      try {
+        if (unit.material) {
+          const res = await getByMaterial(unit.material);
+          if (res.success && res.data && res.data.length > 0) {
+            // 특정 원자재에 대한 단위변환 목록 중 첫 번째 레코드 사용
+            detail = res.data[0];
+          }
+        } else if (unit.product) {
+          const res = await getByProduct(unit.product);
+          if (res.success && res.data && res.data.length > 0) {
+            // 특정 품목에 대한 단위변환 목록 중 첫 번째 레코드 사용
+            detail = res.data[0];
+          }
+        }
+      } catch {
+        // 조회 실패 시에는 리스트에서 넘어온 값으로만 사용
+      }
+
+      setSelectedUnitForModal(detail || unit);
+      setIsUnitModalOpenFromRow(true);
+    },
+    [getByMaterial, getByProduct]
+  );
 
   return (
     <>
@@ -105,6 +146,7 @@ const Unit = ({
                 refetchUnit={refetchUnit}
                 isSelected={isChecked(item.id)}
                 onToggleSelect={() => toggleOne(item.id)}
+                onRowClick={handleRowClick}
               />
             ))}
 
@@ -126,6 +168,18 @@ const Unit = ({
           onClose={() => setIsDeleteModalOpen(false)}
           onDelete={handleBulkDelete}
           isLoading={deleteMutation.isPending}
+        />
+      )}
+
+      {/* 테이블 아이템 클릭으로 여는 단위 변환 모달 */}
+      {isUnitModalOpenFromRow && selectedUnitForModal && (
+        <AddUnitModal
+          onClose={() => setIsUnitModalOpenFromRow(false)}
+          addUnitType={
+            selectedUnitForModal.material !== null ? 'material' : 'product'
+          }
+          refetchUnit={refetchUnit}
+          initialUnit={selectedUnitForModal}
         />
       )}
     </>

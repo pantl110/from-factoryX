@@ -4,13 +4,14 @@ import Input from '@/ui/input';
 import { Equals } from '@phosphor-icons/react';
 import MiniBtn from '@/ui/mini-btn';
 import { handleQuantityInput } from '@/utils/format-number';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Preview from './preview';
 import { MaterialNameDropdown } from '@/ui/dropdown/material-name-dropdown';
 import { ProductNameDropdown } from '@/ui/dropdown/product-name-dropdown';
 import {
   MaterialResponseModel,
   ProductResponseModel,
+  UnitConversionModel,
 } from '@/types/data-model';
 import { useCreateUnitConversionMutation } from '@/hooks';
 
@@ -18,12 +19,15 @@ interface AddUnitModalProps {
   onClose: () => void;
   addUnitType: 'material' | 'product';
   refetchUnit?: () => Promise<void>;
+  // 특정 단위변환 레코드를 수정/재사용할 때 기본값으로 사용
+  initialUnit?: UnitConversionModel | null;
 }
 
 export const AddUnitModal = ({
   onClose,
   addUnitType,
   refetchUnit,
+  initialUnit = null,
 }: AddUnitModalProps) => {
   const { register, handleSubmit, watch, setValue } = useForm();
   const [materialSearchInput, setMaterialSearchInput] = useState('');
@@ -37,6 +41,51 @@ export const AddUnitModal = ({
     null
   );
   const createMutation = useCreateUnitConversionMutation();
+
+  // initialUnit이 있을 때 모달 기본값 설정
+  useEffect(() => {
+    if (!initialUnit) return;
+
+    // 이름 / 코드 / ID
+    if (addUnitType === 'material') {
+      setMaterialSearchInput(initialUnit.material_name || '');
+      setSelectedMaterialId(initialUnit.material ?? null);
+      setValue('name', initialUnit.material_name || '');
+    } else {
+      setProductSearchInput(initialUnit.product_name || '');
+      setSelectedProductId(initialUnit.product ?? null);
+      setValue('name', initialUnit.product_name || '');
+    }
+    // 코드 정보: 백엔드에서 material_code / product_code 로 내려옴
+    if (addUnitType === 'material') {
+      setValue('code', initialUnit.material_code || '');
+    } else {
+      setValue('code', initialUnit.product_code || '');
+    }
+
+    // 단위/수량 기본값
+    if (initialUnit.from_unit) {
+      setValue('unit', initialUnit.from_unit);
+    }
+    if (initialUnit.to_unit) {
+      setValue('conversionUnit', initialUnit.to_unit);
+    }
+    // from_quantity / to_quantity 는 Decimal 이라 문자열일 수도 있어서 타입 상관없이 처리
+    if (
+      initialUnit.from_quantity !== undefined &&
+      initialUnit.from_quantity !== null
+    ) {
+      const formatted = handleQuantityInput(String(initialUnit.from_quantity));
+      setValue('unitValue', formatted.displayValue);
+    }
+    if (
+      initialUnit.to_quantity !== undefined &&
+      initialUnit.to_quantity !== null
+    ) {
+      const formatted = handleQuantityInput(String(initialUnit.to_quantity));
+      setValue('conversionValue', formatted.displayValue);
+    }
+  }, [initialUnit, addUnitType, setValue]);
 
   // 단위 필드 값 감시
   const watchedUnit = watch('unit');
@@ -62,10 +111,15 @@ export const AddUnitModal = ({
       const conversionRate = Math.round((toValue / fromValue) * 10000) / 10000; // 소수점 4자리까지 반올림
 
       await createMutation.mutateAsync({
+        // id 가 있으면 수정 모드, 없으면 null 로 전송
+        id: initialUnit?.id ?? null,
         material_id: addUnitType === 'material' ? selectedMaterialId : null,
         product_id: addUnitType === 'product' ? selectedProductId : null,
         from_unit: watchedUnit || null,
         to_unit: watchedConversionUnit || null,
+        // 변환식 숫자도 함께 전송
+        from_quantity: fromValue,
+        to_quantity: toValue,
         conversion_rate: conversionRate,
       });
 
@@ -228,7 +282,7 @@ export const AddUnitModal = ({
                 addUnitType === 'material' ? '기준단위를 입력하세요.' : ''
               }
               value={watchedUnit || ''}
-              disabledReadOnly={addUnitType === 'product'}
+              disabled={addUnitType === 'product'}
               {...(addUnitType === 'material'
                 ? register('unit', { required: true })
                 : {})}
@@ -239,7 +293,7 @@ export const AddUnitModal = ({
               }
               label="변환단위"
               value={watchedConversionUnit || ''}
-              disabledReadOnly={addUnitType === 'material'}
+              disabled={addUnitType === 'material'}
               {...(addUnitType === 'product'
                 ? register('conversionUnit', { required: true })
                 : {})}
@@ -270,11 +324,7 @@ export const AddUnitModal = ({
                 />
               </div>
               <div className="flex-[0.5]">
-                <Input
-                  value={watchedUnit || ''}
-                  disabledReadOnly={addUnitType === 'product'}
-                  placeholder=""
-                />
+                <Input value={watchedUnit || ''} disabled placeholder="" />
               </div>
             </div>
             <div className="flex justify-center pb-[19px]">
@@ -292,7 +342,7 @@ export const AddUnitModal = ({
               <div className="flex-[0.5]">
                 <Input
                   value={watchedConversionUnit || ''}
-                  disabledReadOnly={addUnitType === 'material'}
+                  disabled
                   placeholder=""
                 />
               </div>

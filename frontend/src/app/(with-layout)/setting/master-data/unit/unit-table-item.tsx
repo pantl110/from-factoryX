@@ -1,5 +1,4 @@
 import Chip from '@/ui/chip';
-import { Trash } from '@phosphor-icons/react';
 import { UnitConversionModel } from '@/types/data-model';
 import { useState } from 'react';
 import DeleteModal from '@/ui/modal/delete-modal';
@@ -11,12 +10,15 @@ interface UnitTableItemProps {
   refetchUnit: () => void;
   isSelected?: boolean;
   onToggleSelect?: () => void;
+  // 행 클릭 시 단위변환 모달을 열기 위한 콜백
+  onRowClick?: (unit: UnitConversionModel) => void;
 }
 export const UnitTableItem = ({
   unit,
   refetchUnit,
   isSelected = false,
   onToggleSelect,
+  onRowClick,
 }: UnitTableItemProps) => {
   // item 삭제
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -59,12 +61,15 @@ export const UnitTableItem = ({
 
   return (
     <>
-      <div className="flex h-14 items-center px-3 w-full border-b border-lg Me_Body-1 text-dg hover:bg-bg transition-colors duration-200 cursor-pointer">
+      <div
+        className="flex h-14 items-center px-3 w-full border-b border-lg Me_Body-1 text-dg hover:bg-bg transition-colors duration-200 cursor-pointer"
+        onClick={() => onRowClick?.(unit)}
+      >
         <Checkbox
           isChecked={isSelected}
           onToggle={onToggleSelect || (() => {})}
         />
-        <div className="flex-[0.6] px-2">
+        <div className="flex-[0.6] pl-2 pr-4">
           <Chip
             text={unit.material ? '자재' : '제품'}
             bgColor={unit.material ? 'bg-yellow-8' : 'bg-green-8'}
@@ -95,7 +100,7 @@ export const UnitTableItem = ({
         >
           {`${formatQuantity(unit.from_quantity)}${unit.from_unit} = ${formatQuantity(unit.to_quantity)}${unit.to_unit}`}
         </p>
-        <div className="flex-[0.7] px-3">
+        {/* <div className="flex-[0.7] px-3">
           <button
             className="w-9 h-9 flex items-center justify-center group"
             onClick={() => setIsDeleteOpen(true)}
@@ -105,7 +110,7 @@ export const UnitTableItem = ({
               className="text-sv group-hover:text-red transition-colors cursor-pointer"
             />
           </button>
-        </div>
+        </div> */}
       </div>
 
       {/* item 삭제 모달 */}

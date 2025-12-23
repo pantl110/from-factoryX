@@ -188,7 +188,7 @@ const MasterData = () => {
   const setAllChecked =
     settingChip === 'equipment' ? facilitySetAllChecked : clientSetAllChecked;
 
-  // 페이지 로드 시 설비와 거래처 데이터 초기 로딩
+  // 페이지 로드 시 설비/거래처 데이터 + 단위변환 전체 개수 초기 로딩
   useEffect(() => {
     if (factoryId) {
       // 설비 데이터 로딩
@@ -199,31 +199,23 @@ const MasterData = () => {
       if (!clientList) {
         getClients();
       }
-      // 단위변환 전체 개수 가져오기 (검색어/필터 없이)
-      if (unitTotal === null) {
-        getUnitList({
-          page: 1,
-          page_size: 1,
-          q: undefined,
-          item_type: null,
-        }).then(
-          (result: { success: boolean; data?: { totalCnt?: number } }) => {
-            if (result.success && result.data?.totalCnt !== undefined) {
-              setUnitTotal(result.data.totalCnt);
-            }
-          }
-        );
-      }
     }
-  }, [
-    factoryId,
-    equipmentList,
-    clientList,
-    refetchEquipment,
-    getClients,
-    unitTotal,
-    getUnitList,
-  ]);
+  }, [factoryId, equipmentList, clientList, refetchEquipment, getClients]);
+
+  // 단위변환 전체 개수는 탭을 클릭하지 않아도 한 번만 조회해서 칩에 표시
+  useEffect(() => {
+    if (!factoryId || unitTotal !== null) return;
+    getUnitList({
+      page: 1,
+      page_size: 1,
+      q: undefined,
+      item_type: null,
+    }).then((result: { success: boolean; data?: { totalCnt?: number } }) => {
+      if (result.success && result.data?.totalCnt !== undefined) {
+        setUnitTotal(result.data.totalCnt);
+      }
+    });
+  }, [factoryId, unitTotal, getUnitList]);
 
   // 검색어가 없을 때 totalCnt를 저장 (단, 이미 저장된 값이 있으면 업데이트하지 않음)
   useEffect(() => {
@@ -460,18 +452,6 @@ const MasterData = () => {
             unitList={unitList}
             refetchUnit={async () => {
               await refetchUnitList();
-              // 삭제 후 전체 개수 갱신
-              if (factoryId) {
-                const result = await getUnitList({
-                  page: 1,
-                  page_size: 1,
-                  q: undefined,
-                  item_type: null,
-                });
-                if (result.success && result.data?.totalCnt !== undefined) {
-                  setUnitTotal(result.data.totalCnt);
-                }
-              }
             }}
             currentPage={unitPagination.currentPage}
             totalPages={unitPagination.totalPages}

@@ -10,11 +10,18 @@ import {
 import axios from 'axios';
 
 export interface UnitConversionCreatePayloadModel {
+  // backend schema: UnitConversionCreateSchema
+  // id 가 있으면 수정, 없으면 생성 동작
+  id?: number | null;
   factory_id: number;
   material_id?: number | null;
   product_id?: number | null;
   from_unit?: string | null;
   to_unit?: string | null;
+  // 변환식 왼쪽/오른쪽 숫자
+  from_quantity?: number;
+  to_quantity?: number;
+  // 백엔드에서 conversion_rate 로도 계산하지만, 함께 전송
   conversion_rate?: number;
 }
 
@@ -179,11 +186,15 @@ const useUnitConversionApi = () => {
       }
     ) => {
       const body: UnitConversionCreatePayloadModel = {
+        // id 가 있으면 수정 모드, 없으면 null 로 명시적으로 전송
+        id: payload.id ?? null,
         factory_id: payload.factory_id ?? (factoryId as number),
         material_id: payload.material_id ?? null,
         product_id: payload.product_id ?? null,
         from_unit: payload.from_unit ?? null,
         to_unit: payload.to_unit ?? null,
+        from_quantity: payload.from_quantity,
+        to_quantity: payload.to_quantity,
         conversion_rate: payload.conversion_rate ?? 1,
       };
       return call<UnitConversionModel>('create', { method: 'POST', body });
@@ -225,9 +236,10 @@ const useUnitConversionApi = () => {
     [call, factoryId]
   );
 
+  // 특정 원자재에 대한 단위변환 정보 조회 (list[UnitConversionOutSchema])
   const getByMaterial = useCallback(
     async (materialId: number) => {
-      return call<UnitConversionModel>('by-material', {
+      return call<UnitConversionModel[]>('by-material', {
         method: 'GET',
         material_id: materialId,
         queryParams: { factory_id: factoryId as number },
@@ -236,9 +248,10 @@ const useUnitConversionApi = () => {
     [call, factoryId]
   );
 
+  // 특정 품목에 대한 단위변환 정보 조회 (list[UnitConversionOutSchema])
   const getByProduct = useCallback(
     async (productId: number) => {
-      return call<UnitConversionModel>('by-product', {
+      return call<UnitConversionModel[]>('by-product', {
         method: 'GET',
         product_id: productId,
         queryParams: { factory_id: factoryId as number },

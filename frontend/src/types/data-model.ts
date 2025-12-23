@@ -1732,7 +1732,9 @@ export interface UnitConversionModel {
   material: number | null;
   product: number | null;
   material_name: string | null;
+  material_code?: string | null;
   product_name: string | null;
+  product_code?: string | null;
   from_unit: string | null;
   to_unit: string | null;
   from_quantity: number;

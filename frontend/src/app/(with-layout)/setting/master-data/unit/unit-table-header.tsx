@@ -51,7 +51,7 @@ export const UnitTableHeader = ({
       <p className="flex-1 px-3">기준 단위</p>
       <p className="flex-1 px-3">변환 단위</p>
       <p className="flex-1 px-3">변환식</p>
-      <p className="flex-[0.7] px-3">액션</p>
+      {/* <p className="flex-[0.7] px-3">액션</p> */}
     </div>
   );
 };
