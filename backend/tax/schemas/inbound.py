@@ -94,8 +94,8 @@ class LinkTaxInvoiceIn(Schema):
 class TaxInvoiceFilter(FilterSchema):
     q: Optional[str] = Field(
         None,
-        q=["client__name__icontains"],
-        description="거래처명 또는 품목명 통합 검색어",
+        q=["client__name__icontains", "line_items__icontains"],
+        description="거래처명 또는 품목명 통합 검색어 (품목명은 line_items JSON에서 문자열 검색)",
         expression_connector="OR",
     )
     tax_invoice_type: Optional[str] = Field(
