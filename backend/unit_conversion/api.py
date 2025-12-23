@@ -149,15 +149,9 @@ async def list_unit_conversions(
             group_max_id=Coalesce(material_group_max, product_group_max, 'id', output_field=IntegerField())
         ).order_by('-group_max_id', '-id')
         
-        results = []
-        for uc in queryset:
-            # 각 인스턴스에 material / product 관련 부가 정보 속성 추가
-            uc.material_name = uc.material.name if uc.material else None
-            uc.material_code = uc.material.code if uc.material else None
-            uc.product_name = uc.product.name if uc.product else None
-            uc.product_code = uc.product.code if uc.product else None
-            results.append(uc)
-        return results
+        # ModelSchema 의 resolver 에서 material_* / product_* 를 계산하므로
+        # 여기서는 queryset 만 리스트로 반환
+        return list(queryset)
     
     return await get_unit_conversions()
 
