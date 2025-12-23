@@ -136,6 +136,32 @@ class TestUnitConversionAPI(TestCase):
         self.assertEqual(float(response_data["from_quantity"]), 1.0)
         self.assertEqual(float(response_data["to_quantity"]), 100.0)
 
+    async def test_create_unit_conversion_with_id_updates_existing(self):
+        """create API 에 id 를 넣으면 수정 동작을 수행한다"""
+        token = await self.authenticate()
+
+        data = {
+            "id": self.unit_conversion.id,
+            "factory_id": self.factory.id,
+            "to_unit": "lb",
+            "to_quantity": 2.2046,
+        }
+
+        response = await self.client.post(
+            "/",
+            json=data,
+            headers={"Authorization": f"Bearer {token}"}
+        )
+
+        self.assertEqual(response.status_code, 200)
+        response_data = response.json()
+
+        # 기존 from_unit 유지, to_unit / to_quantity 만 변경
+        self.assertEqual(response_data["id"], self.unit_conversion.id)
+        self.assertEqual(response_data["from_unit"], "kg")
+        self.assertEqual(response_data["to_unit"], "lb")
+        self.assertEqual(float(response_data["to_quantity"]), 2.2046)
+
     async def test_create_unit_conversion_with_product(self):
         """제품과 함께 단위변환 생성 테스트"""
         token = await self.authenticate()

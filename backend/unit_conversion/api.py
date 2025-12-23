@@ -18,24 +18,58 @@ router = Router(tags=["Unit Conversion"])
 
 @router.post(
     "",
-    summary="[C] 단위변환 정보 생성",
-    description="단위변환 정보를 생성합니다.",
+    summary="[C/U] 단위변환 정보 생성/수정",
+    description="단위변환 정보를 생성하거나(id 포함 시 수정) 합니다.",
     response=UnitConversionOutSchema,
     auth=jwt_auth,
 )
 async def create_unit_conversion(request, payload: UnitConversionCreateSchema):
+    """
+    payload.id 가 없으면 새 단위변환을 생성하고,
+    payload.id 가 있으면 해당 단위변환을 수정합니다.
+    """
     user = request.auth
-    data = payload.dict()
-    factory_id = data.pop("factory_id")
+
+    # 공통 데이터 분리
+    data_for_update = payload.dict(exclude_unset=True)
+    factory_id = data_for_update.pop("factory_id")
+    unit_conversion_id = data_for_update.pop("id", None)
     await is_factory_member(factory_id, user)
 
+    # id 가 있는 경우: 수정(update) 동작 (PATCH 와 동일한 로직)
+    if unit_conversion_id is not None:
+        unit_conversion = await get_unit_conversion_by_id(unit_conversion_id, factory_id)
+
+        material = None
+        material_id = data_for_update.pop("material_id", None)
+        if material_id is not None:
+            material = await get_material_by_id(material_id, factory_id)
+
+        product = None
+        product_id = data_for_update.pop("product_id", None)
+        if product_id is not None:
+            product = await get_product_by_id(product_id, factory_id)
+
+        for key, value in data_for_update.items():
+            setattr(unit_conversion, key, value)
+
+        unit_conversion.material = material
+        unit_conversion.product = product
+        await unit_conversion.asave()
+
+        return unit_conversion
+
+    # id 가 없는 경우: 생성(create) 동작
+    create_data = payload.dict()
+    factory_id = create_data.pop("factory_id")
+
     material = None
-    material_id = data.pop("material_id", None)
+    material_id = create_data.pop("material_id", None)
     if material_id is not None:
         material = await get_material_by_id(material_id, factory_id)
 
     product = None
-    product_id = data.pop("product_id", None)
+    product_id = create_data.pop("product_id", None)
     if product_id is not None:
         product = await get_product_by_id(product_id, factory_id)
 
@@ -43,7 +77,7 @@ async def create_unit_conversion(request, payload: UnitConversionCreateSchema):
         factory_id=factory_id,
         material=material,
         product=product,
-        **data,
+        **create_data,
     )
 
     return unit_conversion
@@ -117,9 +151,11 @@ async def list_unit_conversions(
         
         results = []
         for uc in queryset:
-            # 각 인스턴스에 material_name과 product_name 속성 추가
+            # 각 인스턴스에 material / product 관련 부가 정보 속성 추가
             uc.material_name = uc.material.name if uc.material else None
+            uc.material_code = uc.material.code if uc.material else None
             uc.product_name = uc.product.name if uc.product else None
+            uc.product_code = uc.product.code if uc.product else None
             results.append(uc)
         return results
     

@@ -426,6 +426,23 @@ class TaxAPITestCase(TestCase):
             tax_invoice_type="sales",
             publish_status="published",
         )
+        # 품목(line_items) 설정
+        invoice1.line_items = [
+            {
+                "name": "테스트 제품A",
+                "chargeable_unit": "10",
+                "unit_price": "1000",
+            }
+        ]
+        invoice1.save()
+        invoice2.line_items = [
+            {
+                "name": "다른 제품B",
+                "chargeable_unit": "5",
+                "unit_price": "2000",
+            }
+        ]
+        invoice2.save()
         # 거래처명 검색
         url = f"/v1/tax/published?factory_id={self.factory.id}&q=플라스틱이 좋아"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
@@ -436,13 +453,14 @@ class TaxAPITestCase(TestCase):
         #     data,
         # )
         self.assertEqual(len(data["data"]), 1)
-        # self.assertEqual(data["data"][0]["client_name"], "플라스틱이 좋아")
-        # 품목명 검색
-        url = f"/v1/tax/published?factory_id={self.factory.id}"
+        # 품목명 검색 (line_items.name)
+        url = f"/v1/tax/published?factory_id={self.factory.id}&q=제품A"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(len(data["data"]), 2)
+        # 제품명이 '테스트 제품A'인 세금계산서만 검색되어야 함
+        self.assertEqual(len(data["data"]), 1)
+        self.assertEqual(data["data"][0]["id"], invoice1.id)
 
     def test_list_all_tax_invoices_success(self):
         """모든 세금계산서 조회 성공 테스트"""
