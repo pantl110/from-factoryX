@@ -254,6 +254,7 @@ const TaxDraftPage = () => {
         />
         <div className="px-10 pb-10">
           <SearchDeleteTable
+            placeholder="거래처명이나 제품명을 입력해 검색하세요."
             checkedCount={checkedCount}
             deleteButtonText={getDeleteButtonText()}
             onDelete={() => setIsDeleteModalOpen(true)}
@@ -291,7 +292,7 @@ const TaxDraftPage = () => {
                     onToggle={toggleAll}
                     disabled={isProdManager || isViewer}
                   />
-                  <p className="px-3 w-[150px]">진행상태</p>
+                  <p className="px-3 w-[150px]">진행 상태</p>
                   <p className="px-3 flex-2">구분</p>
                   <p className="px-3 flex-2">거래처명</p>
                   <p className="px-3 w-[200px]">공급가액</p>

@@ -141,7 +141,7 @@ const ProductEnrollmentModal = ({
     >
       <div className="my-4 flex gap-2.5 relative px-6">
         <SearchInput
-          placeholder="품목 검색"
+          placeholder="품목을 입력해 검색하세요."
           width="flex-1"
           value={input}
           onChange={(value) => {

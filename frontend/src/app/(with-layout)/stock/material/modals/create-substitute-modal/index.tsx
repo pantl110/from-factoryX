@@ -127,7 +127,7 @@ const CreateSubstituteModal = ({
     >
       <div className="mt-4 mb-3 px-6">
         <SearchInput
-          placeholder="연결할 원자재 또는 코드를 검색하세요."
+          placeholder="연결할 원자재 또는 코드를 입력해 검색하세요."
           width="w-full"
           value={searchTerm}
           onChange={setSearchTerm}

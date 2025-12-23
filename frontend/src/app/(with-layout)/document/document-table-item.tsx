@@ -175,7 +175,7 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
           </>
         ) : documentType === '생산지시서' ? (
           <>
-            <div className="pl-2 pr-4 flex-[0.5]">
+            <div className="pl-2 pr-4 w-[150px]">
               <RoundChip
                 text={documentType}
                 variant="defaultSmall"
@@ -288,7 +288,7 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
           </>
         ) : projectData ? (
           <>
-            <div className="pl-2 pr-4 flex-[0.5]">
+            <div className="pl-2 pr-4 w-[150px]">
               <RoundChip
                 text={documentType}
                 variant="defaultSmall"

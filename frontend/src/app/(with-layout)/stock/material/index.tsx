@@ -175,7 +175,7 @@ const Material = ({
     <>
       <div className="flex items-center justify-between pb-4">
         <SearchInput
-          placeholder="자재명 또는 자재코드를 검색하세요."
+          placeholder="자재명 또는 자재코드를 입력해 검색하세요."
           value={search}
           onChange={handleSearch}
         />

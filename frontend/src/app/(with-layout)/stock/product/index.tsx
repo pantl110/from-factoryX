@@ -156,7 +156,7 @@ const Product = ({
         <SearchInput
           value={searchKeyword}
           onChange={handleSearch}
-          placeholder="제품명 또는 제품코드를 검색하세요."
+          placeholder="제품명 또는 제품코드를 입력해 검색하세요."
         />
         {productList.length > 0 && !isViewer && hasSubscription() && (
           <div className="flex gap-1">

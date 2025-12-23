@@ -95,7 +95,7 @@ const LinkProjectModal = ({
     >
       <div className="flex flex-col gap-4 mt-4 px-6">
         <SearchInput
-          placeholder="연결할 프로젝트의 거래처나 제품을 검색하세요."
+          placeholder="연결할 프로젝트의 거래처명이나 제품명을 입력해 검색하세요."
           onChange={(value) => setSearchKeyword(value)}
         />
 

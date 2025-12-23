@@ -214,8 +214,8 @@ const LinkTaxModal = ({
         <SearchInput
           placeholder={
             type === 'project'
-              ? '연결할 내역에 대한 거래처를 검색하세요.'
-              : '연결할 내역에 대한 원자재를 검색하세요.'
+              ? '연결할 내역에 대한 거래처를 입력해 검색하세요.'
+              : '연결할 내역에 대한 원자재를 입력해 검색하세요.'
           }
           onChange={(value) => setSearchKeyword(value)}
         />

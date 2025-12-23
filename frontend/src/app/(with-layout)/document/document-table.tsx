@@ -86,7 +86,7 @@ const DocumentTable = ({
             {selectedType === '매출 세금계산서' ||
             selectedType === '매입 세금계산서' ? (
               <>
-                <p className="px-3 flex-1">문서유형</p>
+                <p className="px-3 w-[150px]">문서 유형</p>
                 <p className="px-3 flex-[1.5]">거래처명</p>
                 <p className="px-3 flex-[1.5]">제품명</p>
                 <p className="px-3 flex-[1.5]">합계금액</p>
@@ -107,7 +107,7 @@ const DocumentTable = ({
               </>
             ) : selectedType === '현금영수증' ? (
               <>
-                <p className="px-3 flex-1">문서유형</p>
+                <p className="px-3 w-[150px]">문서 유형</p>
                 <p className="px-3 flex-[1.5]">거래처명</p>
                 <p className="px-3 flex-[1.5]">제품명</p>
                 <p className="px-3 flex-[1.5]">합계금액</p>
@@ -122,7 +122,7 @@ const DocumentTable = ({
             ) : (
               // 주문서, 생산지시서, 거래명세서 일 떄
               <>
-                <p className="px-3 flex-[0.5]">문서유형</p>
+                <p className="px-3 w-[150px]">문서 유형</p>
                 <p className="px-3 flex-1">거래처명</p>
                 <p className="px-3 flex-1">제품명</p>
                 <div

@@ -210,7 +210,7 @@ const MaterialEnrollmentModal = ({
           <div className="flex justify-end h-12 gap-2.5 mt-4 items-center">
             <div className="flex-1 relative">
               <SearchInput
-                placeholder="원자재 검색"
+                placeholder="원자재를 입력해 검색하세요."
                 width="w-full"
                 value={input}
                 onChange={(value) => {

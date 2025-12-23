@@ -180,7 +180,7 @@ const ReceiptList = ({ className = '' }: ReceiptListProps) => {
             <SearchInput
               value={searchQuery}
               onChange={handleSearchChange}
-              placeholder="거래처명이나 제품명을 검색하세요."
+              placeholder="거래처명이나 제품명을 입력해 검색하세요."
             />
             {/* 숨김 버튼: 숨김 목록 보기 중이거나, 일반 목록에서 데이터가 있을 때 */}
             {role && !['viewer', 'prod_manager'].includes(role) && (

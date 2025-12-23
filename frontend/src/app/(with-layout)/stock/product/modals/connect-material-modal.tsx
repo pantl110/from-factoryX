@@ -352,7 +352,7 @@ const ConnectMaterialModal = ({
       <div>
         <div className="my-4 flex gap-2.5 px-6 relative">
           <SearchInput
-            placeholder="원자재를 검색하세요."
+            placeholder="원자재를 입력해 검색하세요."
             width="flex-1"
             value={input}
             onChange={(value) => {
