@@ -39,7 +39,7 @@ const OrderDocumentPDFView = ({
           <div className="pdf-table-row">
             <div className="pdf-table-cell">
               <div className="label">
-                <div>회사명</div>
+                <div>거래처명</div>
               </div>
               <div className="content">
                 <div>{clientData.name}</div>

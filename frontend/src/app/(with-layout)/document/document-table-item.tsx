@@ -88,7 +88,7 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
         {documentType === '매출 세금계산서' ||
         documentType === '매입 세금계산서' ? (
           <>
-            <div className="pl-2 pr-4 flex-1">
+            <div className="pl-2 pr-4 w-[150px]">
               <RoundChip
                 text={documentType}
                 variant="defaultSmall"
@@ -132,7 +132,7 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
           </>
         ) : documentType === '현금영수증' ? (
           <>
-            <div className="pl-2 pr-4 flex-1">
+            <div className="pl-2 pr-4 w-[150px]">
               <RoundChip
                 text={documentType}
                 variant="defaultSmall"

@@ -2,7 +2,7 @@ const ProductionTableHeader = () => {
   return (
     <div className="flex min-w-[1421px] h-12 items-center Me_Body-1 text-sv border-t border-b border-[#eeeeee]">
       <div className="py-1 px-3 flex-2">
-        <p>업체명</p>
+        <p>거래처명</p>
       </div>
       <div className="py-1 px-3 flex-2">
         <p>제품명</p>

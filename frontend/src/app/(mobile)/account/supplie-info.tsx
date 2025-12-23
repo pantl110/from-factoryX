@@ -5,7 +5,7 @@ const SupplierInfo = () => {
     <div className="px-7 py-8 flex flex-col gap-8">
       <h3 className="m-Heading-3-semibold">구매처 정보</h3>
       <div className="flex flex-col gap-5">
-        <LabelInfo label="업체명" value="한빛전자" />
+        <LabelInfo label="거래처명" value="한빛전자" />
         <LabelInfo label="사업자등록번호" value="204-85-12345" />
         <LabelInfo label="대표자명" value="이정훈" />
         <LabelInfo label="업태" value="도소매업" />

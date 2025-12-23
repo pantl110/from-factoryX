@@ -68,7 +68,7 @@ const ReceiptDetailPanel = ({
             <h3 className="Heading-3 h-10 items-center flex">구매처 정보</h3>
             <div>
               <InfoLabelValue
-                label="업체명"
+                label="거래처명"
                 value={cashReceipt?.client_info.name}
               />
               <InfoLabelValue

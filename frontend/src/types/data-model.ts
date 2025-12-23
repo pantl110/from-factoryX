@@ -866,7 +866,7 @@ export interface OcrRequestItemModel {
 
 // OCR 결과 클라이언트 정보 스키마
 export interface OcrClientInfoModel {
-  company_name: string; // 업체명
+  company_name: string; // 거래처명
   registration_number?: string; // 사업자등록번호
   ceo_name?: string; // 대표자명
   delivery_date?: string; // 납품일자

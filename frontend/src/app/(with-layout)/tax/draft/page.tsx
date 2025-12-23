@@ -293,7 +293,7 @@ const TaxDraftPage = () => {
                   />
                   <p className="px-3 w-[150px]">진행상태</p>
                   <p className="px-3 flex-2">구분</p>
-                  <p className="px-3 flex-2">업체명</p>
+                  <p className="px-3 flex-2">거래처명</p>
                   <p className="px-3 w-[200px]">공급가액</p>
                   <p className="px-3 w-[200px]">세액</p>
                   <p className="px-3 w-[200px]">합계금액</p>

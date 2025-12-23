@@ -531,7 +531,7 @@ const MasterData = () => {
           <SearchInput
             placeholder={
               settingChip === 'client'
-                ? '회사명, 대표자명, 연락처 등을 입력해 검색하세요.'
+                ? '거래처명, 대표자명, 연락처 등을 입력해 검색하세요.'
                 : '설비명을 입력해 검색하세요.'
             }
             value={searchKeyword}

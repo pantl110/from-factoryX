@@ -18,7 +18,10 @@ const ProjectInfo = ({ projectStatus, orderQuantity }: ProjectInfoProps) => {
     <div className="px-7 py-8 flex flex-col gap-8">
       <h3 className="m-Heading-3-semibold">프로젝트 정보</h3>
       <div className="flex flex-col gap-5">
-        <LabelInfo label="프로젝트명(업체명)" value={clientInfo?.name || '-'} />
+        <LabelInfo
+          label="프로젝트명(거래처명)"
+          value={clientInfo?.name || '-'}
+        />
         <LabelInfo label="수량" />
         <div className="flex flex-col gap-2">
           <InfoDetail

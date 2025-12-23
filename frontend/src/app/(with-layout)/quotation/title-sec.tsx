@@ -71,7 +71,7 @@ const TitleSec = ({
     anchorRect: quotationStatusAnchorRect,
   } = usePortalDropdown(); // 드랍다운 상태
 
-  // 실시간으로 업체명 가져오기
+  // 실시간으로 거래처명 가져오기
   const clientName = watch('name');
   // 프로젝트 상태 체크
   const isOrderStatus = projectStatus === 'confirmed';
@@ -192,7 +192,7 @@ const TitleSec = ({
               }
             }}
             onSaveDraft={async (isConfirm: boolean) => {
-              // 임시저장: 값이 비어 있어도 저장 가능. 업체명만 체크하고, 폼 유효성 검사는 실행하지 않음
+              // 임시저장: 값이 비어 있어도 저장 가능. 거래처명만 체크하고, 폼 유효성 검사는 실행하지 않음
               if (!isConfirm) {
                 if (!clientName || clientName.trim() === '') {
                   showToast();
@@ -225,7 +225,7 @@ const TitleSec = ({
           />
         </div>
         <p className="Heading-1 truncate w-full">
-          {clientName || '업체명을 입력해 주세요.'}
+          {clientName || '거래처명을 입력해 주세요.'}
         </p>
       </div>
 
@@ -234,7 +234,7 @@ const TitleSec = ({
         <Toast
           icon={<WarningCircle size={20} className="text-red" />}
           text="임시저장을 할 수 없어요."
-          subtext="임시저장을 하기 위해선 업체명은 꼭 입력해야 해요."
+          subtext="임시저장을 하기 위해선 거래처명은 꼭 입력해야 해요."
           type="red"
           isVisible={isVisible}
         />

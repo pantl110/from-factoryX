@@ -126,8 +126,8 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
         <div className="flex flex-col gap-4">
           <div className="flex-1 relative">
             <Input
-              label="업체명"
-              placeholder="업체명을 입력하세요."
+              label="거래처명"
+              placeholder="거래처명을 입력하세요."
               required
               {...register('name', { required: true })}
               value={searchKeyword}

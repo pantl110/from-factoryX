@@ -156,7 +156,7 @@ const Info = React.forwardRef<InfoHandleModel, InfoProps>(
         <div>
           <div className="flex">
             <InfoLabelValue
-              label="업체명"
+              label="거래처명"
               value={
                 <div
                   className="flex items-center gap-2 w-full cursor-pointer"

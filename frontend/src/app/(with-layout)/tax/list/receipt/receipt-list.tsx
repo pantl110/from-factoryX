@@ -180,7 +180,7 @@ const ReceiptList = ({ className = '' }: ReceiptListProps) => {
             <SearchInput
               value={searchQuery}
               onChange={handleSearchChange}
-              placeholder="현금영수증의 업체명을 입력하세요."
+              placeholder="거래처명이나 제품명을 검색하세요."
             />
             {/* 숨김 버튼: 숨김 목록 보기 중이거나, 일반 목록에서 데이터가 있을 때 */}
             {role && !['viewer', 'prod_manager'].includes(role) && (
@@ -246,8 +246,8 @@ const ReceiptList = ({ className = '' }: ReceiptListProps) => {
                       onToggle={toggleAll}
                       disabled={isProdManager || isViewer}
                     />
-                    <p className="flex-1 px-3">채권 상태</p>
-                    <p className="flex-[1.5] px-3">업체명</p>
+                    <p className="w-[150px] px-3">채권 상태</p>
+                    <p className="flex-[1.5] px-3">거래처명</p>
                     <p className="flex-[1.5] px-3">제품명</p>
                     <p className="flex-[1.5] px-3">청구금액(합계)</p>
                     <p className="flex-[1.5] px-3">미지급금액(잔액)</p>

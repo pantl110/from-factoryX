@@ -272,7 +272,7 @@ const ProcessProjectPageInner = () => {
 
         <div className="px-10 pb-10">
           <SearchDeleteTable
-            placeholder="업체명이나 제품명을 검색하세요."
+            placeholder="거래처명이나 제품명을 검색하세요."
             checkedCount={checkedCount}
             deleteButtonText={getDeleteButtonText()}
             onDelete={() => setIsDeleteModalOpen(true)}

@@ -18,7 +18,7 @@ const ClientTableHeader = ({
   );
 
   return (
-    <div className="flex h-12 min-w-[1697px] items-center border-t border-b border-[#eeeeee] Me_Body-1 text-sv">
+    <div className="flex h-12 min-w-[1697px] items-center border-t border-b border-lg Me_Body-1 text-sv">
       {!isViewer && hasSubscription() && (
         <Checkbox
           isChecked={isAllChecked || false}
@@ -29,7 +29,7 @@ const ClientTableHeader = ({
         <p className=" text-sv">거래처</p>
         {/* <CaretDown size={16} className="text-sv" /> */}
       </div>
-      <p className="px-3 flex-2">회사명</p>
+      <p className="px-3 flex-2">거래처명</p>
       <p className="px-3 flex-[1.5]">사업자등록번호</p>
       <p className="px-3 flex-1">대표자명</p>
       <p className="px-3 flex-[1.5]">업태</p>

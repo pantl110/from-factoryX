@@ -38,8 +38,8 @@ const TableHeader = ({
         onToggle={onToggleAll}
         disabled={isProdManager || isViewer}
       />
-      <p className="flex-1 px-3">채권 상태</p>
-      <p className="flex-[1.5] px-3">업체명</p>
+      <p className="w-[150px] px-3">채권 상태</p>
+      <p className="flex-[1.5] px-3">거래처명</p>
       <p className="flex-[1.5] px-3">제품명</p>
       <p className="flex-[1.5] px-3">청구금액(합계)</p>
       <p className="flex-[1.5] px-3">{outstandingLabel}</p>

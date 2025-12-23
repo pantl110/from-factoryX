@@ -19,7 +19,7 @@ const TaxBuyerProviderInfo = ({
           {taxType === 'sales' ? '거래처 정보' : '구매처 정보'}
         </h3>
         <div className="width-full border-b border-lg">
-          <InfoLabelValue label="업체명" value="-" />
+          <InfoLabelValue label="거래처명" value="-" />
           <InfoLabelValue label="사업자등록번호" value="-" />
           <InfoLabelValue label="대표자명" value="-" />
           <div className="flex">
@@ -38,7 +38,7 @@ const TaxBuyerProviderInfo = ({
         {taxType === 'sales' ? '거래처 정보' : '구매처 정보'}
       </h3>
       <div className="width-full border-b border-lg">
-        <InfoLabelValue label="업체명" value={clientInfo.name || '-'} />
+        <InfoLabelValue label="거래처명" value={clientInfo.name || '-'} />
         <InfoLabelValue
           label="사업자등록번호"
           value={clientInfo.business_registration_number || '-'}

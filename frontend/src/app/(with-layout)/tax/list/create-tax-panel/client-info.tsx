@@ -186,9 +186,9 @@ const ClientInfo = ({
         <div className="flex gap-2">
           <div className="flex-1 relative">
             <Input
-              label="업체명"
+              label="거래처명"
               required
-              placeholder="업체명을 입력하세요."
+              placeholder="거래처명을 입력하세요."
               showError={shouldShowError('companyName')}
               value={formData.companyName || ''}
               onChange={(e) => {

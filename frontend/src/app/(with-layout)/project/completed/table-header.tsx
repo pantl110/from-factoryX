@@ -19,7 +19,7 @@
 //       </div>
 
 //       <p className="w-[150px] py-1 px-3 text-sv">진행상태</p>
-//       <p className="flex-1 py-1 px-3 text-sv">업체명</p>
+//       <p className="flex-1 py-1 px-3 text-sv">거래처명</p>
 //       <p className="flex-1 py-1 px-3 text-sv">제품명</p>
 //       <div
 //         className="w-[200px] px-3 flex gap-1 items-center hover:bg-bg cursor-pointer h-full"

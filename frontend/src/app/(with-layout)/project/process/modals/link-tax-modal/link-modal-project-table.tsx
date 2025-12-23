@@ -43,7 +43,7 @@ const LinkModalProjectTable = ({
               <p className="">작성일자</p>
               <CaretUpDownIcon size={21} className="text-sv" />
             </div>
-            <p className="flex-2 px-3">업체명</p>
+            <p className="flex-2 px-3">거래처명</p>
             <p className="flex-2 px-3">제품명</p>
             <p className="flex-2 px-3">공급가액</p>
             <p className="flex-2 px-3">세액</p>

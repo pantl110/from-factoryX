@@ -273,7 +273,7 @@ const DocumentPageContent = () => {
                 setCurrentPage(1); // 검색 시 첫 페이지로 이동
               }}
               value={searchQuery}
-              placeholder="검색어를 입력하세요."
+              placeholder="업체명이나 제품명을 검색하세요."
             />
           </div>
 

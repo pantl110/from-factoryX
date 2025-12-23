@@ -6,7 +6,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import useMemberStore from '@/store/member-store';
 
 interface GetUnlinkedProjectsModel {
-  search?: string; // 검색어 (업체명 또는 제품명)
+  search?: string; // 검색어 (거래처명 또는 제품명)
   page?: number;
   page_size?: number;
   order_by?: string; // 정렬 필드 (-created_at, created_at 등)

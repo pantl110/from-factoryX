@@ -52,7 +52,7 @@ const TableItem = ({
         onToggle={onToggle}
         disabled={isProdManager || isViewer}
       />
-      <div className="pl-2 pr-4 flex-1">
+      <div className="pl-2 pr-4 w-[150px]">
         <RoundChip text={statusText} variant="sm" color={statusColor} />
       </div>
       <p className="flex-[1.5] px-3 text-dg truncate" title={item.client_name}>

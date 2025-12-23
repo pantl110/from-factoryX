@@ -85,8 +85,8 @@ const InputSection = ({
                 setTimeout(() => setIsDropdownOpen(false), 150);
               return (
                 <Input
-                  label="업체명"
-                  placeholder="업체명을 입력하세요."
+                  label="거래처명"
+                  placeholder="거래처명을 입력하세요."
                   required
                   showError={showErrors && !!errors.name}
                   value={field.value ?? ''}

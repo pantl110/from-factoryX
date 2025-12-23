@@ -178,12 +178,12 @@ const SellerInfo = ({
         <div className="flex gap-2">
           <div className="flex-1">
             <Input
-              label="업체명"
+              label="거래처명"
               required
-              placeholder="업체명을 입력하세요."
+              placeholder="거래처명을 입력하세요."
               showError={shouldShowError('companyName')}
               {...register('companyName', {
-                required: '업체명은 필수입니다.',
+                required: '거래처명은 필수입니다.',
                 onChange: () => {
                   handleFieldChange('companyName');
                 },

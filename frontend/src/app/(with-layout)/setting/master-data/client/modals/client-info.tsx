@@ -34,9 +34,9 @@ export const ClientInfo = ({
             rules={{ required: true }}
             render={({ field }) => (
               <InfoLabelValue
-                label="거래처명"
+                label="회사명"
                 isEditing={!isViewer && hasSubscription()}
-                placeholder="(필수) 거래처명을 입력하세요."
+                placeholder="(필수) 회사명을 입력하세요."
                 required
                 {...field}
               />
