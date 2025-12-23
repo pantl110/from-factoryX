@@ -2,13 +2,13 @@
 
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { RoundChip } from '@/ui/round-chip';
 import { useRouter } from 'next/navigation';
+import { RoundChip } from '@/ui/round-chip';
 import { getTaxStatusColor } from '@/types/status-type';
 import Checkbox from '@/ui/checkbox';
 import MiniBtn from '@/ui/mini-btn';
 import { ProjectResponseModel } from '@/types/data-model';
-import { CopySimple } from '@phosphor-icons/react';
+import { ArrowLineUpRight, CopySimple } from '@phosphor-icons/react';
 import Tooltip from '@/ui/tooltip';
 import useCloneProject from '@/hooks/project/project-plan/use-clone-project';
 import LinkTaxModal from './modals/link-tax-modal/link-tax-modal';
@@ -18,6 +18,8 @@ import { getStartDate } from '@/utils/get-start-date';
 import { getProjectStatusColor } from '@/utils';
 import Skeleton from '@/app/(without-layout)/skeleton';
 import CloneProjectModal from '../clone-project-modal';
+import { IconBtn } from '@/ui';
+import TaxDocumentOverlay from '@/app/(with-layout)/document/tax-document-overlay';
 
 interface TableItemProps {
   project: ProjectResponseModel;
@@ -44,6 +46,7 @@ const TableItem = ({
   const [isTooltipVisible, setIsTooltipVisible] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [isLinkTaxModalOpen, setIsLinkTaxModalOpen] = useState(false);
+  const [isTaxOverlayOpen, setIsTaxOverlayOpen] = useState(false);
   const { cloneProject, isLoading: isCloning } = useCloneProject();
   const [isNavigating, setIsNavigating] = useState(false);
   const [isCloneProjectModalOpen, setIsCloneProjectModalOpen] = useState(false);
@@ -213,18 +216,26 @@ const TableItem = ({
             {!project.tax_invoice ||
             project.tax_invoice.publish_status === undefined ? (
               <MiniBtn
-                text="연결 필요"
-                bgColor="bg-bg"
-                textColor="text-dg"
-                hoverColor="hover:bg-lg"
+                text="연결하기"
+                variant="hoverWhite"
                 height="h-8"
-                onClick={() => {
+                onClick={(e) => {
+                  e.stopPropagation();
                   setIsLinkTaxModalOpen(true);
                 }}
                 disabled={role === 'viewer' || role === 'prod_manager'}
               />
             ) : (
-              <p className="text-dg px-4">연결 완료</p>
+              <IconBtn
+                icon={ArrowLineUpRight}
+                iconSize={20}
+                size="w-9 h-9"
+                onClick={(e?: React.MouseEvent<HTMLButtonElement>) => {
+                  e?.stopPropagation();
+                  setIsTaxOverlayOpen(true);
+                }}
+                hoverBg="hover:bg-wh"
+              />
             )}
           </div>
         )}
@@ -311,6 +322,14 @@ const TableItem = ({
           linkedItemId={project.id}
           type="project"
           onSuccess={onReload} // 연결 완료 시 리로드 콜백 호출
+        />
+      )}
+
+      {isTaxOverlayOpen && project.tax_invoice?.id && (
+        <TaxDocumentOverlay
+          onClose={() => setIsTaxOverlayOpen(false)}
+          taxId={project.tax_invoice.id}
+          title="매출 세금계산서"
         />
       )}
 

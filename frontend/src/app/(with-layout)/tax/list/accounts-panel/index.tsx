@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { DeleteModal, IconBtn, MiniBtn, OverlayView, Panel, Toast } from '@/ui';
 import TableArea from './table-area';
-import TaxDocumentView from '@/app/(with-layout)/document/tax-document-view';
 import { WarningCircle, X } from '@phosphor-icons/react';
 import {
   useGetTaxInvoiceAccount,
@@ -21,6 +20,7 @@ import SendEmail from './modals/send-email-modal';
 import { DepositorInfoDisplay } from './depositor-info-display';
 import { AccountInfoDisplay } from './account-info-display';
 import ClientDetailPanel from '@/app/(with-layout)/setting/master-data/client/modals/client-detail-panel';
+import TaxDocumentOverlay from '@/app/(with-layout)/document/tax-document-overlay';
 import ReceiptDetailPanel from '../receipt/modals/receipt-detail-panel';
 import { isValidDateString, formatISODate } from '@/utils';
 
@@ -338,19 +338,11 @@ const AccountsPanel = ({
 
       {/* 세금계산서 상세 판넬 */}
       {isTaxDetailOpen && taxItem && (
-        <OverlayView onClose={handleCloseTaxDetail}>
-          <div className="w-full flex flex-col gap-6 px-8 pb-8">
-            {/* top 고정 부위*/}
-            <div className="sticky pt-8 top-0 bg-wh">
-              <div className="flex justify-between h-13 border-b border-lg">
-                <h3 className="Heading-3">매출 세금계산서</h3>
-                <IconBtn icon={X} onClick={handleCloseTaxDetail} />
-              </div>
-            </div>
-
-            <TaxDocumentView item={taxItem} />
-          </div>
-        </OverlayView>
+        <TaxDocumentOverlay
+          onClose={handleCloseTaxDetail}
+          item={taxItem}
+          title={isPurchase ? '매입 세금계산서' : '매출 세금계산서'}
+        />
       )}
 
       {/* 현금영수증 상세 판넬 */}
