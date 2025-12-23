@@ -8,7 +8,7 @@ const NoraComponent = dynamic(() => import('@/nora/nora-component'), {
 
 const NoraPage = () => {
   return (
-    <div className="h-[calc(100vh-64px)]">
+    <div className="h-[100vh]">
       <NoraComponent />
     </div>
   );
