@@ -4,7 +4,8 @@ import usePageStatusStore, { PageStatusModel } from '@/store/page-status-store';
 import TopBarContent from './top-bar-content';
 import NotificationModal from './modals/notification-modal';
 import TopBarCrumb from './top-bar-crumb';
-import { useState, useEffect } from 'react';
+import NoraModal from './nora-modal';
+import { useState, useEffect, useCallback } from 'react';
 import { NotificationResponseModel } from '@/types/data-model';
 import { useGetNotifications, useWebSocket } from '@/hooks';
 import { NotificationType, NotificationCaseType } from '@/types/status-type';
@@ -42,6 +43,16 @@ const TopBar = ({ isSidebarVisible }: TopBarProps) => {
   const pathname = usePathname();
 
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
+  const [isNoraOpen, setIsNoraOpen] = useState(false);
+  const [noraModalSize, setNoraModalSize] = useState<{
+    width?: number;
+    height?: number;
+  }>({});
+
+  const handleNoraSizeChange = useCallback((width: number, height: number) => {
+    setNoraModalSize({ width, height });
+  }, []);
+
   const [notifications, setNotifications] = useState<
     NotificationResponseModel[]
   >([]);
@@ -150,6 +161,7 @@ const TopBar = ({ isSidebarVisible }: TopBarProps) => {
               }
               onMoveToStorageClick={() => setMoveToStorageModalOpen(true)}
               onNotificationClick={() => setIsNotificationModalOpen(true)}
+              onNoraClick={() => setIsNoraOpen(true)}
               hasUnreadNotifications={
                 notifications.find((n) => !n.is_read) !== undefined
               }
@@ -168,6 +180,15 @@ const TopBar = ({ isSidebarVisible }: TopBarProps) => {
           isLoadingMore={isLoadingMore}
           onLoadMore={loadMoreNotifications}
           onResetPagination={resetPagination}
+        />
+      )}
+
+      {isNoraOpen && (
+        <NoraModal
+          onClose={() => setIsNoraOpen(false)}
+          initialWidth={noraModalSize.width}
+          initialHeight={noraModalSize.height}
+          onSizeChange={handleNoraSizeChange}
         />
       )}
     </>

@@ -1,7 +1,7 @@
 'use client';
 
 import MiniBtn from '@/ui/mini-btn';
-import { BellSimple } from '@phosphor-icons/react';
+import { BellSimple, ChatCircle } from '@phosphor-icons/react';
 import { ProductionTabType } from './types';
 import ProfileImage from '@/ui/profile-image';
 import { usePathname } from 'next/navigation';
@@ -21,6 +21,7 @@ interface TopBarContentProps {
   onProductionPlanSaveClick?: () => void;
   onMoveToStorageClick?: () => void;
   onNotificationClick?: () => void;
+  onNoraClick?: () => void;
 }
 
 const TopBarContent = ({
@@ -30,6 +31,7 @@ const TopBarContent = ({
   onProductionPlanSaveClick,
   onMoveToStorageClick,
   onNotificationClick,
+  onNoraClick,
 }: TopBarContentProps) => {
   const isProductionPlanValid = usePageStatusStore(
     (state) => state.isProductionPlanValid
@@ -579,6 +581,13 @@ const TopBarContent = ({
   return (
     <>
       <div className="flex items-center gap-1">
+        <div
+          className="flex items-center justify-center w-11 h-11 cursor-pointer hover:bg-bg rounded-lg"
+          onClick={onNoraClick}
+          title="AI 어시스턴트"
+        >
+          <ChatCircle size={20} className="text-dg" />
+        </div>
         <div
           className="flex items-center justify-center w-11 h-11 relative cursor-pointer hover:bg-bg rounded-lg"
           onClick={onNotificationClick}
