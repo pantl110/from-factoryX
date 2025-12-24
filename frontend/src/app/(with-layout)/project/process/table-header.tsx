@@ -35,7 +35,7 @@ const TableHeader = ({
         />
       )}
       <p className={`${isArchived ? 'w-[150px]' : 'w-[200px]'} px-3 text-sv`}>
-        진행상태
+        진행 상태
       </p>
       <p className="flex-2 px-3 text-sv">거래처명</p>
       <p className="flex-2 px-3 text-sv">제품명</p>

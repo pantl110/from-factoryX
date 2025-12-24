@@ -126,7 +126,7 @@ const Unit = ({
           <div className="flex justify-center items-center py-20">
             <Spinner />
           </div>
-        ) : unitList.length === 0 ? (
+        ) : unitList.length === 0 && selectedCategory === '전체' ? (
           <NoHistoryBox
             title="단위가 아직 없어요."
             text="단위를 추가하면 이곳에 표시돼요."
@@ -138,25 +138,36 @@ const Unit = ({
               onCategoryChange={onCategoryChange}
               isAllSelected={isAllChecked}
               onToggleSelectAll={toggleAll}
+              hasItems={unitList.length > 0}
             />
-            {unitList.map((item: UnitConversionModel) => (
-              <UnitTableItem
-                key={item.id}
-                unit={item}
-                refetchUnit={refetchUnit}
-                isSelected={isChecked(item.id)}
-                onToggleSelect={() => toggleOne(item.id)}
-                onRowClick={handleRowClick}
-              />
-            ))}
+            {unitList.length === 0 ? (
+              <div className="flex h-14 items-center px-3 w-full border-b border-lg Me_Body-1 text-dg hover:bg-bg transition-colors duration-200 cursor-pointer">
+                <p className="text-gr w-full px-3">
+                  해당 항목의 단위 변환 정보가 없어요.
+                </p>
+              </div>
+            ) : (
+              <>
+                {unitList.map((item: UnitConversionModel) => (
+                  <UnitTableItem
+                    key={item.id}
+                    unit={item}
+                    refetchUnit={refetchUnit}
+                    isSelected={isChecked(item.id)}
+                    onToggleSelect={() => toggleOne(item.id)}
+                    onRowClick={handleRowClick}
+                  />
+                ))}
 
-            {/* 페이지네이션 */}
-            {totalPages > 1 && (
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={onPageChange}
-              />
+                {/* 페이지네이션 */}
+                {totalPages > 1 && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={onPageChange}
+                  />
+                )}
+              </>
             )}
           </>
         )}

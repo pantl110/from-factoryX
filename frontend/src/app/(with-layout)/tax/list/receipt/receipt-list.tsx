@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { useDebounce } from 'use-debounce';
+import { createPortal } from 'react-dom';
 import { SearchInput, Spinner, EmptySpace, MiniBtn } from '@/ui';
 import TableItem from './table-item';
 import Pagination from '@/components/pagination';
@@ -9,7 +10,8 @@ import { useGetCashReceipts, useCheckAll, useUpdateCashReceipt } from '@/hooks';
 import { CashReceiptResponseModel } from '@/types/data-model';
 import useMemberStore from '@/store/member-store';
 import AccountsPanel from '../accounts-panel';
-import Checkbox from '@/ui/checkbox';
+import TableHeader from '../table-header';
+import AccountStatusDropdown from '../account-status-dropdown';
 
 interface ReceiptListProps {
   className?: string;
@@ -24,12 +26,17 @@ const ReceiptList = ({ className = '' }: ReceiptListProps) => {
   const [isPanelOpen, setIsPanelOpen] = useState(false); // 패널 열기/닫기 상태 관리
   const [showHidden, setShowHidden] = useState(false);
   const [isHideRestoreLoading, setIsHideRestoreLoading] = useState(false);
+  const [accountStatus, setAccountStatus] = useState<string | undefined>(
+    undefined
+  );
+  const [isAccountStatusDropdownOpen, setIsAccountStatusDropdownOpen] =
+    useState(false);
+  const [accountStatusDropdownRect, setAccountStatusDropdownRect] =
+    useState<DOMRect | null>(null);
 
   // 공장 ID 가져오기
   const factoryId = useMemberStore((state) => state.factoryId);
   const role = useMemberStore((state) => state.role);
-  const isViewer = role === 'viewer';
-  const isProdManager = role === 'prod_manager';
 
   // useUpdateCashReceipt hook
   const { mutateAsync: updateCashReceipt } = useUpdateCashReceipt();
@@ -46,8 +53,9 @@ const ReceiptList = ({ className = '' }: ReceiptListProps) => {
       page: currentPage,
       page_size: itemsPerPage,
       is_hidden: showHidden,
+      account_status: accountStatus,
     }),
-    [debouncedSearchQuery, currentPage, itemsPerPage, showHidden]
+    [debouncedSearchQuery, currentPage, itemsPerPage, showHidden, accountStatus]
   );
 
   // 현금영수증 데이터 조회 (useQuery 사용)
@@ -96,6 +104,12 @@ const ReceiptList = ({ className = '' }: ReceiptListProps) => {
     setCurrentPage(1);
     setAllCheckedRef.current(false);
   }, [showHidden]);
+
+  // accountStatus 변경 시 페이지 리셋
+  useEffect(() => {
+    setCurrentPage(1);
+    setAllCheckedRef.current(false);
+  }, [accountStatus]);
 
   // 거래일자 정렬 핸들러
   // const handleDateSort = () => {
@@ -222,7 +236,7 @@ const ReceiptList = ({ className = '' }: ReceiptListProps) => {
           </div>
         ) : (
           <div className="pb-10">
-            {cashReceipts.length === 0 ? (
+            {cashReceipts.length === 0 && !accountStatus ? (
               <EmptySpace
                 title={
                   showHidden
@@ -239,30 +253,41 @@ const ReceiptList = ({ className = '' }: ReceiptListProps) => {
               />
             ) : (
               <>
-                <div className="w-full overflow-x-auto">
-                  <div className="text-sv flex items-center w-full min-w-[1192px] h-12 border-t border-b border-lg Me_Body-1">
-                    <Checkbox
-                      isChecked={isAllChecked}
-                      onToggle={toggleAll}
-                      disabled={isProdManager || isViewer}
-                    />
-                    <p className="w-[150px] px-3">채권 상태</p>
-                    <p className="flex-[1.5] px-3">거래처명</p>
-                    <p className="flex-[1.5] px-3">제품명</p>
-                    <p className="flex-[1.5] px-3">청구금액(합계)</p>
-                    <p className="flex-[1.5] px-3">미지급금액(잔액)</p>
-                    <p className="flex-[1.5] px-3">발주서 연결</p>
-                  </div>
-
-                  {cashReceipts.map((item: CashReceiptResponseModel) => (
-                    <TableItem
-                      key={item.id}
-                      item={item}
-                      onClick={() => handleItemClick(item)}
-                      onToggle={() => toggleOne(item.id)}
-                      isChecked={isChecked(item.id)}
-                    />
-                  ))}
+                <div className="w-full overflow-x-auto overflow-y-hidden">
+                  <TableHeader
+                    checkedCount={checkedCount}
+                    onToggleAll={toggleAll}
+                    onSortClick={() => {}}
+                    sortDirection="desc"
+                    isAllChecked={isAllChecked}
+                    taxType={null}
+                    selectedAccountStatus={accountStatus}
+                    onAccountStatusClick={(e) => {
+                      const rect = (
+                        e.currentTarget as HTMLElement
+                      ).getBoundingClientRect();
+                      setAccountStatusDropdownRect(rect);
+                      setIsAccountStatusDropdownOpen(true);
+                    }}
+                    hasItems={cashReceipts.length > 0}
+                  />
+                  {cashReceipts.length === 0 ? (
+                    <div className="flex h-14 items-center px-3 w-full min-w-[1192px] border-b border-lg Me_Body-1 text-dg">
+                      <p className="text-gr w-full">
+                        해당 채무 상태의 현금영수증이 없어요.
+                      </p>
+                    </div>
+                  ) : (
+                    cashReceipts.map((item: CashReceiptResponseModel) => (
+                      <TableItem
+                        key={item.id}
+                        item={item}
+                        onClick={() => handleItemClick(item)}
+                        onToggle={() => toggleOne(item.id)}
+                        isChecked={isChecked(item.id)}
+                      />
+                    ))
+                  )}
                 </div>
                 {totalPages > 1 && (
                   <Pagination
@@ -284,6 +309,36 @@ const ReceiptList = ({ className = '' }: ReceiptListProps) => {
             type="cash-receipt"
           />
         )}
+
+        {/* 채무 상태 드롭다운 */}
+        {isAccountStatusDropdownOpen &&
+          accountStatusDropdownRect &&
+          createPortal(
+            <div
+              style={{
+                position: 'fixed',
+                left: accountStatusDropdownRect.left + window.scrollX,
+                top: accountStatusDropdownRect.bottom + window.scrollY + 8,
+                zIndex: 1000,
+                width: accountStatusDropdownRect.width,
+              }}
+            >
+              <AccountStatusDropdown
+                onClose={() => {
+                  setIsAccountStatusDropdownOpen(false);
+                  setAccountStatusDropdownRect(null);
+                }}
+                onSelect={(status) => {
+                  setAccountStatus(status);
+                  setCurrentPage(1); // 필터 변경 시 페이지 1로 리셋
+                  setIsAccountStatusDropdownOpen(false);
+                  setAccountStatusDropdownRect(null);
+                }}
+                width="w-full"
+              />
+            </div>,
+            document.body
+          )}
       </div>
     </>
   );

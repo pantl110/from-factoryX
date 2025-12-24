@@ -1,9 +1,6 @@
-import Chip from '@/ui/chip';
 import { EquipmentResponseModel } from '@/types/data-model';
-import {
-  EquipmentStatusType,
-  EquipmentStatusColorMap,
-} from '@/types/status-type';
+import { EquipmentStatusType } from '@/types/status-type';
+import { RoundChip } from '@/ui';
 import Checkbox from '@/ui/checkbox';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
@@ -27,9 +24,13 @@ const FacilityTableItem = ({
     (state) => state.hasSubscription
   );
 
-  const statusColor = facility.status
-    ? EquipmentStatusColorMap[facility.status as EquipmentStatusType]
-    : EquipmentStatusColorMap['standby'];
+  // RoundChip용 색상 매핑
+  const getEquipmentStatusRoundChipColor = (
+    status: EquipmentStatusType | undefined
+  ): 'gray' | 'purple' => {
+    if (status === 'running') return 'purple';
+    return 'gray';
+  };
 
   return (
     <div
@@ -48,11 +49,12 @@ const FacilityTableItem = ({
         />
       )}
       <div className="flex-1 px-3">
-        <Chip
+        <RoundChip
           text={facility.status === 'standby' ? '가동 대기' : '가동 중'}
-          bgColor={statusColor?.bgColor}
-          textColor={statusColor?.textColor}
-          radius="rounded-sm"
+          variant="sm"
+          color={getEquipmentStatusRoundChipColor(
+            facility.status as EquipmentStatusType | undefined
+          )}
         />
       </div>
       <p className="flex-1 px-3 truncate" title={facility.name}>

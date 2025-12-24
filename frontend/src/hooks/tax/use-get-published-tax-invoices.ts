@@ -13,6 +13,7 @@ export interface PublishedTaxInvoiceParamsModel {
   end_date?: string; // 종료일 (YYYY-MM-DD)
   ordering?: string; // 정렬 순서: -transaction_date(최신순), transaction_date(오래된순)
   is_hidden?: boolean; // 숨김 여부
+  account_status?: string; // 채권/채무 상태 (waiting-대기, overdue-연체, partial-일부, completed-완료)
   page?: number; // 페이지 번호
   page_size?: number; // 페이지당 항목 수
 }
@@ -48,6 +49,9 @@ const useGetPublishedTaxInvoices = (
     if (params.is_hidden !== undefined) {
       query.is_hidden = params.is_hidden;
     }
+    if (params.account_status) {
+      query.account_status = params.account_status;
+    }
     if (params.ordering) {
       query.ordering = params.ordering;
     }
@@ -65,6 +69,7 @@ const useGetPublishedTaxInvoices = (
     params.start_date,
     params.end_date,
     params.is_hidden,
+    params.account_status,
     params.ordering,
     params.page,
     params.page_size,
@@ -80,6 +85,7 @@ const useGetPublishedTaxInvoices = (
       queryParams.end_date,
       queryParams.ordering,
       queryParams.is_hidden,
+      queryParams.account_status,
       queryParams.page,
       queryParams.page_size,
     ],

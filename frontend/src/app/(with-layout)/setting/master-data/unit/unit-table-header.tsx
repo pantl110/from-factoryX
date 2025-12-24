@@ -8,6 +8,7 @@ interface UnitTableHeaderProps {
   selectedCategory: string;
   isAllSelected?: boolean;
   onToggleSelectAll?: () => void;
+  hasItems?: boolean;
 }
 
 export const UnitTableHeader = ({
@@ -15,6 +16,7 @@ export const UnitTableHeader = ({
   selectedCategory = '전체',
   isAllSelected = false,
   onToggleSelectAll,
+  hasItems = true,
 }: UnitTableHeaderProps) => {
   const [
     isSelectProductMaterialDropdownOpen,
@@ -23,10 +25,12 @@ export const UnitTableHeader = ({
 
   return (
     <div className="flex h-12 items-center px-3 w-full border-t border-b border-lg Me_Body-1 text-sv">
-      <Checkbox
-        isChecked={isAllSelected}
-        onToggle={onToggleSelectAll || (() => {})}
-      />
+      {hasItems && (
+        <Checkbox
+          isChecked={isAllSelected}
+          onToggle={onToggleSelectAll || (() => {})}
+        />
+      )}
       <div
         className="h-full flex-[0.6] px-3 flex justify-between items-center cursor-pointer relative hover:bg-bg transition-colors duration-200"
         onClick={() => setIsSelectProductMaterialDropdownOpen(true)}

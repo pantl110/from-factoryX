@@ -6,8 +6,7 @@ import {
 } from '@/hooks';
 import { ClientUpdateModel, ClientResponseModel } from '@/types/data-model';
 import InfoLabelValue from '@/ui/info-label-value';
-import Chip from '@/ui/chip';
-import { ClientTypeColorMap } from '@/types/status-type';
+import { RoundChip } from '@/ui/round-chip';
 
 interface ClientInfoProps {
   control: Control<ClientUpdateModel>;
@@ -188,22 +187,10 @@ export const ClientInfo = ({
             value={
               <div className="flex gap-1">
                 {clientDetail?.is_customer === true && (
-                  <Chip
-                    text="수주처"
-                    bgColor={ClientTypeColorMap.customer.bgColor}
-                    textColor={ClientTypeColorMap.customer.textColor}
-                    radius="rounded-sm"
-                    cursor="cursor-default"
-                  />
+                  <RoundChip text="수주처" variant="sm" color="secondary" />
                 )}
                 {clientDetail?.is_supplier === true && (
-                  <Chip
-                    text="발주처"
-                    bgColor={ClientTypeColorMap.supplier.bgColor}
-                    textColor={ClientTypeColorMap.supplier.textColor}
-                    radius="rounded-sm"
-                    cursor="cursor-default"
-                  />
+                  <RoundChip text="발주처" variant="sm" color="red" />
                 )}
                 {clientDetail?.is_supplier === false &&
                   clientDetail?.is_customer === false &&

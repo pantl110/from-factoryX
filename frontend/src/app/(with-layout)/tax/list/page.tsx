@@ -26,6 +26,7 @@ import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import AccountsPanel from './accounts-panel';
 import LinkProjectModal from './accounts-panel/modals/link-project-modal';
+import AccountStatusDropdown from './account-status-dropdown';
 
 const TaxPageContent = () => {
   const role = useMemberStore((state) => state.role);
@@ -56,6 +57,13 @@ const TaxPageContent = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [hasItem, setHasItem] = useState(false); // 세금계산서 데이터 존재 여부
+  const [accountStatus, setAccountStatus] = useState<string | undefined>(
+    undefined
+  );
+  const [isAccountStatusDropdownOpen, setIsAccountStatusDropdownOpen] =
+    useState(false);
+  const [accountStatusDropdownRect, setAccountStatusDropdownRect] =
+    useState<DOMRect | null>(null);
 
   const queryClient = useQueryClient();
   const { updateTaxInvoice: updateTaxInvoiceApi } = useUpdateTaxInvoice();
@@ -81,6 +89,7 @@ const TaxPageContent = () => {
       q: debouncedSearchQuery || undefined,
       tax_invoice_type: selectedTaxType,
       is_hidden: showHidden,
+      account_status: accountStatus,
     };
   }, [
     selectedTaxType,
@@ -88,6 +97,7 @@ const TaxPageContent = () => {
     currentPage,
     debouncedSearchQuery,
     showHidden,
+    accountStatus,
   ]);
 
   // 세금계산서 데이터 조회 (useQuery 사용)
@@ -200,6 +210,7 @@ const TaxPageContent = () => {
       // 탭 변경 시 페이지와 체크박스 상태 리셋
       setCurrentPage(1);
       setSearchQuery(''); // 검색어 초기화
+      setAccountStatus(undefined); // 채권 상태 필터 초기화
       // 체크박스는 selectedTaxType이 변경되면 useCheckAll의 itemIds가 변경되므로 자동으로 리셋됨
     }
   }, [searchParams, selectedTaxType]);
@@ -213,6 +224,14 @@ const TaxPageContent = () => {
       setAllCheckedRef.current(false);
     }
   }, [showHidden, selectedTaxType]);
+
+  // accountStatus 변경 시 페이지 리셋
+  useEffect(() => {
+    if (selectedTaxType !== null) {
+      setCurrentPage(1);
+      setAllCheckedRef.current(false);
+    }
+  }, [accountStatus, selectedTaxType]);
 
   // 페이지 변경 핸들러
   const handlePageChange = (page: number) => {
@@ -422,7 +441,7 @@ const TaxPageContent = () => {
               ) : (
                 <>
                   {/* 테이블 */}
-                  {taxData.length === 0 ? (
+                  {taxData.length === 0 && !accountStatus ? (
                     <EmptySpace
                       title={
                         showHidden
@@ -450,18 +469,37 @@ const TaxPageContent = () => {
                         sortDirection={sortDirection}
                         isAllChecked={isAllChecked}
                         taxType={selectedTaxType}
+                        selectedAccountStatus={accountStatus}
+                        onAccountStatusClick={(e) => {
+                          const rect = (
+                            e.currentTarget as HTMLElement
+                          ).getBoundingClientRect();
+                          setAccountStatusDropdownRect(rect);
+                          setIsAccountStatusDropdownOpen(true);
+                        }}
+                        hasItems={taxData.length > 0}
                       />
-                      {taxData?.map((item) => (
-                        <TableItem
-                          key={item.id}
-                          onItemClick={() => handleOpenPanel(item)}
-                          item={item}
-                          onToggle={() => toggleOne(item.id)}
-                          isChecked={isChecked(item.id)}
-                          onOpenLinkProjectModal={handleOpenLinkProjectModal}
-                          taxType={selectedTaxType}
-                        />
-                      ))}
+                      {taxData.length === 0 ? (
+                        <div className="flex h-14 items-center px-3 w-full min-w-[1192px] border-b border-lg Me_Body-1 text-dg">
+                          <p className="text-gr w-full">
+                            {selectedTaxType === 'purchase'
+                              ? '해당 채무 상태의 세금계산서가 없어요.'
+                              : '해당 채권 상태의 세금계산서가 없어요.'}
+                          </p>
+                        </div>
+                      ) : (
+                        taxData?.map((item) => (
+                          <TableItem
+                            key={item.id}
+                            onItemClick={() => handleOpenPanel(item)}
+                            item={item}
+                            onToggle={() => toggleOne(item.id)}
+                            isChecked={isChecked(item.id)}
+                            onOpenLinkProjectModal={handleOpenLinkProjectModal}
+                            taxType={selectedTaxType}
+                          />
+                        ))
+                      )}
                     </div>
                   )}
                   {totalPages >= 2 && (
@@ -495,6 +533,35 @@ const TaxPageContent = () => {
           onSuccess={handleLinkProjectSuccess}
         />
       )}
+
+      {/* 채권 상태 드롭다운 */}
+      {isAccountStatusDropdownOpen &&
+        accountStatusDropdownRect &&
+        selectedTaxType !== null && (
+          <div
+            style={{
+              position: 'fixed',
+              left: accountStatusDropdownRect.left + window.scrollX,
+              top: accountStatusDropdownRect.bottom + window.scrollY + 8,
+              zIndex: 1000,
+              width: accountStatusDropdownRect.width,
+            }}
+          >
+            <AccountStatusDropdown
+              onClose={() => {
+                setIsAccountStatusDropdownOpen(false);
+                setAccountStatusDropdownRect(null);
+              }}
+              onSelect={(status) => {
+                setAccountStatus(status);
+                setCurrentPage(1); // 필터 변경 시 페이지 1로 리셋
+                setIsAccountStatusDropdownOpen(false);
+                setAccountStatusDropdownRect(null);
+              }}
+              width="w-full"
+            />
+          </div>
+        )}
     </>
   );
 };

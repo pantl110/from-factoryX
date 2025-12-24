@@ -12,6 +12,7 @@ export interface CashReceiptQueryParamsModel {
   page?: number;
   page_size?: number;
   is_hidden?: boolean;
+  account_status?: string; // 채권/채무 상태 (waiting-대기, overdue-연체, partial-일부, completed-완료)
 }
 
 const useGetCashReceipts = (
@@ -47,6 +48,9 @@ const useGetCashReceipts = (
     if (params.is_hidden !== undefined) {
       query.is_hidden = params.is_hidden;
     }
+    if (params.account_status) {
+      query.account_status = params.account_status;
+    }
 
     return query;
   }, [
@@ -56,6 +60,7 @@ const useGetCashReceipts = (
     params.page,
     params.page_size,
     params.is_hidden,
+    params.account_status,
   ]);
 
   return useQuery<CashReceiptListResponseModel>({
@@ -67,6 +72,7 @@ const useGetCashReceipts = (
       queryParams.page,
       queryParams.page_size,
       queryParams.is_hidden,
+      queryParams.account_status,
     ],
     queryFn: async () => {
       if (!factoryId) {
