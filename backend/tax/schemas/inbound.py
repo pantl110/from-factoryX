@@ -111,6 +111,9 @@ class TaxInvoiceFilter(FilterSchema):
     publish_status: Optional[str] = Field(
         None, q="publish_status", description="발행 상태"
     )
+    account_status: Optional[str] = Field(
+        None, q="tax_invoice_account__status", description="채권/채무 상태 (waiting-대기, overdue-연체, partial-일부, completed-완료)"
+    )
 
 
 class CashReceiptFilter(FilterSchema):
