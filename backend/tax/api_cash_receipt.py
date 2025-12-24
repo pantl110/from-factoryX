@@ -292,7 +292,7 @@ async def list_cash_receipts(
             for receipt in receipts:
                 total_amount = receipt.transaction_amount + receipt.tax_amount
                 # select_related로 로드된 account (없으면 None)
-                account = receipt.cash_receipt_account if hasattr(receipt, 'cash_receipt_account') and receipt.cash_receipt_account else None
+                account = getattr(receipt, 'cash_receipt_account', None)
                 result.append(
                     AllCashReceiptOut(
                         id=receipt.id,
