@@ -123,27 +123,27 @@ def set_cookie_jwt(response, access, refresh, access_exp, refresh_exp, reset=Non
     secure = settings.SESSION_COOKIE_SECURE
     samesite = settings.SESSION_COOKIE_SAMESITE
 
-    # 세션 쿠키로 설정 (expires를 설정하지 않으면 브라우저를 닫을 때 자동 삭제)
-    # 창을 닫을 때 로그인 기록을 삭제하려면 expires를 None으로 설정
+    # 세션 쿠키로 설정 (expires 파라미터를 전달하지 않으면 브라우저를 닫을 때 자동 삭제)
+    # Django에서 세션 쿠키를 만들려면 expires 파라미터를 아예 전달하지 않아야 함
     response.set_cookie(
         key="access",
         value=access,
         # expires=access_exp,
-        expires=None,  # 세션 쿠키로 설정 (브라우저 종료 시 자동 삭제)
         secure=secure,
         samesite=samesite,
         httponly=False,
         domain=domain,
+        # expires를 설정하지 않으면 세션 쿠키가 됨 (브라우저 종료 시 자동 삭제)
     )
 
     response.set_cookie(
         key="refresh",
         value=refresh,
-        expires=None,  # 세션 쿠키로 설정 (브라우저 종료 시 자동 삭제)
         secure=secure,
         samesite=samesite,
         httponly=True,
         domain=domain,
+        # expires를 설정하지 않으면 세션 쿠키가 됨 (브라우저 종료 시 자동 삭제)
     )
 
     if reset:
