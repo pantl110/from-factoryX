@@ -3,22 +3,34 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { routing } from './i18n/config';
 
-const intlMiddleware = createMiddleware(routing);
+// 쿠키를 사용하지 않고 URL 기반으로만 locale 관리
+const intlMiddleware = createMiddleware({
+  ...routing,
+  // localeDetection을 false로 설정하여 쿠키 사용 비활성화
+  localeDetection: false,
+});
 
 export default function middleware(request: NextRequest) {
   const response = intlMiddleware(request);
   
-  // NEXT_LOCALE 쿠키를 세션 쿠키로 설정 (브라우저 종료 시 삭제)
-  const localeCookie = response.cookies.get('NEXT_LOCALE') || request.cookies.get('NEXT_LOCALE');
-  if (localeCookie) {
-    // 기존 쿠키 삭제 후 세션 쿠키로 재설정
-    response.cookies.delete('NEXT_LOCALE');
-    // maxAge와 expires를 설정하지 않으면 세션 쿠키가 됨 (브라우저 종료 시 자동 삭제)
-    response.cookies.set('NEXT_LOCALE', localeCookie.value, {
-      sameSite: 'lax',
-      path: '/',
-      httpOnly: false,
-      // maxAge와 expires를 명시적으로 설정하지 않음 → 세션 쿠키
+  // 혹시 모를 NEXT_LOCALE 쿠키 완전히 제거
+  // URL 기반으로만 locale 관리
+  const headers = new Headers(response.headers);
+  const setCookieHeaders = headers.getSetCookie();
+  
+  // NEXT_LOCALE 쿠키가 있으면 제거
+  if (setCookieHeaders.some((cookie) => cookie.startsWith('NEXT_LOCALE='))) {
+    headers.delete('Set-Cookie');
+    setCookieHeaders.forEach((cookie) => {
+      if (!cookie.startsWith('NEXT_LOCALE=')) {
+        headers.append('Set-Cookie', cookie);
+      }
+    });
+    
+    return new NextResponse(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: headers,
     });
   }
   

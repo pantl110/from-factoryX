@@ -24,6 +24,7 @@ const Home = () => {
    *
    * 참고: 쿠키는 백엔드에서 세션 쿠키(expires=None)로 설정되어 있어
    * 브라우저를 닫을 때 자동으로 삭제됩니다.
+   * NEXT_LOCALE 쿠키는 사용하지 않으므로 URL 기반으로만 locale 관리합니다.
    */
   const clearTokens = useCallback(() => {
     // localStorage 및 store 초기화
