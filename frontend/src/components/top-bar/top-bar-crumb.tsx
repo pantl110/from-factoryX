@@ -6,6 +6,7 @@ import {
   StockTabType,
 } from '@/components/top-bar/types';
 import usePageStatusStore, { PageStatusModel } from '@/store/page-status-store';
+import { locales } from '@/i18n/config';
 
 const crumbNameMap: Record<string, string> = {
   dashboard: '현황판',
@@ -48,7 +49,14 @@ const TopBarCrumb = ({
   settingChip,
 }: TopBarCrumbProps) => {
   const pathname = usePathname();
-  const crumbs = pathname.split('/').filter(Boolean);
+  const allCrumbs = pathname.split('/').filter(Boolean);
+
+  // 첫 번째 요소가 locale인 경우 제외
+  const crumbs =
+    allCrumbs.length > 0 && locales.includes(allCrumbs[0] as any)
+      ? allCrumbs.slice(1)
+      : allCrumbs;
+
   const projectStatusData = usePageStatusStore(
     (state: PageStatusModel) => state.projectStatusData
   );

@@ -41,7 +41,8 @@ export const useWithdraw = (): UseWithdrawReturnModel => {
 
       setIsSuccess(true);
 
-      // 모든 스토리지와 쿠키 정리
+      // 모든 스토리지 정리
+      // 참고: 쿠키는 백엔드에서 세션 쿠키로 설정되어 있어 브라우저 종료 시 자동 삭제됩니다.
       clearAllStorage();
     } catch {
       setError('회원 탈퇴 중 오류가 발생했습니다.');

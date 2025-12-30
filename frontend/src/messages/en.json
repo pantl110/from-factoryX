@@ -1,0 +1,45 @@
+{
+  "common": {
+    "close": "Close",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "search": "Search",
+    "confirm": "Confirm",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Completed successfully"
+  },
+  "language": {
+    "setting": "Language Settings",
+    "selectLanguage": "Select Language",
+    "korean": "Korean",
+    "english": "English"
+  },
+  "navigation": {
+    "dashboard": "Dashboard",
+    "project": "Project Management",
+    "stock": "Inventory Management",
+    "tax": "Tax & Accounting",
+    "document": "Documents",
+    "setting": "Settings"
+  },
+  "login": {
+    "title": "Login",
+    "email": {
+      "label": "Email",
+      "placeholder": "Please enter your email.",
+      "required": "Please enter your email.",
+      "invalidFormat": "Invalid email format."
+    },
+    "password": {
+      "label": "Password",
+      "placeholder": "Please enter your password.",
+      "required": "Please enter your password."
+    },
+    "button": "Login",
+    "signup": "Sign Up",
+    "findPassword": "Find Password"
+  }
+}

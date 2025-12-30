@@ -1,0 +1,45 @@
+{
+  "common": {
+    "close": "닫기",
+    "save": "저장",
+    "cancel": "취소",
+    "delete": "삭제",
+    "edit": "수정",
+    "search": "검색",
+    "confirm": "확인",
+    "loading": "로딩 중...",
+    "error": "오류가 발생했습니다",
+    "success": "성공적으로 완료되었습니다"
+  },
+  "language": {
+    "setting": "언어 설정",
+    "selectLanguage": "언어 선택",
+    "korean": "한국어",
+    "english": "영어"
+  },
+  "navigation": {
+    "dashboard": "현황판",
+    "project": "프로젝트 관리",
+    "stock": "재고 관리",
+    "tax": "세무/회계",
+    "document": "문서함",
+    "setting": "설정"
+  },
+  "login": {
+    "title": "로그인",
+    "email": {
+      "label": "이메일",
+      "placeholder": "이메일을 입력해주세요.",
+      "required": "이메일을 입력해주세요.",
+      "invalidFormat": "이메일 형식이 올바르지 않습니다."
+    },
+    "password": {
+      "label": "비밀번호",
+      "placeholder": "비밀번호를 입력해주세요.",
+      "required": "비밀번호를 입력해주세요."
+    },
+    "button": "로그인",
+    "signup": "회원가입",
+    "findPassword": "비밀번호 찾기"
+  }
+}

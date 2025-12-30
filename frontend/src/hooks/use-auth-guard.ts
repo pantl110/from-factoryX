@@ -1,48 +1,77 @@
-// import { useEffect } from 'react';
-// import { useRouter } from 'next/navigation';
-// import useAuthStore from '@/store/auth-store';
-// import useMemberStore from '@/store/member-store';
+import { useEffect, useState } from 'react';
+import { useRouter } from '@/i18n/navigation';
+import useAuthStore from '@/store/auth-store';
+import useMemberStore from '@/store/member-store';
 
-// export const useAuthGuard = () => {
-//   const router = useRouter();
-//   const { userInfo, isAuthenticated, isLoading: authLoading } = useAuthStore();
-//   const { factoryId, role, isBarobillUser } = useMemberStore();
+/**
+ * 인증 가드 훅
+ * - 서버에서 실제 인증 상태 확인
+ * - 인증 실패 시 로그인 페이지로 리다이렉트
+ * - 필수 정보(공장 ID, 역할, 바로빌 사용자 여부) 검증
+ */
+export const useAuthGuard = () => {
+  const router = useRouter();
+  const { userInfo, isAuthenticated, isLoading: authLoading, fetchUserInfo } =
+    useAuthStore();
+  const { factoryId, role, isBarobillUser } = useMemberStore();
+  const [isInitialCheck, setIsInitialCheck] = useState(true);
 
-//   // 전체 인증 상태를 확인하는 함수
-//   const isFullyAuthenticated = () => {
-//     return isAuthenticated && userInfo && factoryId !== null && role !== null && isBarobillUser !== null;
-//   };
+  // 초기 마운트 시 서버에서 실제 인증 상태 확인
+  useEffect(() => {
+    const checkAuth = async () => {
+      setIsInitialCheck(true);
+      await fetchUserInfo();
+      setIsInitialCheck(false);
+    };
 
-//   // 인증 체크가 완료되었는지 확인
-//   const isAuthCheckComplete = !authLoading && (isAuthenticated || !userInfo);
+    checkAuth();
+  }, [fetchUserInfo]);
 
-//   useEffect(() => {
-//     // 로딩 중이면 아직 체크하지 않음
-//     if (authLoading) return;
+  // 전체 인증 상태 확인 함수
+  const isFullyAuthenticated = () => {
+    return (
+      isAuthenticated &&
+      userInfo !== null &&
+      factoryId !== null &&
+      role !== null &&
+      isBarobillUser !== null
+    );
+  };
 
-//     // 인증되지 않았거나 사용자 정보가 없으면 로그인 페이지로 이동
-//     if (!isAuthenticated || !userInfo) {
-//       router.push('/login');
-//       return;
-//     }
+  // 인증 검증 및 리다이렉트
+  useEffect(() => {
+    // 초기 체크나 로딩 중이면 검증하지 않음
+    if (isInitialCheck || authLoading) return;
 
-//     // 공장 ID나 역할이 없으면 로그인 페이지로 이동
-//     if (factoryId === null || role === null || isBarobillUser === null) {
-//       router.push('/login');
-//       return;
-//     }
-//   }, [authLoading, isAuthenticated, userInfo, factoryId, role, isBarobillUser, router]);
+    // 인증 실패 또는 필수 정보 누락 시 로그인 페이지로 리다이렉트
+    const isAuthFailed =
+      !isAuthenticated ||
+      !userInfo ||
+      factoryId === null ||
+      role === null ||
+      isBarobillUser === null;
 
-//   // 전체 로딩 상태 (인증 로딩 + 멤버 정보 로딩)
-//   const isLoading = authLoading || !isAuthCheckComplete;
+    if (isAuthFailed) {
+      router.push('/login');
+    }
+  }, [
+    isInitialCheck,
+    authLoading,
+    isAuthenticated,
+    userInfo,
+    factoryId,
+    role,
+    isBarobillUser,
+    router,
+  ]);
 
-//   return {
-//     isFullyAuthenticated,
-//     isLoading,
-//     isAuthenticated,
-//     userInfo,
-//     factoryId,
-//     role,
-//     isBarobillUser,
-//   };
-// };
+  return {
+    isFullyAuthenticated,
+    isLoading: isInitialCheck || authLoading,
+    isAuthenticated,
+    userInfo,
+    factoryId,
+    role,
+    isBarobillUser,
+  };
+};

@@ -1,4 +1,4 @@
-import FooterText from '@/app/(with-layout)/dashboard/footer-text';
+import FooterText from '@/app/[locale]/(with-layout)/dashboard/footer-text';
 import FactoryXLogo from '@/ui/icons/factory-x-logo';
 
 const Footer = () => {

@@ -1,5 +1,5 @@
 // 공통 hooks
-// export { useAuthGuard } from './use-auth-guard';
+export { useAuthGuard } from './use-auth-guard';
 export { default as useToast } from './use-toast';
 export { usePortalDropdown } from './use-portal-dropdown';
 export { usePassword } from './use-password';

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import useMemberStore from '@/store/member-store';
-import { TodayProductionPlanModel } from '@/app/(with-layout)/dashboard/type';
+import { TodayProductionPlanModel } from '@/app/[locale]/(with-layout)/dashboard/type';
 
 // 오늘의 생산 일정 조회 // 생산지시서
 const useGetTodayProductionPlans = () => {

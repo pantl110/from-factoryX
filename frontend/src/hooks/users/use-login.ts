@@ -5,6 +5,7 @@ import {
   LoginFormDataModel,
   LoginResponseModel,
   MemberRoleType,
+  UserInfoModel,
 } from '@/types/data-model';
 import useAuthStore from '@/store/auth-store';
 import useMemberStore from '@/store/member-store';
@@ -20,6 +21,7 @@ interface UseLoginReturnModel {
     factoryId?: number;
     role?: MemberRoleType;
     isBarobillUser?: boolean;
+    userInfo?: UserInfoModel; // 사용자 정보 추가
   }>;
   isLoading: boolean;
 }
@@ -153,6 +155,7 @@ export const useLogin = (): UseLoginReturnModel => {
                       factoryId,
                       role: member.role,
                       isBarobillUser: member.is_barobill_user,
+                      userInfo: userData, // 사용자 정보 반환
                     };
                   }
                 }
@@ -162,12 +165,14 @@ export const useLogin = (): UseLoginReturnModel => {
                   success: true,
                   factoryId,
                   data: result,
+                  userInfo: userData, // 사용자 정보 반환
                 };
               } else {
                 // 공장이 없는 경우
                 return {
                   success: true,
                   data: result,
+                  userInfo: userData, // 사용자 정보 반환
                 };
               }
             } catch {

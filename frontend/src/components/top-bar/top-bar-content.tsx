@@ -10,7 +10,7 @@ import usePageStatusStore from '@/store/page-status-store';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import ProfileModal from './modals/profile-modal';
-import TaxDetailPanel from '@/app/(with-layout)/tax/tax-detail-panel';
+import TaxDetailPanel from '@/app/[locale]/(with-layout)/tax/tax-detail-panel';
 import Tooltip from '@/ui/tooltip';
 import { useTooltip, useManufacturedToDelivery } from '@/hooks';
 
