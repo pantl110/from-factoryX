@@ -123,10 +123,13 @@ def set_cookie_jwt(response, access, refresh, access_exp, refresh_exp, reset=Non
     secure = settings.SESSION_COOKIE_SECURE
     samesite = settings.SESSION_COOKIE_SAMESITE
 
+    # 세션 쿠키로 설정 (expires를 설정하지 않으면 브라우저를 닫을 때 자동 삭제)
+    # 창을 닫을 때 로그인 기록을 삭제하려면 expires를 None으로 설정
     response.set_cookie(
         key="access",
         value=access,
-        expires=access_exp,
+        # expires=access_exp,
+        expires=None,  # 세션 쿠키로 설정 (브라우저 종료 시 자동 삭제)
         secure=secure,
         samesite=samesite,
         httponly=False,
@@ -136,7 +139,7 @@ def set_cookie_jwt(response, access, refresh, access_exp, refresh_exp, reset=Non
     response.set_cookie(
         key="refresh",
         value=refresh,
-        expires=refresh_exp,
+        expires=None,  # 세션 쿠키로 설정 (브라우저 종료 시 자동 삭제)
         secure=secure,
         samesite=samesite,
         httponly=True,
