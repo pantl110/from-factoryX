@@ -90,6 +90,10 @@ class User(AbstractUser):
         admin = ("admin", "관리자")  # 관리자
         withdraw = ("withdraw", "탈퇴유저")  # 탈퇴
 
+    class LanguageChoice(models.TextChoices):
+        ko = ("ko", "한국어")
+        en = ("en", "English")
+
     objects = CustomUserManager()
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
@@ -166,6 +170,12 @@ class User(AbstractUser):
         null=True,
         blank=True,
         help_text="바로빌 사용자 ID",
+    )
+    language = models.CharField(
+        max_length=10,
+        choices=LanguageChoice.choices,
+        default=LanguageChoice.ko,
+        help_text="언어 설정",
     )
 
 

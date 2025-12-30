@@ -499,6 +499,7 @@ async def update_user(request, payload: UserUpdateIn):
         "username": user.username,
         "phone_number": user.phone_number,
         "profile_image": user.profile_image,
+        "language": user.language,
         "member_id": member_id,
     }
 

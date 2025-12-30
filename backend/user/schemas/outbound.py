@@ -19,6 +19,7 @@ class UserMeOut(ModelSchema):
             "username",
             "phone_number",
             "profile_image",
+            "language",
         ]
         fields_optional = [
             "email",
@@ -26,6 +27,7 @@ class UserMeOut(ModelSchema):
             "username",
             "phone_number",
             "profile_image",
+            "language",
         ]
 
 
@@ -48,6 +50,7 @@ class UserMeWithMemberOut(ModelSchema):
             "email",
             "status",
             "username",
+            "language",
         ]
 
 
