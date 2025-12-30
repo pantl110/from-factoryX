@@ -281,10 +281,14 @@ const NoraModal = ({
 
         // 왼쪽으로 드래그하면 너비 증가, 오른쪽으로 드래그하면 너비 감소
         const deltaX = ref.startX - e.clientX; // 왼쪽으로 드래그하면 양수
-        const maxWidth =
-          window.innerWidth -
-          (ref.startPositionX ?? positionX) -
-          POSITION_OFFSET;
+        const startPosX = ref.startPositionX ?? positionX;
+
+        // 너비 변화에 따라 위치 조정 (왼쪽으로 늘어나도록)
+        const tempWidthDiff = deltaX; // 임시 너비 변화
+        const tempNewX = Math.max(POSITION_OFFSET, startPosX - tempWidthDiff);
+
+        // 위치가 왼쪽으로 이동한 후의 최대 너비 계산
+        const maxWidth = window.innerWidth - tempNewX - POSITION_OFFSET;
         const newWidth = Math.max(
           MIN_WIDTH,
           Math.min(maxWidth, ref.startWidth + deltaX)
@@ -292,10 +296,7 @@ const NoraModal = ({
 
         // 너비 변화에 따라 위치 조정 (왼쪽으로 늘어나도록)
         const widthDiff = newWidth - ref.startWidth;
-        const newX = Math.max(
-          POSITION_OFFSET,
-          (ref.startPositionX ?? positionX) - widthDiff
-        );
+        const newX = Math.max(POSITION_OFFSET, startPosX - widthDiff);
 
         setWidth(newWidth);
         setPositionX(newX);
@@ -417,8 +418,12 @@ const NoraModal = ({
         const tempHeightDiff = deltaY; // 임시 높이 변화
         const tempNewY = Math.max(POSITION_OFFSET, startPosY - tempHeightDiff);
 
-        // 위치가 위로 이동한 후의 최대 높이 계산
-        const maxWidth = window.innerWidth - startPosX - POSITION_OFFSET;
+        // 너비 변화에 따라 위치가 얼마나 왼쪽으로 이동할지 확인
+        const tempWidthDiff = deltaX; // 임시 너비 변화
+        const tempNewX = Math.max(POSITION_OFFSET, startPosX - tempWidthDiff);
+
+        // 위치가 위로, 왼쪽으로 이동한 후의 최대 크기 계산
+        const maxWidth = window.innerWidth - tempNewX - POSITION_OFFSET;
         const maxHeight = window.innerHeight - tempNewY - POSITION_OFFSET;
 
         const newWidth = Math.max(
@@ -591,10 +596,14 @@ const NoraModal = ({
         // 왼쪽 아래로 드래그하면 크기 증가, 오른쪽 위로 드래그하면 크기 감소
         const deltaX = ref.startX - e.clientX; // 왼쪽으로 드래그하면 양수
         const deltaY = e.clientY - ref.startY; // 아래로 드래그하면 양수
-        const maxWidth =
-          window.innerWidth -
-          (ref.startPositionX ?? positionX) -
-          POSITION_OFFSET;
+        const startPosX = ref.startPositionX ?? positionX;
+
+        // 너비 변화에 따라 위치 조정 (왼쪽으로 늘어나도록)
+        const tempWidthDiff = deltaX; // 임시 너비 변화
+        const tempNewX = Math.max(POSITION_OFFSET, startPosX - tempWidthDiff);
+
+        // 위치가 왼쪽으로 이동한 후의 최대 너비 계산
+        const maxWidth = window.innerWidth - tempNewX - POSITION_OFFSET;
         const maxHeight = window.innerHeight - positionY - POSITION_OFFSET;
 
         const newWidth = Math.max(
@@ -608,10 +617,7 @@ const NoraModal = ({
 
         // 너비 변화에 따라 위치 조정 (왼쪽으로 늘어나도록)
         const widthDiff = newWidth - ref.startWidth;
-        const newX = Math.max(
-          POSITION_OFFSET,
-          (ref.startPositionX ?? positionX) - widthDiff
-        );
+        const newX = Math.max(POSITION_OFFSET, startPosX - widthDiff);
 
         setWidth(newWidth);
         setHeight(newHeight);
