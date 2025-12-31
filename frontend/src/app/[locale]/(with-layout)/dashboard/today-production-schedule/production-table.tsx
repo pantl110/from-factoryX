@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import ProductionTableHeader from './production-table-header';
 import ProductionTableItem from './production-table-item';
 import NoHistoryBox from '@/ui/no-history-box';
@@ -14,6 +17,8 @@ const ProductionTable = ({
   todayProductionPlans,
   isLoading,
 }: ProductionTableProps) => {
+  const t = useTranslations('dashboard.todayProductionSchedule');
+
   // usePagination 훅 사용
   const { currentItems, currentPage, totalPages, setCurrentPage } =
     usePagination({
@@ -24,10 +29,7 @@ const ProductionTable = ({
   if (isLoading || todayProductionPlans.length === 0) {
     return (
       <div className="mt-3">
-        <NoHistoryBox
-          title="히스토리가 아직 없어요."
-          text="오늘 생산할 제품을 여기에서 확인할 수 있어요."
-        />
+        <NoHistoryBox title={t('noHistory')} text={t('noHistoryDescription')} />
       </div>
     );
   }

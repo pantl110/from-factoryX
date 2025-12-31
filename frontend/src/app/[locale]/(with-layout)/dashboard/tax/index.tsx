@@ -1,7 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
+import { useRouter } from '@/i18n/navigation';
 import MiniBtn from '@/ui/mini-btn';
 import TaxDetailPanel from '@/app/[locale]/(with-layout)/tax/tax-detail-panel';
 import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
@@ -14,6 +15,8 @@ interface TaxProps {
 }
 
 const Tax = ({ taxInvoicesData, isLoading }: TaxProps) => {
+  const t = useTranslations('dashboard.tax');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const [selectedTax, setSelectedTax] =
     useState<PublishedTaxInvoiceResponseModel | null>(null);
@@ -30,9 +33,9 @@ const Tax = ({ taxInvoicesData, isLoading }: TaxProps) => {
     <>
       <div className="flex flex-col flex-1 min-w-0 gap-3">
         <div className="flex items-center justify-between">
-          <h3 className="Heading-3">세금계산서 현황</h3>
+          <h3 className="Heading-3">{t('title')}</h3>
           <MiniBtn
-            text="더보기"
+            text={tCommon('more')}
             textColor="text-dg"
             borderColor="border-lg"
             onClick={() => {
@@ -44,8 +47,8 @@ const Tax = ({ taxInvoicesData, isLoading }: TaxProps) => {
         <div className="flex flex-col gap-3">
           {isLoading || taxInvoicesData.length === 0 ? (
             <NoHistoryBox
-              title="아직 발행된 세금계산서가 없어요."
-              text="발행된 세금계산서는 최신순으로 보여져요."
+              title={t('noInvoice')}
+              text={t('noInvoiceDescription')}
             />
           ) : (
             taxInvoicesData.map((tax) => (

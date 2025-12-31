@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations, useLocale } from 'next-intl';
 import { Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -27,11 +28,35 @@ interface ChartProps {
 }
 
 const Chart = ({ monthlyProfits, lastYearMonthlyProfits }: ChartProps) => {
+  const t = useTranslations('dashboard.profitGraph');
+  const locale = useLocale();
+
   if (!monthlyProfits || !lastYearMonthlyProfits) return null;
 
   // 데이터를 최신순으로 정렬 (API 응답이 최신순이므로 그대로 사용)
   const months = monthlyProfits
-    .map((d) => `${parseInt(d.month.split('-')[1])}월`)
+    .map((d) => {
+      const monthNum = parseInt(d.month.split('-')[1]);
+      if (locale === 'en') {
+        // 영어: 월 이름 축약형 사용
+        const monthNames = [
+          'Jan',
+          'Feb',
+          'Mar',
+          'Apr',
+          'May',
+          'Jun',
+          'Jul',
+          'Aug',
+          'Sep',
+          'Oct',
+          'Nov',
+          'Dec',
+        ];
+        return monthNames[monthNum - 1];
+      }
+      return t('month', { month: monthNum });
+    })
     .reverse();
   const thisYearData = monthlyProfits.map((d) => d.profit).reverse();
   const lastYearData = lastYearMonthlyProfits.map((d) => d.profit).reverse();
@@ -40,14 +65,14 @@ const Chart = ({ monthlyProfits, lastYearMonthlyProfits }: ChartProps) => {
     labels: months,
     datasets: [
       {
-        label: '올해',
+        label: t('thisYear'),
         data: thisYearData,
         backgroundColor: '#016fee',
         barPercentage: 0.8, // 막대 너비(0~1, 기본값 0.9)
         categoryPercentage: 0.5, // 카테고리 내 막대 비율(0~1, 기본값 0.8)
       },
       {
-        label: '작년',
+        label: t('lastYear'),
         data: lastYearData,
         backgroundColor: '#E3E3E3',
         barPercentage: 0.8,

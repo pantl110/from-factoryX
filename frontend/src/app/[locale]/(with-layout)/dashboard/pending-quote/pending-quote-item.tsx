@@ -1,8 +1,9 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { RoundChip } from '@/ui';
 import { ProjectResponseModel } from '@/types/data-model';
-import { ProjectStatusMap, ProjectStatusType } from '@/types/status-type';
+import { ProjectStatusType } from '@/types/status-type';
 import { formatISODate, getProjectStatusColor } from '@/utils';
 
 interface PendingQuoteItemProps {
@@ -11,6 +12,22 @@ interface PendingQuoteItemProps {
 }
 
 const PendingQuoteItem = ({ project, onClick }: PendingQuoteItemProps) => {
+  const t = useTranslations('dashboard.pendingQuote');
+  const tCommon = useTranslations('common');
+  const tStatus = useTranslations('project.status');
+
+  const productCount = project.quotations[0].products.length;
+  const getProductDisplayText = () => {
+    if (productCount === 0) return '-';
+    if (productCount === 1) {
+      return project.quotations[0].products[0].product.name;
+    }
+    return t('productList', {
+      firstProduct: project.quotations[0].products[0].product.name,
+      count: productCount - 1,
+    });
+  };
+
   return (
     <div
       className="flex flex-col gap-2 p-4 border rounded-lg border-lg cursor-pointer min-w-0"
@@ -20,15 +37,9 @@ const PendingQuoteItem = ({ project, onClick }: PendingQuoteItemProps) => {
       <div className="flex flex-col gap-2.5">
         <h4 className="Heading-4">{project.client_name || '-'}</h4>
         <div className="Me_Body-1 text-sv">
-          <span>제품</span>
+          <span>{tCommon('productName')}</span>
           <span className="text-gr"> | </span>
-          <span>
-            {project.quotations[0].products.length === 0
-              ? '-'
-              : project.quotations[0].products.length === 1
-                ? project.quotations[0].products[0].product.name
-                : `${project.quotations[0].products[0].product.name} 외 ${project.quotations[0].products.length - 1}개`}
-          </span>
+          <span>{getProductDisplayText()}</span>
         </div>
       </div>
       <div className="flex items-center">
@@ -36,7 +47,7 @@ const PendingQuoteItem = ({ project, onClick }: PendingQuoteItemProps) => {
           {formatISODate(project.created_at) || '-'}
         </p>
         <RoundChip
-          text={ProjectStatusMap[project.status as ProjectStatusType]}
+          text={tStatus(project.status as ProjectStatusType)}
           color={getProjectStatusColor(project.status)}
           variant="defaultSmall"
         />

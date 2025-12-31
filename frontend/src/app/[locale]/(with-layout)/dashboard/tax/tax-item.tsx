@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { TaxDocumentType, TaxDocumentTypeColorMap } from '@/types/status-type';
 import { RoundChip } from '@/ui';
 import type { ComponentProps } from 'react';
@@ -12,9 +15,18 @@ interface TaxItemProps {
 }
 
 const TaxItem = ({ taxType, company, date, onClick }: TaxItemProps) => {
+  const t = useTranslations('dashboard.tax');
+  const tTax = useTranslations('tax');
   const color = TaxDocumentTypeColorMap[taxType];
   const chipColor: RoundChipColorType = (color.color ??
     'gray') as RoundChipColorType;
+
+  const chipText = taxType === 'sales' ? tTax('sales') : tTax('purchase');
+  const actionText = taxType === 'sales' ? t('issued') : t('received');
+  const invoiceText = t('invoiceText', {
+    company: company || '-',
+    action: actionText,
+  });
 
   return (
     <div
@@ -23,17 +35,13 @@ const TaxItem = ({ taxType, company, date, onClick }: TaxItemProps) => {
     >
       <div className="flex items-center gap-4 w-full">
         <div className="flex items-center justify-center flex-shrink-0">
-          <RoundChip
-            text={taxType === 'sales' ? '매출' : '매입'}
-            variant="sm"
-            color={chipColor}
-          />
+          <RoundChip text={chipText} variant="sm" color={chipColor} />
         </div>
         <p
           className="Me_Body-2 text-dg truncate flex-1 min-w-0"
-          title={`${company || '-'} 세금계산서 ${taxType === 'sales' ? '발행' : '수신'}`}
+          title={invoiceText}
         >
-          {company || '-'} 세금계산서 {taxType === 'sales' ? '발행' : '수신'}
+          {invoiceText}
         </p>
         <p className="pl-4 Me_Body-2 text-gr flex-shrink-0 w-fit text-right">
           {date}

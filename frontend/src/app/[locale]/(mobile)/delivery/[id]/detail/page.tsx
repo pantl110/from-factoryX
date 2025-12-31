@@ -1,7 +1,7 @@
 'use client';
 
-import { LabelInfo } from '@/app/(mobile)/label-info';
-import Topbar from '@/app/(mobile)/topbar';
+import { LabelInfo } from '@/app/[locale]/(mobile)/label-info';
+import Topbar from '@/app/[locale]/(mobile)/topbar';
 import { MoBottomNavigation } from '@/ui';
 import { useSearchParams, useRouter, useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';

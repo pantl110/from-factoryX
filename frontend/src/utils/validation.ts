@@ -1,13 +1,12 @@
-export const validateEmail = (
-  email: string,
-  t?: (key: string) => string
-) => {
+export const validateEmail = (email: string, t?: (key: string) => string) => {
   if (!email) {
     return t ? t('login.email.required') : '이메일을 입력해주세요.';
   }
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
-    return t ? t('login.email.invalidFormat') : '이메일 형식이 올바르지 않습니다.';
+    return t
+      ? t('login.email.invalidFormat')
+      : '이메일 형식이 올바르지 않습니다.';
   }
   return '';
 };

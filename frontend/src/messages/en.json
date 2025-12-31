@@ -9,7 +9,27 @@
     "confirm": "Confirm",
     "loading": "Loading...",
     "error": "An error occurred",
-    "success": "Completed successfully"
+    "success": "Completed successfully",
+    "clientName": "Client Name",
+    "productName": "Product Name",
+    "productCode": "Product Code",
+    "specification": "Specification",
+    "unitLabel": "Unit",
+    "productionQuantity": "Production Quantity",
+    "productionEquipment": "Production Equipment",
+    "productionTime": "Production Time",
+    "deliveryDate": "Delivery Date",
+    "dueDate": "Due Date",
+    "more": "More",
+    "count": "",
+    "unit": ""
+  },
+  "document": {
+    "workInstruction": "Work Instruction"
+  },
+  "tax": {
+    "sales": "Sales",
+    "purchase": "Purchase"
   },
   "language": {
     "setting": "Language Settings",
@@ -41,5 +61,77 @@
     "button": "Login",
     "signup": "Sign Up",
     "findPassword": "Find Password"
+  },
+  "dashboard": {
+    "mainTitle": "Factory X Dashboard",
+    "summaryKPITitle": "Summary KPI",
+    "noSummaryData": "No data to summarize.",
+    "noSummaryDataDescription": "Key indicators will be automatically summarized as you continue using the system.",
+    "deliveryScheduleTitle": "Delivery Schedule",
+    "onboardingToastText": "Ready to start with Factory X?",
+    "onboardingToastSubtext": "Registration completed!",
+    "deliverySchedule": {
+      "noSchedule": "No delivery schedule.",
+      "noScheduleDescription": "Delivery schedules are shown in order from the nearest date."
+    },
+    "pendingQuote": {
+      "title": "Quote & Order Status",
+      "noQuote": "No pending quotes.",
+      "noQuoteDescription": "Pending quotes will be displayed here when registered.",
+      "productList": "{firstProduct} and {count} more"
+    },
+    "processProject": {
+      "title": "Production Projects",
+      "noProject": "No projects in progress.",
+      "noProjectDescription": "Projects will be displayed here when created."
+    },
+    "profitGraph": {
+      "title": "Production Profit Graph",
+      "thisYear": "This Year",
+      "lastYear": "Last Year",
+      "month": "Month {month}",
+      "noData": "No production profit data.",
+      "noDataDescription": "When you produce and sell products, performance information will be automatically organized."
+    },
+    "summaryKPI": {
+      "activeProjects": "Active Projects",
+      "comparedToLastMonth": "vs Last Month",
+      "productionRevenue": "Production Revenue",
+      "tenThousandWon": "M KRW",
+      "shortageMaterials": "Shortage Materials",
+      "checkShortageMaterials": "Check Shortage",
+      "case": "case",
+      "cases": "cases",
+      "item": "item",
+      "items": "items"
+    },
+    "tax": {
+      "title": "Tax Invoice Status",
+      "noInvoice": "No tax invoices issued yet.",
+      "noInvoiceDescription": "Issued tax invoices are shown in order from the most recent.",
+      "issued": "Issued",
+      "received": "Received",
+      "invoiceText": "{company} Tax Invoice {action}"
+    },
+    "todayProductionSchedule": {
+      "title": "Today's Production Schedule",
+      "noHistory": "No history yet.",
+      "noHistoryDescription": "You can check the products to be produced today here.",
+      "printButton": "Print Work Instruction",
+      "printConfirmTitle": "Would you like to print the work instruction?",
+      "printConfirmDescription": "Please review the work instruction content once more before printing."
+    }
+  },
+  "project": {
+    "status": {
+      "quotation": "Quote",
+      "confirmed": "Confirmed",
+      "pending": "Pending",
+      "production": "Production",
+      "manufactured": "Manufactured",
+      "delivery": "Delivery",
+      "completed": "Completed",
+      "suspended": "Suspended"
+    }
   }
 }

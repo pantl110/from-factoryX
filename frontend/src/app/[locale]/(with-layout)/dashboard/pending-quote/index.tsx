@@ -1,7 +1,8 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import MiniBtn from '@/ui/mini-btn';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import PendingQuoteItem from './pending-quote-item';
 import { ProjectResponseModel } from '@/types/data-model';
 import NoHistoryBox from '@/ui/no-history-box';
@@ -12,14 +13,16 @@ interface PendingQuoteProps {
 }
 
 const PendingQuote = ({ projects, isLoading }: PendingQuoteProps) => {
+  const t = useTranslations('dashboard.pendingQuote');
+  const tCommon = useTranslations('common');
   const router = useRouter();
 
   return (
     <div>
       <div className="flex justify-between items-center">
-        <h3 className="Heading-3">견적 및 주문 현황</h3>
+        <h3 className="Heading-3">{t('title')}</h3>
         <MiniBtn
-          text="더보기"
+          text={tCommon('more')}
           textColor="text-dg"
           borderColor="border-lg"
           onClick={() => {
@@ -31,10 +34,7 @@ const PendingQuote = ({ projects, isLoading }: PendingQuoteProps) => {
 
       <div className="mt-3 flex gap-2 w-full">
         {isLoading || projects.length === 0 ? (
-          <NoHistoryBox
-            title="협의 중인 견적이 없어요."
-            text="협의 중인 견적이 등록되면 이곳에 표시돼요."
-          />
+          <NoHistoryBox title={t('noQuote')} text={t('noQuoteDescription')} />
         ) : (
           <>
             {projects.map((project) => (

@@ -11,8 +11,12 @@ import useMemberStore from '@/store/member-store';
  */
 export const useAuthGuard = () => {
   const router = useRouter();
-  const { userInfo, isAuthenticated, isLoading: authLoading, fetchUserInfo } =
-    useAuthStore();
+  const {
+    userInfo,
+    isAuthenticated,
+    isLoading: isAuthLoading,
+    fetchUserInfo,
+  } = useAuthStore();
   const { factoryId, role, isBarobillUser } = useMemberStore();
   const [isInitialCheck, setIsInitialCheck] = useState(true);
 
@@ -41,7 +45,7 @@ export const useAuthGuard = () => {
   // 인증 검증 및 리다이렉트
   useEffect(() => {
     // 초기 체크나 로딩 중이면 검증하지 않음
-    if (isInitialCheck || authLoading) return;
+    if (isInitialCheck || isAuthLoading) return;
 
     // 인증 실패 또는 필수 정보 누락 시 로그인 페이지로 리다이렉트
     const isAuthFailed =
@@ -56,7 +60,7 @@ export const useAuthGuard = () => {
     }
   }, [
     isInitialCheck,
-    authLoading,
+    isAuthLoading,
     isAuthenticated,
     userInfo,
     factoryId,
@@ -67,7 +71,7 @@ export const useAuthGuard = () => {
 
   return {
     isFullyAuthenticated,
-    isLoading: isInitialCheck || authLoading,
+    isLoading: isInitialCheck || isAuthLoading,
     isAuthenticated,
     userInfo,
     factoryId,

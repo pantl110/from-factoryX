@@ -1,29 +1,35 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
+
 const ProductionTableHeader = () => {
+  const t = useTranslations('common');
+
   return (
     <div className="flex min-w-[1421px] h-12 items-center Me_Body-1 text-sv border-t border-b border-[#eeeeee]">
       <div className="py-1 px-3 flex-2">
-        <p>거래처명</p>
+        <p>{t('clientName')}</p>
       </div>
       <div className="py-1 px-3 flex-2">
-        <p>제품명</p>
+        <p>{t('productName')}</p>
       </div>
       <div className="py-1 px-3 flex-[1.5]">
-        <p>제품코드</p>
+        <p>{t('productCode')}</p>
       </div>
       <div className="py-1 px-3 flex-1">
-        <p>규격</p>
+        <p>{t('specification')}</p>
       </div>
       <div className="py-1 px-3 w-[80px]">
-        <p>단위</p>
+        <p>{t('unitLabel')}</p>
       </div>
       <div className="py-1 px-3 flex-1">
-        <p>생산 수량</p>
+        <p>{t('productionQuantity')}</p>
       </div>
       <div className="py-1 px-3 flex-[1.5]">
-        <p>생산 설비</p>
+        <p>{t('productionEquipment')}</p>
       </div>
       <div className="py-1 px-3 flex-2">
-        <p>생산시간</p>
+        <p>{t('productionTime')}</p>
       </div>
     </div>
   );

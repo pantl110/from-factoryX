@@ -9,7 +9,27 @@
     "confirm": "확인",
     "loading": "로딩 중...",
     "error": "오류가 발생했습니다",
-    "success": "성공적으로 완료되었습니다"
+    "success": "성공적으로 완료되었습니다",
+    "clientName": "거래처명",
+    "productName": "제품명",
+    "productCode": "제품코드",
+    "specification": "규격",
+    "unitLabel": "단위",
+    "productionQuantity": "생산 수량",
+    "productionEquipment": "생산 설비",
+    "productionTime": "생산시간",
+    "deliveryDate": "납품일자",
+    "dueDate": "납기일자",
+    "more": "더보기",
+    "count": "건",
+    "unit": "개"
+  },
+  "document": {
+    "workInstruction": "생산지시서"
+  },
+  "tax": {
+    "sales": "매출",
+    "purchase": "매입"
   },
   "language": {
     "setting": "언어 설정",
@@ -41,5 +61,77 @@
     "button": "로그인",
     "signup": "회원가입",
     "findPassword": "비밀번호 찾기"
+  },
+  "dashboard": {
+    "mainTitle": "팩토리엑스 현황판",
+    "summaryKPITitle": "Summary KPI",
+    "noSummaryData": "요약할 데이터가 없어요.",
+    "noSummaryDataDescription": "시스템을 계속 사용하면 주요 지표가 자동으로 요약돼요.",
+    "deliveryScheduleTitle": "납품 예정 현황",
+    "onboardingToastText": "이제 팩토리엑스를 시작해볼까요?",
+    "onboardingToastSubtext": "가입이 완료되었어요!",
+    "deliverySchedule": {
+      "noSchedule": "납품 일정이 없어요.",
+      "noScheduleDescription": "가장 가까운 납품 일정부터 순서대로 보여져요."
+    },
+    "pendingQuote": {
+      "title": "견적 및 주문 현황",
+      "noQuote": "협의 중인 견적이 없어요.",
+      "noQuoteDescription": "협의 중인 견적이 등록되면 이곳에 표시돼요.",
+      "productList": "{firstProduct} 외 {count}개"
+    },
+    "processProject": {
+      "title": "생산 프로젝트",
+      "noProject": "진행 중인 프로젝트가 없어요.",
+      "noProjectDescription": "프로젝트를 생성하면 이곳에서 확인할 수 있어요."
+    },
+    "profitGraph": {
+      "title": "생산 이익 그래프",
+      "thisYear": "올해",
+      "lastYear": "작년",
+      "month": "{month}월",
+      "noData": "생산 이익 데이터가 없어요.",
+      "noDataDescription": "제품을 생산하고 판매하면, 그에 따른 실적 정보가 자동으로 정리돼요."
+    },
+    "summaryKPI": {
+      "activeProjects": "진행 프로젝트 수",
+      "comparedToLastMonth": "전월 대비",
+      "productionRevenue": "생산 수익",
+      "tenThousandWon": "만원",
+      "shortageMaterials": "부족한 원자재 수",
+      "checkShortageMaterials": "부족한 자재 확인",
+      "case": "건",
+      "cases": "건",
+      "item": "개",
+      "items": "개"
+    },
+    "tax": {
+      "title": "세금계산서 현황",
+      "noInvoice": "아직 발행된 세금계산서가 없어요.",
+      "noInvoiceDescription": "발행된 세금계산서는 최신순으로 보여져요.",
+      "issued": "발행",
+      "received": "수신",
+      "invoiceText": "{company} 세금계산서 {action}"
+    },
+    "todayProductionSchedule": {
+      "title": "오늘의 생산 일정",
+      "noHistory": "히스토리가 아직 없어요.",
+      "noHistoryDescription": "오늘 생산할 제품을 여기에서 확인할 수 있어요.",
+      "printButton": "생산지시서 출력하기",
+      "printConfirmTitle": "생산지시서를 출력하시겠어요?",
+      "printConfirmDescription": "출력 전, 생산지시서 내용을 한 번 더 확인해 주세요."
+    }
+  },
+  "project": {
+    "status": {
+      "quotation": "견적 요청",
+      "confirmed": "주문 확정",
+      "pending": "생산 대기",
+      "production": "생산 중",
+      "manufactured": "생산 완료",
+      "delivery": "납품",
+      "completed": "프로젝트 완료",
+      "suspended": "중단"
+    }
   }
 }

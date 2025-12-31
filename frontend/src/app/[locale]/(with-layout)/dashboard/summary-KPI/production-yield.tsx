@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { CaretUpIcon, CaretDownIcon } from '@phosphor-icons/react/dist/ssr';
 import { MonthlyProfitModel } from '@/types/data-model';
 import { removeTrailingZeros } from '@/utils';
@@ -7,6 +10,8 @@ interface ProductionYieldProps {
 }
 
 const ProductionYield = ({ monthlyProfits }: ProductionYieldProps) => {
+  const t = useTranslations('dashboard.summaryKPI');
+
   // 데이터가 없거나 빈 배열인 경우 기본값 사용
   const currentProfit =
     monthlyProfits && monthlyProfits.length > 0
@@ -32,15 +37,17 @@ const ProductionYield = ({ monthlyProfits }: ProductionYieldProps) => {
   return (
     <div className="pt-5 pb-4 px-5 rounded-lg border border-[#eeeeee] h-[141px] shadow-[2px_2px_22px_rgba(0,0,0,0.1)]">
       <div className="flex flex-col gap-1">
-        <p className="Heading-4 text-sv">생산 수익</p>
+        <p className="Heading-4 text-sv">{t('productionRevenue')}</p>
         <p className="flex gap-1 Heading-1">
-          {formatProfit(currentProfit)} <span>만원</span>
+          {formatProfit(currentProfit)} <span>{t('tenThousandWon')}</span>
         </p>
 
         {changePercentage !== undefined && !isNaN(changePercentage) && (
           <div className="flex flex-row justify-between">
             <div className="flex">
-              <p className="Re_Body-1 text-sv mr-2">전월 대비</p>
+              <p className="Re_Body-1 text-sv mr-2">
+                {t('comparedToLastMonth')}
+              </p>
               <div
                 className={`Re_Body-1 flex ${
                   changePercentage === 0

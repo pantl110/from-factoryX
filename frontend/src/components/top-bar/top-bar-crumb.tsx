@@ -53,7 +53,8 @@ const TopBarCrumb = ({
 
   // 첫 번째 요소가 locale인 경우 제외
   const crumbs =
-    allCrumbs.length > 0 && locales.includes(allCrumbs[0] as any)
+    allCrumbs.length > 0 &&
+    locales.includes(allCrumbs[0] as (typeof locales)[number])
       ? allCrumbs.slice(1)
       : allCrumbs;
 

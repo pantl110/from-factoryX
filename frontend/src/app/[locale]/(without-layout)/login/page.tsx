@@ -19,7 +19,6 @@ const LoginPage = () => {
   const router = useRouter();
   const locale = useLocale(); // 현재 locale
   const { login, isLoading } = useLogin();
-  const { userInfo } = useAuthStore();
   const setLoggingOut = useAuthStore((state) => state.setLoggingOut);
 
   // 로그인 페이지 진입 시 로그아웃 상태 초기화

@@ -5,7 +5,7 @@ import { useEffect, useState, Suspense, useMemo, useRef } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { WarningCircle, Camera } from '@phosphor-icons/react';
 import Spinner from '@/ui/spinner';
-import Topbar from '@/app/(mobile)/topbar';
+import Topbar from '@/app/[locale]/(mobile)/topbar';
 import {
   DecodeHintType,
   BarcodeFormat,

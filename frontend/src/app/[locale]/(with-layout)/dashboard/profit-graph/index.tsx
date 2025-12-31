@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { MonthlyProfitModel } from '@/types/data-model';
 import Chart from './chart';
 import NoHistoryBox from '@/ui/no-history-box';
@@ -12,11 +15,12 @@ const ProfitGraph = ({
   monthlyProfits,
   lastYearMonthlyProfits,
 }: ProfitGraphProps) => {
+  const t = useTranslations('dashboard.profitGraph');
   const factoryId = useMemberStore((state) => state.factoryId);
 
   return (
     <div className="flex flex-col flex-1 gap-3 min-w-[652px]">
-      <h3 className="Heading-3">생산 이익 그래프</h3>
+      <h3 className="Heading-3">{t('title')}</h3>
 
       {factoryId && monthlyProfits && lastYearMonthlyProfits ? (
         <div className="border border-lg rounded-lg flex justify-center items-center px-10 py-5 shadow-[2px_2px_22px_rgba(0,0,0,0.1)] h-[447px]">
@@ -25,13 +29,13 @@ const ProfitGraph = ({
               <div className="flex items-center gap-2">
                 <span className="inline-block w-8 h-4 bg-[#016fee]" />
                 <span className="text-[#888] text-[16px] font-medium">
-                  올해
+                  {t('thisYear')}
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="inline-block w-8 h-4 bg-[#E3E3E3]" />
                 <span className="text-[#888] text-[16px] font-medium">
-                  작년
+                  {t('lastYear')}
                 </span>
               </div>
             </div>
@@ -42,10 +46,7 @@ const ProfitGraph = ({
           </div>
         </div>
       ) : (
-        <NoHistoryBox
-          title="생산 이익 데이터가 없어요."
-          text="제품을 생산하고 판매하면, 그에 따른 실적 정보가 자동으로 정리돼요."
-        />
+        <NoHistoryBox title={t('noData')} text={t('noDataDescription')} />
       )}
     </div>
   );

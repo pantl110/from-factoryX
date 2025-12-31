@@ -8,14 +8,14 @@ import { useMe } from '@/hooks';
 import { useRouter, usePathname } from '@/i18n/navigation';
 
 // 언어 정보 타입
-interface LanguageInfo {
+interface LanguageInfoModel {
   code: string;
   nativeName: string;
   flag: string;
 }
 
 // 지원하는 언어 목록 (확장 가능)
-const AVAILABLE_LANGUAGES: LanguageInfo[] = [
+const AVAILABLE_LANGUAGES: LanguageInfoModel[] = [
   { code: 'ko', nativeName: '한국어', flag: '🇰🇷' },
   { code: 'en', nativeName: 'English', flag: '🇺🇸' },
   // 나중에 추가할 수 있는 언어들 (주석 처리)
@@ -25,14 +25,14 @@ const AVAILABLE_LANGUAGES: LanguageInfo[] = [
 
 const LanguageSetting = () => {
   const { userInfo } = useAuthStore();
-  const { updateMe, isLoading } = useMe();
+  const { updateMe } = useMe();
   const router = useRouter();
   const pathname = usePathname();
 
-  // userInfo에서 language를 가져와서 해당하는 LanguageInfo 찾기
+  // userInfo에서 language를 가져와서 해당하는 LanguageInfoModel 찾기
   const getLanguageFromUserInfo = (
     languageCode?: string | null
-  ): LanguageInfo => {
+  ): LanguageInfoModel => {
     if (languageCode) {
       // languageCode가 'korean' 또는 'english'인 경우 코드로 변환
       const codeMap: Record<string, string> = {
@@ -50,8 +50,8 @@ const LanguageSetting = () => {
     return AVAILABLE_LANGUAGES[0];
   };
 
-  const [selectedLanguage, setSelectedLanguage] = useState<LanguageInfo>(() =>
-    getLanguageFromUserInfo(userInfo?.language)
+  const [selectedLanguage, setSelectedLanguage] = useState<LanguageInfoModel>(
+    () => getLanguageFromUserInfo(userInfo?.language)
   );
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
@@ -60,7 +60,7 @@ const LanguageSetting = () => {
     setSelectedLanguage(getLanguageFromUserInfo(userInfo?.language));
   }, [userInfo?.language]);
 
-  const handleLanguageSelect = async (language: LanguageInfo) => {
+  const handleLanguageSelect = async (language: LanguageInfoModel) => {
     // 언어 코드를 백엔드 형식으로 변환 (ko -> 'korean', en -> 'english')
     const languageMap: Record<string, string> = {
       ko: 'korean',

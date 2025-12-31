@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import MiniBtn from '@/ui/mini-btn';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import ProductionDocumentView from '../../document/production-document-view';
@@ -22,6 +23,8 @@ const TodayProductionSchedule = ({
   todayProductionPlans,
   isLoading,
 }: TodayProductionScheduleProps) => {
+  const t = useTranslations('dashboard.todayProductionSchedule');
+  const tDocument = useTranslations('document');
   const factoryId = useMemberStore((state) => state.factoryId);
   const [isPrintOverlayOpen, setIsPrintOverlayOpen] = useState(false);
   const [latestWorkInstructionId, setLatestWorkInstructionId] = useState<
@@ -30,7 +33,7 @@ const TodayProductionSchedule = ({
   const contentRef = useRef<HTMLDivElement>(null);
   const reactToPrintFn = useReactToPrint({
     contentRef,
-    documentTitle: '생산 지시서', // 문서 제목
+    documentTitle: tDocument('workInstruction'),
   });
 
   const { getWorkInstructions } = useGetWorkInstructions();
@@ -75,9 +78,9 @@ const TodayProductionSchedule = ({
     <>
       <div>
         <div className="flex justify-between items-center">
-          <h3 className="Heading-3">오늘의 생산 일정</h3>
+          <h3 className="Heading-3">{t('title')}</h3>
           <MiniBtn
-            text="생산지시서 출력하기"
+            text={t('printButton')}
             textColor="text-dg"
             borderColor="border-lg"
             onClick={() => {
@@ -98,7 +101,7 @@ const TodayProductionSchedule = ({
         <OverlayView onClose={() => setIsPrintOverlayOpen(false)}>
           <div className="w-full flex flex-col p-8">
             <div className="flex justify-between items-center h-13 pb-3 border-b border-lg">
-              <h3 className="Heading-3">생산지시서</h3>
+              <h3 className="Heading-3">{tDocument('workInstruction')}</h3>
               <button
                 className="w-10 h-10 flex justify-center items-center cursor-pointer hover:bg-bg rounded-[8px] transition-colors ease-in-out duration-200"
                 onClick={() => setIsPrintOverlayOpen(false)}
@@ -110,13 +113,13 @@ const TodayProductionSchedule = ({
             <div className="sticky top-0 bg-wh mb-6">
               <div className="py-6 w-full flex justify-between border-b border-lg">
                 <div>
-                  <h2 className="Heading-2">생산지시서를 출력하시겠어요?</h2>
+                  <h2 className="Heading-2">{t('printConfirmTitle')}</h2>
                   <div className="mt-2.5 Me_Body-3 text-gr">
-                    출력 전, 생산지시서 내용을 한 번 더 확인해 주세요.
+                    {t('printConfirmDescription')}
                   </div>
                 </div>
                 <MiniBtn
-                  text="생산지시서 출력하기"
+                  text={t('printButton')}
                   textColor="text-wh"
                   bgColor="bg-primary"
                   hoverColor="hover:bg-primary-hover"

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, Suspense, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import MainTitleSec from './main-title-sec';
 import DailyProductionQuantity from './summary-KPI/daily-production-quantity';
 import ShortageCount from './summary-KPI/shortage-count';
@@ -33,6 +34,7 @@ import Footer from '@/components/footer';
 import MobileDashboardPage from '@/app/[locale]/(mobile)/dashboard';
 
 const DashboardPageContent = () => {
+  const t = useTranslations('dashboard');
   const { isToastOpen, isVisible, showToast } = useToast();
   const searchParams = useSearchParams();
   const { getProjects, isLoading: isProjectsLoading } = useGetProjects();
@@ -198,7 +200,7 @@ const DashboardPageContent = () => {
               <div className="flex  gap-5">
                 {/* Summary KPI */}
                 <div className="flex flex-col">
-                  <h3 className="Heading-3">Summary KPI</h3>
+                  <h3 className="Heading-3">{t('summaryKPITitle')}</h3>
                   {factoryId && dashboardData ? (
                     <div className="flex flex-col gap-3 w-[280px] min-w-[248px] mt-3">
                       <DailyProductionQuantity
@@ -221,8 +223,8 @@ const DashboardPageContent = () => {
                   ) : (
                     <div className="w-100 mt-3">
                       <NoHistoryBox
-                        title="요약할 데이터가 없어요."
-                        text="시스템을 계속 사용하면 주요 지표가 자동으로 요약돼요."
+                        title={t('noSummaryData')}
+                        text={t('noSummaryDataDescription')}
                       />
                     </div>
                   )}
@@ -259,7 +261,7 @@ const DashboardPageContent = () => {
               <div className="flex gap-5">
                 <div className="flex flex-col flex-1 min-w-0 gap-3">
                   <div className="h-10 flex items-center">
-                    <h3 className="Heading-3">납품 예정 현황</h3>
+                    <h3 className="Heading-3">{t('deliveryScheduleTitle')}</h3>
                   </div>
                   <DeliveryTable />
                 </div>
@@ -280,8 +282,8 @@ const DashboardPageContent = () => {
       {isToastOpen && (
         <Toast
           icon={<CheckCircle size={20} className="text-primary" />}
-          text="이제 팩토리엑스를 시작해볼까요?"
-          subtext="가입이 완료되었어요!"
+          text={t('onboardingToastText')}
+          subtext={t('onboardingToastSubtext')}
           type="primary"
           isVisible={isVisible}
         />

@@ -1,14 +1,17 @@
 'use client';
 
 import { useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import DeliveryTableItem from './delivery-table-item';
 import Pagination from '@/components/pagination';
 import NoHistoryBox from '@/ui/no-history-box';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { useGetUndeliveredProducts } from '@/hooks';
 import useMemberStore from '@/store/member-store';
 
 const DeliveryTable = () => {
+  const t = useTranslations('dashboard.deliverySchedule');
+  const tCommon = useTranslations('common');
   const router = useRouter();
   const { factoryId } = useMemberStore();
   const [currentPage, setCurrentPage] = useState(1);
@@ -39,10 +42,7 @@ const DeliveryTable = () => {
 
   if (!factoryId || isLoading || isError || resolvedData.data.length === 0) {
     return (
-      <NoHistoryBox
-        title="납품 일정이 없어요."
-        text="가장 가까운 납품 일정부터 순서대로 보여져요."
-      />
+      <NoHistoryBox title={t('noSchedule')} text={t('noScheduleDescription')} />
     );
   }
 
@@ -50,9 +50,9 @@ const DeliveryTable = () => {
     <div className="flex flex-col justify-between">
       <div>
         <div className="flex w-full h-12 items-center Me_Body-1 text-sv border-t border-b border-[#eeeeee]">
-          <p className="px-3 w-[150px]">거래처명</p>
-          <p className="px-3 flex-1">제품명</p>
-          <p className="px-3 flex-1">납품일자</p>
+          <p className="px-3 w-[150px]">{tCommon('clientName')}</p>
+          <p className="px-3 flex-1">{tCommon('productName')}</p>
+          <p className="px-3 flex-1">{tCommon('deliveryDate')}</p>
           <div className="w-10"></div>
         </div>
         {resolvedData.data.map((product, index) => (

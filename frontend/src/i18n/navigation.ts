@@ -3,4 +3,3 @@ import { routing } from './config';
 
 export const { Link, redirect, usePathname, useRouter, getPathname } =
   createNavigation(routing);
-

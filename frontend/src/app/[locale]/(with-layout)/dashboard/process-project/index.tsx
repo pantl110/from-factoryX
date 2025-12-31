@@ -1,8 +1,9 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import MiniBtn from '@/ui/mini-btn';
 import ProcessProjectItem from './process-project-item';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { ProjectResponseModel } from '@/types/data-model';
 import NoHistoryBox from '@/ui/no-history-box';
 
@@ -12,14 +13,16 @@ interface ProcessProjectProps {
 }
 
 const ProcessProject = ({ projects, isLoading }: ProcessProjectProps) => {
+  const t = useTranslations('dashboard.processProject');
+  const tCommon = useTranslations('common');
   const router = useRouter();
 
   return (
     <div>
       <div className="flex justify-between items-center">
-        <h3 className="Heading-3">생산 프로젝트</h3>
+        <h3 className="Heading-3">{t('title')}</h3>
         <MiniBtn
-          text="더보기"
+          text={tCommon('more')}
           textColor="text-dg"
           borderColor="border-lg"
           onClick={() => {
@@ -31,8 +34,8 @@ const ProcessProject = ({ projects, isLoading }: ProcessProjectProps) => {
       <div className="mt-3 flex gap-2">
         {isLoading || projects.length === 0 ? (
           <NoHistoryBox
-            title="진행 중인 프로젝트가 없어요."
-            text="프로젝트를 생성하면 이곳에서 확인할 수 있어요."
+            title={t('noProject')}
+            text={t('noProjectDescription')}
           />
         ) : (
           <>
