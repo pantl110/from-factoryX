@@ -1,4 +1,7 @@
+'use client';
+
 import React from 'react';
+import { useTranslations } from 'next-intl';
 import ProductionTableItem from './production-table-item';
 import CommentItem from './comment-item';
 import TextareaAutosize from 'react-textarea-autosize';
@@ -22,6 +25,9 @@ export const DocumentSection = ({
   setValue,
   onMemoChange,
 }: DocumentSectionProps) => {
+  const t = useTranslations('document');
+  const tCommon = useTranslations('common');
+
   return (
     <>
       {/* 생산제품 - 프로젝트별로 표 분리 */}
@@ -31,12 +37,14 @@ export const DocumentSection = ({
             <h3 className="Heading-3 h-10 items-center flex">{projectName}</h3>
             <div>
               <div className="w-full h-12 flex items-center bg-bg Me_Body-1 rounded text-sv cursor-default">
-                <p className="flex-2 px-3">제품명</p>
-                <p className="flex-1 px-3">규격</p>
-                <p className="w-[80px] px-3">단위</p>
-                <p className="flex-1 px-3">생산수량</p>
-                <p className="flex-[0.8] px-3">생산 설비</p>
-                <p className="flex-[0.8] px-3">생산 시간</p>
+                <p className="flex-[1.4] px-3">{tCommon('productName')}</p>
+                <p className="flex-1 px-3">{tCommon('specification')}</p>
+                <p className="flex-1 px-3">{tCommon('unit')}</p>
+                <p className="flex-[0.8] px-3">
+                  {tCommon('productionQuantity')}
+                </p>
+                <p className="flex-1 px-3">{tCommon('productionEquipment')}</p>
+                <p className="flex-1 px-3">{tCommon('productionTime')}</p>
               </div>
               {items.map((item, index) => (
                 <ProductionTableItem
@@ -58,7 +66,9 @@ export const DocumentSection = ({
 
       {/* 특이사항 */}
       <div className="flex flex-col gap-3">
-        <h3 className="Heading-3 h-10 items-center flex">특이사항</h3>
+        <h3 className="Heading-3 h-10 items-center flex">
+          {t('specialNotes')}
+        </h3>
         {plansData
           .filter(
             (item, index, self) =>
@@ -76,9 +86,9 @@ export const DocumentSection = ({
 
       {/* 메모 */}
       <div className="flex flex-col gap-3">
-        <h3 className="Heading-3 h-10 items-center flex">메모</h3>
+        <h3 className="Heading-3 h-10 items-center flex">{t('memo')}</h3>
         <TextareaAutosize
-          placeholder={isOnlyRead ? '-' : '메모를 입력하세요.'}
+          placeholder={isOnlyRead ? '-' : t('memoPlaceholder')}
           value={value}
           onChange={(e) => {
             const v = e.target.value;

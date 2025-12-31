@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import {
   PublishedTaxInvoiceResponseModel,
   TaxLineItemModel,
@@ -18,15 +21,16 @@ const PurchaseTableTiem = ({
   setIsLinkModalOpen,
   setSelectedLineItem,
 }: PurchaseTableTiemProps) => {
+  const tCommon = useTranslations('common');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
 
   return (
-    <div className="h-14 w-full flex items-center Me_Body-1 text-dg border-b border-[#eeeeee]">
-      <p className="flex-2 px-3 truncate" title={lineItem.name}>
+    <div className="h-14 w-full flex items-center Me_Body-1 text-dg border-b border-lg">
+      <p className="flex-[1.6] px-3 truncate" title={lineItem.name}>
         {lineItem.name}
       </p>
-      <p className="flex-2 px-3 truncate" title={lineItem.information}>
+      <p className="flex-1 px-3 truncate" title={lineItem.information}>
         {lineItem.information}
       </p>
       <p
@@ -52,7 +56,7 @@ const PurchaseTableTiem = ({
       {canLink && (
         <div className="px-3 flex-[1.5]">
           <MiniBtn
-            text="연결하기"
+            text={tCommon('link')}
             textColor="text-dg"
             borderColor="border-lg"
             hoverColor="hover:bg-bg"

@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import InfoLabelValue from '@/ui/info-label-value';
 import { QuotationResponseModel } from '@/types/data-model';
 
@@ -6,34 +9,53 @@ interface BuyerInfoProps {
 }
 
 const BuyerInfo = ({ quotationData }: BuyerInfoProps) => {
+  const tCommon = useTranslations('common');
+
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="Heading-3 h-10 items-center flex">거래처 정보</h3>
+      <h3 className="Heading-3 h-10 items-center flex">
+        {tCommon('clientInfo')}
+      </h3>
       <div className="width-full border-b border-lg">
         <div className="flex">
-          <InfoLabelValue label="회사명" value={quotationData.factory_name} />
           <InfoLabelValue
-            label="사업자등록번호"
+            label={tCommon('companyName')}
+            value={quotationData.factory_name}
+          />
+          <InfoLabelValue
+            label={tCommon('businessRegistrationNumber')}
             value={quotationData.business_registration_number}
           />
         </div>
         <InfoLabelValue
-          label="대표자명"
+          label={tCommon('representativeName')}
           value={quotationData.representative_name}
         />
         <div className="flex">
-          <InfoLabelValue label="업태" value={quotationData.business_type} />
           <InfoLabelValue
-            label="종목"
+            label={tCommon('businessType')}
+            value={quotationData.business_type}
+          />
+          <InfoLabelValue
+            label={tCommon('businessCategory')}
             value={quotationData.business_category}
           />
         </div>
-        <InfoLabelValue label="사업장 주소" value={quotationData.address} />
+        <InfoLabelValue
+          label={tCommon('businessAddress')}
+          value={quotationData.address}
+        />
         <div className="flex">
-          <InfoLabelValue label="이메일" value={quotationData.email} />
-          <InfoLabelValue label="연락처" value={quotationData.phone} />
+          <InfoLabelValue
+            label={tCommon('email')}
+            value={quotationData.email}
+          />
+          <InfoLabelValue
+            label={tCommon('phone')}
+            value={quotationData.phone}
+          />
         </div>
-        <InfoLabelValue label="팩스 번호" value={quotationData.fax} />
+        <InfoLabelValue label={tCommon('fax')} value={quotationData.fax} />
       </div>
     </div>
   );

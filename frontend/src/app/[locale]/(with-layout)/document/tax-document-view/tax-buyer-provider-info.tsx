@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { TaxDocumentType } from '@/types/status-type';
 import InfoLabelValue from '@/ui/info-label-value';
 import { TaxClientInfoModel } from '@/types/data-model';
@@ -11,22 +14,27 @@ const TaxBuyerProviderInfo = ({
   taxType,
   clientInfo,
 }: TaxBuyerProviderInfoProps) => {
+  const tCommon = useTranslations('common');
+
   // clientInfo가 null인 경우 처리
   if (!clientInfo) {
     return (
       <div className="flex flex-col gap-3">
         <h3 className="Heading-3 h-10 items-center flex">
-          {taxType === 'sales' ? '거래처 정보' : '구매처 정보'}
+          {taxType === 'sales' ? tCommon('clientInfo') : tCommon('buyerInfo')}
         </h3>
         <div className="width-full border-b border-lg">
-          <InfoLabelValue label="거래처명" value="-" />
-          <InfoLabelValue label="사업자등록번호" value="-" />
-          <InfoLabelValue label="대표자명" value="-" />
+          <InfoLabelValue label={tCommon('clientName')} value="-" />
+          <InfoLabelValue
+            label={tCommon('businessRegistrationNumber')}
+            value="-"
+          />
+          <InfoLabelValue label={tCommon('representativeName')} value="-" />
           <div className="flex">
-            <InfoLabelValue label="업태" value="-" />
-            <InfoLabelValue label="종목" value="-" />
+            <InfoLabelValue label={tCommon('businessType')} value="-" />
+            <InfoLabelValue label={tCommon('businessCategory')} value="-" />
           </div>
-          <InfoLabelValue label="사업장 주소" value="-" />
+          <InfoLabelValue label={tCommon('businessAddress')} value="-" />
         </div>
       </div>
     );
@@ -35,29 +43,35 @@ const TaxBuyerProviderInfo = ({
   return (
     <div className="flex flex-col gap-3">
       <h3 className="Heading-3 h-10 items-center flex">
-        {taxType === 'sales' ? '거래처 정보' : '구매처 정보'}
+        {taxType === 'sales' ? tCommon('clientInfo') : tCommon('buyerInfo')}
       </h3>
       <div className="width-full border-b border-lg">
-        <InfoLabelValue label="거래처명" value={clientInfo.name || '-'} />
         <InfoLabelValue
-          label="사업자등록번호"
+          label={tCommon('clientName')}
+          value={clientInfo.name || '-'}
+        />
+        <InfoLabelValue
+          label={tCommon('businessRegistrationNumber')}
           value={clientInfo.business_registration_number || '-'}
         />
         <InfoLabelValue
-          label="대표자명"
+          label={tCommon('representativeName')}
           value={clientInfo.representative_name || '-'}
         />
         <div className="flex">
           <InfoLabelValue
-            label="업태"
+            label={tCommon('businessType')}
             value={clientInfo.business_type || '-'}
           />
           <InfoLabelValue
-            label="종목"
+            label={tCommon('businessCategory')}
             value={clientInfo.business_category || '-'}
           />
         </div>
-        <InfoLabelValue label="사업장 주소" value={clientInfo.address || '-'} />
+        <InfoLabelValue
+          label={tCommon('businessAddress')}
+          value={clientInfo.address || '-'}
+        />
       </div>
     </div>
   );

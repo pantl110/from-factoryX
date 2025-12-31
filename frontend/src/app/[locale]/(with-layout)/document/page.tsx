@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useState, Suspense, useEffect, useMemo } from 'react';
 import { useDebounce } from 'use-debounce';
 import MainTitleSec from './main-title-sec';
@@ -20,6 +21,7 @@ import { useGetProjects, PublishedTaxInvoiceParamsModel } from '@/hooks';
 import useMemberStore from '@/store/member-store';
 
 const DocumentPageContent = () => {
+  const tDocument = useTranslations('document');
   const [selectedType, setSelectedType] = useState<DocumentType>('주문서');
   const [searchQuery, setSearchQuery] = useState('');
   const [totalPages, setTotalPages] = useState(1);
@@ -273,7 +275,7 @@ const DocumentPageContent = () => {
                 setCurrentPage(1); // 검색 시 첫 페이지로 이동
               }}
               value={searchQuery}
-              placeholder="거래처명이나 제품명을 입력해 검색하세요."
+              placeholder={tDocument('searchPlaceholder')}
             />
           </div>
 

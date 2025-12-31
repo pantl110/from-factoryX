@@ -59,7 +59,7 @@ const ProductItem = ({
         onClick={!onlyRead ? onClick : undefined}
       >
         <td
-          className={`flex-1 px-3 flex items-center gap-1 relative ${onlyRead ? 'break-words' : 'truncate'}`}
+          className={`flex-[1.2] px-3 flex items-center gap-1 relative ${onlyRead ? 'break-words' : 'truncate'}`}
           title={data?.product_name}
           onClick={
             !onlyRead
@@ -100,7 +100,7 @@ const ProductItem = ({
             />
           )}
         </td>
-        <td className="flex-1 px-3">
+        <td className="flex-[1.2] px-3">
           <p
             className={`w-full ${onlyRead ? 'break-words' : 'truncate'}`}
             title={data?.product_code || ''}
@@ -154,7 +154,7 @@ const ProductItem = ({
             />
           )}
         </td>
-        <td className="flex-[0.8] px-3">
+        <td className="flex-1 px-3">
           <p
             className={`w-full ${onlyRead ? 'break-words' : 'truncate'}`}
             title={data?.unit || ''}

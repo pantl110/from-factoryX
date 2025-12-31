@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import DocumentViewTitle from '../document-view-title';
 import ProductListInfo from '../product-list-info';
 import SupplierInfo from '../supplier-info';
@@ -25,9 +28,18 @@ const QuotationDocumentView = ({
   supplyAmount,
   taxAmount,
 }: QuotationDocumentViewProps) => {
+  const t = useTranslations('document');
+  const tCommon = useTranslations('common');
+
+  const formattedTitle = t('documentTitleFormat', {
+    clientName: clientData.name,
+    case: tCommon('count'),
+    title: documentTitle,
+  });
+
   return (
     <div className="flex flex-col gap-6">
-      <DocumentViewTitle title={`[${clientData.name}]건 ${documentTitle}`} />
+      <DocumentViewTitle title={formattedTitle} />
       <SupplierInfo clientData={clientData} dueDate={dueDate} />
       <ProductListInfo
         productListInfoTitle={productListInfoTitle}

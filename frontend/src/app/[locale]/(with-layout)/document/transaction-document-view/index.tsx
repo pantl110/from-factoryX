@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { ProjectQuotationModel } from '@/types/data-model';
 import DocumentViewTitle from '../document-view-title';
 import BuyerInfo from './buyer-info';
@@ -13,6 +16,8 @@ const TransactionDocumentView = ({
   quotationData,
   lastDeliveryDate,
 }: TransactionDocumentViewProps) => {
+  const tCommon = useTranslations('common');
+  const tDocument = useTranslations('document');
   const totalAmount = quotationData.products_info.reduce(
     (sum, item) => sum + (item.unit_price * item.quantity || 0),
     0
@@ -24,7 +29,10 @@ const TransactionDocumentView = ({
   return (
     <div className="flex flex-col gap-6">
       <DocumentViewTitle
-        title={`[${quotationData.client_info.name}]건 거래명세서`}
+        title={tDocument('transactionStatement', {
+          name: quotationData.client_info.name,
+          case: tCommon('count'),
+        })}
       />
       <SellerInfo
         lastDeliveryDate={lastDeliveryDate}
@@ -46,7 +54,7 @@ const TransactionDocumentView = ({
         }}
       />
       <ProductListInfo
-        productListInfoTitle="주문 제품 정보"
+        productListInfoTitle={tCommon('orderProductInfo')}
         productItems={quotationData.products_info.map((item) => ({
           productId: item.id,
           product_code: item.code,

@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import ProductItem from '../quotation/product-item';
 import PriceInfo from '@/ui/price-info';
 import { QuotationProductDetailResponseModel } from '@/types/data-model';
@@ -15,6 +18,8 @@ const ProductListInfo = ({
   taxAmount,
   productItems,
 }: ProductListInfoProps) => {
+  const tCommon = useTranslations('common');
+
   return (
     <div className="flex flex-col gap-3">
       <h3 className="Heading-3 h-10 items-center flex">
@@ -24,13 +29,21 @@ const ProductListInfo = ({
       <table>
         <thead>
           <tr className="flex items-center h-12 border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
-            <th className="text-left px-3 flex-1">제품명</th>
-            <th className="text-left px-3 flex-1">제품코드</th>
-            <th className="text-left px-3 flex-1">규격</th>
-            <th className="text-left px-3 flex-1">제작 수량</th>
-            <th className="text-left px-3 flex-[0.8]">단위</th>
-            <th className="text-left px-3 flex-1">단가</th>
-            <th className="text-left px-3 flex-1">금액</th>
+            <th className="text-left px-3 flex-[1.2]">
+              {tCommon('productName')}
+            </th>
+            <th className="text-left px-3 flex-[1.2]">
+              {tCommon('productCode')}
+            </th>
+            <th className="text-left px-3 flex-1">
+              {tCommon('specification')}
+            </th>
+            <th className="text-left px-3 flex-1">
+              {tCommon('manufacturingQuantity')}
+            </th>
+            <th className="text-left px-3 flex-1">{tCommon('unit')}</th>
+            <th className="text-left px-3 flex-1">{tCommon('unitPrice')}</th>
+            <th className="text-left px-3 flex-1">{tCommon('amount')}</th>
           </tr>
         </thead>
         <tbody>

@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { WorkInstructionHistoryResponseModel } from '@/types/data-model';
 import { useWorkInstructionHistoryQuery } from '@/hooks';
 import { formatISODate, formatISODateTime } from '@/utils';
@@ -10,6 +13,8 @@ interface LogSectionProps {
 }
 
 export const LogSection = ({ workInstructionId }: LogSectionProps) => {
+  const t = useTranslations('document');
+  const tCommon = useTranslations('common');
   const {
     data: historyData = [],
     isLoading,
@@ -25,23 +30,23 @@ export const LogSection = ({ workInstructionId }: LogSectionProps) => {
   if (historyData.length === 0) {
     return (
       <NoHistoryBox
-        title="변경 이력이 없어요."
-        text="생산지시서가 변경되면 이곳에 기록이 표시돼요."
+        title={t('noChangeHistory')}
+        text={t('noChangeHistoryDescription')}
       />
     );
   }
 
-  // 액션 타입을 한글로 변환
+  // 액션 타입을 번역 키로 변환
   const getActionText = (action: string) => {
     switch (action) {
       case 'added':
-        return '생산 계획 추가';
+        return t('actionAdded');
       case 'updated':
-        return '수정';
+        return tCommon('edit');
       case 'removed':
-        return '생산 계획 삭제';
+        return t('actionRemoved');
       case 'memo_updated':
-        return '메모 수정';
+        return t('actionMemoUpdated');
       default:
         return action;
     }
@@ -49,12 +54,13 @@ export const LogSection = ({ workInstructionId }: LogSectionProps) => {
 
   // item에 따라 RoundChip 색상 결정
   const getChipColor = (item: string) => {
-    if (item === '생산 계획 추가') return 'secondary';
-    if (item === '생산 계획 삭제') return 'red';
-    if (item === '생산 설비') return 'gray';
-    if (item === '생산 수량') return 'whiteOutline';
-    if (item === '생산 일자') return 'purple';
-    if (item === '마감 예정일자') return 'orange';
+    if (item === t('actionAdded')) return 'secondary';
+    if (item === t('actionRemoved')) return 'red';
+    if (item === tCommon('productionEquipment')) return 'gray';
+    if (item === tCommon('productionQuantity')) return 'whiteOutline';
+    if (item === tCommon('productionDate')) return 'purple';
+    if (item === tCommon('expectedCompletionDate')) return 'orange';
+    if (item === tCommon('status')) return 'gray';
     return 'gray';
   };
 
@@ -83,14 +89,14 @@ export const LogSection = ({ workInstructionId }: LogSectionProps) => {
     // 생산 설비 변경
     if (before.equipment_id !== undefined && after.equipment_id !== undefined) {
       if (before.equipment_id !== after.equipment_id) {
-        changes.push('생산 설비');
+        changes.push(tCommon('productionEquipment'));
       }
     }
 
     // 생산 수량 변경
     if (before.quantity !== undefined && after.quantity !== undefined) {
       if (before.quantity !== after.quantity) {
-        changes.push('생산 수량');
+        changes.push(tCommon('productionQuantity'));
       }
     }
 
@@ -102,14 +108,12 @@ export const LogSection = ({ workInstructionId }: LogSectionProps) => {
     ) {
       const beforeDateTime = formatISODateTime(before.start_date);
       const afterDateTime = formatISODateTime(after.start_date);
-      const beforeDate = beforeDateTime ? beforeDateTime.split(' ')[0] : '';
       const beforeTime = beforeDateTime ? beforeDateTime.split(' ')[1] : '';
-      const afterDate = afterDateTime ? afterDateTime.split(' ')[0] : '';
       const afterTime = afterDateTime ? afterDateTime.split(' ')[1] : '';
 
-      // 변환된 날짜와 시간이 모두 다를 때만 추가
-      if (beforeDate !== afterDate || beforeTime !== afterTime) {
-        changes.push('생산 일자');
+      // 변환된 시간이 다를 때만 추가
+      if (beforeTime !== afterTime) {
+        changes.push(tCommon('productionDate'));
       }
     }
 
@@ -119,21 +123,21 @@ export const LogSection = ({ workInstructionId }: LogSectionProps) => {
       after.end_date !== undefined &&
       before.end_date !== after.end_date
     ) {
-      const beforeDate = formatISODate(before.end_date);
-      const beforeTime = formatISODateTime(before.end_date);
-      const afterDate = formatISODate(after.end_date);
-      const afterTime = formatISODateTime(after.end_date);
+      const beforeDateTime = formatISODateTime(before.end_date);
+      const afterDateTime = formatISODateTime(after.end_date);
+      const beforeTime = beforeDateTime ? beforeDateTime.split(' ')[1] : '';
+      const afterTime = afterDateTime ? afterDateTime.split(' ')[1] : '';
 
-      // 변환된 날짜와 시간이 모두 다를 때만 추가
-      if (beforeDate !== afterDate || beforeTime !== afterTime) {
-        changes.push('마감 예정일자');
+      // 변환된 시간이 다를 때만 추가
+      if (beforeTime !== afterTime) {
+        changes.push(tCommon('expectedCompletionDate'));
       }
     }
 
     // 상태 변경
     if (before.status !== undefined && after.status !== undefined) {
       if (before.status !== after.status) {
-        changes.push('상태');
+        changes.push(tCommon('status'));
       }
     }
 
@@ -151,31 +155,34 @@ export const LogSection = ({ workInstructionId }: LogSectionProps) => {
 
     const before = history.before_data || {};
 
-    if (item === '생산 설비') {
+    if (item === tCommon('productionEquipment')) {
       // equipment_name이 있으면 사용, 없으면 plan에서 가져오기
-      return (
-        before.equipment_name ||
-        history.plan?.equipment_name ||
-        `설비 ID: ${before.equipment_id}` ||
-        '-'
-      );
+      if (before.equipment_name) {
+        return before.equipment_name;
+      }
+      if (history.plan?.equipment_name) {
+        return history.plan.equipment_name;
+      }
+      return '-';
     }
-    if (item === '생산 수량') {
+    if (item === tCommon('productionQuantity')) {
       return before.quantity?.toString() || '-';
     }
-    if (item === '생산 일자') {
+    if (item === tCommon('productionDate')) {
       if (!before.start_date) return '-';
       const date = formatISODate(before.start_date);
-      const time = formatISODateTime(before.start_date);
+      const dateTime = formatISODateTime(before.start_date);
+      const time = dateTime ? dateTime.split(' ')[1] : '';
       return `${date}\n${time}`;
     }
-    if (item === '마감 예정일자') {
+    if (item === tCommon('expectedCompletionDate')) {
       if (!before.end_date) return '-';
       const date = formatISODate(before.end_date);
-      const time = formatISODateTime(before.end_date);
+      const dateTime = formatISODateTime(before.end_date);
+      const time = dateTime ? dateTime.split(' ')[1] : '';
       return `${date}\n${time}`;
     }
-    if (item === '상태') {
+    if (item === tCommon('status')) {
       return before.status || '-';
     }
 
@@ -193,31 +200,34 @@ export const LogSection = ({ workInstructionId }: LogSectionProps) => {
 
     const after = history.after_data || {};
 
-    if (item === '생산 설비') {
+    if (item === tCommon('productionEquipment')) {
       // equipment_name이 있으면 사용, 없으면 plan에서 가져오기
-      return (
-        after.equipment_name ||
-        history.plan?.equipment_name ||
-        `설비 ID: ${after.equipment_id}` ||
-        '-'
-      );
+      if (after.equipment_name) {
+        return after.equipment_name;
+      }
+      if (history.plan?.equipment_name) {
+        return history.plan.equipment_name;
+      }
+      return '-';
     }
-    if (item === '생산 수량') {
+    if (item === tCommon('productionQuantity')) {
       return after.quantity?.toString() || '-';
     }
-    if (item === '생산 일자') {
+    if (item === tCommon('productionDate')) {
       if (!after.start_date) return '-';
       const date = formatISODate(after.start_date);
-      const time = formatISODateTime(after.start_date);
+      const dateTime = formatISODateTime(after.start_date);
+      const time = dateTime ? dateTime.split(' ')[1] : '';
       return `${date}\n${time}`;
     }
-    if (item === '마감 예정일자') {
+    if (item === tCommon('expectedCompletionDate')) {
       if (!after.end_date) return '-';
       const date = formatISODate(after.end_date);
-      const time = formatISODateTime(after.end_date);
+      const dateTime = formatISODateTime(after.end_date);
+      const time = dateTime ? dateTime.split(' ')[1] : '';
       return `${date}\n${time}`;
     }
-    if (item === '상태') {
+    if (item === tCommon('status')) {
       return after.status || '-';
     }
 
@@ -229,17 +239,17 @@ export const LogSection = ({ workInstructionId }: LogSectionProps) => {
       {/* 수정 로그 */}
       <div className="flex flex-col">
         <h3 className="Heading-3 mb-3 h-10 flex items-center">
-          생산계획 수정로그
+          {t('productionPlanEditLog')}
         </h3>
 
         <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
-          <p className="flex-[0.5] px-3 text-sv">수정일시</p>
-          <p className="flex-[1.2] px-3 text-sv">프로젝트명</p>
-          <p className="flex-[1.2] px-3 text-sv">제품명</p>
-          <p className="flex-1 px-3 text-sv">변경항목</p>
-          <p className="flex-1 px-3 text-sv">변경 전</p>
-          <p className="flex-1 px-3 text-sv">변경 후</p>
-          <p className="flex-[0.8] px-3 text-sv">담당자</p>
+          <p className="flex-[0.5] px-3 text-sv">{t('editDateTime')}</p>
+          <p className="flex-[1.2] px-3 text-sv">{tCommon('clientName')}</p>
+          <p className="flex-[1.2] px-3 text-sv">{tCommon('productName')}</p>
+          <p className="flex-1 px-3 text-sv">{t('changedItem')}</p>
+          <p className="flex-1 px-3 text-sv">{t('beforeChange')}</p>
+          <p className="flex-1 px-3 text-sv">{t('afterChange')}</p>
+          <p className="flex-[0.8] px-3 text-sv">{t('responsiblePerson')}</p>
         </div>
 
         {historyData
@@ -252,7 +262,12 @@ export const LogSection = ({ workInstructionId }: LogSectionProps) => {
                 className="flex items-start border-b border-lg Me_Body-1 cursor-default"
               >
                 <p className="flex-[0.5] px-3 py-[15px] text-dg">
-                  {index === 0 ? formatISODate(history.created_at) : ''}
+                  {index === 0
+                    ? (() => {
+                        const dateTime = formatISODateTime(history.created_at);
+                        return dateTime ? dateTime.split(' ')[1] : '';
+                      })()
+                    : ''}
                 </p>
                 <p
                   className="flex-[1.2] px-3 py-[15px] text-dg truncate"
@@ -322,7 +337,9 @@ export const LogSection = ({ workInstructionId }: LogSectionProps) => {
       {historyData.filter((history) => history.action === 'memo_updated')
         .length > 0 && (
         <div className="flex flex-col">
-          <h3 className="Heading-3 h-10 flex items-center">메모 수정로그</h3>
+          <h3 className="Heading-3 h-10 flex items-center">
+            {t('memoEditLog')}
+          </h3>
           {historyData
             .filter((history) => history.action === 'memo_updated')
             .map((history) => {
@@ -331,7 +348,7 @@ export const LogSection = ({ workInstructionId }: LogSectionProps) => {
                 memo?: string | null;
               } | null;
               const memo = afterData?.memo ?? null;
-              const time = formatISODate(history.created_at);
+              const time = formatISODateTime(history.created_at);
               const changedBy = history.changed_by
                 ? {
                     role: history.changed_by.role || null,

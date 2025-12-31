@@ -6,6 +6,9 @@ import DropdownItem from '@/ui/dropdown/dropdown-item';
 import useAuthStore from '@/store/auth-store';
 import { useMe } from '@/hooks';
 import { useRouter, usePathname } from '@/i18n/navigation';
+import { useToast } from '@/hooks';
+import Toast from '@/ui/toast';
+import { WarningCircle } from '@phosphor-icons/react';
 
 // 언어 정보 타입
 interface LanguageInfoModel {
@@ -28,6 +31,7 @@ const LanguageSetting = () => {
   const { updateMe } = useMe();
   const router = useRouter();
   const pathname = usePathname();
+  const { isToastOpen, isVisible, showToast } = useToast();
 
   // userInfo에서 language를 가져와서 해당하는 LanguageInfoModel 찾기
   const getLanguageFromUserInfo = (
@@ -75,15 +79,12 @@ const LanguageSetting = () => {
       setSelectedLanguage(language);
       setIsDropdownOpen(false);
 
-      // 현재 경로를 유지하면서 locale만 변경하여 라우팅
-      // pathname은 이미 locale이 제외된 경로이므로, router.push를 사용하면 자동으로 locale이 적용됨
+      // locale 변경 (URL이 자동으로 변경됨)
       router.replace(pathname, { locale: language.code });
-
-      // 페이지 새로고침하여 모든 텍스트가 새로운 언어로 업데이트되도록 함
-      router.refresh();
     } else {
-      // 에러 처리 (필요시 토스트 메시지 등 추가 가능)
+      // 에러 처리 - 토스트 메시지 표시
       console.error('언어 변경 실패:', result.error);
+      showToast();
     }
   };
 
@@ -168,6 +169,17 @@ const LanguageSetting = () => {
           )}
         </div>
       </div>
+
+      {/* 에러 토스트 */}
+      {isToastOpen && (
+        <Toast
+          icon={<WarningCircle size={20} className="text-red" />}
+          text="언어 변경에 실패했습니다"
+          subtext="잠시 후 다시 시도해주세요."
+          type="red"
+          isVisible={isVisible}
+        />
+      )}
     </div>
   );
 };

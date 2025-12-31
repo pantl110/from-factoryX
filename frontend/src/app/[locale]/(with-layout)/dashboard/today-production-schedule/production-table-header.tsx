@@ -20,7 +20,7 @@ const ProductionTableHeader = () => {
         <p>{t('specification')}</p>
       </div>
       <div className="py-1 px-3 w-[80px]">
-        <p>{t('unitLabel')}</p>
+        <p>{t('unit')}</p>
       </div>
       <div className="py-1 px-3 flex-1">
         <p>{t('productionQuantity')}</p>

@@ -6,11 +6,11 @@ interface OrderTableItemProps {
 
 const OrderTableItem = ({ lineItem }: OrderTableItemProps) => {
   return (
-    <div className="h-14 w-full flex items-center Me_Body-1 text-dg border-b border-[#eeeeee]">
-      <p className="flex-2 px-3 truncate" title={lineItem.name}>
+    <div className="h-14 w-full flex items-center Me_Body-1 text-dg border-b border-lg">
+      <p className="flex-[1.6] px-3 truncate" title={lineItem.name}>
         {lineItem.name}
       </p>
-      <p className="flex-2 px-3 truncate" title={lineItem.information}>
+      <p className="flex-1 px-3 truncate" title={lineItem.information}>
         {lineItem.information}
       </p>
       <p

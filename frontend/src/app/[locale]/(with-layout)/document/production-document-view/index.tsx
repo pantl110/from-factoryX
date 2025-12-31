@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import DocumentViewTitle from '../document-view-title';
 import { useEffect, useState } from 'react';
 import { useGetWorkInstruction } from '@/hooks';
@@ -33,6 +36,7 @@ const ProductionDocumentView = ({
   isOnlyRead = false,
   onMemoChange,
 }: ProductionDocumentViewProps) => {
+  const t = useTranslations('document');
   const [workInstruction, setWorkInstruction] =
     useState<WorkInstructionDetailResponseModel | null>(null);
   const [value, setValue] = useState('');
@@ -68,11 +72,17 @@ const ProductionDocumentView = ({
 
   const grouped = groupByProject(plansData);
 
+  const formattedDate = formatISODate(workInstruction?.created_at || '') || '';
+  const documentTitle = t('productionDocumentTitleFormat', {
+    date: formattedDate,
+    workInstruction: t('workInstruction'),
+  });
+
   return (
     <div className="flex flex-col gap-6">
       <div className="flex gap-1">
         <Chip
-          text="생산지시서"
+          text={t('workInstruction')}
           radius="rounded-full"
           bgColor={selectedChip === 'document' ? 'bg-dg' : 'bg-transparent'}
           textColor={selectedChip === 'document' ? 'text-wh' : 'text-dg'}
@@ -83,7 +93,7 @@ const ProductionDocumentView = ({
           onClick={() => setSelectedChip('document')}
         />
         <Chip
-          text="수정로그"
+          text={t('editLog')}
           radius="rounded-full"
           bgColor={selectedChip === 'log' ? 'bg-dg' : 'bg-transparent'}
           textColor={selectedChip === 'log' ? 'text-wh' : 'text-dg'}
@@ -94,9 +104,7 @@ const ProductionDocumentView = ({
           onClick={() => setSelectedChip('log')}
         />
       </div>
-      <DocumentViewTitle
-        title={`PR-${formatISODate(workInstruction?.created_at || '') || ''} 생산지시서`}
-      />
+      <DocumentViewTitle title={documentTitle} />
 
       {selectedChip === 'document' ? (
         <DocumentSection

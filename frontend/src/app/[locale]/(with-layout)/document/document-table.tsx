@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { CaretUpDownIcon } from '@phosphor-icons/react/dist/ssr';
 import DocumentTableItem from './document-table-item';
 import {
@@ -42,6 +45,9 @@ const DocumentTable = ({
   onCashReceiptSortClick,
   cashReceiptSortDirection = 'desc',
 }: DocumentTableProps) => {
+  const tCommon = useTranslations('common');
+  const tDocument = useTranslations('document');
+  const tDocumentType = useTranslations('document.type');
   const handleTaxSortClick = (field: 'transaction_date' | 'created_at') => {
     let newDirection: 'asc' | 'desc';
     if (taxSortField === field) {
@@ -76,8 +82,8 @@ const DocumentTable = ({
     <>
       {data.length === 0 ? (
         <NoHistoryBox
-          title="문서가 아직 없어요."
-          text="문서가 생성되면 이곳에 표시돼요."
+          title={tDocument('noDocuments')}
+          text={tDocument('noDocumentsDescription')}
         />
       ) : (
         <>
@@ -86,54 +92,64 @@ const DocumentTable = ({
             {selectedType === '매출 세금계산서' ||
             selectedType === '매입 세금계산서' ? (
               <>
-                <p className="px-3 w-[150px]">문서 유형</p>
-                <p className="px-3 flex-[1.5]">거래처명</p>
-                <p className="px-3 flex-[1.5]">제품명</p>
-                <p className="px-3 flex-[1.5]">합계금액</p>
+                <p className="px-3 w-[160px]">
+                  {tDocumentType('documentType')}
+                </p>
+                <p className="px-3 flex-[1.2]">{tCommon('clientName')}</p>
+                <p className="px-3 flex-[1.2]">{tCommon('productName')}</p>
+                <p className="px-3 flex-1">{tCommon('totalAmount')}</p>
                 <div
                   className="px-3 flex-1 h-full flex items-center gap-1 hover:bg-bg cursor-pointer"
                   onClick={() => handleTaxSortClick('transaction_date')}
                 >
-                  <p className="">작성일자</p>
+                  <p className="">{tCommon('writtenDate')}</p>
                   <CaretUpDownIcon size={21} className="text-sv" />
                 </div>
                 <div
                   className="px-3 flex-1 h-full flex items-center gap-1 hover:bg-bg cursor-pointer"
                   onClick={() => handleTaxSortClick('created_at')}
                 >
-                  <p className="">발행일자</p>
+                  <p className="">{tCommon('issuedDate')}</p>
                   <CaretUpDownIcon size={21} className="text-sv" />
                 </div>
               </>
             ) : selectedType === '현금영수증' ? (
               <>
-                <p className="px-3 w-[150px]">문서 유형</p>
-                <p className="px-3 flex-[1.5]">거래처명</p>
-                <p className="px-3 flex-[1.5]">제품명</p>
-                <p className="px-3 flex-[1.5]">합계금액</p>
+                <p className="px-3 w-[160px]">
+                  {tDocumentType('documentType')}
+                </p>
+                <p className="px-3 flex-[1.5]">{tCommon('clientName')}</p>
+                <p className="px-3 flex-[1.5]">{tCommon('productName')}</p>
+                <p className="px-3 flex-[1.3]">{tCommon('totalAmount')}</p>
                 <div
-                  className="px-3 flex-1 h-full flex items-center gap-1 hover:bg-bg cursor-pointer"
+                  className="px-3 flex-[1.3] h-full flex items-center gap-1 hover:bg-bg cursor-pointer"
                   onClick={handleCashReceiptSortClick}
                 >
-                  <p className="">작성일자</p>
+                  <p className="">{tCommon('writtenDate')}</p>
                   <CaretUpDownIcon size={21} className="text-sv" />
                 </div>
               </>
             ) : (
               // 주문서, 생산지시서, 거래명세서 일 떄
               <>
-                <p className="px-3 w-[150px]">문서 유형</p>
-                <p className="px-3 flex-1">거래처명</p>
-                <p className="px-3 flex-1">제품명</p>
+                <p
+                  className={`px-3 ${
+                    selectedType === '거래명세서' ? 'w-[190px]' : 'w-[160px]'
+                  }`}
+                >
+                  {tDocumentType('documentType')}
+                </p>
+                <p className="px-3 flex-1">{tCommon('clientName')}</p>
+                <p className="px-3 flex-1">{tCommon('productName')}</p>
                 <div
-                  className="px-3 flex-[0.5] h-full flex items-center gap-1 hover:bg-bg cursor-pointer"
+                  className="px-3 flex-[0.8] h-full flex items-center gap-1 hover:bg-bg cursor-pointer"
                   onClick={
                     selectedType === '생산지시서'
                       ? handleWorkInstructionSortClick
                       : handleProjectSortClick
                   }
                 >
-                  <p className="">등록일자</p>
+                  <p className="">{tCommon('registeredDate')}</p>
                   <CaretUpDownIcon size={21} className="text-sv" />
                 </div>
               </>

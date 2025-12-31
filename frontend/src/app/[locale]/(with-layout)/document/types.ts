@@ -1,4 +1,4 @@
-// 문서함 종류
+// Document types
 export type DocumentType =
   | '주문서'
   | '생산지시서'

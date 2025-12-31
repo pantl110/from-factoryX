@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import {
   PublishedTaxInvoiceResponseModel,
   ProjectResponseModel,
@@ -31,6 +34,7 @@ interface DocumentTableItemProps {
 }
 
 const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
+  const tDocumentType = useTranslations('document.type');
   const [isOrderPanelOpen, setIsOrderPanelOpen] = useState(false);
   const [isTransactionPanelOpen, setIsTransactionPanelOpen] = useState(false);
   const [isWorkInstructionPanelOpen, setIsWorkInstructionPanelOpen] =
@@ -48,6 +52,26 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
   } = useTooltip({ showDelay: 0, hideDelay: 0 });
 
   const { color } = DocumentTypeColorMap[documentType];
+
+  // 문서 타입별 번역 텍스트 가져오기
+  const getDocumentTypeText = (type: DocumentType): string => {
+    switch (type) {
+      case '주문서':
+        return tDocumentType('orderDocument');
+      case '생산지시서':
+        return tDocumentType('productionInstruction');
+      case '거래명세서':
+        return tDocumentType('transactionStatementTitle');
+      case '매출 세금계산서':
+        return tDocumentType('salesTaxInvoice');
+      case '매입 세금계산서':
+        return tDocumentType('purchaseTaxInvoice');
+      case '현금영수증':
+        return tDocumentType('cashReceipt');
+      default:
+        return type;
+    }
+  };
 
   const taxData = data as PublishedTaxInvoiceResponseModel;
   const projectData = data as ProjectResponseModel;
@@ -88,21 +112,21 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
         {documentType === '매출 세금계산서' ||
         documentType === '매입 세금계산서' ? (
           <>
-            <div className="pl-2 pr-4 w-[150px]">
+            <div className="pl-2 pr-4 w-[160px]">
               <RoundChip
-                text={documentType}
+                text={getDocumentTypeText(documentType)}
                 variant="defaultSmall"
                 color={color}
               />
             </div>
             <p
-              className="px-3 flex-[1.5] truncate"
+              className="px-3 flex-[1.3] truncate"
               title={taxData.client_info.name || '-'}
             >
               {taxData.client_info.name || '-'}
             </p>
             <p
-              className="px-3 flex-[1.5] truncate"
+              className="px-3 flex-[1.3] truncate"
               title={getProductNamesDisplay(
                 taxData.line_items?.map((p) => p.name) || []
               )}
@@ -112,7 +136,7 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
               )}
             </p>
             <p
-              className="px-3 flex-[1.5] truncate"
+              className="px-3 flex-1 truncate"
               title={
                 (
                   taxData.transaction_amount + taxData.tax_amount
@@ -132,9 +156,9 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
           </>
         ) : documentType === '현금영수증' ? (
           <>
-            <div className="pl-2 pr-4 w-[150px]">
+            <div className="pl-2 pr-4 w-[160px]">
               <RoundChip
-                text={documentType}
+                text={getDocumentTypeText(documentType)}
                 variant="defaultSmall"
                 color={color}
               />
@@ -164,20 +188,20 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
               )}
             </p>
             <p
-              className="px-3 flex-[1.5] truncate"
+              className="px-3 flex-[1.3] truncate"
               title={cashReceiptData.total_amount?.toLocaleString() || '-'}
             >
               {cashReceiptData.total_amount?.toLocaleString() || '-'}
             </p>
-            <p className="px-3 flex-1">
+            <p className="px-3 flex-[1.3]">
               {formatISODate(cashReceiptData.transaction_date) || '-'}
             </p>
           </>
         ) : documentType === '생산지시서' ? (
           <>
-            <div className="pl-2 pr-4 w-[150px]">
+            <div className="pl-2 pr-4 w-[160px]">
               <RoundChip
-                text={documentType}
+                text={getDocumentTypeText(documentType)}
                 variant="defaultSmall"
                 color={color}
               />
@@ -280,7 +304,7 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
               ) || '-'}
             </p>
             <p
-              className="px-3 flex-[0.5] truncate"
+              className="px-3 flex-[0.8] truncate"
               title={formatISODate(workInstructionData.created_at) || '-'}
             >
               {formatISODate(workInstructionData.created_at) || '-'}
@@ -288,9 +312,13 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
           </>
         ) : projectData ? (
           <>
-            <div className="pl-2 pr-4 w-[150px]">
+            <div
+              className={`pl-2 pr-4 ${
+                documentType === '거래명세서' ? 'w-[190px]' : 'w-[160px]'
+              }`}
+            >
               <RoundChip
-                text={documentType}
+                text={getDocumentTypeText(documentType)}
                 variant="defaultSmall"
                 color={color}
               />
@@ -308,7 +336,7 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
               {getProductNames(projectData) || '-'}
             </p>
             <p
-              className="px-3 flex-[0.5] truncate"
+              className="px-3 flex-[0.8] truncate"
               title={
                 documentType === '주문서'
                   ? formatISODate(projectData.pending_at) || '-'
@@ -325,12 +353,15 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
 
       {/* 주문서 디테일 판넬 */}
       {isOrderPanelOpen && (
-        <Panel title="주문서" onClose={() => setIsOrderPanelOpen(false)}>
+        <Panel
+          title={tDocumentType('orderDocument')}
+          onClose={() => setIsOrderPanelOpen(false)}
+        >
           <OrderDocumentView
-            documentTitle="주문서"
+            documentTitle={tDocumentType('orderDocument')}
             clientData={projectData.quotations[0].client_info}
             dueDate={projectData.quotations[0].due_date}
-            productListInfoTitle="주문 품목 정보"
+            productListInfoTitle={tDocumentType('orderItemInfo')}
             productItems={projectData.quotations[0].products_info.map(
               (product) => ({
                 productId: product.id,
@@ -373,7 +404,7 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
       {/* 생산지시서 디테일 판넬 */}
       {isWorkInstructionPanelOpen && (
         <Panel
-          title="생산지시서"
+          title={tDocumentType('productionInstruction')}
           onClose={() => setIsWorkInstructionPanelOpen(false)}
         >
           <ProductionDocumentView
@@ -385,7 +416,7 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
       {/* 거래명세서 디테일 판넬 */}
       {isTransactionPanelOpen && (
         <Panel
-          title="거래명세서"
+          title={tDocumentType('transactionStatementTitle')}
           onClose={() => setIsTransactionPanelOpen(false)}
         >
           {projectData && projectData.quotations.length > 0 ? (
@@ -403,8 +434,8 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
         <Panel
           title={
             taxData.tax_invoice_type === 'sales'
-              ? '매출 세금계산서'
-              : '매입 세금계산서'
+              ? tDocumentType('salesTaxInvoice')
+              : tDocumentType('purchaseTaxInvoice')
           }
           onClose={() => setIsTaxPanelOpen(false)}
         >

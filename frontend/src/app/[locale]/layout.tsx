@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation';
 import '../globals.css';
 import QueryClientRootProvider from '@/providers/query-client';
 import { routing } from '@/i18n/config';
+import LocaleSync from '@/components/locale-sync';
 
 const pretendard = localFont({
   src: [
@@ -68,7 +69,10 @@ const LocaleLayout = async ({
         suppressHydrationWarning={process.env.NODE_ENV === 'development'}
       >
         <NextIntlClientProvider messages={messages}>
-          <QueryClientRootProvider>{children}</QueryClientRootProvider>
+          <QueryClientRootProvider>
+            <LocaleSync />
+            {children}
+          </QueryClientRootProvider>
         </NextIntlClientProvider>
       </body>
     </html>

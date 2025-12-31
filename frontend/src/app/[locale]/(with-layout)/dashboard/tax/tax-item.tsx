@@ -30,11 +30,11 @@ const TaxItem = ({ taxType, company, date, onClick }: TaxItemProps) => {
 
   return (
     <div
-      className="flex items-center justify-between border border-[#eeeeee] rounded-sm py-3 px-5 w-full h-14 cursor-pointer hover:bg-bg transition-colors ease-in-out duration-200"
+      className="flex items-center justify-between border border-lg rounded-sm py-3 px-5 w-full h-14 cursor-pointer hover:bg-bg transition-colors ease-in-out duration-200"
       onClick={onClick}
     >
       <div className="flex items-center gap-4 w-full">
-        <div className="flex items-center justify-center flex-shrink-0">
+        <div className="flex items-center justify-start flex-shrink-0 w-[80px]">
           <RoundChip text={chipText} variant="sm" color={chipColor} />
         </div>
         <p
