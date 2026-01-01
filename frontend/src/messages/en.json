@@ -15,10 +15,12 @@
     "productCode": "Product Code",
     "specification": "Spec",
     "productionQuantity": "Quantity",
+    "productionQty": "Production Qty",
     "productionEquipment": "Equipment",
+    "equipment": "Equipment",
     "productionTime": "Production Time",
-    "productionDate": "Prod Date",
-    "expectedCompletionDate": "Due Date",
+    "productionDate": "Start Date",
+    "expectedCompletionDate": "End Date",
     "deliveryDate": "Delivery Date",
     "dueDate": "Due Date",
     "status": "Status",
@@ -52,12 +54,23 @@
     "sellerInfo": "Seller Info",
     "writtenDate": "Written Date",
     "issuedDate": "Issued Date",
-    "registeredDate": "Registered Date"
+    "registeredDate": "Registered Date",
+    "print": "Print",
+    "add": "Add",
+    "deleteAll": "Delete All",
+    "required": "(Required)",
+    "seconds": "sec",
+    "action": "Action",
+    "inventoryStatus": {
+      "overstock": "Overstock",
+      "sufficient": "Sufficient",
+      "risk": "Risk",
+      "shortage": "Shortage"
+    }
   },
   "document": {
     "title": "Documents",
     "searchPlaceholder": "Search by client name or product name.",
-    "workInstruction": "Work Instruction",
     "editLog": "Edit Log",
     "documentTitleFormat": "[{clientName}] {title}",
     "productionDocumentTitleFormat": "PR-{date} {workInstruction}",
@@ -98,8 +111,7 @@
     "invoiceType": "Type",
     "type": "Type",
     "receipt": "Receipt",
-    "request": "Request",
-    "issueDate": "Issue Date"
+    "request": "Request"
   },
   "language": {
     "setting": "Language Settings",
@@ -118,7 +130,6 @@
   "login": {
     "title": "Login",
     "email": {
-      "label": "Email",
       "placeholder": "Please enter your email.",
       "required": "Please enter your email.",
       "invalidFormat": "Invalid email format."
@@ -161,7 +172,7 @@
       "lastYear": "Last Year",
       "month": "Month {month}",
       "noData": "No production profit data.",
-      "noDataDescription": "When you produce and sell products, performance information will be automatically organized."
+      "noDataDescription": "When you produce and sell products, perfor will be automatically organized."
     },
     "summaryKPI": {
       "activeProjects": "Active Projects",
@@ -202,6 +213,266 @@
       "delivery": "Delivery",
       "completed": "Completed",
       "suspended": "Suspended"
+    }
+  },
+  "production": {
+    "tabs": {
+      "delivery": "Delivery",
+      "productionStatus": "Production Board",
+      "productionPlan": "Production Plan",
+      "productionHistory": "Production History",
+      "orderDocument": "Order",
+      "taxInvoice": "Tax Invoice",
+      "transactionStatement": "Transaction Statement"
+    },
+    "loadError": "Error loading project status",
+    "reloadError": "Failed to reload project status",
+    "noTaxInvoice": "No tax invoice linked",
+    "linkTaxInvoice": "Please link a tax invoice",
+    "linkTaxInvoiceButton": "Link Tax Invoice",
+    "operationStatus": {
+      "pending": "Pending",
+      "production": "In Progress",
+      "completed": "Completed"
+    },
+    "returnModal": {
+      "title": "Register Return Product",
+      "subtitle": "Enter the product name and quantity to return.",
+      "productNamePlaceholder": "Select a product",
+      "returnQuantity": "Return Quantity",
+      "returnQuantityPlaceholder": "Enter the quantity to return",
+      "returnQuantityError": "Please enter return quantity",
+      "returnDate": "Return Date",
+      "returnDatePlaceholder": "Enter the return date",
+      "returnDateError": "Please enter return date",
+      "register": "Register Return",
+      "selectProductError": "Please select a product",
+      "inputError": "Please enter return quantity and date",
+      "registerError": "Failed to register return",
+      "productionStatusTab": "Production Status",
+      "noItems": "No items available"
+    },
+    "returnInfo": {
+      "title": "Return Info",
+      "registerProductionButton": "Register Production",
+      "returnProduct": "Return Product",
+      "returnDate": "Return Date",
+      "returnQuantity": "Return Qty",
+      "currentStock": "Current Stock",
+      "productionQuantity": "Production Qty",
+      "productionPlanTab": "Production Plan"
+    },
+    "registerProductionModal": {
+      "title": "Registered to production queue.",
+      "subtitle": "Additional production for returned products has been registered.\nWould you like to start production now?",
+      "startButton": "Start Production",
+      "error": {
+        "registerFailed": "An error occurred while registering production.",
+        "materialShortage": "Please register materials first.",
+        "retry": "Please try again later."
+      }
+    },
+    "planChange": {
+      "title": "Plan Change"
+    },
+    "productionPlanSaveModal": {
+      "title": "Save and continue?",
+      "subtitle": "Would you like to save the changes and proceed to the next step?\nThe saved information will be reflected in the production schedule and workflow."
+    },
+    "productionPlan": {
+      "errors": {
+        "parentPlanNotFound": "Parent plan not found.",
+        "addPlanFailed": "An error occurred while creating additional production plan.",
+        "operationStatusPlanNotFound": "Plan to change operation status not found.",
+        "operationStatusChangeFailed": "Failed to change operation status.",
+        "operationStatusChangeError": "An error occurred while changing operation status.",
+        "deletePlanFailed": "Failed to delete production plan.",
+        "deleteError": "An error occurred while deleting.",
+        "saveFailed": "Failed to save.",
+        "dateFormatError": "Date format error",
+        "timeConflict": "Time conflict",
+        "equipmentConflict": "Equipment conflict",
+        "saveError": "An error occurred while saving production plan.",
+        "statusChangeError": "An error occurred while changing project status.",
+        "saveGeneralError": "An error occurred while saving."
+      },
+      "tableHeaders": {
+        "operationStatus": "Operation Status",
+        "materialStatus": "Material Status"
+      },
+      "toast": {
+        "equipmentConflict": {
+          "text": "This equipment is already in use in another project.",
+          "subtext": "Please change the equipment to avoid duplicate registration."
+        },
+        "timeConflict": {
+          "text": "The same equipment is already registered for this time slot.",
+          "subtext": "Please change to a different time slot or equipment."
+        },
+        "deleteFailed": {
+          "text": "Cannot delete production plan.",
+          "subtext": "Production quantity is insufficient. Please increase the quantity to delete."
+        },
+        "saveSuccess": {
+          "text": "Changes have been saved.",
+          "subtext": "Production will proceed with the saved content."
+        },
+        "invalidDate": {
+          "text": "Please enter a valid production date or expected completion date.",
+          "subtext": "Please enter in YYYY-MM-DD 00:00 format."
+        }
+      }
+    },
+    "delivery": {
+      "company": "Client",
+      "quantity": "Quantity",
+      "title": "Delivery Note",
+      "printConfirmTitle": "Would you like to print the delivery note?",
+      "printConfirmDescription": "Please review the delivery note content once more before printing.",
+      "printButton": "Print Delivery Note",
+      "printAllButton": "Print All Delivery Notes",
+      "titleWithNumber": "Delivery Note {number}",
+      "transactionStatementPrintTitle": "Would you like to print the transaction statement?",
+      "transactionStatementPrintDescription": "Please review the transaction statement content once more before printing.",
+      "transactionStatementPrintButton": "Print Transaction Statement",
+      "statusLabel": "Delivery Status",
+      "viewDeliveryNote": "View Delivery Note",
+      "errors": {
+        "statusChangeFailed": "Failed to change delivery status.",
+        "enterDeliveryDate": "Please enter the delivery date.",
+        "dateChangeFailed": "Failed to change delivery date.",
+        "invalidDateFormat": "Delivery date format is invalid",
+        "invalidDateFormatDescription": "Please enter in YYYY-MM-DD format.",
+        "retry": "Please try again.",
+        "enterValidDate": "Please enter a valid delivery date.",
+        "partialStatusChangeFailed": "Failed to change status for some products."
+      },
+      "validation": {
+        "deliveryDateRequired": "Please enter the delivery date",
+        "deliveryDateFormat": "Please enter in YYYY-MM-DD format"
+      },
+      "moveToStorage": {
+        "title": "Would you like to archive this project?",
+        "subtitle": "All pending delivery products will be marked as completed, and the project will be moved to the archive.",
+        "button": "Move to Archive"
+      },
+      "status": {
+        "pending": "Pending",
+        "completed": "Completed"
+      }
+    },
+    "defectRate": {
+      "title": "Defect",
+      "totalProductionQuantity": "Total Production Quantity",
+      "totalProductionQuantityPlaceholder": "Enter production quantity",
+      "defectQuantity": "Defect Quantity",
+      "defectQuantityPlaceholder": "Enter defect quantity",
+      "goodQuantity": "Good Quantity",
+      "defectRate": "Defect Rate (%)",
+      "errors": {
+        "defectQuantityCheck": "Please check the defect quantity.",
+        "defectQuantityExceedsTotal": "Defect quantity must be less than total production quantity"
+      }
+    },
+    "productionResultPanel": {
+      "title": "Production Result Input",
+      "errors": {
+        "invalidDate": "Please enter a valid production start date or completion date.",
+        "invalidDateFormat": "Please enter in YYYY-MM-DD 00:00 format.",
+        "quantityRequired": "Please enter production quantity.",
+        "lotNumberRequired": "Please select a LOT number.",
+        "actualInputRequired": "Please enter the actual input quantity.",
+        "materialUsageSaveFailed": "Failed to save material .",
+        "saveFailed": "Failed to save.",
+        "saveError": "An error occurred while saving."
+      }
+    },
+    "lossRate": {
+      "title": "Material Input Info"
+    },
+    "lotDropdown": {
+      "noAvailableLots": "No available LOTs."
+    },
+    "materialUsage": {
+      "materialName": "(Substitute) Material Name",
+      "lotNumber": "LOT Number",
+      "lotNumberMessage": "LOT assigned at inbound",
+      "actualInput": "Actual Input",
+      "actualInputPlaceholder": "Enter input quantity",
+      "actualInputMessage": "Actual quantity put into process",
+      "cannotDeleteFirst": "The first material usage information cannot be deleted."
+    },
+    "productionInfo": {
+      "title": "Production Details",
+      "orderQuantity": "Order Qty",
+      "productionQuantity": "Production Qty",
+      "timePerUnit": "Time per Unit",
+      "startDate": "Start Date",
+      "endDate": "End Date",
+      "validation": {
+        "quantityRequired": "Please enter production quantity",
+        "startDateRequired": "Please enter production start date",
+        "endDateRequired": "Please enter production end date"
+      }
+    },
+    "result": {
+      "theoreticalUsage": "Theoretical Usage",
+      "totalInput": "Total Input",
+      "lossRate": "Loss Rate (Auto)",
+      "lossRateMessage": "(Total - Theoretical) ÷ Actual"
+    },
+    "substituteMaterial": {
+      "label": "Substitute"
+    },
+    "productionLog": {
+      "tableHeader": {
+        "materialStatus": "Material Status",
+        "completionDate": "End Date"
+      },
+      "buttons": {
+        "viewDetails": "View Details",
+        "enterResult": "Enter Result"
+      },
+      "memo": {
+        "title": "Memo",
+        "writeButton": "Write Memo",
+        "create": {
+          "title": "Please register a production memo.",
+          "subtitle": "The entered memo can be viewed in the production status.",
+          "titlePlaceholder": "Enter a title.",
+          "contentPlaceholder": "Enter a memo.",
+          "titleRequired": "Please enter a title.",
+          "contentRequired": "Please enter content.",
+          "createButton": "Create Memo",
+          "projectNotFound": "Project information not found.",
+          "createFailed": "Failed to create memo: {error}",
+          "unknownError": "An unknown error occurred."
+        },
+        "updateFailed": "Failed to update memo: {error}",
+        "updateError": "An error occurred while updating memo.",
+        "toast": {
+          "saveSuccess": "Changes have been saved.",
+          "saveSuccessSubtext": "The updated memo content has been applied."
+        }
+      },
+      "errors": {
+        "saveFailed": "Failed to save.",
+        "saveError": "An error occurred while saving."
+      },
+      "toast": {
+        "saveSuccess": "Production plan saved.",
+        "saveSuccessSubtext": "Changes have been applied.",
+        "invalidDate": "Please enter a valid production date or completion date.",
+        "invalidDateFormat": "Please enter in YYYY-MM-DD 00:00 format."
+      },
+      "empty": {
+        "title": "No production logs registered yet.",
+        "description": "Logs will be automatically recorded when you change production equipment or add memos."
+      },
+      "noSelectedLog": {
+        "title": "No log selected yet.",
+        "description": "Click on a log to view details."
+      }
     }
   }
 }

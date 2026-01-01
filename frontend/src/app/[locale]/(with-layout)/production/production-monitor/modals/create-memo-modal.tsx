@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { useForm } from 'react-hook-form';
 import { useParams } from 'next/navigation';
 import MiniBtn from '@/ui/mini-btn';
@@ -15,6 +16,8 @@ interface CreateMemoModalProps {
 }
 
 const CreateMemoModal = ({ onClose, onSuccess }: CreateMemoModalProps) => {
+  const t = useTranslations('production.productionLog.memo.create');
+  const tCommon = useTranslations('common');
   const params = useParams();
   const projectId = params.id ? parseInt(params.id as string) : null;
 
@@ -34,7 +37,7 @@ const CreateMemoModal = ({ onClose, onSuccess }: CreateMemoModalProps) => {
 
   const onSubmit = async (data: CreateMemoFormDataModel) => {
     if (!projectId) {
-      alert('프로젝트 정보를 찾을 수 없습니다.');
+      alert(t('projectNotFound'));
       return;
     }
 
@@ -51,15 +54,17 @@ const CreateMemoModal = ({ onClose, onSuccess }: CreateMemoModalProps) => {
       onClose();
     } else {
       alert(
-        `메모 생성에 실패했습니다: ${result.error || '알 수 없는 오류가 발생했습니다.'}`
+        t('createFailed', {
+          error: result.error || t('unknownError'),
+        })
       );
     }
   };
 
   return (
     <Modal
-      title="생산 메모를 등록해 주세요."
-      subtitle="입력된 메모는 생산 현황에서 확인할 수 있어요."
+      title={t('title')}
+      subtitle={t('subtitle')}
       width="w-[600px]"
       onClose={onClose}
     >
@@ -68,25 +73,25 @@ const CreateMemoModal = ({ onClose, onSuccess }: CreateMemoModalProps) => {
         className="flex flex-col min-h-0 h-full"
       >
         <input
-          {...register('title', { required: '제목을 입력해주세요.' })}
+          {...register('title', { required: t('titleRequired') })}
           className="w-full mt-4 Re_Body-1 text-bl px-3 h-12 border border-lg rounded placeholder:text-sv focus:outline-none"
-          placeholder="제목을 입력하세요."
+          placeholder={t('titlePlaceholder')}
         />
         <textarea
-          {...register('content', { required: '내용을 입력해주세요.' })}
+          {...register('content', { required: t('contentRequired') })}
           className="placeholder:text-sv resize-none h-[420px] mt-4 Re_Body-1 text-bl px-3 py-5 border border-lg rounded overflow-y-auto scrollbar-hide"
-          placeholder="메모를 입력하세요."
+          placeholder={t('contentPlaceholder')}
         />
         <div className="flex gap-2.5 justify-end mt-4">
           <MiniBtn
-            text="취소"
+            text={tCommon('cancel')}
             textColor="text-sv"
             onClick={onClose}
             hoverColor="hover:bg-bg"
             type="button"
           />
           <MiniBtn
-            text="메모 생성하기"
+            text={t('createButton')}
             textColor="text-wh"
             bgColor="bg-primary"
             hoverColor="hover:bg-primary-hover"

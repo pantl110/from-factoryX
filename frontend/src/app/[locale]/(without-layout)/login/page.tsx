@@ -15,6 +15,7 @@ import useAuthStore from '@/store/auth-store';
 
 const LoginPage = () => {
   const t = useTranslations('login');
+  const tCommon = useTranslations('common');
   const tFull = useTranslations(); // 전체 경로를 위한 번역 함수
   const router = useRouter();
   const locale = useLocale(); // 현재 locale
@@ -107,7 +108,7 @@ const LoginPage = () => {
               <Input
                 type="email"
                 placeholder={t('email.placeholder')}
-                label={t('email.label')}
+                label={tCommon('email')}
                 {...register('email', {
                   required: t('email.required'),
                   validate: (value) => {

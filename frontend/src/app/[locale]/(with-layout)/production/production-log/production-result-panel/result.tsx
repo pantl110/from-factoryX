@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { Input } from '@/ui';
 
 interface ResultProps {
@@ -13,6 +16,8 @@ export const Result = ({
   totalUsage,
   hasSubstitute,
 }: ResultProps) => {
+  const t = useTranslations('production.result');
+  const tCommon = useTranslations('common');
   const hasTotal = typeof totalUsage === 'number' && !Number.isNaN(totalUsage);
   const hasExpected =
     typeof expectedUsage === 'number' && !Number.isNaN(expectedUsage);
@@ -37,7 +42,7 @@ export const Result = ({
       <div className="mt-5 flex gap-2.5 bg-primary-8 rounded-[8px] p-4">
         <div className="flex-[0.6]">
           <Input
-            label="이론 소요량"
+            label={t('theoreticalUsage')}
             disabledReadOnly
             placeholder="-"
             className={inputBgClass}
@@ -46,7 +51,7 @@ export const Result = ({
         </div>
         <div className="flex-[0.4]">
           <Input
-            label="단위"
+            label={tCommon('unit')}
             disabledReadOnly
             value={unitValue}
             className={`${inputBgClass} truncate`}
@@ -54,7 +59,7 @@ export const Result = ({
         </div>
         <div className="flex-[0.6]">
           <Input
-            label="전체 투입량"
+            label={t('totalInput')}
             disabledReadOnly
             placeholder="-"
             className={inputBgClass}
@@ -63,7 +68,7 @@ export const Result = ({
         </div>
         <div className="flex-[0.4]">
           <Input
-            label="단위"
+            label={tCommon('unit')}
             disabledReadOnly
             value={unitValue}
             className={`${inputBgClass} truncate`}
@@ -71,8 +76,8 @@ export const Result = ({
         </div>
         <div className="flex-1">
           <Input
-            label="로스율(자동 계산)"
-            message="(전체 투입량 - 이론 소요량) ÷ 실제 투입량"
+            label={t('lossRate')}
+            message={t('lossRateMessage')}
             disabledReadOnly
             className={inputBgClass}
             placeholder="-"

@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { ProjectPlanModel } from '@/types/data-model';
 import InfoLabelValue from '@/ui/info-label-value';
 import { useForm, Controller } from 'react-hook-form';
@@ -19,6 +22,8 @@ export const ProductionInfo = ({
   onFormChange,
   onIsDirtyChange,
 }: ProductionInfoProps) => {
+  const t = useTranslations('production.productionInfo');
+  const tCommon = useTranslations('common');
   const { control, watch, formState } = useForm({
     defaultValues: {
       quantity: plan.quantity || 0,
@@ -48,43 +53,44 @@ export const ProductionInfo = ({
 
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="Heading-3 h-10 flex items-center">생산 상세 정보</h3>
+      <h3 className="Heading-3 h-10 flex items-center">{t('title')}</h3>
 
       <div>
         <div className="flex">
           <InfoLabelValue
-            label="제품명"
+            label={tCommon('productName')}
             value={plan.quotation_product.product.name}
           />
           <InfoLabelValue
-            label="제품 코드"
+            label={tCommon('productCode')}
             value={plan.quotation_product.product.code}
           />
         </div>
         <div className="flex">
           <InfoLabelValue
-            label="규격"
+            label={tCommon('specification')}
             value={plan.quotation_product.product.spec}
           />
           <InfoLabelValue
-            label="단위"
+            label={tCommon('unit')}
             value={plan.quotation_product.product.unit}
           />
         </div>
         <div className="flex">
           <InfoLabelValue
-            label="주문 수량"
+            label={t('orderQuantity')}
             value={plan.quotation_product.quantity?.toLocaleString()}
           />
           <Controller
             name="quantity"
             control={control}
             rules={{
-              validate: (value) => value > 0 || '생산 수량을 입력해주세요',
+              validate: (value) =>
+                value > 0 || t('validation.quantityRequired'),
             }}
             render={({ field }) => (
               <InfoLabelValue
-                label="생산 수량"
+                label={t('productionQuantity')}
                 isEditing={true}
                 value={field.value > 0 ? field.value.toLocaleString() : ''}
                 onChange={(e) => {
@@ -93,18 +99,21 @@ export const ProductionInfo = ({
                   field.onChange(numValue);
                 }}
                 inputType="text"
-                placeholder="(필수)"
+                placeholder={tCommon('required')}
               />
             )}
           />
         </div>
         <div className="flex">
-          <InfoLabelValue label="생산 설비" value={plan.equipment.name} />
           <InfoLabelValue
-            label="단위당 소요 시간"
+            label={tCommon('productionEquipment')}
+            value={plan.equipment.name}
+          />
+          <InfoLabelValue
+            label={t('timePerUnit')}
             value={
               plan.avg_production_time !== null
-                ? `${plan.avg_production_time.toLocaleString()}초`
+                ? `${plan.avg_production_time.toLocaleString()}${tCommon('seconds')}`
                 : '-'
             }
           />
@@ -114,11 +123,11 @@ export const ProductionInfo = ({
             name="start_date"
             control={control}
             rules={{
-              required: '생산 시작일자를 입력해주세요',
+              required: t('validation.startDateRequired'),
             }}
             render={({ field }) => (
               <InfoLabelValue
-                label="생산 시작일자"
+                label={t('startDate')}
                 isEditing={true}
                 value={String(field.value || '')}
                 onChange={(e) => {
@@ -134,11 +143,11 @@ export const ProductionInfo = ({
             name="end_date"
             control={control}
             rules={{
-              required: '생산 완료일자를 입력해주세요',
+              required: t('validation.endDateRequired'),
             }}
             render={({ field }) => (
               <InfoLabelValue
-                label="생산 완료일자"
+                label={t('endDate')}
                 isEditing={true}
                 value={String(field.value || '')}
                 onChange={(e) => {

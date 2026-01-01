@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import Chip from '@/ui/chip';
 import Input from '@/ui/input';
 import { ProjectStatusType, ProjectStatusColorMap } from '@/types/status-type';
@@ -24,6 +25,9 @@ const ProductFlowTitle = ({
   startDate,
   endDate,
 }: ProductFlowTitleProps) => {
+  const tProjectStatus = useTranslations('project.status');
+  const tCommon = useTranslations('common');
+  const tProductionInfo = useTranslations('production.productionInfo');
   const { bgColor, textColor } = ProjectStatusColorMap[status];
 
   return (
@@ -31,19 +35,7 @@ const ProductFlowTitle = ({
       <div className="px-10 pt-7 flex justify-between">
         <div className="flex flex-col gap-2">
           <Chip
-            text={
-              status === 'completed'
-                ? '프로젝트 완료'
-                : status === 'delivery'
-                  ? '납품'
-                  : status === 'manufactured'
-                    ? '생산 완료'
-                    : status === 'production'
-                      ? '생산 중'
-                      : status === 'pending'
-                        ? '생산 대기'
-                        : status
-            }
+            text={tProjectStatus(status)}
             textColor={textColor}
             bgColor={bgColor}
             radius="rounded-full"
@@ -56,7 +48,7 @@ const ProductFlowTitle = ({
         <div className="flex flex-col gap-1">
           <div className="flex items-center">
             <Input
-              label="생산시작일"
+              label={tProductionInfo('startDate')}
               type="text"
               value={formatISODate(startDate)}
               placeholder="YYYY-MM-DD"
@@ -64,7 +56,7 @@ const ProductFlowTitle = ({
             />
             <p className="w-[30px] h-[77px] pt-7 px-2 Re_Body-1 text-sv">__</p>
             <Input
-              label="생산마감일"
+              label={tProductionInfo('endDate')}
               type="text"
               value={formatISODate(endDate)}
               placeholder="YYYY-MM-DD"
@@ -72,7 +64,7 @@ const ProductFlowTitle = ({
             />
           </div>
           <div className="flex justify-between p-3 rounded-lg bg-[#f5f5f5] Heading-5">
-            <h6>납기일</h6>
+            <h6>{tCommon('dueDate')}</h6>
             <h6>{dueDate}</h6>
           </div>
         </div>

@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { useState, useMemo, useEffect } from 'react';
 import Input from '@/ui/input';
 import { handleQuantityInput, handleIntegerInput } from '@/utils';
@@ -17,6 +20,7 @@ export const DefectRate = ({
   totalProductionQuantity = 0,
   onTotalProductionQuantityChange,
 }: DefectRateProps) => {
+  const t = useTranslations('production.defectRate');
   const [totalProduction, setTotalProduction] = useState<string>(() => {
     if (totalProductionQuantity > 0) {
       const result = handleQuantityInput(totalProductionQuantity.toString());
@@ -107,12 +111,12 @@ export const DefectRate = ({
 
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="Heading-3 h-10 flex items-center">불량률 정보</h3>
+      <h3 className="Heading-3 h-10 flex items-center">{t('title')}</h3>
 
       <div className="flex flex-col gap-3">
         <div className="flex gap-2">
           <Input
-            label="총 생산 수량"
+            label={t('totalProductionQuantity')}
             type="text"
             value={totalProduction}
             onChange={(e) => {
@@ -125,10 +129,10 @@ export const DefectRate = ({
             onBlur={() => {
               setIsUserEditingTotalProduction(false);
             }}
-            placeholder="생산 수량을 입력하세요."
+            placeholder={t('totalProductionQuantityPlaceholder')}
           />
           <Input
-            label="불량 수량"
+            label={t('defectQuantity')}
             type="text"
             value={defectQuantity}
             onChange={(e) => {
@@ -143,8 +147,8 @@ export const DefectRate = ({
               ) {
                 setDefectQuantity('');
                 onError?.(
-                  '불량 수량을 확인해 주세요.',
-                  '불량 수량은 총 생산 수량보다 작아야 합니다'
+                  t('errors.defectQuantityCheck'),
+                  t('errors.defectQuantityExceedsTotal')
                 );
                 return;
               }
@@ -162,12 +166,22 @@ export const DefectRate = ({
                 hasNumber && newDefectNumeric === 0 ? '0' : result.displayValue;
               setDefectQuantity(displayValue);
             }}
-            placeholder="불량 수량을 입력하세요."
+            placeholder={t('defectQuantityPlaceholder')}
           />
         </div>
         <div className="flex gap-2">
-          <Input label="양품 수량" type="text" value={goodQuantity} disabled />
-          <Input label="불량률(%)" type="text" value={defectRate} disabled />
+          <Input
+            label={t('goodQuantity')}
+            type="text"
+            value={goodQuantity}
+            disabled
+          />
+          <Input
+            label={t('defectRate')}
+            type="text"
+            value={defectRate}
+            disabled
+          />
         </div>
       </div>
     </div>

@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { Dropdown, DropdownItem } from '@/ui';
 import { useGetMaterialAvailableLots } from '@/hooks';
@@ -20,6 +23,7 @@ export const LotDropdown = ({
   onClose,
   onSelect,
 }: LotDropdownProps) => {
+  const t = useTranslations('production.lotDropdown');
   const [page, setPage] = useState(1);
   const [items, setItems] = useState<MaterialAvailableLotResponseModel[]>([]);
 
@@ -59,7 +63,7 @@ export const LotDropdown = ({
     >
       {isLoading && lots.length === 0 && <DropdownItem text="..." noHover />}
       {!isLoading && lots.length === 0 && (
-        <DropdownItem text="사용 가능한 LOT가 없습니다." noHover />
+        <DropdownItem text={t('noAvailableLots')} noHover />
       )}
       {!isLoading &&
         lots.map((lot) => (

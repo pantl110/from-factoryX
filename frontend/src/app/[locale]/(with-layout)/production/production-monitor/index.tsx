@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { useParams } from 'next/navigation';
 import MiniBtn from '@/ui/mini-btn';
 import LogItem from './log-item';
@@ -27,6 +28,7 @@ const ProductionMonitor = ({
   projectStatus,
   onTabChange,
 }: ProductionMonitorProps) => {
+  const t = useTranslations('production.productionLog.memo');
   const params = useParams();
   const projectId = params.id ? parseInt(params.id as string) : null;
 
@@ -146,7 +148,7 @@ const ProductionMonitor = ({
                 {projectStatus !== 'completed' && (
                   <div>
                     <MiniBtn
-                      text="메모 작성하기"
+                      text={t('writeButton')}
                       textColor="text-dg"
                       borderColor="border-lg"
                       onClick={() => setIsCreateMemoModalOpen(true)}

@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Material } from './material';
 import {
@@ -30,6 +33,7 @@ export const LossRate = ({
   onIsDirtyChange,
   onRegisterCheckMaterialConsumed,
 }: LossRateProps) => {
+  const t = useTranslations('production.lossRate');
   const { getMaterialProductConnections, data, isLoading } =
     useMaterialProduct();
   const materialSaveHandlersRef = useRef<
@@ -165,7 +169,7 @@ export const LossRate = ({
 
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="Heading-3 h-10 flex items-center">자재 투입량 정보</h3>
+      <h3 className="Heading-3 h-10 flex items-center">{t('title')}</h3>
       <div className="flex flex-col">
         {materials.length === 0 && !isLoading && <></>}
         {/* 매 렌더링마다 전체 핸들러 배열 초기화 후, 각 자재별 저장 함수를 쌓는다 */}

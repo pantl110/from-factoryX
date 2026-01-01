@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import Checkbox from '@/ui/checkbox';
 import useSubscriptionStore from '@/store/subscription-store';
 
@@ -10,6 +13,8 @@ const DeliveryTableHeader = ({
   isAllChecked,
   onToggleAll,
 }: DeliveryTableHeaderProps) => {
+  const t = useTranslations('production.delivery');
+  const tCommon = useTranslations('common');
   const hasSubscription = useSubscriptionStore(
     (state) => state.hasSubscription
   );
@@ -18,13 +23,13 @@ const DeliveryTableHeader = ({
       {hasSubscription() && (
         <Checkbox isChecked={isAllChecked} onToggle={onToggleAll} />
       )}
-      <p className="w-[150px] py-1 px-3 text-sv">납품 상태</p>
-      <p className="flex-2 py-1 px-3 text-sv">제품명</p>
-      <p className="flex-1 py-1 px-3 text-sv">제품 코드</p>
-      <p className="flex-1 py-1 px-3 text-sv">규격</p>
-      <p className="w-[80px] py-1 px-3 text-sv">단위</p>
-      <p className="flex-1 py-1 px-3 text-sv">납품 수량</p>
-      <p className="flex-1 py-1 px-3 text-sv">납품일자</p>
+      <p className="w-[150px] py-1 px-3 text-sv">{t('statusLabel')}</p>
+      <p className="flex-[1.6] py-1 px-3 text-sv">{tCommon('productName')}</p>
+      <p className="flex-1 py-1 px-3 text-sv">{tCommon('productCode')}</p>
+      <p className="flex-1 py-1 px-3 text-sv">{tCommon('specification')}</p>
+      <p className="flex-1 py-1 px-3 text-sv">{tCommon('unit')}</p>
+      <p className="flex-1 py-1 px-3 text-sv">{t('quantity')}</p>
+      <p className="flex-1 py-1 px-3 text-sv">{tCommon('deliveryDate')}</p>
     </div>
   );
 };

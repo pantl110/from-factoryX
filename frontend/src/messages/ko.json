@@ -15,7 +15,9 @@
     "productCode": "제품코드",
     "specification": "규격",
     "productionQuantity": "생산 수량",
+    "productionQty": "생산 수량",
     "productionEquipment": "생산 설비",
+    "equipment": "설비",
     "productionTime": "생산시간",
     "productionDate": "생산 일자",
     "expectedCompletionDate": "마감 예정일자",
@@ -52,12 +54,23 @@
     "sellerInfo": "판매처 정보",
     "writtenDate": "작성일자",
     "issuedDate": "발행일자",
-    "registeredDate": "등록일자"
+    "registeredDate": "등록일자",
+    "print": "출력하기",
+    "add": "추가하기",
+    "deleteAll": "전체 삭제",
+    "required": "(필수)",
+    "seconds": "초",
+    "action": "액션",
+    "inventoryStatus": {
+      "overstock": "과재고",
+      "sufficient": "충분",
+      "risk": "위험",
+      "shortage": "부족"
+    }
   },
   "document": {
     "title": "문서함",
     "searchPlaceholder": "거래처명이나 제품명을 입력해 검색하세요.",
-    "workInstruction": "생산지시서",
     "editLog": "수정로그",
     "documentTitleFormat": "[{clientName}]{case} {title}",
     "productionDocumentTitleFormat": "PR-{date} {workInstruction}",
@@ -98,8 +111,7 @@
     "invoiceType": "세금계산서 구분",
     "type": "구분",
     "receipt": "영수",
-    "request": "청구",
-    "issueDate": "발행일자"
+    "request": "청구"
   },
   "language": {
     "setting": "언어 설정",
@@ -118,7 +130,6 @@
   "login": {
     "title": "로그인",
     "email": {
-      "label": "이메일",
       "placeholder": "이메일을 입력해주세요.",
       "required": "이메일을 입력해주세요.",
       "invalidFormat": "이메일 형식이 올바르지 않습니다."
@@ -202,6 +213,266 @@
       "delivery": "납품",
       "completed": "프로젝트 완료",
       "suspended": "중단"
+    }
+  },
+  "production": {
+    "tabs": {
+      "delivery": "납품",
+      "productionStatus": "생산 현황",
+      "productionPlan": "생산 계획",
+      "productionHistory": "생산 내역",
+      "orderDocument": "주문서",
+      "taxInvoice": "세금계산서",
+      "transactionStatement": "거래명세서"
+    },
+    "loadError": "프로젝트 상태 로드 중 오류",
+    "reloadError": "프로젝트 상태 리로드 실패",
+    "noTaxInvoice": "연결된 세금계산서가 없습니다.",
+    "linkTaxInvoice": "세금계산서를 연결해 주세요",
+    "linkTaxInvoiceButton": "세금계산서 연결",
+    "operationStatus": {
+      "pending": "가동 대기",
+      "production": "가동 중",
+      "completed": "가동 완료"
+    },
+    "returnModal": {
+      "title": "반품할 상품을 등록해 주세요.",
+      "subtitle": "반품할 제품명과 수량을 입력해 주세요.",
+      "productNamePlaceholder": "제품을 선택해주세요.",
+      "returnQuantity": "반품 수량",
+      "returnQuantityPlaceholder": "반품할 수량을 입력해 주세요.",
+      "returnQuantityError": "반품 수량을 입력해 주세요.",
+      "returnDate": "반품 일자",
+      "returnDatePlaceholder": "반품할 일자를 입력해 주세요.",
+      "returnDateError": "반품 일자를 입력해 주세요.",
+      "register": "반품 등록하기",
+      "selectProductError": "제품을 선택해주세요.",
+      "inputError": "반품 수량과 반품 일자를 입력해주세요.",
+      "registerError": "반품 등록에 실패했습니다.",
+      "productionStatusTab": "생산 현황",
+      "noItems": "품목이 없습니다."
+    },
+    "returnInfo": {
+      "title": "반품 정보",
+      "registerProductionButton": "생산 등록하기",
+      "returnProduct": "반품 제품",
+      "returnDate": "반품 일자",
+      "returnQuantity": "반품 수량",
+      "currentStock": "현재 재고",
+      "productionQuantity": "생산 수량",
+      "productionPlanTab": "생산 계획"
+    },
+    "registerProductionModal": {
+      "title": "생산 대기열에 등록되었습니다.",
+      "subtitle": "반품된 제품의 추가 생산이 등록되었습니다.\n지금 바로 생산을 시작하시겠어요?",
+      "startButton": "생산 시작하기",
+      "error": {
+        "registerFailed": "생산 등록에 오류가 발생했어요.",
+        "materialShortage": "원자재를 먼저 등록해주세요.",
+        "retry": "잠시 후 다시 시도해 주세요."
+      }
+    },
+    "planChange": {
+      "title": "계획 변경"
+    },
+    "productionPlanSaveModal": {
+      "title": "저장 후 계속 진행할까요?",
+      "subtitle": "수정 내용을 저장하고 다음 단계로 진행할까요?\n저장된 정보는 이후 생산 일정과 작업 흐름에 반영돼요."
+    },
+    "productionPlan": {
+      "errors": {
+        "parentPlanNotFound": "부모 계획을 찾을 수 없습니다.",
+        "addPlanFailed": "추가 생산 계획 생성 중 오류가 발생했습니다.",
+        "operationStatusPlanNotFound": "가동 상태를 변경할 계획을 찾을 수 없습니다.",
+        "operationStatusChangeFailed": "가동 상태 변경에 실패했습니다.",
+        "operationStatusChangeError": "가동 상태 변경 중 오류가 발생했습니다.",
+        "deletePlanFailed": "생산 계획 삭제에 실패했습니다.",
+        "deleteError": "삭제 중 오류가 발생했습니다.",
+        "saveFailed": "저장에 실패했습니다.",
+        "dateFormatError": "날짜 형식 오류",
+        "timeConflict": "시간대 충돌",
+        "equipmentConflict": "설비 중복",
+        "saveError": "생산 계획 저장 중 오류가 발생했습니다.",
+        "statusChangeError": "프로젝트 상태 변경 중 오류가 발생했습니다.",
+        "saveGeneralError": "저장 중 오류가 발생했습니다."
+      },
+      "tableHeaders": {
+        "operationStatus": "가동 상태",
+        "materialStatus": "생산 자재 상태"
+      },
+      "toast": {
+        "equipmentConflict": {
+          "text": "해당 설비는 다른 프로젝트에서 이미 사용 중이에요.",
+          "subtext": "중복 등록을 피하려면 설비를 변경해 주세요."
+        },
+        "timeConflict": {
+          "text": "이미 해당 시간대에 같은 설비가 등록되어 있어요.",
+          "subtext": "다른 시간대나 설비로 변경해 주세요."
+        },
+        "deleteFailed": {
+          "text": "생산 계획을 삭제할 수 없어요.",
+          "subtext": "생산 수량이 부족해요. 수량을 늘려야 삭제할 수 있어요."
+        },
+        "saveSuccess": {
+          "text": "수정사항이 저장되었습니다.",
+          "subtext": "저장된 내용으로 생산을 진행할게요."
+        },
+        "invalidDate": {
+          "text": "유효한 생산 일자나 마감 예정일자를 입력해 주세요.",
+          "subtext": "YYYY-MM-DD 00:00 형식으로 입력해주세요."
+        }
+      }
+    },
+    "delivery": {
+      "company": "납품처",
+      "quantity": "납품수량",
+      "title": "납품표",
+      "printConfirmTitle": "납품표를 출력하시겠어요?",
+      "printConfirmDescription": "출력 전, 납품서 내용을 한 번 더 확인해 주세요.",
+      "printButton": "납품표 출력하기",
+      "printAllButton": "납품표 일괄 출력하기",
+      "titleWithNumber": "납품표 {number}",
+      "transactionStatementPrintTitle": "거래명세서를 출력하시겠어요?",
+      "transactionStatementPrintDescription": "출력 전, 거래명세서 내용을 한 번 더 확인해 주세요.",
+      "transactionStatementPrintButton": "거래명세서 출력하기",
+      "statusLabel": "납품 상태",
+      "viewDeliveryNote": "납품표 보기",
+      "errors": {
+        "statusChangeFailed": "납품 상태 변경에 실패했습니다.",
+        "enterDeliveryDate": "납품일자를 입력해 주세요.",
+        "dateChangeFailed": "납품일자 변경에 실패했습니다.",
+        "invalidDateFormat": "납품일자가 올바른 형식이 아닙니다",
+        "invalidDateFormatDescription": "YYYY-MM-DD 형식으로 입력해주세요.",
+        "retry": "다시 시도해주세요.",
+        "enterValidDate": "유효한 납품일자를 입력해 주세요.",
+        "partialStatusChangeFailed": "일부 제품 상태 변경에 실패했습니다."
+      },
+      "validation": {
+        "deliveryDateRequired": "납품일자를 입력해주세요",
+        "deliveryDateFormat": "YYYY-MM-DD 형식으로 입력해주세요"
+      },
+      "moveToStorage": {
+        "title": "프로젝트를 보관하시겠습니까?",
+        "subtitle": "납품 예정인 제품이 모두 완료 처리되며,\n프로젝트는 보관함으로 이동돼요.",
+        "button": "보관함으로 이동하기"
+      },
+      "status": {
+        "pending": "예정",
+        "completed": "완료"
+      }
+    },
+    "defectRate": {
+      "title": "불량률 정보",
+      "totalProductionQuantity": "총 생산 수량",
+      "totalProductionQuantityPlaceholder": "생산 수량을 입력하세요.",
+      "defectQuantity": "불량 수량",
+      "defectQuantityPlaceholder": "불량 수량을 입력하세요.",
+      "goodQuantity": "양품 수량",
+      "defectRate": "불량률(%)",
+      "errors": {
+        "defectQuantityCheck": "불량 수량을 확인해 주세요.",
+        "defectQuantityExceedsTotal": "불량 수량은 총 생산 수량보다 작아야 합니다"
+      }
+    },
+    "productionResultPanel": {
+      "title": "생산 결과 입력",
+      "errors": {
+        "invalidDate": "유효한 생산 시작일자나 생산 완료일자를 입력해 주세요.",
+        "invalidDateFormat": "YYYY-MM-DD 00:00 형식으로 입력해주세요.",
+        "quantityRequired": "생산 수량을 입력해주세요.",
+        "lotNumberRequired": "LOT 번호를 선택해주세요.",
+        "actualInputRequired": "실제 투입량을 입력해 주세요.",
+        "materialUsageSaveFailed": "자재 사용 정보 저장에 실패했습니다.",
+        "saveFailed": "저장에 실패했습니다.",
+        "saveError": "저장 중 오류가 발생했습니다."
+      }
+    },
+    "lossRate": {
+      "title": "자재 투입량 정보"
+    },
+    "lotDropdown": {
+      "noAvailableLots": "사용 가능한 LOT가 없습니다."
+    },
+    "materialUsage": {
+      "materialName": "(대체)자재명",
+      "lotNumber": "LOT 번호",
+      "lotNumberMessage": "입고 시 부여된 고유 LOT 번호",
+      "actualInput": "실제 투입량",
+      "actualInputPlaceholder": "투입량을 입력하세요.",
+      "actualInputMessage": "작업자가 실제로 공정에 넣은 양",
+      "cannotDeleteFirst": "첫 번째 자재 사용 정보는 삭제할 수 없습니다."
+    },
+    "productionInfo": {
+      "title": "생산 상세 정보",
+      "orderQuantity": "주문 수량",
+      "productionQuantity": "생산 수량",
+      "timePerUnit": "단위당 소요 시간",
+      "startDate": "생산 시작일자",
+      "endDate": "생산 완료일자",
+      "validation": {
+        "quantityRequired": "생산 수량을 입력해주세요",
+        "startDateRequired": "생산 시작일자를 입력해주세요",
+        "endDateRequired": "생산 완료일자를 입력해주세요"
+      }
+    },
+    "result": {
+      "theoreticalUsage": "이론 소요량",
+      "totalInput": "전체 투입량",
+      "lossRate": "로스율(자동 계산)",
+      "lossRateMessage": "(전체 투입량 - 이론 소요량) ÷ 실제 투입량"
+    },
+    "substituteMaterial": {
+      "label": "대체 자재"
+    },
+    "productionLog": {
+      "tableHeader": {
+        "materialStatus": "자재 상태",
+        "completionDate": "마감일자"
+      },
+      "buttons": {
+        "viewDetails": "상세 보기",
+        "enterResult": "결과 입력하기"
+      },
+      "memo": {
+        "title": "메모",
+        "writeButton": "메모 작성하기",
+        "create": {
+          "title": "생산 메모를 등록해 주세요.",
+          "subtitle": "입력된 메모는 생산 현황에서 확인할 수 있어요.",
+          "titlePlaceholder": "제목을 입력하세요.",
+          "contentPlaceholder": "메모를 입력하세요.",
+          "titleRequired": "제목을 입력해주세요.",
+          "contentRequired": "내용을 입력해주세요.",
+          "createButton": "메모 생성하기",
+          "projectNotFound": "프로젝트 정보를 찾을 수 없습니다.",
+          "createFailed": "메모 생성에 실패했습니다: {error}",
+          "unknownError": "알 수 없는 오류가 발생했습니다."
+        },
+        "updateFailed": "메모 수정에 실패했습니다: {error}",
+        "updateError": "메모 수정 중 오류가 발생했습니다.",
+        "toast": {
+          "saveSuccess": "변경 사항이 저장되었어요.",
+          "saveSuccessSubtext": "수정한 메모 내용이 반영되었습니다."
+        }
+      },
+      "errors": {
+        "saveFailed": "저장에 실패했습니다.",
+        "saveError": "저장 중 오류가 발생했습니다."
+      },
+      "toast": {
+        "saveSuccess": "생산 계획이 저장되었어요.",
+        "saveSuccessSubtext": "변경된 내용이 반영되었어요.",
+        "invalidDate": "유효한 생산 일자나 마감 일자를 입력해 주세요.",
+        "invalidDateFormat": "YYYY-MM-DD 00:00 형식으로 입력해주세요."
+      },
+      "empty": {
+        "title": "아직 등록된 생산 로그가 없어요.",
+        "description": "생산 설비를 바꾸거나 메모를 추가하면 로그가 자동으로 기록돼요."
+      },
+      "noSelectedLog": {
+        "title": "아직 선택된 로그가 없어요.",
+        "description": "로그를 클릭하면 자세한 내용을 확인할 수 있어요."
+      }
     }
   }
 }

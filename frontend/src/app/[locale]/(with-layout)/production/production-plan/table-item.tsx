@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import Chip from '@/ui/chip';
 import {
   OperationStatusColorMap,
@@ -61,6 +62,9 @@ const TableItem = ({
   isFirstOfProduct = true,
   onSaveSuccess,
 }: TableItemProps) => {
+  const tOperationStatus = useTranslations('production.operationStatus');
+  const tCommon = useTranslations('common');
+  const tInventoryStatus = useTranslations('common.inventoryStatus');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
@@ -87,6 +91,24 @@ const TableItem = ({
     OperationStatusColorMap[operationStatus] || OperationStatusColorMap.pending;
   const materialColor = InventoryStatusColorMap[materialStatus];
   const [isProductDetailOpen, setIsProductDetailOpen] = useState(false);
+
+  // Material status 번역 함수
+  const getMaterialStatusTranslation = (status: InventoryStatusType | null) => {
+    if (!status) return '-';
+    switch (status) {
+      case '과재고':
+        return tInventoryStatus('overstock');
+      case '충분':
+        return tInventoryStatus('sufficient');
+      case '위험':
+        return tInventoryStatus('risk');
+      case '부족':
+        return tInventoryStatus('shortage');
+      default:
+        return status;
+    }
+  };
+  const materialStatusText = getMaterialStatusTranslation(materialStatus);
 
   // React Hook Form 설정
   const { control, watch, reset } = useForm<ProductionPlanFormDataModel>({
@@ -170,14 +192,14 @@ const TableItem = ({
     isViewer || !hasSubscription() || operationStatus !== 'pending';
 
   const itemData = {
-    '가동 상태': (
+    operationStatus: (
       <Chip
         text={
           operationStatus === 'pending'
-            ? '가동 대기'
+            ? tOperationStatus('pending')
             : operationStatus === 'production'
-              ? '가동 중'
-              : '가동 완료'
+              ? tOperationStatus('production')
+              : tOperationStatus('completed')
         }
         textColor={operationColor.textColor}
         bgColor={operationColor.bgColor}
@@ -215,42 +237,42 @@ const TableItem = ({
         }
       />
     ),
-    제품명: isFirstOfProduct ? (
+    productName: isFirstOfProduct ? (
       <span className="cursor-default">
         {item.quotation_product.product.name}
       </span>
     ) : (
       ''
     ),
-    제품코드: isFirstOfProduct ? (
+    productCode: isFirstOfProduct ? (
       <span className="cursor-default">
         {item.quotation_product.product.code}
       </span>
     ) : (
       ''
     ),
-    규격: isFirstOfProduct ? (
+    specification: isFirstOfProduct ? (
       <span className="cursor-default">
         {item.quotation_product.product.spec}
       </span>
     ) : (
       ''
     ),
-    단위: isFirstOfProduct ? (
+    unit: isFirstOfProduct ? (
       <span className="cursor-default">
         {item.quotation_product.product.unit}
       </span>
     ) : (
       ''
     ),
-    '주문 수량': isFirstOfProduct ? (
+    orderQuantity: isFirstOfProduct ? (
       <span className="cursor-default">
         {item.quotation_product.quantity?.toLocaleString() || '0'}
       </span>
     ) : (
       ''
     ),
-    '생산 수량': (
+    productionQuantity: (
       <Controller
         name="quantity"
         control={control}
@@ -260,7 +282,7 @@ const TableItem = ({
             value={
               field.value && field.value > 0 ? field.value.toLocaleString() : ''
             }
-            placeholder="(필수)"
+            placeholder={tCommon('required')}
             onChange={(e) => {
               const value = e.target.value.replace(/,/g, '');
               const numValue = parseInt(value) || 0;
@@ -282,10 +304,10 @@ const TableItem = ({
         )}
       />
     ),
-    '생산 자재 상태': (
+    materialStatus: (
       <div className="flex gap-2.5 items-center">
         <RoundChip
-          text={materialStatus}
+          text={materialStatusText}
           variant="sm"
           color={
             operationStatus === 'completed'
@@ -302,7 +324,7 @@ const TableItem = ({
         )}
       </div>
     ),
-    '생산 설비': (
+    equipment: (
       <div
         className={`flex items-center gap-2.5 justify-between ${
           operationStatus !== 'pending' || isViewer || !hasSubscription()
@@ -324,7 +346,7 @@ const TableItem = ({
         )}
       </div>
     ),
-    생산일자: (
+    productionDate: (
       <Controller
         name="start_date"
         control={control}
@@ -354,14 +376,14 @@ const TableItem = ({
         )}
       />
     ),
-    '단위당 소요 시간': (
+    productionTimePerUnit: (
       <span className="cursor-default">
         {item.avg_production_time !== null
-          ? `${item.avg_production_time.toLocaleString()}초`
+          ? `${item.avg_production_time.toLocaleString()}${tCommon('seconds')}`
           : '-'}
       </span>
     ),
-    '마감 예정일자': (
+    expectedCompletionDate: (
       <Controller
         name="end_date"
         control={control}
@@ -395,7 +417,7 @@ const TableItem = ({
       <div className="w-full h-full flex justify-between items-center">
         {operationStatus === 'pending' && !isViewer && hasSubscription() && (
           <MiniBtn
-            text="저장"
+            text={tCommon('save')}
             onClick={handleSave}
             disabled={!isSaveButtonEnabled}
             hoverColor="hover:bg-bg"
@@ -422,7 +444,7 @@ const TableItem = ({
   return (
     <>
       <div
-        className={`group flex items-center min-w-[1729px] h-12 border-b border-lg Me_Body-1 bg-whit ${
+        className={`group flex items-center min-w-[1920px] h-12 border-b border-lg Me_Body-1 bg-whit ${
           operationStatus === 'completed' ? 'text-gr' : 'text-dg'
         }`}
       >
@@ -430,8 +452,8 @@ const TableItem = ({
           <div
             key={header.name}
             className={`${header.width} ${
-              header.name === '생산 자재 상태' ? 'px-2' : 'px-3'
-            } truncate ${header.name === '가동 상태' ? 'relative' : ''}`}
+              header.name === 'materialStatus' ? 'px-2' : 'px-3'
+            } truncate ${header.name === 'operationStatus' ? 'relative' : ''}`}
             title={String(itemData[header.name as keyof typeof itemData] ?? '')}
           >
             {itemData[header.name as keyof typeof itemData]}

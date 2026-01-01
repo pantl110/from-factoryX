@@ -13,6 +13,7 @@ interface DocInfoProps {
 
 const DocInfo = ({ taxType, transactionType, publishDate }: DocInfoProps) => {
   const t = useTranslations('tax');
+  const tCommon = useTranslations('common');
 
   return (
     <div className="flex flex-col gap-3">
@@ -26,7 +27,7 @@ const DocInfo = ({ taxType, transactionType, publishDate }: DocInfoProps) => {
           />
         </div>
         <InfoLabelValue
-          label={t('issueDate')}
+          label={tCommon('issuedDate')}
           value={formatISODate(publishDate)}
         />
       </div>

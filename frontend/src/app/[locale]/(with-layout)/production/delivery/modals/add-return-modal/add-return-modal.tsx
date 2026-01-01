@@ -5,6 +5,7 @@ import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
 import { useState } from 'react';
 import { useParams } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import {
   QuotationProductDetailResponseModel,
   ProjectStatusType,
@@ -25,6 +26,8 @@ const AddReturnModal = ({
 }: AddReturnModalProps) => {
   const params = useParams();
   const projectId = parseInt(params.id as string, 10);
+  const tCommon = useTranslations('common');
+  const tProduction = useTranslations('production.returnModal');
 
   // 숫자 포맷팅 함수 (000,000 형식)
   const formatNumberWithComma = (value: string): string => {
@@ -43,7 +46,7 @@ const AddReturnModal = ({
     error: returnQuantityError,
     handleChange: handleReturnQuantityChange,
   } = useInput({
-    validate: (v) => (!v ? '반품 수량을 입력해 주세요.' : ''),
+    validate: (v) => (!v ? tProduction('returnQuantityError') : ''),
     initialValue: '', // 빈 문자열로 초기화
   });
 
@@ -53,7 +56,7 @@ const AddReturnModal = ({
     error: returnDateError,
     handleChange: handleReturnDateChange,
   } = useInput({
-    validate: (v) => (!v ? '반품 일자를 입력해 주세요.' : ''),
+    validate: (v) => (!v ? tProduction('returnDateError') : ''),
     initialValue: getToday(),
   });
 
@@ -66,12 +69,12 @@ const AddReturnModal = ({
   // 반품 등록 버튼 클릭 핸들러
   const handleSubmitRefund = async () => {
     if (!selectedProduct || !selectedProduct.productId) {
-      alert('제품을 선택해주세요.');
+      alert(tProduction('selectProductError'));
       return;
     }
 
     if (!returnQuantity || !returnDate) {
-      alert('반품 수량과 반품 일자를 입력해주세요.');
+      alert(tProduction('inputError'));
       return;
     }
 
@@ -88,11 +91,11 @@ const AddReturnModal = ({
       onProjectStatusChange?.('production');
 
       // 생산현황 탭으로 변경
-      onTabChange?.('생산 현황');
+      onTabChange?.(tProduction('productionStatusTab'));
 
       onClose();
     } else {
-      alert('반품 등록에 실패했습니다.');
+      alert(tProduction('registerError'));
     }
   };
 
@@ -116,15 +119,16 @@ const AddReturnModal = ({
 
   return (
     <Modal
-      title="반품할 상품을 등록해 주세요."
-      subtitle="반품할 제품명과 수량을 입력해 주세요."
+      title={tProduction('title')}
+      subtitle={tProduction('subtitle')}
       onClose={onClose}
       width="w-[600px]"
     >
       <div className="w-full mt-4 relative">
         <Input
-          label="제품명"
-          placeholder="제품을 선택해주세요."
+          label={tCommon('productName')}
+          placeholder={tProduction('productNamePlaceholder')}
+          required
           value={productName || ''}
           disabledReadOnly
           button={true}
@@ -142,8 +146,8 @@ const AddReturnModal = ({
       </div>
       <div className="w-full mt-4">
         <Input
-          label="반품 수량"
-          placeholder="반품할 수량을 입력해 주세요."
+          label={tProduction('returnQuantity')}
+          placeholder={tProduction('returnQuantityPlaceholder')}
           required
           value={formatNumberWithComma(returnQuantity)}
           onChange={(e) => {
@@ -162,8 +166,8 @@ const AddReturnModal = ({
       </div>
       <div className="w-full mt-4">
         <Input
-          label="반품 일자"
-          placeholder="반품할 일자를 입력해 주세요."
+          label={tProduction('returnDate')}
+          placeholder={tProduction('returnDatePlaceholder')}
           required
           value={returnDate}
           onChange={(e) => {
@@ -175,13 +179,13 @@ const AddReturnModal = ({
       </div>
       <div className="flex gap-2.5 mt-4 justify-end">
         <MiniBtn
-          text="취소"
+          text={tCommon('cancel')}
           onClick={onClose}
           textColor="text-sv"
           hoverColor="hover:bg-bg"
         />
         <MiniBtn
-          text="반품 등록하기"
+          text={tProduction('register')}
           onClick={handleSubmitRefund}
           textColor="text-wh"
           bgColor="bg-primary"

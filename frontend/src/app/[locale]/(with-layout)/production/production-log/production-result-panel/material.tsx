@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { MiniBtn } from '@/ui';
 import { MaterialUsage, MaterialUsageFormModel } from './material-usage';
 import { Result } from './result';
@@ -34,6 +37,7 @@ export const Material = ({
   onRegisterSaveHandler,
   onRegisterGetCurrentDataHandler,
 }: MaterialProps) => {
+  const tCommon = useTranslations('common');
   const { control, watch, reset, setValue, formState } =
     useForm<MaterialFormModel>({
       defaultValues: {
@@ -243,7 +247,7 @@ export const Material = ({
         </h4>
         <div className="flex gap-0">
           <MiniBtn
-            text="추가하기"
+            text={tCommon('add')}
             height="h-8"
             textColor="text-sv"
             hoverColor="hover:text-primary"
@@ -251,7 +255,7 @@ export const Material = ({
             onClick={handleAddUsage}
           />
           <MiniBtn
-            text="전체 삭제"
+            text={tCommon('deleteAll')}
             variant="ghost"
             height="h-8"
             onClick={handleClearUsages}

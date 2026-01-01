@@ -1,6 +1,7 @@
 import Dropdown from '@/ui/dropdown/dropdown';
 import DropdownItem from '@/ui/dropdown/dropdown-item';
 import React, { useMemo } from 'react';
+import { useTranslations } from 'next-intl';
 import { useProjectPlansQuery } from '@/hooks';
 
 interface PlanProductsDropdownProps {
@@ -14,6 +15,7 @@ const PlanProductsDropdown = ({
   onClose,
   onSelect,
 }: PlanProductsDropdownProps) => {
+  const tProduction = useTranslations('production.returnModal');
   const { data: projectPlans = [], isLoading } =
     useProjectPlansQuery(projectId);
 
@@ -48,7 +50,7 @@ const PlanProductsDropdown = ({
   if (products.length === 0) {
     return (
       <Dropdown onClose={onClose} width="w-full" maxHeight={maxHeight}>
-        <DropdownItem text="품목이 없습니다." onClick={() => {}} />
+        <DropdownItem text={tProduction('noItems')} onClick={() => {}} />
       </Dropdown>
     );
   }

@@ -1,5 +1,9 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
+
 interface MoveToStorageModalProps {
   onClose: () => void;
   onMoveToStorage: () => void;
@@ -11,21 +15,20 @@ const MoveToStorageModal = ({
   onMoveToStorage,
   isLoading = false,
 }: MoveToStorageModalProps) => {
+  const t = useTranslations('production.delivery.moveToStorage');
+  const tCommon = useTranslations('common');
+
   return (
-    <Modal
-      title="프로젝트를 보관하시겠습니까?"
-      onClose={onClose}
-      subtitle={`납품 예정인 제품이 모두 완료 처리되며,\n프로젝트는 보관함으로 이동돼요.`}
-    >
+    <Modal title={t('title')} onClose={onClose} subtitle={t('subtitle')}>
       <div className="flex gap-2.5 mt-4 justify-end">
         <MiniBtn
-          text="닫기"
+          text={tCommon('cancel')}
           textColor="text-sv"
           hoverColor="hover:bg-bg"
           onClick={onClose}
         />
         <MiniBtn
-          text="보관함으로 이동하기"
+          text={t('button')}
           textColor="text-wh"
           bgColor="bg-primary"
           hoverColor="hover:bg-primary-hover"

@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import TransactionDocumentView from '@/app/[locale]/(with-layout)/document/transaction-document-view';
 import { ProjectQuotationModel } from '@/types/data-model';
 import MiniBtn from '@/ui/mini-btn';
@@ -19,10 +22,13 @@ const CreateTransactionOverlayview = ({
   quotationData,
   printedAt,
 }: CreateTransactionOverlayviewProps) => {
+  const tCommon = useTranslations('common');
+  const tDocumentType = useTranslations('document.type');
+  const tDelivery = useTranslations('production.delivery');
   const contentRef = useRef<HTMLDivElement>(null);
   const reactToPrintFn = useReactToPrint({
     contentRef,
-    documentTitle: `거래명세서`, // 문서 제목
+    documentTitle: tDocumentType('transactionStatementTitle'),
   });
 
   const { updateProjectStatus } = useUpdateProjectStatus();
@@ -42,20 +48,22 @@ const CreateTransactionOverlayview = ({
       <div className="w-full flex flex-col gap-6 px-8 pb-8">
         <div className="pb-6 w-full flex justify-between border-b border-lg sticky pt-8 top-0 bg-wh z-10">
           <div>
-            <h2 className="Heading-2">거래명세서를 출력하시겠어요?</h2>
+            <h2 className="Heading-2">
+              {tDelivery('transactionStatementPrintTitle')}
+            </h2>
             <div className="mt-2.5 Me_Body-3 text-gr">
-              출력 전, 거래명세서 내용을 한 번 더 확인해 주세요.
+              {tDelivery('transactionStatementPrintDescription')}
             </div>
           </div>
           <div className="flex gap-2.5">
             <MiniBtn
-              text="취소"
+              text={tCommon('cancel')}
               textColor="text-sv"
               onClick={onClose}
               hoverColor="hover:bg-bg"
             />
             <MiniBtn
-              text="거래명세서 출력하기"
+              text={tCommon('print')}
               textColor="text-wh"
               bgColor="bg-primary"
               hoverColor="hover:bg-primary-hover"

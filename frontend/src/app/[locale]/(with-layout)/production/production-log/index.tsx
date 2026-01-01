@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams } from 'next/navigation';
 import { useQueryClient } from '@tanstack/react-query';
@@ -22,6 +25,7 @@ interface ProductionLogProps {
 }
 
 const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
+  const t = useTranslations('production.productionLog');
   const params = useParams();
   const projectId = params.id ? parseInt(params.id as string) : null;
   const queryClient = useQueryClient();
@@ -199,10 +203,10 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
           // 저장 성공 토스트 표시
           showSaveToast();
         } else {
-          alert('저장에 실패했습니다.');
+          alert(t('errors.saveFailed'));
         }
       } catch {
-        alert('저장 중 오류가 발생했습니다.');
+        alert(t('errors.saveError'));
       }
     },
     [
@@ -211,6 +215,7 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
       projectPlans,
       createOrUpdateProjectPlan,
       showSaveToast,
+      t,
       showDateToast,
     ]
   );
@@ -269,10 +274,10 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
 
       // 저장 성공 후 데이터 새로고침 안함
     } catch (error) {
-      alert('저장 중 오류가 발생했습니다.');
+      alert(t('errors.saveError'));
       throw error; // 상위에서 처리할 수 있도록 에러 전파
     }
-  }, [projectId, formChanges, projectPlans, createOrUpdateProjectPlan]);
+  }, [projectId, formChanges, projectPlans, createOrUpdateProjectPlan, t]);
 
   // store에 전체 저장 함수 등록
   useEffect(() => {
@@ -362,8 +367,8 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
       {/* 생산 계획 저장 토스트 */}
       {isSaveToastOpen && (
         <Toast
-          text="생산 계획이 저장되었어요."
-          subtext="변경된 내용이 반영되었어요."
+          text={t('toast.saveSuccess')}
+          subtext={t('toast.saveSuccessSubtext')}
           icon={<CheckCircle size={20} className="text-primary" />}
           type="primary"
           isVisible={isSaveToastVisible}
@@ -372,8 +377,8 @@ const ProductionLog = ({ projectStatus }: ProductionLogProps) => {
       {/* 유효한 날짜로 입력 토스트 */}
       {isDateToastOpen && (
         <Toast
-          text="유효한 생산 일자나 마감 일자를 입력해 주세요."
-          subtext="YYYY-MM-DD 00:00 형식으로 입력해주세요."
+          text={t('toast.invalidDate')}
+          subtext={t('toast.invalidDateFormat')}
           icon={<WarningCircle size={20} className="text-red" />}
           type="red"
           isVisible={isDateToastVisible}

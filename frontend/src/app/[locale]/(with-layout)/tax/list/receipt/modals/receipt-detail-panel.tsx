@@ -12,12 +12,14 @@ interface ReceiptDetailPanelProps {
   onClose: () => void;
   itemId: number;
   showPanel?: boolean; // Panel 컴포넌트 사용 여부 (기본값: true)
+  showLinkButton?: boolean; // 내역 연결하기 버튼 표시 여부 (기본값: true)
 }
 
 const ReceiptDetailPanel = ({
-  onClose,
   itemId,
+  onClose,
   showPanel = true,
+  showLinkButton = true,
 }: ReceiptDetailPanelProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
@@ -122,16 +124,18 @@ const ReceiptDetailPanel = ({
         title="현금영수증"
         onClose={onClose}
         headerButton={
-          <MiniBtn
-            text="내역 연결하기"
-            textColor="text-dg"
-            borderColor="border-lg"
-            hoverColor="hover:bg-bg"
-            onClick={() => {
-              setIsLinkReceiptModalOpen(true);
-            }}
-            disabled={isViewer}
-          />
+          showLinkButton ? (
+            <MiniBtn
+              text="내역 연결하기"
+              textColor="text-dg"
+              borderColor="border-lg"
+              hoverColor="hover:bg-bg"
+              onClick={() => {
+                setIsLinkReceiptModalOpen(true);
+              }}
+              disabled={isViewer}
+            />
+          ) : undefined
         }
       >
         {content}

@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import Chip from '@/ui/chip';
 import {
   DeliveryStatusColorMap,
@@ -41,6 +44,7 @@ const DeliveryTableItem = ({
   onDeliveryDateChange,
   onDeliveryStatusChange,
 }: DeliveryTableItemProps) => {
+  const t = useTranslations('production.delivery');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
@@ -88,6 +92,10 @@ const DeliveryTableItem = ({
   const { bgColor, textColor } =
     DeliveryStatusColorMap[deliveryStatus as DeliveryStatusType];
 
+  // 번역된 상태 텍스트
+  const translatedStatus =
+    deliveryStatus === '완료' ? t('status.completed') : t('status.pending');
+
   // 가동완료(= manufactured) 이상에서만 납품상태 변경 허용
   const isEditable = projectStatus !== 'completed';
 
@@ -99,11 +107,11 @@ const DeliveryTableItem = ({
   };
 
   // 상태 변경 시 서버 반영
-  const handleStatusChange = async (newStatus: string) => {
+  const handleStatusChange = async (newStatus: '예정' | '완료') => {
     // 완료로 변경할 때 납품일자가 없으면 토스트 띄우고 중단
     if (newStatus === '완료' && !watchedDate) {
-      setText('납품 상태 변경에 실패했습니다.');
-      setSubtext('납품일자를 입력해 주세요.');
+      setText(t('errors.statusChangeFailed'));
+      setSubtext(t('errors.enterDeliveryDate'));
       showToast();
       closeDropdown();
       return;
@@ -125,12 +133,10 @@ const DeliveryTableItem = ({
           onDeliveryStatusChange(String(quotationProductId || ''), newStatus);
         }
       } else {
-        console.error('납품상태 변경 실패:', result.error);
         // 실패 시 원래 값으로 되돌리기
         setValue('deliveryStatus', isDelivery ? '완료' : '예정');
       }
-    } catch (error) {
-      console.error('납품상태 변경 중 오류:', error);
+    } catch {
       setValue('deliveryStatus', isDelivery ? '완료' : '예정');
     }
     closeDropdown();
@@ -166,14 +172,14 @@ const DeliveryTableItem = ({
           } else {
             // 실패 시 입력값을 savedDate로 되돌리고 savedDate는 유지
             setValue('deliveryDate', savedDate);
-            setText('납품일자 변경에 실패했습니다.');
+            setText(t('errors.dateChangeFailed'));
 
             // 서버 응답의 detail 메시지에 따라 서브텍스트 설정
             if (result?.error?.includes('날짜 형식이 올바르지 않습니다')) {
-              setText('납품일자가 올바른 형식이 아닙니다');
-              setSubtext('YYYY-MM-DD 형식으로 입력해주세요.');
+              setText(t('errors.invalidDateFormat'));
+              setSubtext(t('errors.invalidDateFormatDescription'));
             } else {
-              setSubtext('다시 시도해주세요.');
+              setSubtext(t('errors.retry'));
             }
 
             showToast();
@@ -181,8 +187,8 @@ const DeliveryTableItem = ({
         } catch {
           // 실패 시 입력값을 빈값으로 되돌리고 savedDate는 유지
           setValue('deliveryDate', '');
-          setText('납품일자 변경에 실패했습니다.');
-          setSubtext('유효한 납품일자를 입력해 주세요.');
+          setText(t('errors.dateChangeFailed'));
+          setSubtext(t('errors.enterValidDate'));
           showToast();
         }
       };
@@ -227,7 +233,7 @@ const DeliveryTableItem = ({
         )}
         <div className="w-[150px] flex items-center py-3 px-2">
           <Chip
-            text={deliveryStatus}
+            text={translatedStatus}
             bgColor={bgColor}
             textColor={textColor}
             state={isEditable && !isViewer && hasSubscription()}
@@ -239,7 +245,7 @@ const DeliveryTableItem = ({
           />
         </div>
         <div
-          className={`flex-2 px-3 flex justify-between ${
+          className={`flex-[1.6] px-3 flex justify-between ${
             hasSubscription() ? 'cursor-pointer group' : ''
           }`}
           onClick={hasSubscription() ? () => onItemClick(data) : undefined}
@@ -249,7 +255,7 @@ const DeliveryTableItem = ({
           </p>
           {hasSubscription() && (
             <p className="shrink-0 Re_Body-1 text-gr opacity-0 group-hover:opacity-100 transition-opacity duration-200 ">
-              납품표 보기
+              {t('viewDeliveryNote')}
             </p>
           )}
         </div>
@@ -266,7 +272,7 @@ const DeliveryTableItem = ({
           {productSpec || '-'}
         </p>
         <p
-          className="w-[80px] px-3 text-dg Me_Body-1 truncate cursor-default"
+          className="flex-1 px-3 text-dg Me_Body-1 truncate cursor-default"
           title={productUnit || '-'}
         >
           {productUnit || '-'}
@@ -282,10 +288,10 @@ const DeliveryTableItem = ({
             name="deliveryDate"
             control={control}
             rules={{
-              required: '납품일자를 입력해주세요',
+              required: t('validation.deliveryDateRequired'),
               pattern: {
                 value: /^\d{4}-\d{2}-\d{2}$/,
-                message: 'YYYY-MM-DD 형식으로 입력해주세요',
+                message: t('validation.deliveryDateFormat'),
               },
             }}
             render={({ field }) => (

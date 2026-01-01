@@ -2,6 +2,7 @@
 
 import { useParams } from 'next/navigation';
 import { useState, useEffect, Suspense, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import usePageStatusStore from '@/store/page-status-store';
 import { useGetProjectStatus, useUpdateProjectStatus } from '@/hooks';
 import ProductFlowTitle from '../product-flow-title';
@@ -29,34 +30,68 @@ import useSubscriptionStore from '@/store/subscription-store';
 
 const getTabsByStatus = (
   status: ProjectStatusType,
-  isRefund: boolean
+  isRefund: boolean,
+  t: (key: string) => string
 ): ProductionTabType[] => {
-  if (status === 'pending') return ['생산 계획', '주문서'];
+  if (status === 'pending')
+    return [
+      t('tabs.productionPlan') as ProductionTabType,
+      t('tabs.orderDocument') as ProductionTabType,
+    ];
   if (status === 'production')
     return isRefund
-      ? ['납품', '생산 현황', '생산 계획', '주문서']
-      : ['생산 현황', '생산 계획', '주문서'];
+      ? [
+          t('tabs.delivery') as ProductionTabType,
+          t('tabs.productionStatus') as ProductionTabType,
+          t('tabs.productionPlan') as ProductionTabType,
+          t('tabs.orderDocument') as ProductionTabType,
+        ]
+      : [
+          t('tabs.productionStatus') as ProductionTabType,
+          t('tabs.productionPlan') as ProductionTabType,
+          t('tabs.orderDocument') as ProductionTabType,
+        ];
   if (status === 'manufactured')
     return isRefund
-      ? ['납품', '생산 현황', '생산 내역', '주문서']
-      : ['생산 현황', '생산 내역', '주문서'];
+      ? [
+          t('tabs.delivery') as ProductionTabType,
+          t('tabs.productionStatus') as ProductionTabType,
+          t('tabs.productionHistory') as ProductionTabType,
+          t('tabs.orderDocument') as ProductionTabType,
+        ]
+      : [
+          t('tabs.productionStatus') as ProductionTabType,
+          t('tabs.productionHistory') as ProductionTabType,
+          t('tabs.orderDocument') as ProductionTabType,
+        ];
   if (status === 'delivery')
-    return ['납품', '생산 현황', '생산 내역', '주문서'];
+    return [
+      t('tabs.delivery') as ProductionTabType,
+      t('tabs.productionStatus') as ProductionTabType,
+      t('tabs.productionHistory') as ProductionTabType,
+      t('tabs.orderDocument') as ProductionTabType,
+    ];
   if (status === 'completed')
     return [
-      '세금계산서',
-      '거래명세서',
-      '납품',
-      '생산 현황',
-      '생산 내역',
-      '주문서',
+      t('tabs.taxInvoice') as ProductionTabType,
+      t('tabs.transactionStatement') as ProductionTabType,
+      t('tabs.delivery') as ProductionTabType,
+      t('tabs.productionStatus') as ProductionTabType,
+      t('tabs.productionHistory') as ProductionTabType,
+      t('tabs.orderDocument') as ProductionTabType,
     ];
-  return ['생산 계획', '주문서'];
+  return [
+    t('tabs.productionPlan') as ProductionTabType,
+    t('tabs.orderDocument') as ProductionTabType,
+  ];
 };
 
 const ProductionPageContent = () => {
   const params = useParams();
   const projectId = Number(params.id);
+  const tProduction = useTranslations('production');
+  const t = useTranslations('production');
+  const tCommon = useTranslations('common');
   const { getProjectStatus, isLoading } = useGetProjectStatus();
   const { updateProjectStatus } = useUpdateProjectStatus();
   const setPageStatus = usePageStatusStore((state) => state.setPageStatus);
@@ -96,14 +131,15 @@ const ProductionPageContent = () => {
           const projectStatus = result.data.status as ProjectStatusType;
           const tabs = getTabsByStatus(
             projectStatus,
-            result.data.is_refunded || false
+            result.data.is_refunded || false,
+            t
           );
 
           setPageStatus(projectStatus);
           setProductionTab(tabs[selectedTab]);
         }
       } catch {
-        alert('프로젝트 상태 로드 중 오류');
+        alert(tProduction('loadError'));
       }
     };
 
@@ -124,7 +160,8 @@ const ProductionPageContent = () => {
         const projectStatus = result.data.status as ProjectStatusType;
         const tabs = getTabsByStatus(
           projectStatus,
-          result.data.is_refunded || false
+          result.data.is_refunded || false,
+          t
         );
 
         setPageStatus(projectStatus);
@@ -133,7 +170,7 @@ const ProductionPageContent = () => {
         if (projectStatus === 'manufactured') {
           // 생산 완료 → 생산 내역 탭으로 이동
           const productionHistoryTabIndex = tabs.findIndex(
-            (tab) => tab === '생산 내역'
+            (tab) => tab === t('tabs.productionHistory')
           );
           if (productionHistoryTabIndex !== -1) {
             setSelectedTab(productionHistoryTabIndex);
@@ -141,22 +178,28 @@ const ProductionPageContent = () => {
           }
         } else if (projectStatus === 'delivery') {
           // 납품 → 납품 탭으로 이동
-          const deliveryTabIndex = tabs.findIndex((tab) => tab === '납품');
+          const deliveryTabIndex = tabs.findIndex(
+            (tab) => tab === t('tabs.delivery')
+          );
           if (deliveryTabIndex !== -1) {
             setSelectedTab(deliveryTabIndex);
             setProductionTab(tabs[deliveryTabIndex]);
           }
         } else if (projectStatus === 'completed') {
           // 완료 상태에서는 현재 탭이 세금계산서 탭이면 유지, 아니면 납품 탭으로 이동
-          const taxTabIndex = tabs.findIndex((tab) => tab === '세금계산서');
+          const taxTabIndex = tabs.findIndex(
+            (tab) => tab === t('tabs.taxInvoice')
+          );
           const currentTabName = tabs[selectedTab];
 
-          if (currentTabName === '세금계산서' && taxTabIndex !== -1) {
+          if (currentTabName === t('tabs.taxInvoice') && taxTabIndex !== -1) {
             // 현재 세금계산서 탭에 있으면 유지
             setProductionTab(tabs[selectedTab]);
           } else {
             // 그 외의 경우 납품 탭으로 이동
-            const deliveryTabIndex = tabs.findIndex((tab) => tab === '납품');
+            const deliveryTabIndex = tabs.findIndex(
+              (tab) => tab === t('tabs.delivery')
+            );
             if (deliveryTabIndex !== -1) {
               setSelectedTab(deliveryTabIndex);
               setProductionTab(tabs[deliveryTabIndex]);
@@ -166,7 +209,7 @@ const ProductionPageContent = () => {
         // pending → production, production → manufactured 등은 탭 변경하지 않음
       }
     } catch {
-      alert('프로젝트 상태 리로드 실패');
+      alert(tProduction('reloadError'));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
@@ -233,7 +276,8 @@ const ProductionPageContent = () => {
     (projectStatus?.status as ProjectStatusType) || 'quotation';
   const tabs = getTabsByStatus(
     projectStatusType,
-    projectStatus?.is_refunded || false
+    projectStatus?.is_refunded || false,
+    t
   );
 
   if (isLoading) {
@@ -270,17 +314,17 @@ const ProductionPageContent = () => {
           endDate={projectStatus?.latest_end_date || ''}
         />
 
-        {tabs[selectedTab] === '세금계산서' && (
+        {tabs[selectedTab] === t('tabs.taxInvoice') && (
           <div className="px-10 pt-5 pb-10">
             {projectStatus?.tax_invoice ? (
               <TaxDocumentView taxId={projectStatus?.tax_invoice.id || 0} />
             ) : (
               <>
                 <NoHistoryBox
-                  title="연결된 세금계산서가 없습니다."
-                  text="세금계산서를 연결해 주세요"
+                  title={tProduction('noTaxInvoice')}
+                  text={tProduction('linkTaxInvoice')}
                   height="h-[calc(100vh-322.43px)]"
-                  button="세금계산서 연결"
+                  button={tProduction('linkTaxInvoiceButton')}
                   onClick={() => {
                     setIsLinkTaxInvoiceModalOpen(true);
                   }}
@@ -328,25 +372,27 @@ const ProductionPageContent = () => {
             )}
           </div>
         )}
-        {tabs[selectedTab] === '거래명세서' && projectStatus?.quotations[0] && (
-          <div className="px-10 pt-5 pb-10">
-            <TransactionDocumentView
-              quotationData={projectStatus?.quotations[0]}
-              lastDeliveryDate={getLastDeliveryDate(
-                projectStatus?.quotations[0]
-              )}
+        {tabs[selectedTab] === t('tabs.transactionStatement') &&
+          projectStatus?.quotations[0] && (
+            <div className="px-10 pt-5 pb-10">
+              <TransactionDocumentView
+                quotationData={projectStatus?.quotations[0]}
+                lastDeliveryDate={getLastDeliveryDate(
+                  projectStatus?.quotations[0]
+                )}
+              />
+            </div>
+          )}
+        {tabs[selectedTab] === t('tabs.delivery') &&
+          projectStatus?.quotations[0] && (
+            <Delivery
+              // quotationData={projectStatus?.quotations[0]}
+              onProjectStatusChange={reloadProjectStatus}
+              projectStatus={projectStatus.status as ProjectStatusType}
+              printedAt={projectStatus.printed_at}
             />
-          </div>
-        )}
-        {tabs[selectedTab] === '납품' && projectStatus?.quotations[0] && (
-          <Delivery
-            // quotationData={projectStatus?.quotations[0]}
-            onProjectStatusChange={reloadProjectStatus}
-            projectStatus={projectStatus.status as ProjectStatusType}
-            printedAt={projectStatus.printed_at}
-          />
-        )}
-        {tabs[selectedTab] === '생산 현황' && (
+          )}
+        {tabs[selectedTab] === t('tabs.productionStatus') && (
           <ProductionMonitor
             projectStatus={projectStatus.status as ProjectStatusType}
             onTabChange={(tab) => {
@@ -359,61 +405,62 @@ const ProductionPageContent = () => {
             }}
           />
         )}
-        {tabs[selectedTab] === '생산 내역' && (
+        {tabs[selectedTab] === t('tabs.productionHistory') && (
           <ProductionLog
             projectStatus={projectStatus.status as ProjectStatusType}
           />
         )}
-        {tabs[selectedTab] === '생산 계획' && (
+        {tabs[selectedTab] === t('tabs.productionPlan') && (
           <ProductionPlan
             handleChangeStatus={handleChangeStatus}
             projectStatus={projectStatus.status as ProjectStatusType}
           />
         )}
-        {tabs[selectedTab] === '주문서' && projectStatus?.quotations[0] && (
-          <div className="px-10 pt-5 pb-10">
-            <OrderDocumentView
-              documentTitle="주문서"
-              clientData={projectStatus?.quotations[0].client_info}
-              dueDate={projectStatus?.quotations[0].due_date || '-'}
-              productListInfoTitle="주문 제품 정보"
-              productItems={projectStatus?.quotations[0].products_info.map(
-                (p) => ({
-                  productId: p.id,
-                  product_code: p.code,
-                  product_name: p.name,
-                  spec: p.spec,
-                  unit: p.unit,
-                  quantity: p.quantity,
-                  unit_price: p.unit_price,
-                })
-              )}
-              supplyAmount={(() => {
-                // 국세청 공식: 합계금액에서 공급가액 계산
-                const totalAmount =
-                  projectStatus?.quotations[0].products_info.reduce(
-                    (sum: number, item: ProjectQuotationProductsInfoModel) =>
-                      sum + (item.unit_price * item.quantity || 0),
-                    0
-                  ) || 0;
-                // 국세청 공식: 공급가액 = 합계금액 ÷ 1.1
-                return Math.floor(totalAmount / 1.1);
-              })()}
-              taxAmount={(() => {
-                // 국세청 공식: 합계금액에서 공급가액과 세액 계산
-                const totalAmount =
-                  projectStatus?.quotations[0].products_info.reduce(
-                    (sum: number, item: ProjectQuotationProductsInfoModel) =>
-                      sum + (item.unit_price * item.quantity || 0),
-                    0
-                  ) || 0;
-                // 국세청 공식: 공급가액 = 합계금액 ÷ 1.1, 세액 = 합계금액 - 공급가액
-                const calculatedSupplyAmount = Math.floor(totalAmount / 1.1);
-                return totalAmount - calculatedSupplyAmount;
-              })()}
-            />
-          </div>
-        )}
+        {tabs[selectedTab] === t('tabs.orderDocument') &&
+          projectStatus?.quotations[0] && (
+            <div className="px-10 pt-5 pb-10">
+              <OrderDocumentView
+                documentTitle={t('tabs.orderDocument')}
+                clientData={projectStatus?.quotations[0].client_info}
+                dueDate={projectStatus?.quotations[0].due_date || '-'}
+                productListInfoTitle={tCommon('orderProductInfo')}
+                productItems={projectStatus?.quotations[0].products_info.map(
+                  (p) => ({
+                    productId: p.id,
+                    product_code: p.code,
+                    product_name: p.name,
+                    spec: p.spec,
+                    unit: p.unit,
+                    quantity: p.quantity,
+                    unit_price: p.unit_price,
+                  })
+                )}
+                supplyAmount={(() => {
+                  // 국세청 공식: 합계금액에서 공급가액 계산
+                  const totalAmount =
+                    projectStatus?.quotations[0].products_info.reduce(
+                      (sum: number, item: ProjectQuotationProductsInfoModel) =>
+                        sum + (item.unit_price * item.quantity || 0),
+                      0
+                    ) || 0;
+                  // 국세청 공식: 공급가액 = 합계금액 ÷ 1.1
+                  return Math.floor(totalAmount / 1.1);
+                })()}
+                taxAmount={(() => {
+                  // 국세청 공식: 합계금액에서 공급가액과 세액 계산
+                  const totalAmount =
+                    projectStatus?.quotations[0].products_info.reduce(
+                      (sum: number, item: ProjectQuotationProductsInfoModel) =>
+                        sum + (item.unit_price * item.quantity || 0),
+                      0
+                    ) || 0;
+                  // 국세청 공식: 공급가액 = 합계금액 ÷ 1.1, 세액 = 합계금액 - 공급가액
+                  const calculatedSupplyAmount = Math.floor(totalAmount / 1.1);
+                  return totalAmount - calculatedSupplyAmount;
+                })()}
+              />
+            </div>
+          )}
       </div>
 
       {/* 반품 등록 모달 */}

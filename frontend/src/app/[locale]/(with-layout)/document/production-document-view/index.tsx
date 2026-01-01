@@ -37,6 +37,7 @@ const ProductionDocumentView = ({
   onMemoChange,
 }: ProductionDocumentViewProps) => {
   const t = useTranslations('document');
+  const tDocumentType = useTranslations('document.type');
   const [workInstruction, setWorkInstruction] =
     useState<WorkInstructionDetailResponseModel | null>(null);
   const [value, setValue] = useState('');
@@ -75,14 +76,14 @@ const ProductionDocumentView = ({
   const formattedDate = formatISODate(workInstruction?.created_at || '') || '';
   const documentTitle = t('productionDocumentTitleFormat', {
     date: formattedDate,
-    workInstruction: t('workInstruction'),
+    workInstruction: tDocumentType('productionInstruction'),
   });
 
   return (
     <div className="flex flex-col gap-6">
       <div className="flex gap-1">
         <Chip
-          text={t('workInstruction')}
+          text={tDocumentType('productionInstruction')}
           radius="rounded-full"
           bgColor={selectedChip === 'document' ? 'bg-dg' : 'bg-transparent'}
           textColor={selectedChip === 'document' ? 'text-wh' : 'text-dg'}

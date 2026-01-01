@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
 import { useToast } from '@/hooks';
@@ -22,6 +23,8 @@ const RegisterProductionModal = ({
   currentProductionAmount,
   currentRefundDate,
 }: RegisterProductionModalProps) => {
+  const t = useTranslations('production.registerProductionModal');
+  const tCommon = useTranslations('common');
   const { registerProduction, isLoading, error } =
     useRegisterProductionFromRefund();
   // const { updateRefund, isLoading, error } = useUpdateRefund();
@@ -47,9 +50,11 @@ const RegisterProductionModal = ({
     }
   };
 
-  // 원자재 부족 에러인지 확인
+  // 원자재 부족 에러인지 확인 (한국어/영어 모두 확인)
   const isMaterialShortageError =
-    error && error.includes('원자재') && error.includes('재고가 부족합니다');
+    error &&
+    ((error.includes('원자재') && error.includes('재고가 부족합니다')) ||
+      (error.includes('material') && error.includes('shortage')));
 
   // 원자재 부족 에러 메시지에서 앞부분만 추출 (. 이전)
   const getMaterialShortageMessage = (errorMsg: string) => {
@@ -60,19 +65,19 @@ const RegisterProductionModal = ({
   return (
     <>
       <Modal
-        title="생산 대기열에 등록되었습니다."
-        subtitle={`반품된 제품의 추가 생산이 등록되었습니다.\n지금 바로 생산을 시작하시겠어요?`}
+        title={t('title')}
+        subtitle={t('subtitle')}
         onClose={isLoading ? () => {} : onClose} // 로딩 중에는 창 닫기 비활성화
       >
         <div className="flex justify-end gap-[5px]">
           <MiniBtn
-            text="취소"
+            text={tCommon('cancel')}
             textColor="text-sv"
             hoverColor="hover:bg-bg"
             onClick={onClose}
           />
           <MiniBtn
-            text="생산 시작하기"
+            text={t('startButton')}
             hoverColor="hover:bg-primary-hover"
             textColor="text-wh"
             bgColor="bg-primary"
@@ -88,12 +93,12 @@ const RegisterProductionModal = ({
           text={
             isMaterialShortageError
               ? getMaterialShortageMessage(error + '.')
-              : '생산 등록에 오류가 발생했어요.'
+              : t('error.registerFailed')
           }
           subtext={
             isMaterialShortageError
-              ? '원자재를 먼저 등록해주세요.'
-              : '잠시 후 다시 시도해 주세요.'
+              ? t('error.materialShortage')
+              : t('error.retry')
           }
           type="red"
           isVisible={isVisible}

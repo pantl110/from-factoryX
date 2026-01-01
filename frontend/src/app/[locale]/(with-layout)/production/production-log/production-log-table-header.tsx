@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { ProjectStatusType } from '@/types/status-type';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
@@ -9,6 +12,9 @@ interface ProductionLogTableHeaderProps {
 const ProductionLogTableHeader = ({
   projectStatus,
 }: ProductionLogTableHeaderProps) => {
+  const t = useTranslations('production.productionLog.tableHeader');
+  const tCommon = useTranslations('common');
+  const tProductionInfo = useTranslations('production.productionInfo');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
@@ -16,21 +22,20 @@ const ProductionLogTableHeader = ({
   );
 
   return (
-    <div className="flex items-center h-12 min-w-[1640px] Me_Body-1 text-sv rounded bg-lg-table cursor-default">
-      {/* //  sticky top-[113px] */}
-      <p className="flex-[2] px-3">제품명</p>
-      <p className="flex-1 px-3">제품코드</p>
-      <p className="flex-1 px-3">규격</p>
-      <p className="w-[80px] px-3">단위</p>
-      <p className="flex-1 px-3">주문 수량</p>
-      <p className="flex-1 px-3">생산 수량</p>
-      <p className="flex-1 px-3">생산 설비</p>
-      <p className="w-[200px] px-3">생산 일자</p>
-      <p className="w-[140px] px-3">단위당 소요 시간</p>
-      <p className="w-[150px] px-3">자재 상태</p>
-      <p className="w-[200px] px-3">마감일자</p>
+    <div className="flex items-center h-12 min-w-[1960px] Me_Body-1 text-sv rounded bg-lg-table cursor-default">
+      <p className="flex-[1.6] px-3">{tCommon('productName')}</p>
+      <p className="flex-1 px-3">{tCommon('productCode')}</p>
+      <p className="flex-1 px-3">{tCommon('specification')}</p>
+      <p className="flex-1 px-3">{tCommon('unit')}</p>
+      <p className="w-[150px] px-3">{tProductionInfo('orderQuantity')}</p>
+      <p className="w-[150px] px-3">{tProductionInfo('productionQuantity')}</p>
+      <p className="flex-1 px-3">{tCommon('productionEquipment')}</p>
+      <p className="w-[200px] px-3">{tCommon('productionDate')}</p>
+      <p className="w-[140px] px-3">{tProductionInfo('timePerUnit')}</p>
+      <p className="w-[150px] px-3">{t('materialStatus')}</p>
+      <p className="w-[200px] px-3">{t('completionDate')}</p>
       {projectStatus === 'manufactured' && !isViewer && hasSubscription() && (
-        <p className="w-[260px] px-3">액션</p>
+        <p className="w-[260px] px-3">{tCommon('action')}</p>
       )}
     </div>
   );

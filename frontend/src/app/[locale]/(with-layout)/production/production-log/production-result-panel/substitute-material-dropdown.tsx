@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import { useEffect, useState } from 'react';
 import { Dropdown, DropdownItem } from '@/ui';
 import { RoundChip } from '@/ui/round-chip';
@@ -19,6 +22,7 @@ export const SubstituteMaterialDropdown = ({
   onClose,
   onSelect,
 }: SubstituteMaterialDropdownProps) => {
+  const t = useTranslations('production.substituteMaterial');
   const [page, setPage] = useState(1);
   const [items, setItems] = useState<MaterialSimpleModel[]>([]);
 
@@ -74,7 +78,7 @@ export const SubstituteMaterialDropdown = ({
           }}
         >
           <div className="pl-2 pr-4 flex items-center gap-2">
-            <RoundChip text="대체 자재" variant="sm" color="secondary" />
+            <RoundChip text={t('label')} variant="sm" color="secondary" />
             <p className="Heading-4 text-dg">{item.name}</p>
           </div>
         </DropdownItem>

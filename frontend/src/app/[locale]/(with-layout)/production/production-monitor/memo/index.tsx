@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import MiniBtn from '@/ui/mini-btn';
 import SaveToast from './save-toast';
 import useToast from '@/hooks/use-toast';
@@ -24,6 +25,8 @@ const MemoSection = ({
   onUpdate,
   projectStatus,
 }: MemoSectionProps) => {
+  const t = useTranslations('production.productionLog.memo');
+  const tCommon = useTranslations('common');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
@@ -57,10 +60,10 @@ const MemoSection = ({
         setIsEditMode(false);
         onUpdate?.(memoTitle, memoContent); // 왼쪽 LogItem만 로컬 업데이트
       } else {
-        alert(`메모 수정에 실패했습니다: ${result.error}`);
+        alert(t('updateFailed', { error: result.error }));
       }
     } catch {
-      alert('메모 수정 중 오류가 발생했습니다.');
+      alert(t('updateError'));
     }
   };
 
@@ -70,7 +73,7 @@ const MemoSection = ({
         <div className="flex flex-col gap-3 flex-1">
           <div className="flex gap-2">
             <div className="h-11 px-3 w-[110px] Me_Body-1 bg-bg flex items-center justify-center rounded">
-              메모
+              {t('title')}
             </div>
             <input
               className="focus:outline-none h-11 border px-3 Re_Body-1 text-dg border-lg flex items-center rounded-lg flex-1"
@@ -92,7 +95,7 @@ const MemoSection = ({
           <div className="flex gap-2.5 justify-end">
             {!isEditMode ? (
               <MiniBtn
-                text="수정"
+                text={tCommon('edit')}
                 textColor="text-dg"
                 borderColor="border-lg"
                 hoverColor="hover:bg-bg"
@@ -102,7 +105,7 @@ const MemoSection = ({
             ) : (
               <>
                 <MiniBtn
-                  text="취소"
+                  text={tCommon('cancel')}
                   textColor="text-sv"
                   borderColor="border-lg"
                   hoverColor="hover:bg-bg"
@@ -113,7 +116,7 @@ const MemoSection = ({
                   }}
                 />
                 <MiniBtn
-                  text="저장"
+                  text={tCommon('save')}
                   textColor="text-wh"
                   bgColor="bg-primary"
                   hoverColor="hover:bg-primary-hover"

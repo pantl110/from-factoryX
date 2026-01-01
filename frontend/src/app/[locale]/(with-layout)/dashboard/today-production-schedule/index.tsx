@@ -24,7 +24,7 @@ const TodayProductionSchedule = ({
   isLoading,
 }: TodayProductionScheduleProps) => {
   const t = useTranslations('dashboard.todayProductionSchedule');
-  const tDocument = useTranslations('document');
+  const tDocumentType = useTranslations('document.type');
   const factoryId = useMemberStore((state) => state.factoryId);
   const [isPrintOverlayOpen, setIsPrintOverlayOpen] = useState(false);
   const [latestWorkInstructionId, setLatestWorkInstructionId] = useState<
@@ -33,7 +33,7 @@ const TodayProductionSchedule = ({
   const contentRef = useRef<HTMLDivElement>(null);
   const reactToPrintFn = useReactToPrint({
     contentRef,
-    documentTitle: tDocument('workInstruction'),
+    documentTitle: tDocumentType('productionInstruction'),
   });
 
   const { getWorkInstructions } = useGetWorkInstructions();
@@ -101,7 +101,9 @@ const TodayProductionSchedule = ({
         <OverlayView onClose={() => setIsPrintOverlayOpen(false)}>
           <div className="w-full flex flex-col p-8">
             <div className="flex justify-between items-center h-13 pb-3 border-b border-lg">
-              <h3 className="Heading-3">{tDocument('workInstruction')}</h3>
+              <h3 className="Heading-3">
+                {tDocumentType('productionInstruction')}
+              </h3>
               <button
                 className="w-10 h-10 flex justify-center items-center cursor-pointer hover:bg-bg rounded-[8px] transition-colors ease-in-out duration-200"
                 onClick={() => setIsPrintOverlayOpen(false)}

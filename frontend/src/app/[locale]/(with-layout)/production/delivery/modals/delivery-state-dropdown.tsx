@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import Chip from '@/ui/chip';
 import Dropdown from '@/ui/dropdown/dropdown';
 import DropdownItem from '@/ui/dropdown/dropdown-item';
@@ -16,6 +19,8 @@ const DeliveryStateDropdown = ({
   onCompletedClick,
   anchorRect,
 }: DeliveryStateDropdownProps) => {
+  const tDelivery = useTranslations('production.delivery.status');
+
   if (!anchorRect) return null;
 
   const dropdownContent = (
@@ -29,7 +34,7 @@ const DeliveryStateDropdown = ({
         chip={true}
       >
         <Chip
-          text="예정"
+          text={tDelivery('pending')}
           bgColor="bg-bg"
           textColor="text-dg"
           hover="hover:bg-lg"
@@ -46,7 +51,7 @@ const DeliveryStateDropdown = ({
         chip={true}
       >
         <Chip
-          text="완료"
+          text={tDelivery('completed')}
           bgColor="bg-primary-8"
           textColor="text-primary"
           hover="hover:bg-secondary-hover"

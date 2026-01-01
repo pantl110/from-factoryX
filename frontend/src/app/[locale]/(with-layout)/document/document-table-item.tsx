@@ -447,6 +447,7 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
         <ReceiptDetailPanel
           itemId={cashReceiptData.id}
           onClose={() => setIsCashReceiptPanelOpen(false)}
+          showLinkButton={false}
         />
       )}
     </>

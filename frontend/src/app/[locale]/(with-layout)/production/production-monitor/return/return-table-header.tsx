@@ -1,10 +1,14 @@
+import { useTranslations } from 'next-intl';
+
 const ReturnTableHeader = () => {
+  const tCommon = useTranslations('common');
+
   return (
     <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 text-sv cursor-default">
-      <p className="flex-[2] px-3">제품명</p>
-      <p className="flex-1 px-3">제품코드</p>
-      <p className="flex-1 px-3">규격</p>
-      <p className="w-[80px] px-3">단위</p>
+      <p className="flex-[1.2] px-3">{tCommon('productName')}</p>
+      <p className="flex-1 px-3">{tCommon('productCode')}</p>
+      <p className="w-[90px] px-3">{tCommon('specification')}</p>
+      <p className="w-[90px] px-3">{tCommon('unit')}</p>
     </div>
   );
 };

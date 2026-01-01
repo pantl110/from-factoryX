@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import InfoLabelValue from '@/ui/info-label-value';
 import MiniBtn from '@/ui/mini-btn';
 import { useState, useEffect } from 'react';
@@ -28,6 +29,8 @@ const ReturnInfo = ({
   onTabChange,
   logId,
 }: ReturnInfoProps) => {
+  const t = useTranslations('production.returnInfo');
+  const tCommon = useTranslations('common');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
 
@@ -183,11 +186,11 @@ const ReturnInfo = ({
     <>
       <div className="flex flex-col gap-3">
         <div className="flex justify-between">
-          <h3 className="Heading-3 text-dg flex items-center">반품 정보</h3>
+          <h3 className="Heading-3 text-dg flex items-center">{t('title')}</h3>
           <div className="flex gap-2.5">
             {!isEditing && (
               <MiniBtn
-                text="수정하기"
+                text={tCommon('edit')}
                 textColor="text-dg"
                 borderColor="border-lg"
                 hoverColor="hover:bg-bg"
@@ -203,7 +206,7 @@ const ReturnInfo = ({
             )}
 
             <MiniBtn
-              text="생산 등록하기"
+              text={t('registerProductionButton')}
               hoverColor="hover:bg-primary-hover"
               textColor="text-wh"
               bgColor="bg-primary"
@@ -223,7 +226,7 @@ const ReturnInfo = ({
         <div>
           <div className="border-t border-b border-lg">
             <InfoLabelValue
-              label="반품제품"
+              label={t('returnProduct')}
               value={refundData.product.name}
               disabled={true}
             />
@@ -232,7 +235,7 @@ const ReturnInfo = ({
             {isEditing ? (
               <div className="flex w-full Me_Body-1 border-t border-lg">
                 <div className="w-[137px] bg-lg-table flex gap-2 p-3">
-                  <div className="text-sv">반품일자</div>
+                  <div className="text-sv">{t('returnDate')}</div>
                 </div>
                 <div className="flex-1 flex items-center">
                   <div className="text-dg px-3 flex-1 flex items-center">
@@ -251,7 +254,7 @@ const ReturnInfo = ({
               </div>
             ) : (
               <InfoLabelValue
-                label="반품일자"
+                label={t('returnDate')}
                 value={formatDate(watchedRefundDate)}
                 isEditing={isEditing}
                 disabled={true}
@@ -262,7 +265,7 @@ const ReturnInfo = ({
             {isEditing ? (
               <div className="flex w-full Me_Body-1 border-t border-lg">
                 <div className="w-[137px] bg-lg-table flex gap-2 p-3">
-                  <div className="text-sv">반품수량</div>
+                  <div className="text-sv">{t('returnQuantity')}</div>
                 </div>
                 <div className="flex-1 flex items-center">
                   <div className="text-dg px-3 flex-1 flex items-center">
@@ -272,7 +275,7 @@ const ReturnInfo = ({
                         value={amountInput}
                         onChange={handleAmountChange}
                         onBlur={handleAmountBlur}
-                        placeholder="(필수)"
+                        placeholder={tCommon('required')}
                         className="w-full placeholder:text-gr"
                         style={{ outline: 'none' }}
                       />
@@ -282,7 +285,7 @@ const ReturnInfo = ({
               </div>
             ) : (
               <InfoLabelValue
-                label="반품수량"
+                label={t('returnQuantity')}
                 value={refundData.amount.toLocaleString()}
                 isEditing={isEditing}
                 disabled={true}
@@ -291,7 +294,7 @@ const ReturnInfo = ({
           </div>
           <div className="border-b border-lg">
             <InfoLabelValue
-              label="현재재고"
+              label={t('currentStock')}
               value={refundData.current_stock?.toLocaleString() || '-'}
               disabled={true}
             />
@@ -300,7 +303,7 @@ const ReturnInfo = ({
             {isEditing ? (
               <div className="flex w-full Me_Body-1 border-t border-lg">
                 <div className="w-[137px] bg-lg-table flex gap-2 p-3">
-                  <div className="text-sv">생산수량</div>
+                  <div className="text-sv">{t('productionQuantity')}</div>
                 </div>
                 <div className="flex-1 flex items-center">
                   <div className="text-dg px-3 flex-1 flex items-center">
@@ -310,7 +313,7 @@ const ReturnInfo = ({
                         value={productionAmountInput}
                         onChange={handleProductionAmountChange}
                         onBlur={handleProductionAmountBlur}
-                        placeholder="(필수)"
+                        placeholder={tCommon('required')}
                         className="w-full placeholder:text-gr"
                         style={{ outline: 'none' }}
                       />
@@ -320,7 +323,7 @@ const ReturnInfo = ({
               </div>
             ) : (
               <InfoLabelValue
-                label="생산수량"
+                label={t('productionQuantity')}
                 value={
                   refundData.production_amount !== null &&
                   refundData.production_amount !== undefined
@@ -340,7 +343,7 @@ const ReturnInfo = ({
           onClose={() => setIsRegisterProductionModalOpen(false)}
           onSuccess={() => {
             // 생산 시작 성공 시 생산계획 탭으로 이동
-            onTabChange?.('생산 계획');
+            onTabChange?.(t('productionPlanTab'));
           }}
           logId={logId}
           currentAmount={watchedAmount}

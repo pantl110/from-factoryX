@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import Panel from '@/ui/panel';
 import MiniBtn from '@/ui/mini-btn';
 import { ProductionInfo } from './production-info';
@@ -25,6 +28,8 @@ export const ProductionResultPanel = ({
   plan,
   onSaveSuccess,
 }: ProductionResultPanelProps) => {
+  const t = useTranslations('production.productionResultPanel');
+  const tCommon = useTranslations('common');
   const { createOrUpdateProjectPlan } = useCreateOrUpdateProjectPlan();
   const { isToastOpen, isVisible, showToast } = useToast();
 
@@ -119,8 +124,8 @@ export const ProductionResultPanel = ({
     });
     if (!isDateValid) {
       setToastTexts({
-        text: '유효한 생산 시작일자나 생산 완료일자를 입력해 주세요.',
-        subtext: 'YYYY-MM-DD 00:00 형식으로 입력해주세요.',
+        text: t('errors.invalidDate'),
+        subtext: t('errors.invalidDateFormat'),
       });
       showToast();
       return;
@@ -129,7 +134,7 @@ export const ProductionResultPanel = ({
     // 수량 검사
     if (currentFormData.quantity <= 0) {
       setToastTexts({
-        text: '생산 수량을 입력해주세요.',
+        text: t('errors.quantityRequired'),
         subtext: '',
       });
       showToast();
@@ -159,7 +164,7 @@ export const ProductionResultPanel = ({
             errorMessage.includes('필수입니다')
           ) {
             setToastTexts({
-              text: 'LOT 번호를 선택해주세요.',
+              text: t('errors.lotNumberRequired'),
               subtext: '',
             });
             showToast();
@@ -169,7 +174,7 @@ export const ProductionResultPanel = ({
           // 사용량 0 관련 오류
           if (errorMessage.includes('사용량은 0보다 커야 합니다.')) {
             setToastTexts({
-              text: '실제 투입량을 입력해 주세요.',
+              text: t('errors.actualInputRequired'),
               subtext: '',
             });
             showToast();
@@ -178,7 +183,7 @@ export const ProductionResultPanel = ({
 
           // 기타 오류
           setToastTexts({
-            text: '자재 사용 정보 저장에 실패했습니다.',
+            text: t('errors.materialUsageSaveFailed'),
             subtext: errorMessage,
           });
           showToast();
@@ -207,7 +212,7 @@ export const ProductionResultPanel = ({
         onClose();
       } else {
         setToastTexts({
-          text: '저장에 실패했습니다.',
+          text: t('errors.saveFailed'),
           subtext: '',
         });
         showToast();
@@ -221,7 +226,7 @@ export const ProductionResultPanel = ({
           : String(error);
 
       setToastTexts({
-        text: '저장 중 오류가 발생했습니다.',
+        text: t('errors.saveError'),
         subtext: errorMessage,
       });
       showToast();
@@ -234,16 +239,21 @@ export const ProductionResultPanel = ({
     onClose,
     onSaveSuccess,
     showToast,
+    t,
   ]);
 
   return (
     <>
       <Panel
-        title="생산 결과 입력"
+        title={t('title')}
         onClose={onClose}
         headerButton={
           isDirty ? (
-            <MiniBtn text="저장하기" variant="secondary" onClick={handleSave} />
+            <MiniBtn
+              text={tCommon('save')}
+              variant="secondary"
+              onClick={handleSave}
+            />
           ) : null
         }
       >

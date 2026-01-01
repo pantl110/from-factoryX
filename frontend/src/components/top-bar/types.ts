@@ -20,14 +20,8 @@ export interface NotificationModel {
 
 // top-bar crumb 타입
 // production page tab 타입
-export type ProductionTabType =
-  | '세금계산서'
-  | '거래명세서'
-  | '납품'
-  | '생산 현황'
-  | '생산 내역'
-  | '생산 계획'
-  | '주문서';
+// Note: These are translated strings, the actual text depends on the locale
+export type ProductionTabType = string;
 
 // setting page tab 타입
 export type StockTabType = 'product' | 'material';

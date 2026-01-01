@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import DocumentViewTitle from '@/app/[locale]/(with-layout)/document/document-view-title';
 import MiniBtn from '@/ui/mini-btn';
 import OverlayView from '@/ui/ovelay-view';
@@ -19,10 +22,12 @@ interface DeliveryOverlayProps {
 }
 
 const DeliveryOverlay = ({ onClose, data }: DeliveryOverlayProps) => {
+  const tCommon = useTranslations('common');
+  const tDelivery = useTranslations('production.delivery');
   const contentRef = useRef<HTMLDivElement>(null);
   const reactToPrintFn = useReactToPrint({
     contentRef,
-    documentTitle: '납품표', // 문서 제목
+    documentTitle: tDelivery('title'),
   });
 
   return (
@@ -30,20 +35,20 @@ const DeliveryOverlay = ({ onClose, data }: DeliveryOverlayProps) => {
       <div className="w-full flex flex-col gap-6 px-8 pb-8">
         <div className="pb-6 w-full flex justify-between border-b border-lg sticky pt-8 top-0 bg-wh">
           <div>
-            <h2 className="Heading-2">납품표를 출력하시겠어요?</h2>
+            <h2 className="Heading-2">{tDelivery('printConfirmTitle')}</h2>
             <div className="mt-2.5 Me_Body-3 text-gr">
-              출력 전, 납품서 내용을 한 번 더 확인해 주세요.
+              {tDelivery('printConfirmDescription')}
             </div>
           </div>
           <div className="flex gap-2.5">
             <MiniBtn
-              text="취소"
+              text={tCommon('cancel')}
               textColor="text-sv"
               hoverColor="hover:bg-bg"
               onClick={onClose}
             />
             <MiniBtn
-              text="출력하기"
+              text={tCommon('print')}
               textColor="text-wh"
               bgColor="bg-primary"
               hoverColor="hover:bg-primary-hover"
@@ -57,7 +62,9 @@ const DeliveryOverlay = ({ onClose, data }: DeliveryOverlayProps) => {
               return (
                 <div key={i} className="flex flex-col gap-3">
                   {data.length > 1 && (
-                    <DocumentViewTitle title={`납품표 ${i + 1}`} />
+                    <DocumentViewTitle
+                      title={tDelivery('titleWithNumber', { number: i + 1 })}
+                    />
                   )}
                   <DeliveryTableItem
                     data={item}

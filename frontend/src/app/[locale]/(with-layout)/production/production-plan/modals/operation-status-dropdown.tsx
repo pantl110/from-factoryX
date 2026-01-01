@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import Chip from '@/ui/chip';
 import Dropdown from '@/ui/dropdown/dropdown';
 import DropdownItem from '@/ui/dropdown/dropdown-item';
@@ -17,6 +18,7 @@ const OperationStatusDropdown = ({
   onStatusChange,
   style,
 }: OperationStatusDropdownProps) => {
+  const t = useTranslations('production.operationStatus');
   const color = OperationStatusColorMap;
 
   return (
@@ -29,7 +31,7 @@ const OperationStatusDropdown = ({
     >
       <DropdownItem noHover={true} chip={true}>
         <Chip
-          text="가동 대기"
+          text={t('pending')}
           bgColor={color.pending.bgColor}
           textColor={color.pending.textColor}
           onClick={(e) => {
@@ -43,7 +45,7 @@ const OperationStatusDropdown = ({
       </DropdownItem>
       {/* <DropdownItem noHover={true} chip={true}>
         <Chip
-          text="가동 중"
+          text={t('production')}
           bgColor={color.production.bgColor}
           textColor={color.production.textColor}
           onClick={(e) => {
@@ -57,7 +59,7 @@ const OperationStatusDropdown = ({
       </DropdownItem> */}
       <DropdownItem noHover={true} chip={true}>
         <Chip
-          text="가동 완료"
+          text={t('completed')}
           bgColor={color.completed.bgColor}
           textColor={color.completed.textColor}
           onClick={(e) => {

@@ -1,5 +1,6 @@
 import { ProjectPlanModel, ProjectStatusType } from '@/types/data-model';
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import ProductDetail from '../../stock/product/product-detail';
 import { formatDateTime } from '@/hooks';
 import { ArrowLineUpRight } from '@phosphor-icons/react';
@@ -36,6 +37,9 @@ const ProductionLogTableItem = ({
   isFirstOfProduct,
   onSaveSuccess,
 }: ProductionLogTableItemProps) => {
+  const t = useTranslations('production.productionLog');
+  const tCommon = useTranslations('common');
+  const tProductionInfo = useTranslations('production.productionInfo');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
@@ -85,11 +89,30 @@ const ProductionLogTableItem = ({
     });
   };
 
+  // material_status를 번역 키로 변환
+  const getMaterialStatusTranslation = (status: string | null): string => {
+    if (!status) return '';
+    const statusMap: Record<string, string> = {
+      과재고: 'inventoryStatus.overstock',
+      충분: 'inventoryStatus.sufficient',
+      위험: 'inventoryStatus.risk',
+      부족: 'inventoryStatus.shortage',
+    };
+    return statusMap[status] || status;
+  };
+
+  const materialStatusKey = plan.material_status
+    ? getMaterialStatusTranslation(plan.material_status)
+    : '';
+  const materialStatusText = materialStatusKey
+    ? tCommon(materialStatusKey)
+    : plan.material_status || '';
+
   return (
     <>
-      <div className="flex items-center h-14 min-w-[1640px] border-b border-lg group Me_Body-1 text-dg">
+      <div className="flex items-center h-14 min-w-[1960px] border-b border-lg group Me_Body-1 text-dg">
         <p
-          className="flex-2 px-3 truncate cursor-default"
+          className="flex-[1.6] px-3 truncate cursor-default"
           title={isFirstOfProduct ? plan.quotation_product.product.name : ''}
         >
           {isFirstOfProduct ? plan.quotation_product.product.name : ''}
@@ -107,13 +130,13 @@ const ProductionLogTableItem = ({
           {isFirstOfProduct ? plan.quotation_product.product.spec : ''}
         </p>
         <p
-          className="w-[80px] px-3 truncate cursor-default"
+          className="flex-1 px-3 truncate cursor-default"
           title={isFirstOfProduct ? plan.quotation_product.product.unit : ''}
         >
           {isFirstOfProduct ? plan.quotation_product.product.unit : ''}
         </p>
         <p
-          className="flex-1 px-3 truncate cursor-default"
+          className="w-[150px] px-3 truncate cursor-default"
           title={
             isFirstOfProduct
               ? plan.quotation_product.quantity?.toLocaleString() || '-'
@@ -124,12 +147,13 @@ const ProductionLogTableItem = ({
             ? plan.quotation_product.quantity?.toLocaleString() || '-'
             : ''}
         </p>
-        <div className="flex-1 px-3">
+        <div className="w-[150px] px-3">
           <Controller
             name="quantity"
             control={control}
             rules={{
-              validate: (value) => value > 0 || '생산수량을 입력해주세요',
+              validate: (value) =>
+                value > 0 || tProductionInfo('validation.quantityRequired'),
             }}
             render={({ field }) => (
               <input
@@ -144,7 +168,7 @@ const ProductionLogTableItem = ({
                 className="w-full h-8 text-left border-none bg-transparent p-0"
                 style={{ outline: 'none' }}
                 disabled={!isEditable}
-                placeholder="(필수)"
+                placeholder={tCommon('required')}
               />
             )}
           />
@@ -160,7 +184,7 @@ const ProductionLogTableItem = ({
             name="start_date"
             control={control}
             rules={{
-              required: '시작일을 입력해주세요',
+              required: tProductionInfo('validation.startDateRequired'),
             }}
             render={({ field }) => (
               <input
@@ -188,7 +212,7 @@ const ProductionLogTableItem = ({
         <div className="w-[150px] px-2">
           <div className="flex items-center gap-2.5">
             <RoundChip
-              text={plan.material_status}
+              text={materialStatusText}
               variant="sm"
               color={
                 InventoryStatusColorMap[
@@ -211,7 +235,7 @@ const ProductionLogTableItem = ({
             name="end_date"
             control={control}
             rules={{
-              required: '종료일을 입력해주세요',
+              required: tProductionInfo('validation.endDateRequired'),
             }}
             render={({ field }) => (
               <input
@@ -234,7 +258,7 @@ const ProductionLogTableItem = ({
         {isEditable && (
           <div className="w-[260px] px-3 flex gap-2">
             <MiniBtn
-              text="저장하기"
+              text={tCommon('save')}
               variant="whiteOutline"
               height="h-8"
               onClick={onSave}
@@ -246,8 +270,8 @@ const ProductionLogTableItem = ({
                 plan.defective_quantity !== undefined &&
                 plan.defective_quantity !== null &&
                 plan.defective_quantity > 0
-                  ? '상세 보기'
-                  : '결과 입력하기'
+                  ? t('buttons.viewDetails')
+                  : t('buttons.enterResult')
               }
               variant={
                 plan.material_consumed &&

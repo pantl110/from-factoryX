@@ -1,4 +1,8 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import InfoLabelValue from '@/ui/info-label-value';
+
 interface DeliveryTableItemProps {
   data: {
     companyName: string;
@@ -9,17 +13,21 @@ interface DeliveryTableItemProps {
   };
   isLast?: boolean;
 }
+
 const DeliveryTableItem = ({
   data,
   isLast = false,
 }: DeliveryTableItemProps) => {
+  const tCommon = useTranslations('common');
+  const tDelivery = useTranslations('production.delivery');
+
   return (
     <div className={`flex flex-col ${isLast ? '' : 'pb-8 border-b border-lg'}`}>
-      <InfoLabelValue label="납품처" value={data.companyName} />
-      <InfoLabelValue label="제품명" value={data.productName} />
-      <InfoLabelValue label="규격" value={data.spec} />
-      <InfoLabelValue label="단위" value={data.unit} />
-      <InfoLabelValue label="납품수량" value={data.quantity} />
+      <InfoLabelValue label={tDelivery('company')} value={data.companyName} />
+      <InfoLabelValue label={tCommon('productName')} value={data.productName} />
+      <InfoLabelValue label={tCommon('specification')} value={data.spec} />
+      <InfoLabelValue label={tCommon('unit')} value={data.unit} />
+      <InfoLabelValue label={tDelivery('quantity')} value={data.quantity} />
     </div>
   );
 };

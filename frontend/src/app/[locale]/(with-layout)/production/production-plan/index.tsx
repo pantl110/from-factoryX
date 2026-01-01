@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import ProductionPlanSaveModal from './modals/production-plan-save-modal';
@@ -42,6 +43,8 @@ const ProductionPlan = ({
   handleChangeStatus,
   projectStatus,
 }: ProductionPlanProps) => {
+  const t = useTranslations('production.productionPlan');
+  const tCommon = useTranslations('common');
   const params = useParams();
   const projectId = params.id ? parseInt(params.id as string) : null;
   const queryClient = useQueryClient();
@@ -88,7 +91,7 @@ const ProductionPlan = ({
           (plan) => plan.id === parentPlanId
         );
         if (!parentPlan) {
-          throw new Error('부모 계획을 찾을 수 없습니다.');
+          throw new Error(t('errors.parentPlanNotFound'));
         }
 
         // DB에 저장하지 않고 임시 플랜을 로컬 상태에만 추가
@@ -100,7 +103,7 @@ const ProductionPlan = ({
             id: planData.equipment_id || 0,
             name:
               allEquipments.find((eq) => eq.id === planData.equipment_id)
-                ?.name || '설비',
+                ?.name || tCommon('equipment'),
           },
           start_date: '',
           end_date: '',
@@ -134,10 +137,10 @@ const ProductionPlan = ({
           [tempId]: { ...planData, start_date: '', end_date: '' },
         }));
       } catch {
-        alert('추가 생산 계획 생성 중 오류가 발생했습니다.');
+        alert(t('errors.addPlanFailed'));
       }
     },
-    [projectId, projectPlans, allEquipments]
+    [projectId, projectPlans, allEquipments, t, tCommon]
   );
 
   // 토스트 훅들
@@ -394,7 +397,7 @@ const ProductionPlan = ({
       (plan) => plan.id === operationStatusDropdownRowId
     );
     if (!targetPlan) {
-      alert('가동 상태를 변경할 계획을 찾을 수 없습니다.');
+      alert(t('errors.operationStatusPlanNotFound'));
       return;
     }
 
@@ -419,10 +422,10 @@ const ProductionPlan = ({
           )
         );
       } else {
-        alert('가동 상태 변경에 실패했습니다.');
+        alert(t('errors.operationStatusChangeFailed'));
       }
     } catch {
-      alert('가동 상태 변경 중 오류가 발생했습니다.');
+      alert(t('errors.operationStatusChangeError'));
     }
   };
 
@@ -513,13 +516,13 @@ const ProductionPlan = ({
           });
         } else {
           // 삭제 실패 시 에러 처리
-          alert('생산 계획 삭제에 실패했습니다.');
+          alert(t('errors.deletePlanFailed'));
         }
       } catch {
-        alert('삭제 중 오류가 발생했습니다.');
+        alert(t('errors.deleteError'));
       }
     },
-    [deleteProjectPlan, projectPlans, formChanges, showDeleteToast]
+    [deleteProjectPlan, projectPlans, formChanges, showDeleteToast, t]
   );
 
   // 설비 선택 핸들러
@@ -853,7 +856,7 @@ const ProductionPlan = ({
           showSaveToast();
         }
       } catch {
-        alert('저장에 실패했습니다.');
+        alert(t('errors.saveFailed'));
       }
     },
     [
@@ -867,6 +870,7 @@ const ProductionPlan = ({
       checkTimeConflicts,
       checkEquipmentConflicts,
       allEquipments,
+      t,
     ]
   );
 
@@ -897,14 +901,14 @@ const ProductionPlan = ({
             }));
           }
           showDateToast();
-          return { success: false, error: '날짜 형식 오류' };
+          return { success: false, error: t('errors.dateFormatError') };
         }
 
         // 시간대 충돌 검사
         const hasTimeConflict = checkTimeConflicts(parseInt(planId), formData);
         if (hasTimeConflict) {
           showTimeToast();
-          return { success: false, error: '시간대 충돌' };
+          return { success: false, error: t('errors.timeConflict') };
         }
 
         // 설비 중복 검사
@@ -914,7 +918,7 @@ const ProductionPlan = ({
         );
         if (hasEquipmentConflict) {
           showEquipmentToast();
-          return { success: false, error: '설비 중복' };
+          return { success: false, error: t('errors.equipmentConflict') };
         }
       }
 
@@ -941,7 +945,7 @@ const ProductionPlan = ({
 
       return { success: true };
     } catch {
-      alert('생산 계획 저장 중 오류가 발생했습니다.');
+      alert(t('errors.saveError'));
       return { success: false };
     }
   };
@@ -959,7 +963,7 @@ const ProductionPlan = ({
       }
       return { success: true };
     } catch {
-      alert('프로젝트 상태 변경 중 오류가 발생했습니다.');
+      alert(t('errors.statusChangeError'));
       return { success: false };
     }
   };
@@ -984,7 +988,7 @@ const ProductionPlan = ({
       setFormChanges({});
       setProductionPlanSaveModalOpen(false);
     } catch {
-      alert('저장 중 오류가 발생했습니다.');
+      alert(t('errors.saveGeneralError'));
     } finally {
       setIsSaveLoading(false);
     }
@@ -1088,8 +1092,8 @@ const ProductionPlan = ({
       {/* 설비 중복 사용 토스트 */}
       {isEquipmentToastOpen && (
         <Toast
-          text="해당 설비는 다른 프로젝트에서 이미 사용 중이에요."
-          subtext="중복 등록을 피하려면 설비를 변경해 주세요."
+          text={t('toast.equipmentConflict.text')}
+          subtext={t('toast.equipmentConflict.subtext')}
           icon={<WarningCircle size={20} className="text-red" />}
           type="red"
           isVisible={isEquipmentToastVisible}
@@ -1099,8 +1103,8 @@ const ProductionPlan = ({
       {/* 시간대 중복 토스트 */}
       {isTimeToastOpen && (
         <Toast
-          text="이미 해당 시간대에 같은 설비가 등록되어 있어요."
-          subtext="다른 시간대나 설비로 변경해 주세요."
+          text={t('toast.timeConflict.text')}
+          subtext={t('toast.timeConflict.subtext')}
           icon={<WarningCircle size={20} className="text-red" />}
           type="red"
           isVisible={isTimeToastVisible}
@@ -1110,8 +1114,8 @@ const ProductionPlan = ({
       {/* 생산 계획 삭제 토스트 */}
       {isDeleteToastOpen && (
         <Toast
-          text="생산 계획을 삭제할 수 없어요."
-          subtext="생산 수량이 부족해요. 수량을 늘려야 삭제할 수 있어요."
+          text={t('toast.deleteFailed.text')}
+          subtext={t('toast.deleteFailed.subtext')}
           icon={<WarningCircle size={20} className="text-red" />}
           type="red"
           isVisible={isDeleteToastVisible}
@@ -1120,8 +1124,8 @@ const ProductionPlan = ({
       {/* 생산 계획 저장 토스트 */}
       {isSaveToastOpen && (
         <Toast
-          text="수정사항이 저장되었습니다."
-          subtext="저장된 내용으로 생산을 진행할게요."
+          text={t('toast.saveSuccess.text')}
+          subtext={t('toast.saveSuccess.subtext')}
           icon={<CheckCircle size={20} className="text-primary" />}
           type="primary"
           isVisible={isSaveToastVisible}
@@ -1130,8 +1134,8 @@ const ProductionPlan = ({
       {/* 유효한 날짜로 입력 토스트 */}
       {isDateToastOpen && (
         <Toast
-          text="유효한 생산 일자나 마감 예정일자를 입력해 주세요."
-          subtext="YYYY-MM-DD 00:00 형식으로 입력해주세요."
+          text={t('toast.invalidDate.text')}
+          subtext={t('toast.invalidDate.subtext')}
           icon={<WarningCircle size={20} className="text-red" />}
           type="red"
           isVisible={isDateToastVisible}

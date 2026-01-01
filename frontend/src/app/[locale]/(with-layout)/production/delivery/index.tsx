@@ -1,3 +1,6 @@
+'use client';
+
+import { useTranslations } from 'next-intl';
 import MiniBtn from '@/ui/mini-btn';
 import DeliveryTableHeader from './delivery-table-header';
 import DeliveryTableItem from './delivery-table-item';
@@ -34,6 +37,7 @@ const Delivery = ({
   projectStatus,
   printedAt,
 }: DeliveryProps) => {
+  const t = useTranslations('production.delivery');
   const params = useParams();
   const projectId = Number(params.id);
   const hasSubscription = useSubscriptionStore(
@@ -172,7 +176,7 @@ const Delivery = ({
         );
       }
     } catch {
-      alert('납품상태 변경에 실패했습니다.');
+      alert(t('errors.statusChangeFailed'));
     }
   };
 
@@ -221,7 +225,7 @@ const Delivery = ({
         ).length;
 
         if (successCount < totalCount) {
-          alert(`일부 제품 상태 변경에 실패했습니다.`);
+          alert(t('errors.partialStatusChangeFailed'));
         }
       }
 
@@ -249,13 +253,13 @@ const Delivery = ({
         <div className="flex justify-between pb-4">
           <div className="flex gap-2">
             <MiniBtn
-              text="납품표 일괄 출력하기"
+              text={t('printAllButton')}
               variant="whiteOutline"
               onClick={() => setIsPrintAllDeliveryOverlayOpen(true)}
               disabled={!hasSubscription()}
             />
             <MiniBtn
-              text="납품표 출력하기"
+              text={t('printButton')}
               variant="whiteOutline"
               onClick={handlePrintDelivery}
               disabled={checkedIds.length === 0 || !hasSubscription()}
@@ -263,7 +267,7 @@ const Delivery = ({
           </div>
           <div className="flex gap-2">
             <MiniBtn
-              text="거래명세서 출력하기"
+              text={t('transactionStatementPrintButton')}
               variant="whiteOutline"
               onClick={() => setIsCreateTransactionOverlayviewOpen(true)}
               disabled={!hasSubscription()}
