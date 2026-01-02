@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useRouter } from 'next/navigation';
 import { RoundChip } from '@/ui/round-chip';
-import { getTaxStatusColor } from '@/types/status-type';
+import { getTaxStatusColor, ProjectStatusType } from '@/types/status-type';
 import Checkbox from '@/ui/checkbox';
 import MiniBtn from '@/ui/mini-btn';
 import { ProjectResponseModel } from '@/types/data-model';
@@ -20,6 +20,7 @@ import Skeleton from '@/app/[locale]/(without-layout)/skeleton';
 import CloneProjectModal from '../clone-project-modal';
 import { IconBtn } from '@/ui';
 import TaxDocumentOverlay from '@/app/[locale]/(with-layout)/document/tax-document-overlay';
+import { useTranslations } from 'next-intl';
 
 interface TableItemProps {
   project: ProjectResponseModel;
@@ -42,6 +43,11 @@ const TableItem = ({
   const hasSubscription = useSubscriptionStore(
     (state) => state.hasSubscription
   );
+  const tStatus = useTranslations('project.status');
+  const t = useTranslations('project.process');
+  const tCommon = useTranslations('common');
+  const tTax = useTranslations('tax.publishStatus');
+  const tDocumentType = useTranslations('document.type');
 
   const [isTooltipVisible, setIsTooltipVisible] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
@@ -51,21 +57,9 @@ const TableItem = ({
   const [isNavigating, setIsNavigating] = useState(false);
   const [isCloneProjectModalOpen, setIsCloneProjectModalOpen] = useState(false);
 
-  // 칩에서 표시할 텍스트 매핑 (영어/한글 모두 지원)
+  // 칩에서 표시할 텍스트 매핑
   const getDisplayText = (status: string): string => {
-    const displayMap: Record<string, string> = {
-      // 영어 상태
-      quotation: '견적 요청',
-      confirmed: '주문 확정',
-      pending: '생산 대기',
-      production: '생산 중',
-      manufactured: '생산 완료',
-      delivery: '납품',
-      completed: '완료',
-      suspended: '중단',
-    };
-
-    return displayMap[status] || '견적 요청';
+    return tStatus(status as ProjectStatusType) || tStatus('quotation');
   };
 
   const displayText = getDisplayText(project.status);
@@ -76,13 +70,20 @@ const TableItem = ({
     project.status === 'confirmed' ||
     project.status === 'suspended'
       ? project.quotations[0].products.length > 1
-        ? `${project.quotations[0].products[0].product.name} 외 ${project.quotations[0].products.length - 1}개`
+        ? t('productList', {
+            firstProduct:
+              project.quotations[0].products[0]?.product?.name || '',
+            count: project.quotations[0].products.length - 1,
+          })
         : project.quotations[0].products[0]?.product?.name || '-'
       : project.quotations &&
           project.quotations.length > 0 &&
           project.quotations[0].products_info &&
           project.quotations[0].products_info.length > 1
-        ? `${project.quotations[0].products_info[0].name} 외 ${project.quotations[0].products_info.length - 1}개`
+        ? t('productList', {
+            firstProduct: project.quotations[0].products_info[0]?.name || '',
+            count: project.quotations[0].products_info.length - 1,
+          })
         : project.quotations[0].products_info[0]?.name || '-';
 
   // 생산계획 중 가장 빠른 생산시작일
@@ -127,7 +128,7 @@ const TableItem = ({
       //  production 페이지로 이동
       router.push(`/production/${result.data.project_id}`);
     } else {
-      alert(`프로젝트 복제에 실패했습니다: ${result.error}`);
+      alert(t('errors.cloneFailed', { error: result.error }));
     }
   };
 
@@ -216,7 +217,7 @@ const TableItem = ({
             {!project.tax_invoice ||
             project.tax_invoice.publish_status === undefined ? (
               <MiniBtn
-                text="연결하기"
+                text={tCommon('link')}
                 variant="hoverWhite"
                 height="h-8"
                 onClick={(e) => {
@@ -246,17 +247,17 @@ const TableItem = ({
             {!project.tax_invoice
               ? '-'
               : project.tax_invoice.publish_status === 'temporary'
-                ? '임시 저장'
+                ? tTax('temporary')
                 : project.tax_invoice.publish_status === 'pending'
-                  ? '전송 대기'
+                  ? tTax('pending')
                   : project.tax_invoice.publish_status === 'processing'
-                    ? '처리 중'
+                    ? tTax('processing')
                     : project.tax_invoice.publish_status === 'published'
-                      ? '발행 완료'
+                      ? tTax('published')
                       : project.tax_invoice.publish_status === 'cancled'
-                        ? '발행 취소'
+                        ? tTax('cancled')
                         : project.tax_invoice.publish_status === 'failed'
-                          ? '발행 실패'
+                          ? tTax('failed')
                           : project.tax_invoice.publish_status === null
                             ? '-'
                             : '-'}
@@ -297,7 +298,7 @@ const TableItem = ({
       </div>
 
       {isTooltipVisible &&
-        getDisplayText(project.status) === '완료' &&
+        getDisplayText(project.status) === tStatus('completed') &&
         createPortal(
           <div
             className="fixed z-50 pointer-events-none"
@@ -307,8 +308,7 @@ const TableItem = ({
             }}
           >
             <Tooltip
-              text={`같은 업체에서 요청이 들어왔다면,
-이 프로젝트를 복제해서 바로 시작해보세요.`}
+              text={t('tooltip.cloneProject')}
               color="white"
               position="right"
             />
@@ -329,7 +329,7 @@ const TableItem = ({
         <TaxDocumentOverlay
           onClose={() => setIsTaxOverlayOpen(false)}
           taxId={project.tax_invoice.id}
-          title="매출 세금계산서"
+          title={tDocumentType('salesTaxInvoice')}
         />
       )}
 

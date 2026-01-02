@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import Modal from '@/ui/modal/modal';
 import { OcrDataModel } from '@/types/data-model';
 import DropzoneArea from '@/ui/dropzone-area';
@@ -16,6 +17,7 @@ const ExcelUploadModal = ({
   onComplete,
   documentTitle,
 }: UploadModalProps) => {
+  const t = useTranslations('document.excelUpload');
   const [hasFiles, setHasFiles] = useState(false);
   const { uploadOcr, isLoading } = useOcrUpload();
 
@@ -29,12 +31,14 @@ const ExcelUploadModal = ({
           onClose(); // 모달 닫기 추가
         } else {
           // OCR 실패 시 에러 처리
-          alert('OCR 처리에 실패했습니다.' + result.message);
+          alert(
+            t('errors.ocrFailed') + (result.message ? ' ' + result.message : '')
+          );
           onComplete(undefined, result.imageUrl); // OCR 실패 시에도 업로드된 이미지 URL 전달
           onClose(); // 모달 닫기 추가
         }
       } catch (err) {
-        alert('OCR 업로드 중 오류가 발생했습니다.' + err);
+        alert(t('errors.uploadError') + (err ? ' ' + String(err) : ''));
         onComplete();
         onClose(); // 모달 닫기 추가
       }
@@ -50,12 +54,10 @@ const ExcelUploadModal = ({
   };
 
   const title = hasFiles
-    ? '업로드된 파일을 확인해 주세요.'
-    : `${documentTitle} 파일을 업로드해 주세요.`;
+    ? t('title.hasFiles')
+    : t('title.noFiles', { documentTitle });
 
-  const subtitle = hasFiles
-    ? '파일이 맞는지 확인 후, 업로드를 눌러주세요.'
-    : '이미지 또는 PDF 파일을 끌어다 놓거나 업로드할 수 있어요.';
+  const subtitle = hasFiles ? t('subtitle.hasFiles') : t('subtitle.noFiles');
 
   return (
     <Modal

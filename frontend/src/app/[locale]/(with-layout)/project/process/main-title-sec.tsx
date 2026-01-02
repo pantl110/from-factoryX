@@ -1,10 +1,11 @@
 import MiniBtn from '@/ui/mini-btn';
 import { ProjectStatusType } from '@/types/status-type';
 import { CaretDown } from '@phosphor-icons/react';
-import SelectDropdown from './modals/select-modal';
 import { OcrDataModel } from '@/types/data-model';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
+import SelectDropdown from './modals/select-dropdown';
+import { useTranslations } from 'next-intl';
 
 interface MainTitleSecProps {
   onNewQuotation: () => void;
@@ -17,16 +18,6 @@ interface MainTitleSecProps {
   onOrderUploadClick?: () => void;
 }
 
-const statusTabMap = [
-  { label: '전체', value: 'progress' },
-  { label: '견적 요청', value: 'quotation' },
-  { label: '주문 확정', value: 'confirmed' },
-  { label: '생산 대기', value: 'pending' },
-  { label: '생산 중', value: 'production' },
-  { label: '생산 완료', value: 'manufactured' },
-  { label: '납품', value: 'delivery' },
-];
-
 const MainTitleSec = ({
   onNewQuotation,
   selectedStatus,
@@ -37,21 +28,33 @@ const MainTitleSec = ({
   onDirectInputClick,
   onOrderUploadClick,
 }: MainTitleSecProps) => {
+  const t = useTranslations('project.process');
+  const tStatus = useTranslations('project.status');
   const factoryId = useMemberStore((state) => state.factoryId);
   const role = useMemberStore((state) => state.role);
   const hasSubscription = useSubscriptionStore(
     (state) => state.hasSubscription
   );
 
+  const statusTabMap = [
+    { label: t('filters.all'), value: 'progress' },
+    { label: tStatus('quotation'), value: 'quotation' },
+    { label: tStatus('confirmed'), value: 'confirmed' },
+    { label: tStatus('pending'), value: 'pending' },
+    { label: tStatus('production'), value: 'production' },
+    { label: tStatus('manufactured'), value: 'manufactured' },
+    { label: tStatus('delivery'), value: 'delivery' },
+  ];
+
   return (
     <div className="flex flex-col gap-8 pt-10 pr-10 pl-10">
       <div className="flex items-center justify-between">
-        <div className="Heading-1 text-dg">진행 중인 프로젝트</div>
+        <div className="Heading-1 text-dg">{t('title')}</div>
         <div className="relative">
           <MiniBtn
             bgColor="bg-primary"
             textColor="text-white"
-            text="프로젝트 생성하기"
+            text={t('createButton')}
             onClick={onNewQuotation}
             hoverColor="hover:bg-primary-hover"
             icon={CaretDown}

@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { MaterialHistoryResponseModel } from '@/types/data-model';
 import LinkModalTaxTableItem from './link-modal-tax-table-item';
 import Pagination from '@/components/pagination';
@@ -23,6 +24,9 @@ const LinkModalTaxTable = ({
   totalPages,
   onPageChange,
 }: LinkModalTaxTableProps) => {
+  const t = useTranslations('tax');
+  const tCommon = useTranslations('common');
+
   return (
     <div>
       {isLoading ? (
@@ -32,13 +36,13 @@ const LinkModalTaxTable = ({
       ) : items && items.length > 0 ? (
         <>
           <div className="text-sv flex items-center w-full h-12 border-t border-b border-lg Me_Body-1">
-            <p className="flex-[1.5] px-3">자재명</p>
-            <p className="flex-1 px-3">규격</p>
-            <p className="flex-[0.7] px-3">수량</p>
-            <p className="flex-[0.5] px-3">단위</p>
-            <p className="flex-[0.7] px-3">단가</p>
-            <p className="flex-1 px-3">금액</p>
-            <p className="flex-1 px-3">거래일자</p>
+            <p className="flex-[1.5] px-3">{tCommon('materialName')}</p>
+            <p className="flex-1 px-3">{tCommon('specification')}</p>
+            <p className="flex-[0.7] px-3">{tCommon('quantity')}</p>
+            <p className="flex-[0.5] px-3">{tCommon('unit')}</p>
+            <p className="flex-[0.7] px-3">{tCommon('unitPrice')}</p>
+            <p className="flex-1 px-3">{tCommon('amount')}</p>
+            <p className="flex-1 px-3">{tCommon('transactionDate')}</p>
           </div>
           {items.map((item, index) => (
             <LinkModalTaxTableItem
@@ -59,7 +63,7 @@ const LinkModalTaxTable = ({
           )}
         </>
       ) : (
-        <NoHistoryBox text="연결할 원자재 구매 내역이 없어요." />
+        <NoHistoryBox text={t('linkModal.taxTableEmptyText')} />
       )}
     </div>
   );

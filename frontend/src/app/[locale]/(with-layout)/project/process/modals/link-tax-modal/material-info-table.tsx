@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { TaxLineItemModel } from '@/types/data-model';
 import React from 'react';
 
@@ -6,16 +7,19 @@ interface MaterialInfoTableProps {
 }
 
 const MaterialInfoTable = ({ lineItem }: MaterialInfoTableProps) => {
+  const tCommon = useTranslations('common');
+  const tTax = useTranslations('tax');
+
   return (
     <div>
       <div className="text-sv flex items-center w-full h-12 border-t border-b border-lg Me_Body-1">
-        <p className="flex-2 px-3">자재명</p>
-        <p className="flex-2 px-3">규격</p>
-        <p className="flex-1 px-3">수량</p>
-        <p className="flex-1 px-3">단가</p>
-        <p className="flex-[1.5] px-3">공급가액</p>
-        <p className="flex-[1.5] px-3">세액</p>
-        <p className="flex-[1.5] px-3">금액</p>
+        <p className="flex-2 px-3">{tCommon('materialName')}</p>
+        <p className="flex-2 px-3">{tCommon('specification')}</p>
+        <p className="flex-1 px-3">{tCommon('quantity')}</p>
+        <p className="flex-1 px-3">{tCommon('unitPrice')}</p>
+        <p className="flex-[1.5] px-3">{tCommon('supplyAmount')}</p>
+        <p className="flex-[1.5] px-3">{tTax('taxAmount')}</p>
+        <p className="flex-[1.5] px-3">{tCommon('amount')}</p>
       </div>
       <div className="flex items-center h-14 w-full text-bl Me_Body-1 border-b border-lg">
         <p className="flex-2 px-3 text-dg truncate" title={lineItem.name}>

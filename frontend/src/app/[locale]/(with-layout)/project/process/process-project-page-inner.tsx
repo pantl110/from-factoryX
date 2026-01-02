@@ -16,6 +16,7 @@ import { useGetProjects, useCheckAll, useDeleteProject } from '@/hooks';
 import useOcrStore from '@/store/ocr-store';
 import NoHistoryBox from '@/ui/no-history-box';
 import useMemberStore from '@/store/member-store';
+import { useTranslations } from 'next-intl';
 
 const ProcessProjectPageInner = () => {
   const router = useRouter();
@@ -23,6 +24,8 @@ const ProcessProjectPageInner = () => {
   const { deleteProject, isLoading: isDeleteLoading } = useDeleteProject();
   const { setOcrData, clearOcrData } = useOcrStore();
   const factoryId = useMemberStore((state) => state.factoryId);
+  const t = useTranslations('project.process');
+  const tDocumentType = useTranslations('document.type');
 
   // dashboard 페이지에서 접근 시 견적 협의 탭으로 이동
   const searchParams = useSearchParams();
@@ -214,7 +217,7 @@ const ProcessProjectPageInner = () => {
   // 선택된 프로젝트 삭제 핸들러
   const handleDeleteProjects = async () => {
     if (checkedCount === 0) {
-      alert('삭제할 프로젝트를 선택해주세요.');
+      alert(t('errors.selectProject'));
       return;
     }
 
@@ -251,7 +254,7 @@ const ProcessProjectPageInner = () => {
         setProjectData(result.data);
       }
     } catch {
-      alert('프로젝트 삭제 중 오류가 발생했습니다.');
+      alert(t('errors.deleteError'));
       setIsDeleteModalOpen(false);
     }
   };
@@ -272,7 +275,7 @@ const ProcessProjectPageInner = () => {
 
         <div className="px-10 pb-10">
           <SearchDeleteTable
-            placeholder="거래처명이나 제품명을 입력해 검색하세요."
+            placeholder={t('searchPlaceholder')}
             checkedCount={checkedCount}
             deleteButtonText={getDeleteButtonText()}
             onDelete={() => setIsDeleteModalOpen(true)}
@@ -290,8 +293,8 @@ const ProcessProjectPageInner = () => {
 
           {!isProjectsLoading && !factoryId && (
             <NoHistoryBox
-              title="진행 중인 프로젝트가 아직 없어요."
-              text="프로젝트가 생성되면 이곳에 표시돼요. "
+              title={t('empty.title')}
+              text={t('empty.description')}
             />
           )}
 
@@ -300,8 +303,8 @@ const ProcessProjectPageInner = () => {
             projectData &&
             (projectData.data.length === 0 ? (
               <NoHistoryBox
-                title="진행 중인 프로젝트가 아직 없어요."
-                text="프로젝트가 생성되면 이곳에 표시돼요. "
+                title={t('empty.title')}
+                text={t('empty.description')}
               />
             ) : (
               <>
@@ -361,7 +364,11 @@ const ProcessProjectPageInner = () => {
       {/* 견적요청서/주문서 파일 업로드 모달 */}
       {(isUploadModalOpen || isOrderUploadModalOpen) && (
         <ExcelUploadModal
-          documentTitle={isUploadModalOpen ? '견적 요청서' : '주문서'}
+          documentTitle={
+            isUploadModalOpen
+              ? tDocumentType('quotationRequest')
+              : tDocumentType('orderDocument')
+          }
           onClose={() => {
             setIsUploadModalOpen(false);
             setIsOrderUploadModalOpen(false);

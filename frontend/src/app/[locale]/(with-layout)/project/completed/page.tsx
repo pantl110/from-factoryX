@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
 import MainTitleSec from './main-title-sec';
 import SearchDeleteTable from '@/ui/search-delete-table';
@@ -17,6 +18,8 @@ import Spinner from '@/ui/spinner';
 import NoHistoryBox from '@/ui/no-history-box';
 
 const CompletedProjectPage = () => {
+  const t = useTranslations('project.completed');
+  const tFilters = useTranslations('project.completed.filters');
   const { getProjects, isLoading: isProjectsLoading } = useGetProjects();
   const { deleteProject, isLoading: isDeleteLoading } = useDeleteProject();
 
@@ -39,14 +42,14 @@ const CompletedProjectPage = () => {
       let status;
 
       // 개별 상태 선택 시
-      if (selectedStatus === '완료') {
+      if (selectedStatus === tFilters('completed')) {
         status = 'completed';
-      } else if (selectedStatus === '중단') {
+      } else if (selectedStatus === tFilters('suspended')) {
         status = 'suspended';
       }
 
       const result = await getProjects({
-        ...(selectedStatus === '전체'
+        ...(selectedStatus === tFilters('all')
           ? {
               status_exclude:
                 'quotation,confirmed,pending,production,manufactured,delivery',
@@ -78,6 +81,7 @@ const CompletedProjectPage = () => {
     sortKey,
     sortOrder,
     currentPage,
+    tFilters,
   ]);
 
   const currentIds = projectData?.data.map((project) => project.id) || [];
@@ -147,7 +151,7 @@ const CompletedProjectPage = () => {
   // 선택된 프로젝트 삭제 핸들러
   const handleDeleteProjects = async () => {
     if (checkedCount === 0) {
-      alert('삭제할 프로젝트를 선택해주세요.');
+      alert(t('errors.selectProject'));
       return;
     }
 
@@ -159,20 +163,20 @@ const CompletedProjectPage = () => {
         await deleteProject(projectId);
       }
 
-      alert('프로젝트가 삭제되었습니다.');
+      alert(t('deleteSuccess'));
       setAllChecked(false); // 선택 해제
       setIsDeleteModalOpen(false);
 
       // 프로젝트 목록 새로고침
       const result = await getProjects({
-        ...(selectedStatus === '전체'
+        ...(selectedStatus === tFilters('all')
           ? {
               status_exclude:
                 'quotation,confirmed,pending,production,manufactured,delivery',
             }
           : {
               status:
-                selectedStatus === '완료'
+                selectedStatus === tFilters('completed')
                   ? 'completed'
                   : ('suspended' as ProjectStatusType),
             }),
@@ -193,7 +197,7 @@ const CompletedProjectPage = () => {
         setProjectData(result.data);
       }
     } catch {
-      alert('프로젝트 삭제 중 오류가 발생했습니다.');
+      alert(t('errors.deleteError'));
       setIsDeleteModalOpen(false);
     }
   };
@@ -207,7 +211,7 @@ const CompletedProjectPage = () => {
         />
         <div className="px-10 pb-10">
           <SearchDeleteTable
-            placeholder="거래처명이나 제품명을 입력해 검색하세요."
+            placeholder={t('searchPlaceholder')}
             checkedCount={checkedCount}
             deleteButtonText={getDeleteButtonText()}
             onDelete={() => setIsDeleteModalOpen(true)}
@@ -227,8 +231,8 @@ const CompletedProjectPage = () => {
             <>
               {!projectData?.data || projectData?.data?.length === 0 ? (
                 <NoHistoryBox
-                  title="보관된 프로젝트가 아직 없어요."
-                  text="프로젝트가 생성되면 이곳에 표시돼요. "
+                  title={t('empty.title')}
+                  text={t('empty.description')}
                 />
               ) : (
                 <>

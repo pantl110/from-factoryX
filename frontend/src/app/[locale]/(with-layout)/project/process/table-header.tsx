@@ -2,6 +2,7 @@ import { CaretUpDown } from '@phosphor-icons/react/dist/ssr';
 import Checkbox from '@/ui/checkbox';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
+import { useTranslations } from 'next-intl';
 
 interface TableHeaderProps {
   isAllChecked?: boolean;
@@ -21,6 +22,8 @@ const TableHeader = ({
   const hasSubscription = useSubscriptionStore(
     (state) => state.hasSubscription
   );
+  const t = useTranslations('project.process.tableHeaders');
+  const tCommon = useTranslations('common');
 
   return (
     <div
@@ -35,16 +38,16 @@ const TableHeader = ({
         />
       )}
       <p className={`${isArchived ? 'w-[150px]' : 'w-[200px]'} px-3 text-sv`}>
-        진행 상태
+        {t('status')}
       </p>
-      <p className="flex-2 px-3 text-sv">거래처명</p>
-      <p className="flex-2 px-3 text-sv">제품명</p>
+      <p className="flex-2 px-3 text-sv">{tCommon('clientName')}</p>
+      <p className="flex-2 px-3 text-sv">{tCommon('productName')}</p>
       {!isArchived && (
         <div
           className="w-[200px] px-3 h-full flex items-center gap-1 hover:bg-bg cursor-pointer"
           onClick={() => onSort && onSort('startDate')}
         >
-          <p className=" text-sv">생산일자</p>
+          <p className=" text-sv">{t('productionDate')}</p>
           <CaretUpDown size={21} className="text-sv" />
         </div>
       )}
@@ -52,11 +55,17 @@ const TableHeader = ({
         className="w-[200px] px-3 h-full flex items-center gap-1 hover:bg-bg cursor-pointer"
         onClick={() => onSort && onSort('endDate')}
       >
-        <p className=" text-sv">{isArchived ? '완료일자' : '납기일자'}</p>
+        <p className=" text-sv">
+          {isArchived ? t('completionDate') : tCommon('dueDate')}
+        </p>
         <CaretUpDown size={21} className="text-sv" />
       </div>
-      {!isArchived && <p className="w-[200px] px-3 text-sv">세금계산서 연결</p>}
-      {!isArchived && <p className="w-[200px] px-3 text-sv">발행 여부</p>}
+      {!isArchived && (
+        <p className="w-[200px] px-3 text-sv">{t('linkTaxInvoice')}</p>
+      )}
+      {!isArchived && (
+        <p className="w-[200px] px-3 text-sv">{t('issuedStatus')}</p>
+      )}
       {isArchived && <div className="w-20" />}
     </div>
   );

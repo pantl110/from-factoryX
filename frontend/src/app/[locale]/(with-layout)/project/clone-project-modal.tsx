@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { formatDate, isValidDateString } from '@/utils';
 import { useToast } from '@/hooks';
 import { WarningCircle } from '@phosphor-icons/react';
+import { useTranslations } from 'next-intl';
 
 interface CloneProjectModalProps {
   handleCloneProject: (dueDate: string) => void;
@@ -14,6 +15,8 @@ const CloneProjectModal = ({
 }: CloneProjectModalProps) => {
   const [dueDate, setDueDate] = useState('');
   const { showToast, isToastOpen, isVisible } = useToast();
+  const t = useTranslations('project.process.cloneModal');
+  const tCommon = useTranslations('common');
 
   const handleConfirm = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -29,14 +32,10 @@ const CloneProjectModal = ({
 
   return (
     <>
-      <Modal
-        onClose={onClose}
-        title="납기일 입력"
-        subtitle="해당 프로젝트의 납기일을 입력해 주세요."
-      >
+      <Modal onClose={onClose} title={t('title')} subtitle={t('subtitle')}>
         <div className="flex flex-col mt-4">
           <Input
-            label="납기일"
+            label={tCommon('dueDate')}
             placeholder="YYYY-MM-DD"
             value={dueDate}
             onChange={(e) => {
@@ -49,7 +48,7 @@ const CloneProjectModal = ({
           />
           <div className="flex justify-end gap-2.5 mt-5">
             <MiniBtn
-              text="취소"
+              text={tCommon('cancel')}
               variant="white"
               onClick={(e) => {
                 e.stopPropagation();
@@ -57,7 +56,7 @@ const CloneProjectModal = ({
               }}
             />
             <MiniBtn
-              text="복제"
+              text={t('cloneButton')}
               variant="primary"
               onClick={handleConfirm}
               disabled={!dueDate.trim()}
@@ -69,8 +68,8 @@ const CloneProjectModal = ({
       {isToastOpen && (
         <Toast
           icon={<WarningCircle size={20} className="text-red" />}
-          text="올바른 날짜 형식을 입력해주세요."
-          subtext="YYYY-MM-DD 형식으로 입력해주세요."
+          text={t('errors.invalidDate')}
+          subtext={t('errors.invalidDateSubtext')}
           type="red"
           isVisible={isVisible}
         />

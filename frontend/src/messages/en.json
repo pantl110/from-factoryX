@@ -85,6 +85,7 @@
     "actionAdded": "Plan Added",
     "type": {
       "documentType": "Type",
+      "quotationRequest": "Quote",
       "orderDocument": "Order",
       "productionInstruction": "Work Instruction",
       "salesTaxInvoice": "Sales Invoice",
@@ -102,7 +103,26 @@
     "afterChange": "After",
     "responsiblePerson": "Editor",
     "memoEditLog": "Memo Edit Log",
-    "updatedAt": "{time} Updated"
+    "updatedAt": "{time} Updated",
+    "selectDropdown": {
+      "uploadQuotation": "Upload Quote",
+      "uploadOrder": "Upload Order",
+      "directInput": "Enter manually"
+    },
+    "excelUpload": {
+      "title": {
+        "hasFiles": "Please review the uploaded file.",
+        "noFiles": "Please upload {documentTitle} file."
+      },
+      "subtitle": {
+        "hasFiles": "Please verify the file is correct, then click upload.",
+        "noFiles": "You can drag and drop or upload image or PDF files."
+      },
+      "errors": {
+        "ocrFailed": "OCR processing failed.",
+        "uploadError": "An error occurred during OCR upload."
+      }
+    }
   },
   "tax": {
     "sales": "Sales",
@@ -111,7 +131,47 @@
     "invoiceType": "Type",
     "type": "Type",
     "receipt": "Receipt",
-    "request": "Request"
+    "request": "Request",
+    "taxAmount": "Tax Amount",
+    "linkModal": {
+      "emptyText": "Once tax invoices are created, you can review them here and link them to projects.",
+      "taxTableEmptyText": "No material purchase history to link.",
+      "title": {
+        "project": "Select a sales tax invoice to link to the project.",
+        "tax": "Link the selected material from the purchase tax invoice to the purchase history.",
+        "receipt": "Link the selected material from the cash receipt to the purchase history."
+      },
+      "subtitle": {
+        "project": "When you link a tax invoice to a project, transaction details will be automatically reflected.",
+        "tax": "The product name on the tax invoice may differ from the system material name. Linking allows you to accurately manage inventory, unit price, and tracking information.",
+        "receipt": "The product name on the cash receipt may differ from the system material name. Linking allows you to accurately manage inventory, unit price, and tracking information."
+      },
+      "selectedMaterialTitle": "Selected Material from Purchase Tax Invoice",
+      "searchPlaceholder": {
+        "project": "Enter the client name to search for items to link.",
+        "tax": "Enter the material name to search for items to link."
+      },
+      "period": {
+        "1month": "1 Month",
+        "6months": "6 Months",
+        "12months": "12 Months"
+      },
+      "buttons": {
+        "createTaxInvoice": "Create Tax Invoice",
+        "linkHistory": "Link History"
+      },
+      "errors": {
+        "selectLineItem": "Please select a tax invoice product to link."
+      }
+    },
+    "publishStatus": {
+      "temporary": "Draft",
+      "pending": "Pending",
+      "processing": "Processing",
+      "published": "Published",
+      "cancled": "Cancelled",
+      "failed": "Failed"
+    }
   },
   "language": {
     "setting": "Language Settings",
@@ -192,7 +252,15 @@
       "noInvoiceDescription": "Issued tax invoices are shown in order from the most recent.",
       "issued": "Issued",
       "received": "Received",
-      "invoiceText": "{company} Tax Invoice {action}"
+      "invoiceText": "{company} Tax Invoice {action}",
+      "publishStatus": {
+        "temporary": "Draft",
+        "pending": "Pending",
+        "processing": "Processing",
+        "published": "Published",
+        "cancled": "Cancelled",
+        "failed": "Failed"
+      }
     },
     "todayProductionSchedule": {
       "title": "Today's Production Schedule",
@@ -206,13 +274,68 @@
   "project": {
     "status": {
       "quotation": "Quote",
-      "confirmed": "Confirmed",
+      "confirmed": "Order",
       "pending": "Pending",
       "production": "Production",
       "manufactured": "Manufactured",
       "delivery": "Delivery",
       "completed": "Completed",
       "suspended": "Suspended"
+    },
+    "process": {
+      "title": "Active Projects",
+      "createButton": "Create Project",
+      "filters": {
+        "all": "All"
+      },
+      "searchPlaceholder": "Search by client name or product name.",
+      "empty": {
+        "title": "No active projects yet.",
+        "description": "Projects will be displayed here when created."
+      },
+      "errors": {
+        "selectProject": "Please select a project to delete.",
+        "deleteError": "An error occurred while deleting the project.",
+        "cloneFailed": "Failed to clone project: {error}"
+      },
+      "tooltip": {
+        "cloneProject": "If the same client requests again,\nclone this project to start immediately."
+      },
+      "productList": "{firstProduct} and {count} more",
+      "cloneModal": {
+        "title": "Enter Due Date",
+        "subtitle": "Please enter the due date for this project.",
+        "cloneButton": "Clone",
+        "errors": {
+          "invalidDate": "Please enter a valid date format.",
+          "invalidDateSubtext": "Please enter in YYYY-MM-DD format."
+        }
+      },
+      "tableHeaders": {
+        "status": "Status",
+        "productionDate": "Start Date",
+        "completionDate": "End Date",
+        "linkTaxInvoice": "Link Tax Invoice",
+        "issuedStatus": "Issued"
+      }
+    },
+    "completed": {
+      "title": "Archived Projects",
+      "filters": {
+        "all": "All",
+        "completed": "Completed",
+        "suspended": "Suspended"
+      },
+      "searchPlaceholder": "Search by client name or product name.",
+      "empty": {
+        "title": "No archived projects yet.",
+        "description": "Projects will be displayed here when created."
+      },
+      "deleteSuccess": "Project has been deleted.",
+      "errors": {
+        "selectProject": "Please select a project to delete.",
+        "deleteError": "An error occurred while deleting the project."
+      }
     }
   },
   "production": {

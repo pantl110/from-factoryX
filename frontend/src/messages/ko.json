@@ -85,6 +85,7 @@
     "actionAdded": "생산 계획 추가",
     "type": {
       "documentType": "문서 유형",
+      "quotationRequest": "견적 요청서",
       "orderDocument": "주문서",
       "productionInstruction": "생산지시서",
       "salesTaxInvoice": "매출 세금계산서",
@@ -102,7 +103,26 @@
     "afterChange": "변경 후",
     "responsiblePerson": "담당자",
     "memoEditLog": "메모 수정로그",
-    "updatedAt": "{time} 업데이트"
+    "updatedAt": "{time} 업데이트",
+    "selectDropdown": {
+      "uploadQuotation": "견적요청서 업로드",
+      "uploadOrder": "주문서 업로드",
+      "directInput": "직접 입력"
+    },
+    "excelUpload": {
+      "title": {
+        "hasFiles": "업로드된 파일을 확인해 주세요.",
+        "noFiles": "{documentTitle} 파일을 업로드해 주세요."
+      },
+      "subtitle": {
+        "hasFiles": "파일이 맞는지 확인 후, 업로드를 눌러주세요.",
+        "noFiles": "이미지 또는 PDF 파일을 끌어다 놓거나 업로드할 수 있어요."
+      },
+      "errors": {
+        "ocrFailed": "OCR 처리에 실패했습니다.",
+        "uploadError": "OCR 업로드 중 오류가 발생했습니다."
+      }
+    }
   },
   "tax": {
     "sales": "매출",
@@ -111,7 +131,47 @@
     "invoiceType": "세금계산서 구분",
     "type": "구분",
     "receipt": "영수",
-    "request": "청구"
+    "request": "청구",
+    "taxAmount": "세액",
+    "linkModal": {
+      "emptyText": "세금계산서가 생성되면 이곳에서 확인 후, 프로젝트를 연결 할 수  있어요.",
+      "taxTableEmptyText": "연결할 원자재 구매 내역이 없어요.",
+      "title": {
+        "project": "프로젝트에 연결할 매출 세금계산서를 선택해주세요.",
+        "tax": "매입 세금계산서에서 선택한 원자재를 구매 내역에 연결하세요.",
+        "receipt": "현금영수증에서 선택한 원자재를 구매 내역에 연결하세요."
+      },
+      "subtitle": {
+        "project": "세금계산서를 프로젝트와 연동하면, 거래 내역이 자동으로 반영돼요.",
+        "tax": "세금계산서 제품명과 시스템 자재명이 다를 수 있어요. 연결하면 재고·단가·추적 정보를 정확하게 관리할 수 있어요.",
+        "receipt": "현금영수증 제품명과 시스템 자재명이 다를 수 있어요. 연결하면 재고·단가·추적 정보를 정확하게 관리할 수 있어요."
+      },
+      "selectedMaterialTitle": "매입 세금계산서에서 선택한 원자재",
+      "searchPlaceholder": {
+        "project": "연결할 내역에 대한 거래처를 입력해 검색하세요.",
+        "tax": "연결할 내역에 대한 원자재를 입력해 검색하세요."
+      },
+      "period": {
+        "1month": "1개월",
+        "6months": "6개월",
+        "12months": "12개월"
+      },
+      "buttons": {
+        "createTaxInvoice": "세금계산서 생성하기",
+        "linkHistory": "내역 연결하기"
+      },
+      "errors": {
+        "selectLineItem": "연결할 세금계산서 제품을 선택해주세요."
+      }
+    },
+    "publishStatus": {
+      "temporary": "임시 저장",
+      "pending": "전송 대기",
+      "processing": "처리 중",
+      "published": "발행 완료",
+      "cancled": "발행 취소",
+      "failed": "발행 실패"
+    }
   },
   "language": {
     "setting": "언어 설정",
@@ -192,7 +252,15 @@
       "noInvoiceDescription": "발행된 세금계산서는 최신순으로 보여져요.",
       "issued": "발행",
       "received": "수신",
-      "invoiceText": "{company} 세금계산서 {action}"
+      "invoiceText": "{company} 세금계산서 {action}",
+      "publishStatus": {
+        "temporary": "임시 저장",
+        "pending": "전송 대기",
+        "processing": "처리 중",
+        "published": "발행 완료",
+        "cancled": "발행 취소",
+        "failed": "발행 실패"
+      }
     },
     "todayProductionSchedule": {
       "title": "오늘의 생산 일정",
@@ -213,6 +281,61 @@
       "delivery": "납품",
       "completed": "프로젝트 완료",
       "suspended": "중단"
+    },
+    "process": {
+      "title": "진행 중인 프로젝트",
+      "createButton": "프로젝트 생성하기",
+      "filters": {
+        "all": "전체"
+      },
+      "searchPlaceholder": "거래처명이나 제품명을 입력해 검색하세요.",
+      "empty": {
+        "title": "진행 중인 프로젝트가 아직 없어요.",
+        "description": "프로젝트가 생성되면 이곳에 표시돼요."
+      },
+      "errors": {
+        "selectProject": "삭제할 프로젝트를 선택해주세요.",
+        "deleteError": "프로젝트 삭제 중 오류가 발생했습니다.",
+        "cloneFailed": "프로젝트 복제에 실패했습니다: {error}"
+      },
+      "tooltip": {
+        "cloneProject": "같은 업체에서 요청이 들어왔다면,\n이 프로젝트를 복제해서 바로 시작해보세요."
+      },
+      "productList": "{firstProduct} 외 {count}개",
+      "cloneModal": {
+        "title": "납기일 입력",
+        "subtitle": "해당 프로젝트의 납기일을 입력해 주세요.",
+        "cloneButton": "복제",
+        "errors": {
+          "invalidDate": "올바른 날짜 형식을 입력해주세요.",
+          "invalidDateSubtext": "YYYY-MM-DD 형식으로 입력해주세요."
+        }
+      },
+      "tableHeaders": {
+        "status": "진행 상태",
+        "productionDate": "생산일자",
+        "completionDate": "완료일자",
+        "linkTaxInvoice": "세금계산서 연결",
+        "issuedStatus": "발행 여부"
+      }
+    },
+    "completed": {
+      "title": "보관된 프로젝트",
+      "filters": {
+        "all": "전체",
+        "completed": "완료",
+        "suspended": "중단"
+      },
+      "searchPlaceholder": "거래처명이나 제품명을 입력해 검색하세요.",
+      "empty": {
+        "title": "보관된 프로젝트가 아직 없어요.",
+        "description": "프로젝트가 생성되면 이곳에 표시돼요."
+      },
+      "deleteSuccess": "프로젝트가 삭제되었습니다.",
+      "errors": {
+        "selectProject": "삭제할 프로젝트를 선택해주세요.",
+        "deleteError": "프로젝트 삭제 중 오류가 발생했습니다."
+      }
     }
   },
   "production": {

@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { OcrDataModel } from '@/types/data-model';
 import Dropdown from '@/ui/dropdown/dropdown';
 import DropdownItem from '@/ui/dropdown/dropdown-item';
@@ -16,6 +17,7 @@ const SelectDropdown = ({
   onDirectInputClick,
   onOrderUploadClick,
 }: SelectDropdownProps) => {
+  const t = useTranslations('document.selectDropdown');
   const router = useRouter();
 
   const handleGoToQuotation = () => {
@@ -33,9 +35,9 @@ const SelectDropdown = ({
 
   return (
     <Dropdown onClose={onClose}>
-      <DropdownItem text="견적요청서 업로드" onClick={handleUploadClick} />
-      <DropdownItem text="주문서 업로드" onClick={handleGoToOrder} />
-      <DropdownItem text="직접 입력" onClick={handleGoToQuotation} />
+      <DropdownItem text={t('uploadQuotation')} onClick={handleUploadClick} />
+      <DropdownItem text={t('uploadOrder')} onClick={handleGoToOrder} />
+      <DropdownItem text={t('directInput')} onClick={handleGoToQuotation} />
     </Dropdown>
   );
 };

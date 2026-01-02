@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { UnlinkedTaxInvoiceResponseModel } from '@/types/data-model';
 import { TaxDocumentType, TaxDocumentTypeColorMap } from '@/types/status-type';
 import Chip from '@/ui/chip';
@@ -14,14 +15,18 @@ const LinkModalProjectTableItem = ({
   isSelected,
   item,
 }: LinkModalProjectTableItemProps) => {
+  const t = useTranslations('tax');
   const taxTypeMap: Record<string, TaxDocumentType> = {
-    매출: 'sales',
-    매입: 'purchase',
+    [t('sales')]: 'sales',
+    [t('purchase')]: 'purchase',
     sales: 'sales',
     purchase: 'purchase',
   };
 
-  const mappedTaxType = taxTypeMap[item.tax_invoice_type] || 'sales';
+  const mappedTaxType =
+    item.tax_invoice_type === 'sales' || item.tax_invoice_type === 'purchase'
+      ? item.tax_invoice_type
+      : taxTypeMap[item.tax_invoice_type] || 'sales';
   const { bgColor, textColor } = TaxDocumentTypeColorMap[mappedTaxType];
 
   return (
@@ -40,7 +45,13 @@ const LinkModalProjectTableItem = ({
     >
       <div className="px-3 flex-1">
         <Chip
-          text={item.tax_invoice_type === 'sales' ? '매출' : '매입'}
+          text={
+            item.tax_invoice_type === 'sales'
+              ? t('sales')
+              : item.tax_invoice_type === 'purchase'
+                ? t('purchase')
+                : t('sales')
+          }
           bgColor={bgColor}
           textColor={textColor}
         />

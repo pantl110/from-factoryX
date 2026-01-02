@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { useState, useCallback, useEffect } from 'react';
 import { useDebounce } from 'use-debounce';
 import MiniBtn from '@/ui/mini-btn';
@@ -42,6 +43,8 @@ const LinkTaxModal = ({
   canCreate = false,
   setIsTaxPanelOpen,
 }: LinkTaxModalProps) => {
+  const t = useTranslations('tax.linkModal');
+  const tCommon = useTranslations('common');
   const [searchKeyword, setSearchKeyword] = useState('');
   const [selectedPeriod, setSelectedPeriod] = useState<'1' | '6' | '12'>('1');
   const [currentPage, setCurrentPage] = useState(1);
@@ -166,7 +169,7 @@ const LinkTaxModal = ({
       }
     } else if (type === 'tax') {
       if (!selectedLineItem?.id) {
-        alert('연결할 세금계산서 제품을 선택해주세요.');
+        alert(t('errors.selectLineItem'));
         return;
       }
 
@@ -187,13 +190,17 @@ const LinkTaxModal = ({
       width="w-[1000px]"
       title={
         type === 'project'
-          ? '프로젝트에 연결할 매출 세금계산서를 선택해주세요.'
-          : `${type === 'tax' ? '매입 세금계산서' : '현금영수증'}에서 선택한 원자재를 구매 내역에 연결하세요.`
+          ? t('title.project')
+          : type === 'tax'
+            ? t('title.tax')
+            : t('title.receipt')
       }
       subtitle={
         type === 'project'
-          ? '세금계산서를 프로젝트와 연동하면, 거래 내역이 자동으로 반영돼요.'
-          : `${type === 'tax' ? '세금계산서' : '현금영수증'} 제품명과 시스템 자재명이 다를 수 있어요. 연결하면 재고·단가·추적 정보를 정확하게 관리할 수 있어요.`
+          ? t('subtitle.project')
+          : type === 'tax'
+            ? t('subtitle.tax')
+            : t('subtitle.receipt')
       }
       onClose={onClose}
       scroll={true}
@@ -202,9 +209,7 @@ const LinkTaxModal = ({
         {/* material history 연결 시 연결할 line item 보여주기 */}
         {type !== 'project' && (
           <div className="flex flex-col gap-3">
-            <h4 className="Heading-4 text-dg">
-              매입 세금계산서에서 선택한 원자재
-            </h4>
+            <h4 className="Heading-4 text-dg">{t('selectedMaterialTitle')}</h4>
             {selectedLineItem && (
               <MaterialInfoTable lineItem={selectedLineItem} />
             )}
@@ -214,8 +219,8 @@ const LinkTaxModal = ({
         <SearchInput
           placeholder={
             type === 'project'
-              ? '연결할 내역에 대한 거래처를 입력해 검색하세요.'
-              : '연결할 내역에 대한 원자재를 입력해 검색하세요.'
+              ? t('searchPlaceholder.project')
+              : t('searchPlaceholder.tax')
           }
           onChange={(value) => setSearchKeyword(value)}
         />
@@ -224,7 +229,7 @@ const LinkTaxModal = ({
         {type === 'project' && (
           <div className="flex gap-2">
             <MiniBtn
-              text="1개월"
+              text={t('period.1month')}
               hoverColor="hover:bg-bg"
               borderColor={
                 selectedPeriod === '1' ? 'border-primary' : 'border-lg'
@@ -234,7 +239,7 @@ const LinkTaxModal = ({
               onClick={() => setSelectedPeriod('1')}
             />
             <MiniBtn
-              text="6개월"
+              text={t('period.6months')}
               hoverColor="hover:bg-bg"
               borderColor={
                 selectedPeriod === '6' ? 'border-primary' : 'border-lg'
@@ -244,7 +249,7 @@ const LinkTaxModal = ({
               onClick={() => setSelectedPeriod('6')}
             />
             <MiniBtn
-              text="12개월"
+              text={t('period.12months')}
               hoverColor="hover:bg-bg"
               borderColor={
                 selectedPeriod === '12' ? 'border-primary' : 'border-lg'
@@ -298,7 +303,7 @@ const LinkTaxModal = ({
             }`}
           >
             <MiniBtn
-              text="취소"
+              text={tCommon('cancel')}
               hoverColor="hover:bg-bg"
               textColor="text-sv"
               onClick={onClose}
@@ -306,7 +311,7 @@ const LinkTaxModal = ({
             <div className="flex gap-2.5">
               {canCreate && (
                 <MiniBtn
-                  text="세금계산서 생성하기"
+                  text={t('buttons.createTaxInvoice')}
                   hoverColor="hover:bg-bg"
                   borderColor="border-lg"
                   textColor="text-dg"
@@ -317,7 +322,7 @@ const LinkTaxModal = ({
                 />
               )}
               <MiniBtn
-                text="내역 연결하기"
+                text={t('buttons.linkHistory')}
                 hoverColor="hover:bg-primary-hover"
                 bgColor="bg-primary"
                 textColor="text-wh"
