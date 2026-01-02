@@ -19,7 +19,9 @@ import {
   useGetFactory,
 } from '@/hooks';
 import useSubscriptionStore from '@/store/subscription-store';
+import { useTranslations } from 'next-intl';
 const Permission = () => {
+  const t = useTranslations('setting.systemSetting.permission');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const isProdManager = role === 'prod_manager';
@@ -80,6 +82,12 @@ const Permission = () => {
     members?.data?.filter((m) => m && m.role !== 'admin') || [];
   // 체크박스 관리
   const itemIds = visibleMembers.map((item) => item.id);
+  const tCommon = useTranslations('common');
+  const getDeleteButtonText = (checkedCount: number, isAllChecked: boolean) => {
+    if (checkedCount === 0) return tCommon('delete');
+    if (isAllChecked) return tCommon('deleteAll');
+    return tCommon('deleteItems', { count: checkedCount });
+  };
   const {
     checkedIds,
     checkedCount,
@@ -88,8 +96,8 @@ const Permission = () => {
     toggleAll,
     toggleOne,
     setAllChecked,
-    getDeleteButtonText,
-  } = useCheckAll(itemIds);
+    getDeleteButtonText: getDeleteButtonTextInternal,
+  } = useCheckAll(itemIds, getDeleteButtonText);
 
   // 삭제 처리
   const handleDelete = async () => {
@@ -109,7 +117,7 @@ const Permission = () => {
       const failedDeletions = results.filter((result) => !result.success);
 
       if (failedDeletions.length > 0) {
-        throw new Error('멤버 삭제 실패');
+        throw new Error(t('errors.deleteFailed'));
       }
 
       // 성공한 삭제가 있으면 목록 새로고침
@@ -148,7 +156,7 @@ const Permission = () => {
 
         <div className="flex flex-col gap-4 mb-24">
           <div className="flex items-center justify-between w-full">
-            <h3 className="Heading-3">팀원 권한</h3>
+            <h3 className="Heading-3">{t('title')}</h3>
             <div className="flex gap-2.5">
               <div
                 className="relative"
@@ -160,7 +168,7 @@ const Permission = () => {
                 }
               >
                 <MiniBtn
-                  text="초대하기"
+                  text={t('inviteModal.inviteButton')}
                   textColor="text-primary"
                   bgColor="bg-primary-8"
                   onClick={() => {
@@ -180,7 +188,7 @@ const Permission = () => {
                     <div className="absolute w-[400px] flex justify-end top-12 right-0 z-10">
                       <Tooltip
                         color="red"
-                        text="팀원을 초대 전, 회사정보(필수 항목)를 먼저 입력해주세요."
+                        text={t('tooltip.completeCompanyInfo')}
                         position="right"
                       />
                     </div>
@@ -199,7 +207,7 @@ const Permission = () => {
                     }}
                   /> */}
                     <MiniBtn
-                      text={getDeleteButtonText()}
+                      text={getDeleteButtonTextInternal()}
                       variant={checkedCount === 0 ? 'whiteOutline' : 'red'}
                       onClick={() => {
                         if (checkedCount > 0) {
@@ -220,8 +228,8 @@ const Permission = () => {
                 </div>
               ) : visibleMembers.length === 0 ? (
                 <NoHistoryBox
-                  title="초대된 팀원이 없어요."
-                  text="팀원이 초대되면 이곳에 표시돼요."
+                  title={t('empty.title')}
+                  text={t('empty.description')}
                 />
               ) : (
                 <>

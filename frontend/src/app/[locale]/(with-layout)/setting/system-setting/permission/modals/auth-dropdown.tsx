@@ -2,6 +2,7 @@ import Chip from '@/ui/chip';
 import Dropdown from '@/ui/dropdown/dropdown';
 import DropdownItem from '@/ui/dropdown/dropdown-item';
 import { PermissionRoleInfo } from '../types';
+import { useTranslations } from 'next-intl';
 
 interface AuthDropdownProps {
   onClose: () => void;
@@ -9,43 +10,42 @@ interface AuthDropdownProps {
 }
 
 const AuthDropdown = ({ onClose, onSelect }: AuthDropdownProps) => {
+  const tPermission = useTranslations('setting.systemSetting.permission');
+
   const handleAuthSelect = (auth: string) => {
     onSelect?.(auth);
     onClose();
   };
 
+  const roles: Array<{ key: string; role: string }> = [
+    { key: 'manager', role: '운영자' },
+    { key: 'prod_manager', role: '생산관리자' },
+    { key: 'viewer', role: '조회자' },
+  ];
+
   return (
     <Dropdown onClose={onClose} width="w-fit" gap="gap-2.5">
-      <DropdownItem noHover={true} chip={true}>
-        <Chip
-          text="운영자"
-          textColor={PermissionRoleInfo['운영자'].chipColor.text}
-          bgColor={PermissionRoleInfo['운영자'].chipColor.bg}
-          hover={PermissionRoleInfo['운영자'].chipColor.hover}
-          onClick={() => handleAuthSelect('운영자')}
-          cursor="cursor-pointer"
-        />
-      </DropdownItem>
-      <DropdownItem noHover={true} chip={true}>
-        <Chip
-          text="생산관리자"
-          textColor={PermissionRoleInfo['생산관리자'].chipColor.text}
-          bgColor={PermissionRoleInfo['생산관리자'].chipColor.bg}
-          hover={PermissionRoleInfo['생산관리자'].chipColor.hover}
-          onClick={() => handleAuthSelect('생산관리자')}
-          cursor="cursor-pointer"
-        />
-      </DropdownItem>
-      <DropdownItem noHover={true} chip={true}>
-        <Chip
-          text="조회자"
-          textColor={PermissionRoleInfo['조회자'].chipColor.text}
-          bgColor={PermissionRoleInfo['조회자'].chipColor.bg}
-          hover={PermissionRoleInfo['조회자'].chipColor.hover}
-          onClick={() => handleAuthSelect('조회자')}
-          cursor="cursor-pointer"
-        />
-      </DropdownItem>
+      {roles.map(({ key, role }) => (
+        <DropdownItem key={key} noHover={true} chip={true}>
+          <Chip
+            text={tPermission(`roles.${key}`)}
+            textColor={
+              PermissionRoleInfo[role as keyof typeof PermissionRoleInfo]
+                .chipColor.text
+            }
+            bgColor={
+              PermissionRoleInfo[role as keyof typeof PermissionRoleInfo]
+                .chipColor.bg
+            }
+            hover={
+              PermissionRoleInfo[role as keyof typeof PermissionRoleInfo]
+                .chipColor.hover
+            }
+            onClick={() => handleAuthSelect(role)}
+            cursor="cursor-pointer"
+          />
+        </DropdownItem>
+      ))}
     </Dropdown>
   );
 };

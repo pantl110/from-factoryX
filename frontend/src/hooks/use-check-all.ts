@@ -5,8 +5,12 @@ import { useState, useCallback } from 'react';
 /**
  * 테이블 전체 선택/해제 및 개별 선택을 관리하는 커스텀 훅
  * @param itemIds 체크할 row의 고유 id 배열
+ * @param getDeleteButtonText 번역 함수 (옵셔널)
  */
-export function useCheckAll<T extends string | number>(itemIds: T[]) {
+export function useCheckAll<T extends string | number>(
+  itemIds: T[],
+  getDeleteButtonText?: (checkedCount: number, isAllChecked: boolean) => string
+) {
   const [checkedIds, setCheckedIds] = useState<T[]>([]);
 
   const isAllChecked =
@@ -18,7 +22,11 @@ export function useCheckAll<T extends string | number>(itemIds: T[]) {
   const checkedCount = checkedIds.length; // 선택된 항목 수
 
   // 삭제 버튼 텍스트 생성
-  const getDeleteButtonText = () => {
+  const getDeleteButtonTextInternal = () => {
+    if (getDeleteButtonText) {
+      return getDeleteButtonText(checkedCount, isAllChecked);
+    }
+    // 기본값 (번역 함수가 없을 때)
     if (checkedCount === 0) return '삭제';
     if (isAllChecked) return '전체 삭제';
     return `${checkedCount}개 항목 삭제`;
@@ -56,6 +64,6 @@ export function useCheckAll<T extends string | number>(itemIds: T[]) {
     toggleAll,
     toggleOne,
     setAllChecked,
-    getDeleteButtonText,
+    getDeleteButtonText: getDeleteButtonTextInternal,
   };
 }

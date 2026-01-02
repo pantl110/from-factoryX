@@ -60,7 +60,7 @@ export const PermissionRoleInfo: Record<PermissionRoleType, AuthInfoModel> = {
     chipColor: {
       text: 'text-green',
       bg: 'bg-green-8',
-      hover: 'hover:bg-green-8',
+      hover: 'hover:bg-green-hover',
     },
   },
   조회자: {
@@ -71,7 +71,7 @@ export const PermissionRoleInfo: Record<PermissionRoleType, AuthInfoModel> = {
     chipColor: {
       text: 'text-yellow',
       bg: 'bg-yellow-8',
-      hover: 'hover:bg-yellow-8',
+      hover: 'hover:bg-yellow-hover',
     },
   },
 };

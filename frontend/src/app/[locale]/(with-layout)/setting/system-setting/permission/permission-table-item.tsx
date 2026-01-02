@@ -7,6 +7,7 @@ import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import { useUpdateMember, usePortalDropdown } from '@/hooks';
 import { formatISODate } from '@/utils';
+import { useTranslations } from 'next-intl';
 
 interface PermissionTableItemProps {
   item: MemberResponseModel;
@@ -31,18 +32,24 @@ const PermissionTableItem = ({
   const hasSubscription = useSubscriptionStore(
     (state) => state.hasSubscription
   );
+  const tPermission = useTranslations('setting.systemSetting.permission');
+  const tTableItem = useTranslations(
+    'setting.systemSetting.permission.tableItem'
+  );
 
   const { status, name, email, role, invited_at: invitedAt, factory } = item;
   const textColor = status === 'active' ? 'text-primary' : 'text-dg';
-  const roleText =
-    role === 'admin'
-      ? '시스템 관리자'
-      : role === 'manager'
-        ? '운영자'
-        : role === 'prod_manager'
-          ? '생산관리자'
-          : '조회자';
-  const authColors = PermissionRoleInfo[roleText as PermissionRoleType];
+
+  // 역할 키를 한국어 역할명으로 변환 (PermissionRoleInfo 키로 사용)
+  const roleKeyMap: Record<string, string> = {
+    admin: '시스템 관리자',
+    manager: '운영자',
+    prod_manager: '생산관리자',
+    viewer: '조회자',
+  };
+  const roleKey = roleKeyMap[role] || '조회자';
+  const roleText = tPermission(`roles.${role}`);
+  const authColors = PermissionRoleInfo[roleKey as PermissionRoleType];
   const { updateMember } = useUpdateMember();
 
   // 권한 드롭다운 관리
@@ -54,8 +61,8 @@ const PermissionTableItem = ({
   } = usePortalDropdown();
 
   const handleAuthChange = async (newAuth: string) => {
-    // 이전과 같으면 return (newAuth는 한글, roleText도 한글이므로 비교 가능)
-    if (newAuth === roleText) {
+    // 이전과 같으면 return (newAuth는 한국어 역할명, roleKey와 비교)
+    if (newAuth === roleKey) {
       closeAuthDropdown();
       return;
     }
@@ -82,11 +89,11 @@ const PermissionTableItem = ({
           onUpdate();
         }
       } else {
-        alert(result.error || '권한 변경에 실패했습니다.');
+        alert(result.error || tTableItem('errors.changeFailed'));
         closeAuthDropdown();
       }
     } catch {
-      alert('권한 변경 중 오류가 발생했습니다.');
+      alert(tTableItem('errors.changeError'));
       closeAuthDropdown();
     }
   };
@@ -99,7 +106,9 @@ const PermissionTableItem = ({
             <Checkbox isChecked={isChecked} onToggle={onToggle || (() => {})} />
           )}
           <p className={`px-3 flex-1 ${textColor}`}>
-            {status === 'active' ? '완료' : '-'}
+            {status === 'active'
+              ? tTableItem('registrationStatus.completed')
+              : '-'}
           </p>
           <p className="px-3 flex-1 truncate" title={name || '-'}>
             {name || '-'}
@@ -107,7 +116,7 @@ const PermissionTableItem = ({
           <p className="px-3 flex-2 truncate" title={email || '-'}>
             {email || '-'}
           </p>
-          <div className="px-3 flex-1">
+          <div className="px-3 flex-[1.2]">
             <Chip
               text={roleText}
               textColor={authColors.chipColor.text}

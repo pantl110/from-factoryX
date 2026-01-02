@@ -15,6 +15,7 @@ import useInviteMember from '@/hooks/factory/factory-member/use-invite-member';
 import useMemberStore from '@/store/member-store';
 import Toast from '@/ui/toast';
 import useToast from '@/hooks/use-toast';
+import { useTranslations } from 'next-intl';
 
 interface InviteModalProps {
   onClose: () => void;
@@ -26,6 +27,13 @@ interface EmailFormDataModel {
 }
 
 const InviteModal = ({ onClose }: InviteModalProps) => {
+  const tCommon = useTranslations('common');
+  const tInviteModal = useTranslations(
+    'setting.systemSetting.permission.inviteModal'
+  );
+  const tPermission = useTranslations('setting.systemSetting.permission');
+  const tClientInfo = useTranslations('setting.masterData.client.clientInfo');
+
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
   const [changeAuthEmail, setChangeAuthEmail] = useState<string | null>(null);
   const [members, setMembers] = useState<MemberFromDataModel[]>([]);
@@ -71,6 +79,19 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
 
   const handleRemoveMember = (email: string) => {
     setMembers((prev) => prev.filter((member) => member.email !== email));
+  };
+
+  // 역할 키 매핑 (한국어 -> 번역 키)
+  const roleKeyMap: Record<string, string> = {
+    '시스템 관리자': 'admin',
+    운영자: 'manager',
+    생산관리자: 'prod_manager',
+    조회자: 'viewer',
+  };
+
+  const getRoleText = (role: string) => {
+    const key = roleKeyMap[role];
+    return key ? tPermission(`roles.${key}`) : role;
   };
 
   const handleAuthSelect = (auth: string, memberEmail?: string) => {
@@ -147,10 +168,8 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
         );
 
         if (hasAlreadyMemberError) {
-          setToastText('초대할 수 없는 유저입니다.');
-          setToastSubtext(
-            '관리자 역할이거나 이미 다른 공장에 소속되어 있어요.'
-          );
+          setToastText(tInviteModal('errors.cannotInvite'));
+          setToastSubtext(tInviteModal('errors.cannotInviteSubtext'));
           showToast();
         } else {
           // 구체적인 에러 메시지 생성
@@ -158,14 +177,14 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
             .map((detail) => `${detail.email}: ${detail.error}`)
             .join('\n');
 
-          setToastText('초대에 실패했습니다.');
+          setToastText(tInviteModal('errors.inviteFailed'));
           setToastSubtext(errorDetails);
           showToast();
         }
       }
     } catch {
-      setToastText('초대 처리 중 오류가 발생했습니다.');
-      setToastSubtext('잠시 후 다시 시도해 주세요.');
+      setToastText(tInviteModal('errors.inviteError'));
+      setToastSubtext(tInviteModal('errors.tryAgain'));
       showToast();
     }
   };
@@ -179,8 +198,8 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
     <>
       {!isSuccessOpen ? (
         <Modal
-          title="팩토리엑스에 팀원을 초대하세요."
-          subtitle="초대할 분의 이메일과 권한을 설정해주세요."
+          title={tInviteModal('title')}
+          subtitle={tInviteModal('subtitle')}
           onClose={onClose}
           width="w-[600px]"
           scroll={true}
@@ -191,16 +210,16 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
                 name="email"
                 control={control}
                 rules={{
-                  required: '이메일을 입력해주세요',
+                  required: tInviteModal('errors.emailRequired'),
                   pattern: {
                     value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
-                    message: '올바른 이메일 형식을 입력해주세요',
+                    message: tInviteModal('errors.emailInvalid'),
                   },
                 }}
                 render={({ field }) => (
                   <div>
                     <Input
-                      placeholder="이메일을 입력하세요."
+                      placeholder={tClientInfo('placeholders.email')}
                       value={field.value}
                       onChange={(e) => field.onChange(e)}
                       onBlur={() => field.onBlur()}
@@ -212,7 +231,7 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
 
             <div onClick={(e) => openAuthBtnDropdown(e)} ref={authBtnDivRef}>
               <MiniBtn
-                text="권한"
+                text={tInviteModal('authButton')}
                 textColor="text-dg"
                 borderColor="border-lg"
                 icon={CaretDown}
@@ -249,7 +268,9 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
             {/* 멤버 리스트 */}
             {members.length > 0 && (
               <div className="pt-4 pb-5">
-                <h4 className="Heading-5 text-dg mb-2">멤버</h4>
+                <h4 className="Heading-5 text-dg mb-2">
+                  {tInviteModal('memberTitle')}
+                </h4>
                 <div className="flex flex-col gap-2">
                   {members.map((member) => (
                     <div
@@ -262,7 +283,7 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
                       </div>
                       <div className="flex items-center gap-1 relative">
                         <Chip
-                          text={member.auth}
+                          text={getRoleText(member.auth)}
                           state={true}
                           bgColor={
                             PermissionRoleInfo[
@@ -305,13 +326,13 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
             )}
             <div className="flex justify-end gap-2.5 mb-6">
               <MiniBtn
-                text="취소"
+                text={tCommon('cancel')}
                 textColor="text-sv"
                 onClick={onClose}
                 hoverColor="hover:bg-bg"
               />
               <MiniBtn
-                text="초대하기"
+                text={tInviteModal('inviteButton')}
                 textColor="text-wh"
                 bgColor="bg-primary"
                 onClick={handleInviteMembers}
@@ -323,21 +344,19 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
         </Modal>
       ) : (
         <Modal
-          title="초대가 완료되었어요."
-          subtitle={
-            '입력한 이메일로 초대 링크가 전송되었어요.\n팀원이 가입을 완료하면 자동으로 권한이 적용돼요.'
-          }
+          title={tInviteModal('successTitle')}
+          subtitle={tInviteModal('successSubtitle')}
           onClose={handleSuccessClose}
         >
           <div className="flex justify-end mt-4 gap-[5px]">
             <MiniBtn
-              text="닫기"
+              text={tCommon('close')}
               textColor="text-sv"
               onClick={handleSuccessClose}
               hoverColor="hover:bg-bg"
             />
             <MiniBtn
-              text="확인"
+              text={tCommon('confirm')}
               textColor="text-wh"
               bgColor="bg-primary"
               onClick={handleSuccessClose}

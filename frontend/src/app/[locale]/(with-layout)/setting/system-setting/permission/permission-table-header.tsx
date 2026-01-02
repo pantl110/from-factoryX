@@ -1,6 +1,7 @@
 import Checkbox from '@/ui/checkbox';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
+import { useTranslations } from 'next-intl';
 
 interface PermissionTableHeaderProps {
   isAllChecked: boolean;
@@ -17,17 +18,18 @@ const PermissionTableHeader = ({
   const hasSubscription = useSubscriptionStore(
     (state) => state.hasSubscription
   );
+  const t = useTranslations('setting.systemSetting.permission.tableHeader');
 
   return (
     <div className="flex items-center justify-between w-full h-12 text-sv Me_Body-1 border-t border-b border-lg cursor-default">
       {!isViewer && !isProdManager && hasSubscription() && (
         <Checkbox isChecked={isAllChecked} onToggle={onToggleAll} />
       )}
-      <p className="px-3 flex-1">가입 상태</p>
-      <p className="px-3 flex-1">이름</p>
-      <p className="px-3 flex-2">이메일</p>
-      <p className="px-3 flex-1">권한</p>
-      <p className="px-3 flex-1">초대 날짜</p>
+      <p className="px-3 flex-1">{t('registrationStatus')}</p>
+      <p className="px-3 flex-1">{t('name')}</p>
+      <p className="px-3 flex-2">{t('email')}</p>
+      <p className="px-3 flex-[1.2]">{t('permission')}</p>
+      <p className="px-3 flex-1">{t('inviteDate')}</p>
     </div>
   );
 };

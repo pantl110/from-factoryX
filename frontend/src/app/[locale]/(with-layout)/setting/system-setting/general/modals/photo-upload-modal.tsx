@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import DropzoneArea from '@/ui/dropzone-area';
 import Modal from '@/ui/modal/modal';
 import { useState } from 'react';
@@ -11,6 +12,7 @@ const PhotoUploadModal = ({
   onClose,
   onImageSelected,
 }: PhotoUploadModalProps) => {
+  const t = useTranslations('setting.systemSetting.general.photoUploadModal');
   const [hasFiles, setHasFiles] = useState(false);
 
   const onFileUpload = (hasFiles: boolean) => {
@@ -26,13 +28,9 @@ const PhotoUploadModal = ({
     onClose(); // 모달 닫기
   };
 
-  const title = hasFiles
-    ? '업로드된 파일을 확인해 주세요.'
-    : '새 프로필 사진을 업로드해주세요.';
+  const title = hasFiles ? t('title.hasFiles') : t('title.noFiles');
 
-  const subtitle = hasFiles
-    ? '파일이 맞는지 확인 후, 업로드를 눌러주세요.'
-    : 'JPG, PNG 형식의 이미지 파일만 업로드할 수 있어요.';
+  const subtitle = hasFiles ? t('subtitle.hasFiles') : t('subtitle.noFiles');
 
   return (
     <Modal

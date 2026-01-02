@@ -27,8 +27,10 @@ import {
   PaymentResponseModel,
   SubscriptionHistoryResponseModel,
 } from '@/types/data-model';
+import { useTranslations } from 'next-intl';
 
 const Subscription = () => {
+  const t = useTranslations('setting.systemSetting.subscription');
   const { factoryId, role } = useMemberStore();
   const { setSubscription } = useSubscriptionStore();
   const { getFactory, factory } = useGetFactory();
@@ -127,7 +129,7 @@ const Subscription = () => {
   const handleSubscribe = async (type: PlanType) => {
     // admin이 아니면 권한 없음
     if (!isAdmin) {
-      alert('구독 관리는 시스템 관리자만 가능합니다.');
+      alert(t('errors.adminOnly'));
       return;
     }
 
@@ -139,9 +141,7 @@ const Subscription = () => {
 
     // 카드가 이미 등록된 상태라면 결제/구독 시작
     if (!paymentAuth?.billing_key || !paymentAuth?.customer_key) {
-      alert(
-        '결제 정보를 불러오지 못했습니다. 화면을 새로고침 후 다시 시도해주세요.'
-      );
+      alert(t('errors.paymentInfoLoadFailed'));
       return;
     }
 
@@ -162,18 +162,18 @@ const Subscription = () => {
   const registerCard = async (type?: PlanType) => {
     // admin이 아니면 권한 없음
     if (!isAdmin) {
-      alert('카드 관리는 시스템 관리자만 가능합니다.');
+      alert(t('errors.cardAdminOnly'));
       return;
     }
 
     try {
       if (!factoryId) {
-        alert('공장을 선택해주세요.');
+        alert(t('errors.selectFactory'));
         return;
       }
       const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
       if (!clientKey) {
-        alert('결제 설정이 완료되지 않았습니다. 클라이언트 키가 없습니다.');
+        alert(t('errors.paymentConfigIncomplete'));
         return;
       }
       const toss = await loadTossPayments(clientKey);
@@ -195,14 +195,14 @@ const Subscription = () => {
           : undefined;
       // 사용자가 창을 닫거나 결제를 취소한 경우에는 무시
       if (code === 'USER_CANCEL') return;
-      alert('카드 등록을 시작하지 못했습니다. 다시 시도해주세요.');
+      alert(t('errors.cardRegistrationFailed'));
     }
   };
 
   const handleDeleteCard = async () => {
     // admin이 아니면 권한 없음
     if (!isAdmin) {
-      alert('카드 관리는 시스템 관리자만 가능합니다.');
+      alert(t('errors.cardAdminOnly'));
       return;
     }
 
@@ -210,7 +210,7 @@ const Subscription = () => {
     try {
       const result = await deleteBillingKey();
       if (!result.success) {
-        alert(result.error ?? '카드 삭제에 실패했습니다.');
+        alert(result.error ?? t('errors.cardDeleteFailed'));
         return;
       }
       await Promise.all([getPaymentAuth(factoryId)]);
@@ -255,9 +255,9 @@ const Subscription = () => {
   return (
     <div className="px-10 pb-10 flex flex-col gap-8">
       <div className="flex justify-between items-center">
-        <h3 className="Heading-3">멤버십 요금제</h3>
+        <h3 className="Heading-3">{t('title')}</h3>
         <MiniBtn
-          text="환불 및 구독정책"
+          text={t('refundPolicyButton')}
           variant="whiteOutline"
           onClick={() => setIsRefundPolicyModalOpen(true)}
         />
@@ -293,11 +293,11 @@ const Subscription = () => {
 
       {/* 결제 내역 */}
       <div className="flex flex-col gap-4">
-        <h3 className="Heading-3">결제 내역</h3>
+        <h3 className="Heading-3">{t('paymentHistory.title')}</h3>
         {!paymentHistory || paymentHistory?.data.length === 0 ? (
           <NoHistoryBox
-            title="결제 내역이 없어요."
-            text="결제 시 이곳에 표시돼요."
+            title={t('paymentHistory.empty.title')}
+            text={t('paymentHistory.empty.description')}
           />
         ) : (
           <div>

@@ -1,5 +1,6 @@
 'use client';
 
+import { useTranslations } from 'next-intl';
 import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
 
@@ -20,6 +21,11 @@ const SubscribeModal = ({
   endDate,
   isTrial = false,
 }: SubscribeModalProps) => {
+  const t = useTranslations(
+    'setting.systemSetting.subscription.subscribeModal'
+  );
+  const tCommon = useTranslations('common');
+
   // 하루 더한 날짜 계산
   const getNextDay = (dateString: string) => {
     const date = new Date(dateString);
@@ -27,29 +33,36 @@ const SubscribeModal = ({
     return date.toISOString().split('T')[0];
   };
 
+  // 제목 결정
+  const title = endDate
+    ? t('title.change', { planTitle })
+    : t('title.start', { planTitle });
+
+  // 부제목 결정
+  const getSubtitle = () => {
+    if (isTrial && planTitle === 'Partners') {
+      return t('subtitle.trialEndsPartners', { planTitle });
+    }
+    if (endDate) {
+      const nextDate = getNextDay(endDate);
+      if (isTrial) {
+        return t('subtitle.trialEnds', { endDate, nextDate, planTitle });
+      } else {
+        return t('subtitle.currentPlanEnds', { endDate, nextDate, planTitle });
+      }
+    }
+    if (planTitle === 'Basic') {
+      return t('subtitle.basic');
+    }
+    return t('subtitle.partners');
+  };
+
   return (
-    <Modal
-      title={
-        endDate
-          ? `${planTitle}로 변경하시겠어요?`
-          : `${planTitle}을 지금 시작할까요?`
-      }
-      subtitle={
-        isTrial && planTitle === 'Partners'
-          ? `무료체험이 종료되고 지금부터 ${planTitle}가 적용돼요.`
-          : endDate
-            ? `${isTrial ? '무료 체험은' : '현재 플랜은'} ${endDate}까지 이용 가능하며,
-          ${getNextDay(endDate)}부터 ${planTitle}${planTitle === 'Partners' ? '가' : '이'} 적용돼요.`
-            : planTitle === 'Basic'
-              ? `서비스 이용에 필요한 모든 기본 기능을 사용할 수 있어요.`
-              : `세무/회계 기능까지 모두 이용할 수 있어요.`
-      }
-      onClose={onClose}
-    >
+    <Modal title={title} subtitle={getSubtitle()} onClose={onClose}>
       <div className="flex justify-end gap-[5px] mt-4">
-        <MiniBtn text="취소" variant="white" onClick={onClose} />
+        <MiniBtn text={tCommon('cancel')} variant="white" onClick={onClose} />
         <MiniBtn
-          text="구독"
+          text={t('subscribeButton')}
           variant="primary"
           onClick={async () => {
             await onSubscribe();

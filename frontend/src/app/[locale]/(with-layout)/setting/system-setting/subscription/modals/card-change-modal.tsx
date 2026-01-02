@@ -1,5 +1,6 @@
 import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
+import { useTranslations } from 'next-intl';
 
 interface CardChangeModalProps {
   onClose: () => void;
@@ -7,16 +8,17 @@ interface CardChangeModalProps {
 }
 
 const CardChangeModal = ({ onClose, onConfirm }: CardChangeModalProps) => {
+  const t = useTranslations(
+    'setting.systemSetting.subscription.cardChangeModal'
+  );
+  const tCommon = useTranslations('common');
+
   return (
-    <Modal
-      title="결제 카드를 변경하시겠어요?"
-      subtitle="변경된 카드는 다음 결제부터 자동으로 사용돼요."
-      onClose={onClose}
-    >
+    <Modal title={t('title')} subtitle={t('subtitle')} onClose={onClose}>
       <div className="flex justify-end gap-[5px] mt-4">
-        <MiniBtn text="취소" variant="white" onClick={onClose} />
+        <MiniBtn text={tCommon('cancel')} variant="white" onClick={onClose} />
         <MiniBtn
-          text="결제 카드 변경하기"
+          text={t('changeButton')}
           variant="primary"
           onClick={onConfirm}
         />

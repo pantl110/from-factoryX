@@ -17,9 +17,15 @@ import { useEffect, useState } from 'react';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import useAuthStore from '@/store/auth-store';
+import { useTranslations } from 'next-intl';
 
 const CompanyInfo = () => {
   const { isToastOpen, isVisible, showToast } = useToast(2000);
+  const tCommon = useTranslations('common');
+  const tCompanyInfo = useTranslations(
+    'setting.systemSetting.general.companyInfo'
+  );
+  const tClientInfo = useTranslations('setting.masterData.client.clientInfo');
 
   const { getFactory, factory } = useGetFactory();
   const { updateFactory } = useUpdateFactory();
@@ -91,7 +97,10 @@ const CompanyInfo = () => {
 
     try {
       if (!data.name || data.name.trim() === '') {
-        setError('name', { type: 'manual', message: '회사명을 입력해주세요.' });
+        setError('name', {
+          type: 'manual',
+          message: tCompanyInfo('errors.companyNameRequired'),
+        });
         setIsProcessing(false);
         return;
       } else {
@@ -153,20 +162,22 @@ const CompanyInfo = () => {
   return (
     <>
       <div className="flex flex-col py-8 gap-4 border-b border-b-[#eeeeee]">
-        <h3 className="Heading-3">회사 정보</h3>
+        <h3 className="Heading-3">{tCompanyInfo('title')}</h3>
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <div className="flex gap-2">
             <Input
-              placeholder="회사명을 입력하세요."
-              label="회사명"
+              placeholder={tClientInfo('placeholders.companyName')}
+              label={tCommon('companyName')}
               required
               {...register('name')}
               showError={!!errors.name}
               disabledSetting={!isAdmin || !hasSubscription()}
             />
             <Input
-              label="사업자등록번호"
-              placeholder="사업자등록번호를 입력하세요."
+              label={tCommon('businessRegistrationNumber')}
+              placeholder={tClientInfo(
+                'placeholders.businessRegistrationNumber'
+              )}
               required
               showError={!!errors.business_registration_number}
               disabledSetting={!isAdmin || !hasSubscription()}
@@ -184,15 +195,15 @@ const CompanyInfo = () => {
           </div>
           <div className="flex gap-2">
             <Input
-              placeholder="대표자명을 입력하세요."
-              label="대표자명"
+              placeholder={tClientInfo('placeholders.representativeName')}
+              label={tCommon('representativeName')}
               required
               disabledSetting={!isAdmin || !hasSubscription()}
               {...register('representative_name')}
             />
             <Input
-              placeholder="이메일을 입력하세요."
-              label="이메일"
+              placeholder={tClientInfo('placeholders.email')}
+              label={tCommon('email')}
               required
               showError={!!errors.manager_email}
               disabledSetting={!isAdmin || !hasSubscription()}
@@ -206,8 +217,8 @@ const CompanyInfo = () => {
           </div>
           <div className="flex gap-2">
             <Input
-              placeholder="연락처를 입력하세요."
-              label="연락처"
+              placeholder={tClientInfo('placeholders.phone')}
+              label={tCommon('phone')}
               showError={!!errors.manager_phone}
               disabledSetting={!isAdmin || !hasSubscription()}
               {...register('manager_phone', {
@@ -222,8 +233,8 @@ const CompanyInfo = () => {
               })}
             />
             <Input
-              placeholder="팩스 번호를 입력하세요."
-              label="팩스 번호"
+              placeholder={tClientInfo('placeholders.fax')}
+              label={tCommon('fax')}
               showError={!!errors.manager_fax}
               disabledSetting={!isAdmin || !hasSubscription()}
               {...register('manager_fax', {
@@ -240,28 +251,28 @@ const CompanyInfo = () => {
           </div>
           <div className="flex gap-2">
             <Input
-              placeholder="업태를 입력하세요."
-              label="업태"
+              placeholder={tClientInfo('placeholders.businessType')}
+              label={tCommon('businessType')}
               disabledSetting={!isAdmin || !hasSubscription()}
               {...register('business_type')}
             />
             <Input
-              placeholder="종목을 입력하세요."
-              label="종목"
+              placeholder={tClientInfo('placeholders.businessCategory')}
+              label={tCommon('businessCategory')}
               disabledSetting={!isAdmin || !hasSubscription()}
               {...register('business_category')}
             />
           </div>
           <Input
-            placeholder="사업장 주소를 입력하세요."
-            label="사업장 주소"
+            placeholder={tClientInfo('placeholders.businessAddress')}
+            label={tCommon('businessAddress')}
             disabledSetting={!isAdmin || !hasSubscription()}
             {...register('business_address')}
           />
           {isAdmin && hasSubscription() && (
             <div className="flex justify-end">
               <MiniBtn
-                text="저장"
+                text={tCommon('save')}
                 textColor="text-primary"
                 bgColor="bg-primary-8"
                 hoverColor="hover:bg-secondary-hover"
@@ -277,8 +288,8 @@ const CompanyInfo = () => {
       {isToastOpen && (
         <Toast
           icon={<CheckCircle size={24} className="text-primary" />}
-          text="저장이 완료되었어요."
-          subtext="입력하신 회사 정보가 업데이트되었어요."
+          text={tCompanyInfo('toast.saveSuccess')}
+          subtext={tCompanyInfo('toast.saveSuccessSubtext')}
           type="primary"
           isVisible={isVisible}
         />

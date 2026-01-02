@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import usePageStatusStore from '@/store/page-status-store';
 import SystemSetting from './system-setting';
 import MasterData from './master-data';
@@ -9,6 +10,7 @@ import { AddUnitModal } from './master-data/unit/modals/add-unit-modal';
 import AddUnitDropdown from './master-data/unit/modals/add-unit-dropdown';
 
 const SettingPageContent = () => {
+  const t = useTranslations('setting');
   const { settingTab, setSettingTab, settingChip } = usePageStatusStore();
 
   // 페이지 진입 시마다 시스템 탭으로 초기화
@@ -28,11 +30,11 @@ const SettingPageContent = () => {
         <div className="flex flex-col gap-3">
           <div className="flex flex-col gap-8 mt-10 mx-10 border-b border-lg">
             <div className="flex items-center justify-between">
-              <h1 className="Heading-1 text-bl">설정</h1>
+              <h1 className="Heading-1 text-bl">{t('title')}</h1>
               {settingTab === 'master' && settingChip === 'unit' && (
                 <div className="relative">
                   <MiniBtn
-                    text="단위 변환하기"
+                    text={t('masterData.unit.convert')}
                     variant="primary"
                     onClick={() => setIsAddUnitDropdownOpen(true)}
                   />
@@ -59,14 +61,14 @@ const SettingPageContent = () => {
                 className={`cursor-pointer ${settingTab === 'system' ? 'text-dg' : 'text-gr'}`}
                 onClick={() => setSettingTab('system')}
               >
-                시스템 설정
+                {t('tabs.system')}
               </button>
               <button
                 type="button"
                 className={`cursor-pointer ${settingTab === 'master' ? 'text-dg' : 'text-gr'}`}
                 onClick={() => setSettingTab('master')}
               >
-                마스터 데이터 관리
+                {t('tabs.master')}
               </button>
             </div>
           </div>

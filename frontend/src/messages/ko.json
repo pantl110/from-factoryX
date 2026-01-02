@@ -4,6 +4,7 @@
     "save": "저장",
     "cancel": "취소",
     "delete": "삭제",
+    "deleteItems": "{count}개 항목 삭제",
     "edit": "수정",
     "search": "검색",
     "confirm": "확인",
@@ -39,7 +40,9 @@
     "placeholders": {
       "materialName": "자재명을 입력하세요.",
       "productName": "제품명을 입력하세요.",
-      "enterNumber": "숫자를 입력하세요."
+      "enterNumber": "숫자를 입력하세요.",
+      "name": "이름을 입력하세요.",
+      "phone": "연락처를 입력하세요."
     },
     "clientInfo": "거래처 정보",
     "customer": "수주처",
@@ -56,9 +59,11 @@
     "won": "원",
     "manufacturingQuantity": "제작 수량",
     "companyName": "회사명",
+    "name": "이름",
     "email": "이메일",
     "phone": "연락처",
     "fax": "팩스 번호",
+    "role": "권한",
     "managerName": "담당자명",
     "transactionDate": "거래일자",
     "sellerInfo": "판매처 정보",
@@ -741,6 +746,11 @@
     }
   },
   "setting": {
+    "title": "설정",
+    "tabs": {
+      "system": "시스템 설정",
+      "master": "마스터 데이터 관리"
+    },
     "masterData": {
       "chips": {
         "facility": "설비 관리",
@@ -866,6 +876,255 @@
           "standardUnit": "기준 단위",
           "conversionUnit": "변환 단위",
           "conversionFormula": "변환식"
+        }
+      }
+    },
+    "systemSetting": {
+      "chips": {
+        "general": "일반",
+        "permission": "권한 설정",
+        "subscription": "구독 관리"
+      },
+      "general": {
+        "editPhoto": {
+          "changePhoto": "프로필 사진 변경",
+          "deletePhoto": "프로필 사진 삭제"
+        },
+        "deleteAccountModal": {
+          "title": "계정을 정말 삭제하시겠어요?",
+          "subtitle": "계정을 삭제하면 모든 정보가 사라지며, 복구할 수 없습니다."
+        },
+        "photoUploadModal": {
+          "title": {
+            "hasFiles": "업로드된 파일을 확인해 주세요.",
+            "noFiles": "새 프로필 사진을 업로드해주세요."
+          },
+          "subtitle": {
+            "hasFiles": "파일이 맞는지 확인 후, 업로드를 눌러주세요.",
+            "noFiles": "JPG, PNG 형식의 이미지 파일만 업로드할 수 있어요."
+          }
+        },
+        "companyInfo": {
+          "title": "회사 정보",
+          "errors": {
+            "companyNameRequired": "회사명을 입력해주세요."
+          },
+          "toast": {
+            "saveSuccess": "저장이 완료되었어요.",
+            "saveSuccessSubtext": "입력하신 회사 정보가 업데이트되었어요."
+          }
+        },
+        "deleteAccount": {
+          "title": "계정 삭제",
+          "description": "계정 삭제는 되돌릴 수 없습니다. 삭제 후에는 모든 개인 정보 및 사용 기록이 즉시 제거되며, 다시 복구할 수 없습니다. 계속하시겠습니까?",
+          "buttonText": "계정 삭제"
+        },
+        "languageSetting": {
+          "title": "언어 설정",
+          "selectLanguage": "언어 선택",
+          "errors": {
+            "changeFailed": "언어 변경에 실패했습니다",
+            "tryAgain": "잠시 후 다시 시도해주세요."
+          }
+        },
+        "profile": {
+          "title": "프로필 정보",
+          "toast": {
+            "saveSuccess": "저장이 완료되었어요.",
+            "saveSuccessSubtext": "입력하신 프로필 정보가 업데이트되었어요."
+          },
+          "errors": {
+            "imageUploadFailed": "이미지 업로드에 실패했습니다.",
+            "updateFailed": "프로필 정보 수정에 실패했습니다.",
+            "updateError": "프로필 정보 수정 중 오류가 발생했습니다."
+          }
+        }
+      },
+      "permission": {
+        "roles": {
+          "admin": "시스템 관리자",
+          "manager": "운영자",
+          "prod_manager": "생산관리자",
+          "viewer": "조회자"
+        },
+        "descriptions": {
+          "admin": "모든 메뉴와 설정에 접근할 수 있어요.\n사용자 관리, 문서 생성, 권한 설정까지 모두 가능해요.",
+          "manager": "주요 기능(견적서, 생산 관리 등)에 접근할 수 있어요.\n시스템 설정을 제외한 대부분의 작업을 수행할 수 있어요.",
+          "prod_manager": "생산 계획과 작업지시 등 생산 관련 기능에 접근할 수 있어요.\n생산 진행 관리와 관련된 대부분의 업무를 수행할 수 있어요.",
+          "viewer": "데이터를 열람만 할 수 있어요. 생성, 수정, 삭제 권한은 없어요."
+        },
+        "inviteModal": {
+          "title": "팩토리엑스에 팀원을 초대하세요.",
+          "subtitle": "초대할 분의 이메일과 권한을 설정해주세요.",
+          "authButton": "권한",
+          "memberTitle": "멤버",
+          "inviteButton": "초대하기",
+          "successTitle": "초대가 완료되었어요.",
+          "successSubtitle": "입력한 이메일로 초대 링크가 전송되었어요.\n팀원이 가입을 완료하면 자동으로 권한이 적용돼요.",
+          "errors": {
+            "emailRequired": "이메일을 입력해주세요",
+            "emailInvalid": "올바른 이메일 형식을 입력해주세요",
+            "cannotInvite": "초대할 수 없는 유저입니다.",
+            "cannotInviteSubtext": "관리자 역할이거나 이미 다른 공장에 소속되어 있어요.",
+            "inviteFailed": "초대에 실패했습니다.",
+            "inviteError": "초대 처리 중 오류가 발생했습니다.",
+            "tryAgain": "잠시 후 다시 시도해 주세요."
+          }
+        },
+        "deleteTeamMemberModal": {
+          "title": "해당 팀원을 삭제하시겠어요?",
+          "subtitle": "삭제하시면 해당 팀원은 더 이상 팩토리엑스를 이용할 수 없게 돼요."
+        },
+        "title": "팀원 권한",
+        "tooltip": {
+          "completeCompanyInfo": "팀원을 초대 전, 회사정보(필수 항목)를 먼저 입력해주세요."
+        },
+        "empty": {
+          "title": "초대된 팀원이 없어요.",
+          "description": "팀원이 초대되면 이곳에 표시돼요."
+        },
+        "errors": {
+          "deleteFailed": "멤버 삭제 실패"
+        },
+        "tableHeader": {
+          "registrationStatus": "가입 상태",
+          "name": "이름",
+          "email": "이메일",
+          "permission": "권한",
+          "inviteDate": "초대 날짜"
+        },
+        "tableItem": {
+          "registrationStatus": {
+            "completed": "완료"
+          },
+          "errors": {
+            "changeFailed": "권한 변경에 실패했습니다.",
+            "changeError": "권한 변경 중 오류가 발생했습니다."
+          }
+        }
+      },
+      "subscription": {
+        "title": "멤버십 요금제",
+        "refundPolicyButton": "환불 및 구독정책",
+        "paymentHistory": {
+          "title": "결제 내역",
+          "empty": {
+            "title": "결제 내역이 없어요.",
+            "description": "결제 시 이곳에 표시돼요."
+          },
+          "table": {
+            "date": "날짜",
+            "card": "카드",
+            "amount": "금액",
+            "planName": "플랜명"
+          }
+        },
+        "errors": {
+          "adminOnly": "구독 관리는 시스템 관리자만 가능합니다.",
+          "cardAdminOnly": "카드 관리는 시스템 관리자만 가능합니다.",
+          "paymentInfoLoadFailed": "결제 정보를 불러오지 못했습니다. 화면을 새로고침 후 다시 시도해주세요.",
+          "selectFactory": "공장을 선택해주세요.",
+          "paymentConfigIncomplete": "결제 설정이 완료되지 않았습니다. 클라이언트 키가 없습니다.",
+          "cardRegistrationFailed": "카드 등록을 시작하지 못했습니다. 다시 시도해주세요.",
+          "cardDeleteFailed": "카드 삭제에 실패했습니다.",
+          "paymentNotFound": "취소할 결제를 찾을 수 없습니다.",
+          "cancelFailed": "구독 해지에 실패했습니다.",
+          "cancelScheduledFailed": "예정된 구독 취소에 실패했습니다."
+        },
+        "cancelModal": {
+          "title": "{planTitle} 플랜을 구독 해지하시겠어요?",
+          "subtitle": "해지하면 다음 결제일부터 요금이 청구되지 않고,\n모든 기능 사용이 제한돼요.",
+          "unsubscribeButton": "구독 해지"
+        },
+        "cardChangeModal": {
+          "title": "결제 카드를 변경하시겠어요?",
+          "subtitle": "변경된 카드는 다음 결제부터 자동으로 사용돼요.",
+          "changeButton": "결제 카드 변경하기"
+        },
+        "cardDeleteModal": {
+          "title": "이 카드를 삭제하시겠어요?",
+          "subtitle": "삭제하면 앞으로 이 카드로 결제할 수 없어요.\n다시 사용하려면 등록이 필요해요."
+        },
+        "subscribeModal": {
+          "title": {
+            "change": "{planTitle}로 변경하시겠어요?",
+            "start": "{planTitle}을 지금 시작할까요?"
+          },
+          "subtitle": {
+            "trialEndsPartners": "무료체험이 종료되고 지금부터 {planTitle}가 적용돼요.",
+            "trialEnds": "무료 체험은 {endDate}까지 이용 가능하며,\n{nextDate}부터 {planTitle}가 적용돼요.",
+            "currentPlanEnds": "현재 플랜은 {endDate}까지 이용 가능하며,\n{nextDate}부터 {planTitle}이 적용돼요.",
+            "basic": "서비스 이용에 필요한 모든 기본 기능을 사용할 수 있어요.",
+            "partners": "세무/회계 기능까지 모두 이용할 수 있어요."
+          },
+          "subscribeButton": "구독"
+        },
+        "freePlan": {
+          "title": "무료 체험 이용 중",
+          "daysUntilEnd": "{days}일 후 종료",
+          "description": "기본적인 기능을 모두 이용할 수 있어요. \n사용자 관리, 문서 작성, 권한 설정 등 핵심 기능이 모두 포함돼요."
+        },
+        "planItem": {
+          "buttons": {
+            "subscribe": "구독",
+            "unsubscribe": "구독 해지",
+            "cancelCancellation": "해지 취소",
+            "cancelScheduled": "구독 예정 취소"
+          },
+          "monthlyPrice": "월 {price}원",
+          "cancelReason": "구독 해지",
+          "plans": {
+            "FREE": {
+              "title": "무료 체험",
+              "description": "기본적인 기능을 모두 이용할 수 있어요.\n사용자 관리, 문서 작성, 권한 설정 등 핵심 기능이 모두 포함돼요."
+            },
+            "BASIC": {
+              "title": "Basic",
+              "description": "기본적인 기능을 모두 이용할 수 있어요.\n사용자 관리, 문서 작성, 권한 설정 등 핵심 기능이 모두 포함돼요."
+            },
+            "PARTNERS": {
+              "title": "Partners",
+              "description": "매달 반복되는 회계 업무, 이젠 자동으로 끝내세요.\n기장료 포함 세무 관리부터 세무대리인과의 실시간 협업까지 한 번에 처리할 수 있어요."
+            }
+          }
+        },
+        "registerCard": {
+          "title": "결제 카드 설정",
+          "changeCard": "카드 변경",
+          "addCard": "카드 추가",
+          "delete": "삭제",
+          "noCard": "등록된 결제 카드가 없습니다."
+        },
+        "refundPolicyModal": {
+          "title": "환불 및 구독정책",
+          "freeTrial": {
+            "title": "무료체험",
+            "items": {
+              "firstMonth": "최초 가입 시 1개월 무료 체험 제공",
+              "cancelDuringTrial": "무료 체험 기간 내 해지 시 과금되지 않음"
+            }
+          },
+          "paidSubscription": {
+            "title": "유료 구독 환불",
+            "items": {
+              "noRefundAfterPayment": "유료 구독 결제 완료 후 환불은 불가",
+              "cancelStopsBilling": "단, 해지 요청 시 다음 결제일부터 과금 중단 처리",
+              "noPartialRefund": "중도 해지 시 사용하지 않은 잔여 기간에 대한 부분 환불은 제공하지 않음"
+            }
+          },
+          "partialRefund": {
+            "title": "부분 사용 환불 불가",
+            "items": {
+              "monthlySubscription": "월 단위로 제공되는 구독 상품 특성상, 사용 중도 해지 시 부분 환불 불가",
+              "serviceUntilMonthEnd": "결제일 기준으로 해당 월 말일까지 서비스 이용 가능"
+            }
+          },
+          "specialRefund": {
+            "title": "특별 사유 환불",
+            "items": {
+              "serviceInterruption": "서비스 장애, 운영사 사정 등 불가피한 일로 서비스 제공이 중단될 경우 : 사용 기간을 고려하여 전액 또는 일부 환불 가능 체험 제공"
+            }
+          }
         }
       }
     }

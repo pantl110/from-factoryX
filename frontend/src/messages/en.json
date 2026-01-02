@@ -4,6 +4,8 @@
     "save": "Save",
     "cancel": "Cancel",
     "delete": "Delete",
+    "deleteAll": "Delete All",
+    "deleteItems": "Delete {count} items",
     "edit": "Edit",
     "search": "Search",
     "confirm": "Confirm",
@@ -39,7 +41,9 @@
     "placeholders": {
       "materialName": "Enter material name.",
       "productName": "Enter product name.",
-      "enterNumber": "Enter a number."
+      "enterNumber": "Enter a number.",
+      "name": "Enter name.",
+      "phone": "Enter phone number."
     },
     "clientInfo": "Client Info",
     "customer": "Customer",
@@ -56,9 +60,11 @@
     "won": "KRW",
     "manufacturingQuantity": "Quantity",
     "companyName": "Company Name",
+    "name": "Name",
     "email": "Email",
     "phone": "Phone",
     "fax": "Fax",
+    "role": "Role",
     "managerName": "Manager Name",
     "transactionDate": "Transaction Date",
     "sellerInfo": "Seller Info",
@@ -69,7 +75,6 @@
     "print": "Print",
     "add": "Add",
     "note": "Note",
-    "deleteAll": "Delete All",
     "required": "(Required)",
     "seconds": "sec",
     "action": "Action",
@@ -741,6 +746,11 @@
     }
   },
   "setting": {
+    "title": "Settings",
+    "tabs": {
+      "system": "System",
+      "master": "Master Data"
+    },
     "masterData": {
       "chips": {
         "facility": "Facility",
@@ -866,6 +876,255 @@
           "standardUnit": "Standard Unit",
           "conversionUnit": "Conversion Unit",
           "conversionFormula": "Conversion Formula"
+        }
+      }
+    },
+    "systemSetting": {
+      "chips": {
+        "general": "General",
+        "permission": "Permission",
+        "subscription": "Subscription"
+      },
+      "general": {
+        "editPhoto": {
+          "changePhoto": "Change Profile Photo",
+          "deletePhoto": "Delete Profile Photo"
+        },
+        "deleteAccountModal": {
+          "title": "Delete your account?",
+          "subtitle": "All information will be permanently deleted and cannot be recovered."
+        },
+        "photoUploadModal": {
+          "title": {
+            "hasFiles": "Please check the uploaded file.",
+            "noFiles": "Please upload a new profile photo."
+          },
+          "subtitle": {
+            "hasFiles": "Please verify the file and click upload.",
+            "noFiles": "Only JPG and PNG image files can be uploaded."
+          }
+        },
+        "companyInfo": {
+          "title": "Company Info",
+          "errors": {
+            "companyNameRequired": "Please enter company name."
+          },
+          "toast": {
+            "saveSuccess": "Saved successfully.",
+            "saveSuccessSubtext": "Your company information has been updated."
+          }
+        },
+        "deleteAccount": {
+          "title": "Delete Account",
+          "description": "Account deletion cannot be undone. After deletion, all personal information and usage history will be immediately removed and cannot be recovered. Do you want to continue?",
+          "buttonText": "Delete Account"
+        },
+        "languageSetting": {
+          "title": "Language Settings",
+          "selectLanguage": "Select Language",
+          "errors": {
+            "changeFailed": "Failed to change language",
+            "tryAgain": "Please try again later."
+          }
+        },
+        "profile": {
+          "title": "Profile Info",
+          "toast": {
+            "saveSuccess": "Saved successfully.",
+            "saveSuccessSubtext": "Your profile information has been updated."
+          },
+          "errors": {
+            "imageUploadFailed": "Failed to upload image.",
+            "updateFailed": "Failed to update profile information.",
+            "updateError": "An error occurred while updating profile information."
+          }
+        }
+      },
+      "permission": {
+        "roles": {
+          "admin": "System Administrator",
+          "manager": "Operator",
+          "prod_manager": "Production Manager",
+          "viewer": "Viewer"
+        },
+        "descriptions": {
+          "admin": "Can access all menus and settings.\nCan manage users, create documents, and configure permissions.",
+          "manager": "Can access main features (quotation, production management, etc.).\nCan perform most tasks except system settings.",
+          "prod_manager": "Can access production-related features such as production planning and work orders.\nCan perform most tasks related to production progress management.",
+          "viewer": "Can only view data. No permission to create, modify, or delete."
+        },
+        "inviteModal": {
+          "title": "Invite team members to Factory X.",
+          "subtitle": "Enter the email and set permissions for the person you want to invite.",
+          "authButton": "Permission",
+          "memberTitle": "Members",
+          "inviteButton": "Invite",
+          "successTitle": "Invitation completed.",
+          "successSubtitle": "An invitation link has been sent to the entered email.\nPermissions will be automatically applied when the team member completes registration.",
+          "errors": {
+            "emailRequired": "Please enter email.",
+            "emailInvalid": "Please enter a valid email format.",
+            "cannotInvite": "Cannot invite this user.",
+            "cannotInviteSubtext": "They are an administrator or already belong to another factory.",
+            "inviteFailed": "Invitation failed.",
+            "inviteError": "An error occurred while processing the invitation.",
+            "tryAgain": "Please try again later."
+          }
+        },
+        "deleteTeamMemberModal": {
+          "title": "Delete this team member?",
+          "subtitle": "If deleted, this team member will no longer be able to use Factory X."
+        },
+        "title": "Team Member Permissions",
+        "tooltip": {
+          "completeCompanyInfo": "Please enter company information (required fields) before inviting team members."
+        },
+        "empty": {
+          "title": "No team members have been invited.",
+          "description": "Invited team members will appear here."
+        },
+        "errors": {
+          "deleteFailed": "Failed to delete member"
+        },
+        "tableHeader": {
+          "registrationStatus": "Registration Status",
+          "name": "Name",
+          "email": "Email",
+          "permission": "Permission",
+          "inviteDate": "Invite Date"
+        },
+        "tableItem": {
+          "registrationStatus": {
+            "completed": "Completed"
+          },
+          "errors": {
+            "changeFailed": "Failed to change permission.",
+            "changeError": "An error occurred while changing permission."
+          }
+        }
+      },
+      "subscription": {
+        "title": "Membership Plans",
+        "refundPolicyButton": "Refund & Subscription Policy",
+        "paymentHistory": {
+          "title": "Payment History",
+          "empty": {
+            "title": "No payment history yet.",
+            "description": "Payment history will be displayed here."
+          },
+          "table": {
+            "date": "Date",
+            "card": "Card",
+            "amount": "Amount",
+            "planName": "Plan Type"
+          }
+        },
+        "errors": {
+          "adminOnly": "Subscription management is only available to system administrators.",
+          "cardAdminOnly": "Card management is only available to system administrators.",
+          "paymentInfoLoadFailed": "Failed to load payment information. Please refresh the page and try again.",
+          "selectFactory": "Please select a factory.",
+          "paymentConfigIncomplete": "Payment configuration is incomplete. Client key is missing.",
+          "cardRegistrationFailed": "Failed to start card registration. Please try again.",
+          "cardDeleteFailed": "Failed to delete card.",
+          "paymentNotFound": "Payment to cancel not found.",
+          "cancelFailed": "Failed to cancel subscription.",
+          "cancelScheduledFailed": "Failed to cancel scheduled subscription."
+        },
+        "cancelModal": {
+          "title": "Do you want to cancel your {planTitle} plan subscription?",
+          "subtitle": "If you cancel, billing will stop from the next payment date,\nand all features will be restricted.",
+          "unsubscribeButton": "Unsubscribe"
+        },
+        "cardChangeModal": {
+          "title": "Do you want to change your payment card?",
+          "subtitle": "The changed card will be automatically used from the next payment.",
+          "changeButton": "Change Payment Card"
+        },
+        "cardDeleteModal": {
+          "title": "Do you want to delete this card?",
+          "subtitle": "If you delete it, you will not be able to pay with this card in the future.\nYou will need to register again to use it."
+        },
+        "subscribeModal": {
+          "title": {
+            "change": "Do you want to change to {planTitle}?",
+            "start": "Do you want to start {planTitle} now?"
+          },
+          "subtitle": {
+            "trialEndsPartners": "The free trial ends and {planTitle} will be applied from now on.",
+            "trialEnds": "The free trial is available until {endDate},\nand {planTitle} will be applied from {nextDate}.",
+            "currentPlanEnds": "The current plan is available until {endDate},\nand {planTitle} will be applied from {nextDate}.",
+            "basic": "You can use all basic features needed to use the service.",
+            "partners": "You can use all features including tax and accounting."
+          },
+          "subscribeButton": "Subscribe"
+        },
+        "freePlan": {
+          "title": "Free Trial Active",
+          "daysUntilEnd": "{days} days until end",
+          "description": "You can use all basic features. \nUser management, document writing, permission settings, and other core features are all included."
+        },
+        "planItem": {
+          "buttons": {
+            "subscribe": "Subscribe",
+            "unsubscribe": "Unsubscribe",
+            "cancelCancellation": "Cancel Cancellation",
+            "cancelScheduled": "Cancel Scheduled"
+          },
+          "monthlyPrice": "₩{price}/month",
+          "cancelReason": "Subscription cancellation",
+          "plans": {
+            "FREE": {
+              "title": "Free Trial",
+              "description": "You can use all basic features.\nUser management, document writing, permission settings, and other core features are all included."
+            },
+            "BASIC": {
+              "title": "Basic",
+              "description": "You can use all basic features.\nUser management, document writing, permission settings, and other core features are all included."
+            },
+            "PARTNERS": {
+              "title": "Partners",
+              "description": "Finish recurring accounting tasks automatically every month.\nYou can handle everything from tax management including bookkeeping fees to real-time collaboration with tax agents."
+            }
+          }
+        },
+        "registerCard": {
+          "title": "Payment Card Settings",
+          "changeCard": "Change Card",
+          "addCard": "Add Card",
+          "delete": "Delete",
+          "noCard": "No payment card registered."
+        },
+        "refundPolicyModal": {
+          "title": "Refund & Subscription Policy",
+          "freeTrial": {
+            "title": "Free Trial",
+            "items": {
+              "firstMonth": "1 month free trial provided upon initial sign-up",
+              "cancelDuringTrial": "No charges if canceled during the free trial period"
+            }
+          },
+          "paidSubscription": {
+            "title": "Paid Subscription Refund",
+            "items": {
+              "noRefundAfterPayment": "Refunds are not available after payment for paid subscriptions",
+              "cancelStopsBilling": "However, billing will stop from the next payment date upon cancellation request",
+              "noPartialRefund": "Partial refunds for unused remaining period are not provided upon mid-term cancellation"
+            }
+          },
+          "partialRefund": {
+            "title": "Partial Refund Not Available",
+            "items": {
+              "monthlySubscription": "Due to the nature of monthly subscription products, partial refunds are not available upon mid-term cancellation",
+              "serviceUntilMonthEnd": "Service is available until the end of the month based on the payment date"
+            }
+          },
+          "specialRefund": {
+            "title": "Special Circumstances Refund",
+            "items": {
+              "serviceInterruption": "In case of service interruption due to unavoidable circumstances such as service failures or operator issues: Full or partial refunds may be provided considering the usage period"
+            }
+          }
         }
       }
     }

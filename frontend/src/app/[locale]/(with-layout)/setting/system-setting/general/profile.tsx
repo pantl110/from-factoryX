@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import Input from '@/ui/input';
 import MiniBtn from '@/ui/mini-btn';
 import { useForm } from 'react-hook-form';
@@ -5,7 +6,7 @@ import { CameraIcon, Pencil } from '@phosphor-icons/react';
 import { useState, useEffect, useRef } from 'react';
 // import PhotoUploadModal from './modals/photo-upload-modal';
 import ProfileImage from '@/ui/profile-image';
-import { formatPhoneNumber, getRoleText } from '@/utils';
+import { formatPhoneNumber } from '@/utils';
 import useToast from '@/hooks/use-toast';
 import Toast from '@/ui/toast';
 import { CheckCircle } from '@phosphor-icons/react';
@@ -19,7 +20,40 @@ interface ProfileProps {
 }
 
 const Profile = ({ userInfo }: ProfileProps) => {
+  const t = useTranslations('setting.systemSetting.general.profile');
+  const tCommon = useTranslations('common');
+  const tPermission = useTranslations('setting.systemSetting.permission');
   const role = useMemberStore((state) => state.role);
+
+  // 번역 키 목록
+  const roleKeys = ['admin', 'manager', 'prod_manager', 'viewer'] as const;
+  type RoleKeyType = (typeof roleKeys)[number];
+
+  // 한국어 역할명 -> 번역 키 매핑
+  const roleKeyMap: Record<string, string> = {
+    '시스템 관리자': 'admin',
+    운영자: 'manager',
+    생산관리자: 'prod_manager',
+    조회자: 'viewer',
+  };
+
+  // 타입 가드 함수
+  const isRoleKey = (role: string): role is RoleKeyType => {
+    return (roleKeys as readonly string[]).includes(role);
+  };
+
+  const getRoleText = (role: string | null | undefined) => {
+    if (!role) return '-';
+
+    // 이미 번역 키인 경우 (admin, manager, prod_manager, viewer)
+    if (isRoleKey(role)) {
+      return tPermission(`roles.${role}`);
+    }
+
+    // 한국어 역할명인 경우 매핑
+    const key = roleKeyMap[role];
+    return key ? tPermission(`roles.${key}`) : role;
+  };
 
   const { isToastOpen, isVisible, showToast } = useToast();
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
@@ -94,9 +128,7 @@ const Profile = ({ userInfo }: ProfileProps) => {
         if (uploadResult.success) {
           profileImageUrl = uploadResult.object_url;
         } else {
-          throw new Error(
-            uploadResult.error || '이미지 업로드에 실패했습니다.'
-          );
+          throw new Error(uploadResult.error || t('errors.imageUploadFailed'));
         }
       }
 
@@ -119,14 +151,12 @@ const Profile = ({ userInfo }: ProfileProps) => {
         const errorMessage =
           typeof result.error === 'string'
             ? result.error
-            : '프로필 정보 수정에 실패했습니다.';
+            : t('errors.updateFailed');
         throw new Error(errorMessage);
       }
     } catch (error) {
       const errorMessage =
-        error instanceof Error
-          ? error.message
-          : '프로필 정보 수정 중 오류가 발생했습니다.';
+        error instanceof Error ? error.message : t('errors.updateError');
       throw new Error(errorMessage);
     }
   };
@@ -141,7 +171,7 @@ const Profile = ({ userInfo }: ProfileProps) => {
         className="flex flex-col gap-3.5 border-b pb-8 border-b-[#eeeeee]"
         onSubmit={handleSubmit(onSubmit)}
       >
-        <h3 className="Heading-3">프로필 정보</h3>
+        <h3 className="Heading-3">{t('title')}</h3>
         <div className="flex flex-col gap-8">
           <div className="relative">
             <ProfileImage
@@ -179,27 +209,27 @@ const Profile = ({ userInfo }: ProfileProps) => {
           <div className="flex flex-col gap-4">
             <div className="flex gap-2">
               <Input
-                placeholder="이름을 입력하세요."
-                label="이름"
+                placeholder={tCommon('placeholders.name')}
+                label={tCommon('name')}
                 {...register('username')}
               />
               <Input
-                label="권한"
-                value={role ? getRoleText(role) : '-'}
+                label={tCommon('role')}
+                value={getRoleText(role)}
                 disabledSetting={true}
                 required
               />
             </div>
             <div className="flex gap-2">
               <Input
-                label="이메일"
+                label={tCommon('email')}
                 required
                 value={userInfo?.email || '-'}
                 disabledSetting={true}
               />
               <Input
-                placeholder="연락처를 입력하세요."
-                label="연락처"
+                placeholder={tCommon('placeholders.phone')}
+                label={tCommon('phone')}
                 type="tel"
                 showError={!!errors.phone_number}
                 {...register('phone_number', {
@@ -219,7 +249,7 @@ const Profile = ({ userInfo }: ProfileProps) => {
         </div>
         <div className="flex justify-end">
           <MiniBtn
-            text="저장"
+            text={tCommon('save')}
             variant="primary"
             type="submit"
             disabled={isSubmitting || isLoading}
@@ -231,8 +261,8 @@ const Profile = ({ userInfo }: ProfileProps) => {
       {isToastOpen && (
         <Toast
           icon={<CheckCircle size={24} className="text-primary" />}
-          text="저장이 완료되었어요."
-          subtext="입력하신 프로필 정보가 업데이트되었어요."
+          text={t('toast.saveSuccess')}
+          subtext={t('toast.saveSuccessSubtext')}
           type="primary"
           isVisible={isVisible}
         />

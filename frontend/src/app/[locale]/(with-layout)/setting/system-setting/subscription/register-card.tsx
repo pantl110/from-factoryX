@@ -1,6 +1,7 @@
 import MiniBtn from '@/ui/mini-btn';
 import { PaymentAuthModel } from '@/types/data-model';
 import useMemberStore from '@/store/member-store';
+import { useTranslations } from 'next-intl';
 
 interface RegisterCardProps {
   paymentAuth: PaymentAuthModel | null;
@@ -15,15 +16,16 @@ const RegisterCard = ({
   setIsChangeModalOpen,
   setIsCardDeleteModalOpen,
 }: RegisterCardProps) => {
+  const t = useTranslations('setting.systemSetting.subscription.registerCard');
   const role = useMemberStore((state) => state.role);
   const isAdmin = role === 'admin';
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex justify-between">
-        <h3 className="Heading-3">결제 카드 설정</h3>
+        <h3 className="Heading-3">{t('title')}</h3>
         <MiniBtn
-          text={paymentAuth?.billing_key ? '카드 변경 ' : '카드 추가'}
+          text={paymentAuth?.billing_key ? t('changeCard') : t('addCard')}
           variant="whiteOutline"
           onClick={
             paymentAuth?.billing_key
@@ -41,7 +43,7 @@ const RegisterCard = ({
               {paymentAuth?.card_company} {paymentAuth?.card_number}
             </h4>
             <MiniBtn
-              text="삭제"
+              text={t('delete')}
               textColor="text-red"
               bgColor="bg-red-8"
               hoverColor="hover:bg-red-hover"
@@ -50,9 +52,7 @@ const RegisterCard = ({
             />
           </>
         ) : (
-          <p className="Me_Body-2 text-gr text-center w-full">
-            등록된 결제 카드가 없습니다.
-          </p>
+          <p className="Me_Body-2 text-gr text-center w-full">{t('noCard')}</p>
         )}
       </div>
     </div>

@@ -9,6 +9,7 @@ import { useRouter, usePathname } from '@/i18n/navigation';
 import { useToast } from '@/hooks';
 import Toast from '@/ui/toast';
 import { WarningCircle } from '@phosphor-icons/react';
+import { useTranslations } from 'next-intl';
 
 // 언어 정보 타입
 interface LanguageInfoModel {
@@ -32,6 +33,9 @@ const LanguageSetting = () => {
   const router = useRouter();
   const pathname = usePathname();
   const { isToastOpen, isVisible, showToast } = useToast();
+  const tLanguageSetting = useTranslations(
+    'setting.systemSetting.general.languageSetting'
+  );
 
   // userInfo에서 language를 가져와서 해당하는 LanguageInfoModel 찾기
   const getLanguageFromUserInfo = (
@@ -90,9 +94,11 @@ const LanguageSetting = () => {
 
   return (
     <div className="flex flex-col py-8 gap-4 border-b border-b-[#eeeeee]">
-      <h3 className="Heading-3">언어 설정</h3>
+      <h3 className="Heading-3">{tLanguageSetting('title')}</h3>
       <div className="flex flex-col gap-2">
-        <p className="Me_Body-1 text-sv">언어 선택</p>
+        <p className="Me_Body-1 text-sv">
+          {tLanguageSetting('selectLanguage')}
+        </p>
         <div className="relative">
           <button
             type="button"
@@ -174,8 +180,8 @@ const LanguageSetting = () => {
       {isToastOpen && (
         <Toast
           icon={<WarningCircle size={20} className="text-red" />}
-          text="언어 변경에 실패했습니다"
-          subtext="잠시 후 다시 시도해주세요."
+          text={tLanguageSetting('errors.changeFailed')}
+          subtext={tLanguageSetting('errors.tryAgain')}
           type="red"
           isVisible={isVisible}
         />

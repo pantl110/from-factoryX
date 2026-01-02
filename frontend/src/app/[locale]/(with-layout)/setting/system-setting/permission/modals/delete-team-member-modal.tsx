@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
 
@@ -10,23 +11,22 @@ const DeleteTeamMemberModal = ({
   onClose,
   onDelete,
 }: DeleteTeamMemberModalProps) => {
+  const t = useTranslations(
+    'setting.systemSetting.permission.deleteTeamMemberModal'
+  );
+  const tCommon = useTranslations('common');
+
   return (
-    <Modal
-      title="해당 팀원을 삭제하시겠어요?"
-      subtitle={
-        '삭제하시면 해당 팀원은 더 이상 팩토리엑스를 이용할 수 없게 돼요.'
-      }
-      onClose={onClose}
-    >
+    <Modal title={t('title')} subtitle={t('subtitle')} onClose={onClose}>
       <div className="flex justify-end mt-4 gap-[5px]">
         <MiniBtn
-          text="취소"
+          text={tCommon('cancel')}
           textColor="text-sv"
           onClick={onClose}
           hoverColor="hover:bg-bg"
         />
         <MiniBtn
-          text="삭제"
+          text={tCommon('delete')}
           textColor="text-red"
           bgColor="bg-red-8"
           onClick={onDelete}

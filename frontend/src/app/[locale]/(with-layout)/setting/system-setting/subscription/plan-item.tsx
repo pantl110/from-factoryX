@@ -1,3 +1,5 @@
+'use client';
+
 import MiniBtn from '@/ui/mini-btn';
 import { PlanType, PLAN_INFO } from './types';
 import { useState } from 'react';
@@ -9,6 +11,7 @@ import {
 import { SubscriptionStatusResponseModel } from '@/types/data-model';
 import CancelSubscriptionModal from './modals/cancel-subscription-modal';
 import useMemberStore from '@/store/member-store';
+import { useTranslations } from 'next-intl';
 
 interface PlanItemProps {
   type: PlanType;
@@ -27,6 +30,7 @@ const PlanItem = ({
   refreshSubscriptionData,
   hasScheduledSubscription,
 }: PlanItemProps) => {
+  const t = useTranslations('setting.systemSetting.subscription');
   const role = useMemberStore((state) => state.role);
   const isAdmin = role === 'admin';
 
@@ -60,20 +64,20 @@ const PlanItem = ({
   const handleCancel = async () => {
     if (!isSubscribedType) return;
     if (!subscriptionStatus?.current_payment?.id) {
-      alert('취소할 결제를 찾을 수 없습니다.');
+      alert(t('errors.paymentNotFound'));
       return;
     }
     const res = await cancelSubscriptionPayment(
       subscriptionStatus?.current_payment?.id,
       {
-        cancel_reason: '구독 해지',
+        cancel_reason: t('planItem.cancelReason'),
       }
     );
     if (res.success) {
       setIsCancelSubscriptionModalOpen(false);
       refreshSubscriptionData();
     } else {
-      alert(res.error ?? '구독 해지에 실패했습니다.');
+      alert(res.error ?? t('errors.cancelFailed'));
     }
   };
 
@@ -84,7 +88,7 @@ const PlanItem = ({
     if (res.success) {
       refreshSubscriptionData();
     } else {
-      alert(res.error ?? '예정된 구독 취소에 실패했습니다.');
+      alert(res.error ?? t('errors.cancelScheduledFailed'));
     }
   };
 
@@ -94,13 +98,13 @@ const PlanItem = ({
         className={`flex flex-col gap-1 py-4 px-6 rounded-xl ${isSubscribedType ? 'bg-primary-8' : 'border border-lg'}`}
       >
         <div className="flex items-center justify-between">
-          <h3 className="Heading-3">{info.title}</h3>
+          <h3 className="Heading-3">{t(`planItem.plans.${type}.title`)}</h3>
           {hasScheduledSubscription ? (
             // hasScheduledSubscription이 true일 때
             isSubscribedType ? null : ( // isSubscribedType이면 null (버튼 없음)
               // isSubscribedType이 아니면 구독 예정
               <MiniBtn
-                text="구독 예정 취소"
+                text={t('planItem.buttons.cancelScheduled')}
                 variant="red"
                 onClick={handleCancelScheduledSubscription}
                 disabled={!isAdmin || isCancelScheduledLoading}
@@ -111,14 +115,14 @@ const PlanItem = ({
             // isSubscribedType이면 구독해지나 해지 취소 버튼
             subscriptionStatus?.subscription_history.is_canceled === true ? (
               <MiniBtn
-                text="해지 취소"
+                text={t('planItem.buttons.cancelCancellation')}
                 variant="red"
                 onClick={handleSubscribe}
                 disabled={!isAdmin}
               />
             ) : (
               <MiniBtn
-                text="구독 해지"
+                text={t('planItem.buttons.unsubscribe')}
                 variant="secondary"
                 onClick={() => setIsCancelSubscriptionModalOpen(true)}
                 disabled={!isAdmin}
@@ -127,7 +131,7 @@ const PlanItem = ({
           ) : (
             // isSubscribedType이 아니면 구독 버튼
             <MiniBtn
-              text="구독"
+              text={t('planItem.buttons.subscribe')}
               variant="primary"
               onClick={() => setIsSubscribeModalOpen(true)}
               disabled={!isAdmin}
@@ -135,10 +139,10 @@ const PlanItem = ({
           )}
         </div>
         <h4 className="Heading-4 text-primary">
-          월 {info.price.toLocaleString()}원
+          {t('planItem.monthlyPrice', { price: info.price.toLocaleString() })}
         </h4>
         <p className="text-dg Re_Body-1 whitespace-pre-line">
-          {info.description}
+          {t(`planItem.plans.${type}.description`)}
         </p>
       </div>
 
@@ -148,7 +152,7 @@ const PlanItem = ({
           onSubscribe={handleSubscribe}
           isLoading={isLoading}
           onClose={() => setIsSubscribeModalOpen(false)}
-          planTitle={info.title}
+          planTitle={t(`planItem.plans.${type}.title`)}
           endDate={subscriptionStatus?.subscription_history.end_date ?? ''}
           isTrial={isTrial}
         />
@@ -159,7 +163,7 @@ const PlanItem = ({
           onCancel={handleCancel}
           isLoading={isCancelLoading}
           onClose={() => setIsCancelSubscriptionModalOpen(false)}
-          planTitle={info.title}
+          planTitle={t(`planItem.plans.${type}.title`)}
         />
       )}
     </>

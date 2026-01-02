@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 import usePageStatusStore from '@/store/page-status-store';
 import Chip from '@/ui/chip';
 import General from './general';
@@ -7,6 +8,7 @@ import Permission from './permission';
 import Subscription from './subscription';
 
 const SystemSetting = () => {
+  const t = useTranslations('setting.systemSetting');
   const { settingChip, setSettingChip } = usePageStatusStore();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -56,7 +58,7 @@ const SystemSetting = () => {
     <div>
       <div className="flex gap-1 px-10 pb-6">
         <Chip
-          text="일반"
+          text={t('chips.general')}
           textColor={settingChip === 'general' ? 'text-bg' : 'text-dg'}
           bgColor={settingChip === 'general' ? 'bg-dg' : 'bg-transparent'}
           radius="rounded-full"
@@ -67,7 +69,7 @@ const SystemSetting = () => {
           padding="px-4"
         />
         <Chip
-          text="권한 설정"
+          text={t('chips.permission')}
           textColor={settingChip === 'permission' ? 'text-bg' : 'text-dg'}
           bgColor={settingChip === 'permission' ? 'bg-dg' : 'bg-transparent'}
           radius="rounded-full"
@@ -78,7 +80,7 @@ const SystemSetting = () => {
           padding="px-4"
         />
         <Chip
-          text="구독 관리"
+          text={t('chips.subscription')}
           textColor={settingChip === 'subscription' ? 'text-bg' : 'text-dg'}
           bgColor={settingChip === 'subscription' ? 'bg-dg' : 'bg-transparent'}
           radius="rounded-full"
