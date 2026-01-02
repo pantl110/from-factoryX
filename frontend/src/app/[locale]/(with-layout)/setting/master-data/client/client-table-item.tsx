@@ -3,6 +3,7 @@ import { ClientResponseModel } from '@/types/data-model';
 import { RoundChip } from '@/ui/round-chip';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
+import { useTranslations } from 'next-intl';
 
 interface ClientTableItemProps {
   client: ClientResponseModel;
@@ -17,6 +18,7 @@ const ClientTableItem = ({
   isChecked,
   onToggleCheck,
 }: ClientTableItemProps) => {
+  const tCommon = useTranslations('common');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
@@ -25,7 +27,7 @@ const ClientTableItem = ({
 
   return (
     <div
-      className="flex h-14 items-center min-w-[1697px] border-b border-[#eeeeee] Me_Body-1 text-dg cursor-pointer hover:bg-bg transition-colors duration-200"
+      className="flex h-14 items-center min-w-[1740px] border-b border-lg Me_Body-1 text-dg cursor-pointer hover:bg-bg transition-colors duration-200"
       onClick={onClick}
     >
       {!isViewer && hasSubscription() && (
@@ -34,13 +36,17 @@ const ClientTableItem = ({
           onToggle={onToggleCheck || (() => {})}
         />
       )}
-      <div className="px-3 flex-[1.2]">
+      <div className="px-3 flex-[1.3]">
         <div className="flex gap-1">
           {client.is_customer === true && (
-            <RoundChip text="수주처" variant="sm" color="secondary" />
+            <RoundChip
+              text={tCommon('customer')}
+              variant="sm"
+              color="secondary"
+            />
           )}
           {client.is_supplier === true && (
-            <RoundChip text="발주처" variant="sm" color="red" />
+            <RoundChip text={tCommon('supplier')} variant="sm" color="red" />
           )}
 
           {client.is_supplier === false && client.is_customer === false && '-'}

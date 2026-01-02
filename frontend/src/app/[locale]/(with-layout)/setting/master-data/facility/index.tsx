@@ -13,6 +13,7 @@ import { WarningCircle } from '@phosphor-icons/react';
 import useToast from '@/hooks/use-toast';
 import NoHistoryBox from '@/ui/no-history-box';
 import Pagination from '@/components/pagination';
+import { useTranslations } from 'next-intl';
 
 interface FacilityProps {
   equipmentList?: EquipmentListResponseModel;
@@ -43,6 +44,7 @@ const Facility = ({
   totalPages = 1,
   onPageChange,
 }: FacilityProps) => {
+  const tFacility = useTranslations('setting.masterData.facility');
   const [selectedEquipment, setSelectedEquipment] =
     useState<EquipmentResponseModel | null>(null);
   const { isToastOpen, isVisible, showToast } = useToast(2000);
@@ -67,8 +69,8 @@ const Facility = ({
       <div className="w-full px-10 pb-10">
         {facilityList.length === 0 ? (
           <NoHistoryBox
-            title="설비가 아직 없어요."
-            text="설비를 추가하면 이곳에 표시돼요."
+            title={tFacility('empty.title')}
+            text={tFacility('empty.description')}
           />
         ) : (
           <>
@@ -122,8 +124,8 @@ const Facility = ({
       {isToastOpen && (
         <Toast
           icon={<WarningCircle />}
-          text="다른 설비와 자동 배정 순서가 겹쳐요."
-          subtext="배정 순서를 수정해주세요."
+          text={tFacility('toast.priorityConflict.text')}
+          subtext={tFacility('toast.priorityConflict.subtext')}
           type="red"
           isVisible={isVisible}
         />

@@ -1,5 +1,6 @@
 import Dropdown from '@/ui/dropdown/dropdown';
 import DropdownItem from '@/ui/dropdown/dropdown-item';
+import { useTranslations } from 'next-intl';
 
 interface SelectProductMaterialDropdownProps {
   onClose: () => void;
@@ -12,15 +13,20 @@ const SelectProductMaterialDropdown = ({
   onSelect,
   width,
 }: SelectProductMaterialDropdownProps) => {
-  const categories = ['전체', '제품', '자재'];
+  const tCommon = useTranslations('common');
+  const categories = [
+    { key: 'all', label: tCommon('all') },
+    { key: 'product', label: tCommon('product') },
+    { key: 'material', label: tCommon('material') },
+  ];
 
   return (
     <Dropdown onClose={onClose} width={width}>
       {categories.map((category) => (
         <DropdownItem
-          key={category}
-          text={category}
-          onClick={() => onSelect(category)}
+          key={category.key}
+          text={category.label}
+          onClick={() => onSelect(category.key)}
         />
       ))}
     </Dropdown>

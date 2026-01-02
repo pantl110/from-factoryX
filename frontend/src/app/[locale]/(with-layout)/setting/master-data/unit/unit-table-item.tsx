@@ -4,6 +4,7 @@ import { useState } from 'react';
 import DeleteModal from '@/ui/modal/delete-modal';
 import { useDeleteUnitConversionMutation } from '@/hooks/unit-conversion/use-unit-conversion-api';
 import Checkbox from '@/ui/checkbox';
+import { useTranslations } from 'next-intl';
 
 interface UnitTableItemProps {
   unit: UnitConversionModel;
@@ -20,6 +21,7 @@ export const UnitTableItem = ({
   onToggleSelect,
   onRowClick,
 }: UnitTableItemProps) => {
+  const tCommon = useTranslations('common');
   // item 삭제
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const deleteMutation = useDeleteUnitConversionMutation();
@@ -71,7 +73,7 @@ export const UnitTableItem = ({
         />
         <div className="flex-[0.6] pl-2 pr-4">
           <Chip
-            text={unit.material ? '자재' : '제품'}
+            text={unit.material ? tCommon('material') : tCommon('product')}
             bgColor={unit.material ? 'bg-yellow-8' : 'bg-green-8'}
             textColor={unit.material ? 'text-yellow' : 'text-green'}
             radius="rounded-full"
@@ -81,7 +83,7 @@ export const UnitTableItem = ({
           />
         </div>
         <p
-          className="flex-1 px-3 truncate"
+          className="flex-[1.2] px-3 truncate"
           title={
             unit.material ? unit.material_name || '-' : unit.product_name || '-'
           }
@@ -95,7 +97,7 @@ export const UnitTableItem = ({
           {unit.to_unit}
         </p>
         <p
-          className="flex-1 px-3 truncate"
+          className="flex-[1.4] px-3 truncate"
           title={`${formatQuantity(unit.from_quantity)}${unit.from_unit} = ${formatQuantity(unit.to_quantity)}${unit.to_unit}`}
         >
           {`${formatQuantity(unit.from_quantity)}${unit.from_unit} = ${formatQuantity(unit.to_quantity)}${unit.to_unit}`}

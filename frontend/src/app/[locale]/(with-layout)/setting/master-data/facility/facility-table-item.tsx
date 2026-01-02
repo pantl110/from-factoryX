@@ -4,6 +4,7 @@ import { RoundChip } from '@/ui';
 import Checkbox from '@/ui/checkbox';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
+import { useTranslations } from 'next-intl';
 
 export interface FacilityTableItemProps {
   facility: EquipmentResponseModel;
@@ -18,6 +19,9 @@ const FacilityTableItem = ({
   isChecked,
   onToggle,
 }: FacilityTableItemProps) => {
+  const tFacility = useTranslations(
+    'setting.masterData.facility.detailPanel.status'
+  );
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
@@ -50,7 +54,11 @@ const FacilityTableItem = ({
       )}
       <div className="flex-1 px-3">
         <RoundChip
-          text={facility.status === 'standby' ? '가동 대기' : '가동 중'}
+          text={
+            facility.status === 'standby'
+              ? tFacility('standby')
+              : tFacility('running')
+          }
           variant="sm"
           color={getEquipmentStatusRoundChipColor(
             facility.status as EquipmentStatusType | undefined

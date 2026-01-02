@@ -21,8 +21,11 @@ import {
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import Unit from './unit';
+import { useTranslations } from 'next-intl';
 
 const MasterData = () => {
+  const tCommon = useTranslations('common');
+  const tMasterData = useTranslations('setting.masterData');
   const factoryId = useMemberStore((state) => state.factoryId);
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
@@ -50,7 +53,7 @@ const MasterData = () => {
 
   // 단위 변환 API
   const { list: getUnitList } = useUnitConversionApi();
-  const [unitCategory, setUnitCategory] = useState<string>('전체');
+  const [unitCategory, setUnitCategory] = useState<string>('all');
   const [unitPage, setUnitPage] = useState(1);
 
   // 디바운스된 검색어 (300ms)
@@ -58,9 +61,9 @@ const MasterData = () => {
 
   // 단위 변환 목록 조회 (React Query)
   const itemType =
-    unitCategory === '자재'
+    unitCategory === 'material'
       ? 'material'
-      : unitCategory === '제품'
+      : unitCategory === 'product'
         ? 'product'
         : 'all';
 
@@ -312,7 +315,7 @@ const MasterData = () => {
           setEquipmentTotal(totalJson?.totalCnt ?? 0);
         }
       } catch {
-        alert('설비 삭제 중 오류가 발생했습니다.');
+        alert(tMasterData('errors.equipmentDeleteFailed'));
       }
     } else if (settingChip === 'client') {
       // 거래처 삭제 로직
@@ -323,7 +326,7 @@ const MasterData = () => {
       try {
         // 선택된 모든 거래처 삭제
         if (!factoryId) {
-          alert('공장 정보가 없습니다. 잠시 후 다시 시도해주세요.');
+          alert(tMasterData('errors.factoryNotFound'));
           return;
         }
 
@@ -355,7 +358,7 @@ const MasterData = () => {
           setClientTotal(totalJson?.totalCnt ?? 0);
         }
       } catch {
-        alert('거래처 삭제 중 오류가 발생했습니다.');
+        alert(tMasterData('errors.clientDeleteFailed'));
       }
     }
 
@@ -473,7 +476,7 @@ const MasterData = () => {
     <div className="w-full">
       <div className="flex gap-1 px-10 pb-5">
         <Chip
-          text={`설비 관리${typeof equipmentTotal === 'number' ? ` ${equipmentTotal}` : ''}`}
+          text={`${tMasterData('chips.facility')}${typeof equipmentTotal === 'number' ? ` ${equipmentTotal}` : ''}`}
           textColor={settingChip === 'equipment' ? 'text-bg' : 'text-dg'}
           bgColor={settingChip === 'equipment' ? 'bg-dg' : 'bg-transparent'}
           radius="rounded-full"
@@ -484,7 +487,7 @@ const MasterData = () => {
           padding="px-4"
         />
         <Chip
-          text={`거래처 정보${typeof clientTotal === 'number' ? ` ${clientTotal}` : ''}`}
+          text={`${tMasterData('chips.client')}${typeof clientTotal === 'number' ? ` ${clientTotal}` : ''}`}
           textColor={settingChip === 'client' ? 'text-bg' : 'text-dg'}
           bgColor={settingChip === 'client' ? 'bg-dg' : 'bg-transparent'}
           radius="rounded-full"
@@ -495,7 +498,7 @@ const MasterData = () => {
           padding="px-4"
         />
         <Chip
-          text={`단위 변환 관리${typeof unitTotal === 'number' ? ` ${unitTotal}` : ''}`}
+          text={`${tMasterData('chips.unit')}${typeof unitTotal === 'number' ? ` ${unitTotal}` : ''}`}
           textColor={settingChip === 'unit' ? 'text-bg' : 'text-dg'}
           bgColor={settingChip === 'unit' ? 'bg-dg' : 'bg-transparent'}
           radius="rounded-full"
@@ -511,8 +514,8 @@ const MasterData = () => {
           <SearchInput
             placeholder={
               settingChip === 'client'
-                ? '거래처명, 대표자명, 연락처 등을 입력해 검색하세요.'
-                : '설비명을 입력해 검색하세요.'
+                ? tMasterData('placeholders.clientSearch')
+                : tMasterData('placeholders.facilitySearch')
             }
             value={searchKeyword}
             onChange={handleSearchChange}
@@ -525,7 +528,7 @@ const MasterData = () => {
           <div className="flex gap-2">
             {settingChip === 'equipment' && (
               <MiniBtn
-                text="추가하기"
+                text={tCommon('add')}
                 variant="whiteOutline"
                 onClick={handleAddBtnClick}
                 disabled={!factoryId || isViewer || !hasSubscription()}

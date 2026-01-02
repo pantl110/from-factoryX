@@ -10,6 +10,7 @@ import useSubscriptionStore from '@/store/subscription-store';
 import { ClientInfo } from './client-info';
 import { AccountInfo } from './account-info';
 import { DepositorInfo } from './depositor-info';
+import { useTranslations } from 'next-intl';
 
 interface ClientDetailPanelProps {
   clientId: number;
@@ -26,6 +27,7 @@ const ClientDetailPanel = ({
   const { clientDetail, isLoading } = useGetClientDetail(clientId, factoryId);
   const { updateClient, isLoading: isUpdateLoading } = useUpdateClient();
 
+  const tCommon = useTranslations('common');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
@@ -107,13 +109,13 @@ const ClientDetailPanel = ({
 
   return (
     <Panel
-      title="거래처"
+      title={tCommon('client')}
       onClose={onClose}
       headerButton={
         (!clientDetail || isDirty) &&
         !isLoading && (
           <MiniBtn
-            text="저장"
+            text={tCommon('save')}
             textColor="text-primary"
             bgColor="bg-primary-8"
             hoverColor="hover:bg-secondary-hover"

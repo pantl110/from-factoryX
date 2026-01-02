@@ -14,6 +14,7 @@ import {
   UnitConversionModel,
 } from '@/types/data-model';
 import { useCreateUnitConversionMutation } from '@/hooks';
+import { useTranslations } from 'next-intl';
 
 interface AddUnitModalProps {
   onClose: () => void;
@@ -41,6 +42,8 @@ export const AddUnitModal = ({
     null
   );
   const createMutation = useCreateUnitConversionMutation();
+  const tCommon = useTranslations('common');
+  const tUnit = useTranslations('setting.masterData.unit');
 
   // initialUnit이 있을 때 모달 기본값 설정
   useEffect(() => {
@@ -99,12 +102,12 @@ export const AddUnitModal = ({
       const toValue = parseNumericValue(watchedConversionValue || '');
 
       if (fromValue === 0 || toValue === 0) {
-        alert('변환식 값을 입력해주세요.');
+        alert(tUnit('errors.enterConversionValue'));
         return;
       }
 
       if (!watchedConversionUnit) {
-        alert('변환 단위를 입력해주세요.');
+        alert(tUnit('errors.enterConversionUnit'));
         return;
       }
 
@@ -130,7 +133,7 @@ export const AddUnitModal = ({
       }
       onClose();
     } catch {
-      alert('단위 추가에 실패했습니다.');
+      alert(tUnit('errors.addFailed'));
     }
   };
 
@@ -171,7 +174,7 @@ export const AddUnitModal = ({
   };
 
   return (
-    <Modal title="단위 변환" width="w-[800px]" onClose={onClose}>
+    <Modal title={tUnit('title')} width="w-[800px]" onClose={onClose}>
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
         <div className="flex flex-col gap-3 mt-4">
           <div className="flex gap-2">
@@ -179,10 +182,14 @@ export const AddUnitModal = ({
               <Input
                 placeholder={
                   addUnitType === 'material'
-                    ? '자재명을 입력하세요.'
-                    : '제품명을 입력하세요.'
+                    ? tCommon('placeholders.materialName')
+                    : tCommon('placeholders.productName')
                 }
-                label={addUnitType === 'material' ? '자재명' : '제품명'}
+                label={
+                  addUnitType === 'material'
+                    ? tCommon('materialName')
+                    : tCommon('productName')
+                }
                 value={
                   addUnitType === 'material'
                     ? materialSearchInput
@@ -257,29 +264,27 @@ export const AddUnitModal = ({
 
             <div className="flex-1">
               <Input
-                label={addUnitType === 'material' ? '자재코드' : '제품코드'}
+                label={
+                  addUnitType === 'material'
+                    ? tCommon('materialCode')
+                    : tCommon('productCode')
+                }
                 {...register('code', { required: true })}
                 disabledReadOnly
                 placeholder=""
               />
             </div>
-            {/* <div className="flex-1">
-              <Input
-                label="단위"
-                {...register('unit', { required: true })}
-                disabledReadOnly
-                placeholder=""
-              />
-            </div> */}
           </div>
         </div>
 
         <div className="flex flex-col gap-3">
           <div className="flex gap-2">
             <Input
-              label="기준단위"
+              label={tUnit('standardUnit')}
               placeholder={
-                addUnitType === 'material' ? '기준단위를 입력하세요.' : ''
+                addUnitType === 'material'
+                  ? tUnit('placeholders.standardUnit')
+                  : ''
               }
               value={watchedUnit || ''}
               disabled={addUnitType === 'product'}
@@ -289,9 +294,11 @@ export const AddUnitModal = ({
             />
             <Input
               placeholder={
-                addUnitType === 'material' ? '' : '변환단위을 입력하세요.'
+                addUnitType === 'material'
+                  ? ''
+                  : tUnit('placeholders.conversionUnit')
               }
-              label="변환단위"
+              label={tUnit('conversionUnit')}
               value={watchedConversionUnit || ''}
               disabled={addUnitType === 'material'}
               {...(addUnitType === 'product'
@@ -299,15 +306,6 @@ export const AddUnitModal = ({
                 : {})}
             />
           </div>
-
-          {/* <div className="px-4 py-2 flex gap-1 rounded-[8px] bg-bg items-center">
-            <div className="w-4 h-4 flex items-center justify-center">
-              <WarningCircle size={16} className="text-sv" />
-            </div>
-            <span className="text-sv Re_Body-2">
-              단위와 기준단위는 같은 의미입니다.
-            </span>
-          </div> */}
         </div>
 
         {/* 변환식 */}
@@ -316,8 +314,8 @@ export const AddUnitModal = ({
             <div className="flex gap-2 flex-1 items-end">
               <div className="flex-1">
                 <Input
-                  placeholder={'숫자를 입력하세요.'}
-                  label="변환식"
+                  placeholder={tCommon('placeholders.enterNumber')}
+                  label={tUnit('conversionFormula')}
                   value={watchedUnitValue || ''}
                   onChange={handleNumberChange('unitValue')}
                   name="unitValue"
@@ -333,7 +331,7 @@ export const AddUnitModal = ({
             <div className="flex gap-2 flex-1">
               <div className="flex-1">
                 <Input
-                  placeholder={'숫자를 입력하세요.'}
+                  placeholder={tCommon('placeholders.enterNumber')}
                   value={watchedConversionValue || ''}
                   onChange={handleNumberChange('conversionValue')}
                   name="conversionValue"
@@ -359,9 +357,9 @@ export const AddUnitModal = ({
         </div>
 
         <div className="flex justify-end gap-2.5">
-          <MiniBtn text="닫기" variant="white" onClick={onClose} />
+          <MiniBtn text={tCommon('close')} variant="white" onClick={onClose} />
           <MiniBtn
-            text="단위 변환하기"
+            text={tUnit('convert')}
             variant="primary"
             onClick={handleSubmit(onSubmit)}
             disabled={createMutation.isPending}

@@ -1,6 +1,7 @@
 import { Controller, Control } from 'react-hook-form';
 import { ClientUpdateModel } from '@/types/data-model';
 import InfoLabelValue from '@/ui/info-label-value';
+import { useTranslations } from 'next-intl';
 
 interface DepositorInfoProps {
   control: Control<ClientUpdateModel>;
@@ -14,13 +15,17 @@ export const DepositorInfo = ({
   isViewer,
   hasSubscription,
 }: DepositorInfoProps) => {
+  const tDepositorInfo = useTranslations(
+    'setting.masterData.client.depositorInfo'
+  );
+
   if (!control) {
     return null;
   }
 
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="Heading-3">입금 확인 정보</h3>
+      <h3 className="Heading-3">{tDepositorInfo('title')}</h3>
 
       <div>
         <div className="flex border-b border-lg w-full">
@@ -29,9 +34,9 @@ export const DepositorInfo = ({
             control={control}
             render={({ field }) => (
               <InfoLabelValue
-                label="입금자명"
+                label={tDepositorInfo('depositorName')}
                 isEditing={!isViewer && hasSubscription()}
-                placeholder="입금자명을 입력하세요."
+                placeholder={tDepositorInfo('depositorNamePlaceholder')}
                 {...field}
               />
             )}

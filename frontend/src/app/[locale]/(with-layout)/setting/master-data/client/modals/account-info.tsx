@@ -2,6 +2,7 @@ import { Controller, Control } from 'react-hook-form';
 import { ClientUpdateModel } from '@/types/data-model';
 import InfoLabelValue from '@/ui/info-label-value';
 import { extractNumbers } from '@/utils/format-number';
+import { useTranslations } from 'next-intl';
 
 interface AccountInfoProps {
   control: Control<ClientUpdateModel>;
@@ -15,13 +16,15 @@ export const AccountInfo = ({
   isViewer,
   hasSubscription,
 }: AccountInfoProps) => {
+  const tAccountInfo = useTranslations('setting.masterData.client.accountInfo');
+
   if (!control) {
     return null;
   }
 
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="Heading-3">지급 계좌 정보</h3>
+      <h3 className="Heading-3">{tAccountInfo('title')}</h3>
 
       <div>
         <div className="flex">
@@ -30,9 +33,9 @@ export const AccountInfo = ({
             control={control}
             render={({ field }) => (
               <InfoLabelValue
-                label="은행명"
+                label={tAccountInfo('bankName')}
                 isEditing={!isViewer && hasSubscription()}
-                placeholder="은행명을 입력하세요."
+                placeholder={tAccountInfo('bankNamePlaceholder')}
                 {...field}
               />
             )}
@@ -42,9 +45,9 @@ export const AccountInfo = ({
             control={control}
             render={({ field }) => (
               <InfoLabelValue
-                label="계좌번호"
+                label={tAccountInfo('accountNumber')}
                 isEditing={!isViewer && hasSubscription()}
-                placeholder="계좌번호를 입력하세요."
+                placeholder={tAccountInfo('accountNumberPlaceholder')}
                 value={field.value}
                 onChange={(e) => {
                   const numbersOnly = extractNumbers(e.target.value);
@@ -61,9 +64,9 @@ export const AccountInfo = ({
             control={control}
             render={({ field }) => (
               <InfoLabelValue
-                label="예금주"
+                label={tAccountInfo('holder')}
                 isEditing={!isViewer && hasSubscription()}
-                placeholder="예금주를 입력하세요."
+                placeholder={tAccountInfo('holderPlaceholder')}
                 {...field}
               />
             )}

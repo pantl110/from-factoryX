@@ -7,6 +7,7 @@ import {
 import { ClientUpdateModel, ClientResponseModel } from '@/types/data-model';
 import InfoLabelValue from '@/ui/info-label-value';
 import { RoundChip } from '@/ui/round-chip';
+import { useTranslations } from 'next-intl';
 
 interface ClientInfoProps {
   control: Control<ClientUpdateModel>;
@@ -21,9 +22,12 @@ export const ClientInfo = ({
   hasSubscription,
   clientDetail,
 }: ClientInfoProps) => {
+  const tCommon = useTranslations('common');
+  const tClientInfo = useTranslations('setting.masterData.client.clientInfo');
+
   return (
     <form className="flex flex-col gap-3">
-      <h3 className="Heading-3">거래처 정보</h3>
+      <h3 className="Heading-3">{tClientInfo('title')}</h3>
 
       <div>
         <div className="flex">
@@ -33,9 +37,9 @@ export const ClientInfo = ({
             rules={{ required: true }}
             render={({ field }) => (
               <InfoLabelValue
-                label="회사명"
+                label={tCommon('companyName')}
                 isEditing={!isViewer && hasSubscription()}
-                placeholder="(필수) 회사명을 입력하세요."
+                placeholder={tClientInfo('placeholders.companyName')}
                 required
                 {...field}
               />
@@ -50,9 +54,11 @@ export const ClientInfo = ({
             }}
             render={({ field }) => (
               <InfoLabelValue
-                label="사업자등록번호"
+                label={tCommon('businessRegistrationNumber')}
                 isEditing={!isViewer && hasSubscription()}
-                placeholder="(필수) 사업자등록번호를 입력하세요."
+                placeholder={tClientInfo(
+                  'placeholders.businessRegistrationNumber'
+                )}
                 required
                 value={field.value}
                 onChange={(e) => {
@@ -71,9 +77,9 @@ export const ClientInfo = ({
             rules={{ required: true }}
             render={({ field }) => (
               <InfoLabelValue
-                label="대표자명"
+                label={tCommon('representativeName')}
                 isEditing={!isViewer && hasSubscription()}
-                placeholder="(필수) 대표자명을 입력하세요."
+                placeholder={tClientInfo('placeholders.representativeName')}
                 required
                 {...field}
               />
@@ -87,9 +93,9 @@ export const ClientInfo = ({
             }}
             render={({ field }) => (
               <InfoLabelValue
-                label="이메일"
+                label={tCommon('email')}
                 isEditing={!isViewer && hasSubscription()}
-                placeholder="-"
+                placeholder={tClientInfo('placeholders.email')}
                 {...field}
               />
             )}
@@ -104,9 +110,9 @@ export const ClientInfo = ({
             }}
             render={({ field }) => (
               <InfoLabelValue
-                label="연락처"
+                label={tCommon('phone')}
                 isEditing={!isViewer && hasSubscription()}
-                placeholder="-"
+                placeholder={tClientInfo('placeholders.phone')}
                 value={field.value}
                 onChange={(e) => {
                   const formatted = formatPhoneNumber(e.target.value);
@@ -122,9 +128,9 @@ export const ClientInfo = ({
             rules={{ pattern: /^(0\d{1,3}-\d{3,4}-\d{4})$/ }}
             render={({ field }) => (
               <InfoLabelValue
-                label="팩스 번호"
+                label={tCommon('fax')}
                 isEditing={!isViewer && hasSubscription()}
-                placeholder="-"
+                placeholder={tClientInfo('placeholders.fax')}
                 value={field.value}
                 onChange={(e) => {
                   const formatted = formatFaxNumber(e.target.value);
@@ -142,9 +148,9 @@ export const ClientInfo = ({
             rules={{ required: true }}
             render={({ field }) => (
               <InfoLabelValue
-                label="업태"
+                label={tCommon('businessType')}
                 isEditing={!isViewer && hasSubscription()}
-                placeholder="(필수) 업태를 입력하세요."
+                placeholder={tClientInfo('placeholders.businessType')}
                 required
                 {...field}
               />
@@ -156,9 +162,9 @@ export const ClientInfo = ({
             rules={{ required: true }}
             render={({ field }) => (
               <InfoLabelValue
-                label="종목"
+                label={tCommon('businessCategory')}
                 isEditing={!isViewer && hasSubscription()}
-                placeholder="(필수) 종목을 입력하세요."
+                placeholder={tClientInfo('placeholders.businessCategory')}
                 required
                 {...field}
               />
@@ -172,9 +178,9 @@ export const ClientInfo = ({
             rules={{ required: true }}
             render={({ field }) => (
               <InfoLabelValue
-                label="사업장 주소"
+                label={tCommon('businessAddress')}
                 isEditing={!isViewer && hasSubscription()}
-                placeholder="(필수) 사업장 주소를 입력하세요."
+                placeholder={tClientInfo('placeholders.businessAddress')}
                 required
                 {...field}
               />
@@ -183,14 +189,22 @@ export const ClientInfo = ({
         </div>
         <div className="flex">
           <InfoLabelValue
-            label="거래처 구분"
+            label={tClientInfo('clientType')}
             value={
               <div className="flex gap-1">
                 {clientDetail?.is_customer === true && (
-                  <RoundChip text="수주처" variant="sm" color="secondary" />
+                  <RoundChip
+                    text={tCommon('customer')}
+                    variant="sm"
+                    color="secondary"
+                  />
                 )}
                 {clientDetail?.is_supplier === true && (
-                  <RoundChip text="발주처" variant="sm" color="red" />
+                  <RoundChip
+                    text={tCommon('supplier')}
+                    variant="sm"
+                    color="red"
+                  />
                 )}
                 {clientDetail?.is_supplier === false &&
                   clientDetail?.is_customer === false &&
@@ -205,7 +219,7 @@ export const ClientInfo = ({
             control={control}
             render={({ field }) => (
               <InfoLabelValue
-                label="비고"
+                label={tCommon('note')}
                 isEditing={!isViewer && hasSubscription()}
                 placeholder="-"
                 textarea={true}

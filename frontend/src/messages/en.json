@@ -11,6 +11,7 @@
     "error": "An error occurred",
     "success": "Completed successfully",
     "clientName": "Client Name",
+    "client": "Client",
     "productName": "Product Name",
     "productCode": "Product Code",
     "specification": "Spec",
@@ -34,7 +35,15 @@
     "unit": "Unit",
     "link": "Link",
     "materialName": "Material Name",
+    "materialCode": "Material Code",
+    "placeholders": {
+      "materialName": "Enter material name.",
+      "productName": "Enter product name.",
+      "enterNumber": "Enter a number."
+    },
     "clientInfo": "Client Info",
+    "customer": "Customer",
+    "supplier": "Supplier",
     "buyerInfo": "Buyer Info",
     "orderProductInfo": "Order Product Info",
     "purchaseMaterialInfo": "Purchase Material Info",
@@ -59,10 +68,14 @@
     "date": "Date",
     "print": "Print",
     "add": "Add",
+    "note": "Note",
     "deleteAll": "Delete All",
     "required": "(Required)",
     "seconds": "sec",
     "action": "Action",
+    "product": "Product",
+    "material": "Material",
+    "all": "All",
     "inventoryStatus": {
       "overstock": "Overstock",
       "sufficient": "Sufficient",
@@ -89,7 +102,7 @@
     "editLog": "Edit Log",
     "documentTitleFormat": "[{clientName}] {title}",
     "productionDocumentTitleFormat": "PR-{date} {workInstruction}",
-    "specialNotes": "Special Notes",
+    "specialNotes": "Notes",
     "memo": "Memo",
     "memoPlaceholder": "Enter a memo.",
     "noChangeHistory": "No change history.",
@@ -724,6 +737,136 @@
       "toast": {
         "cannotSaveDraft": "Cannot save draft.",
         "clientNameRequired": "Client name is required to save draft."
+      }
+    }
+  },
+  "setting": {
+    "masterData": {
+      "chips": {
+        "facility": "Facility",
+        "client": "Client",
+        "unit": "Unit Conversion"
+      },
+      "placeholders": {
+        "clientSearch": "Enter client name, representative name, phone number, etc. to search.",
+        "facilitySearch": "Enter facility name to search."
+      },
+      "errors": {
+        "equipmentDeleteFailed": "An error occurred while deleting equipment.",
+        "factoryNotFound": "Factory information not found. Please try again later.",
+        "clientDeleteFailed": "An error occurred while deleting client."
+      },
+      "client": {
+        "accountInfo": {
+          "title": "Payment Account Info",
+          "bankName": "Bank Name",
+          "bankNamePlaceholder": "Enter bank name.",
+          "accountNumber": "Account Number",
+          "accountNumberPlaceholder": "Enter account number.",
+          "holder": "Holder",
+          "holderPlaceholder": "Enter holder name."
+        },
+        "clientInfo": {
+          "title": "Client Info",
+          "clientType": "Client Type",
+          "placeholders": {
+            "companyName": "(Required) Enter company name.",
+            "businessRegistrationNumber": "(Required) Enter business registration number.",
+            "representativeName": "(Required) Enter representative name.",
+            "businessType": "(Required) Enter business type.",
+            "businessCategory": "(Required) Enter business category.",
+            "businessAddress": "(Required) Enter business address.",
+            "email": "Enter email.",
+            "phone": "Enter phone number.",
+            "fax": "Enter fax number."
+          }
+        },
+        "depositorInfo": {
+          "title": "Depositor Info",
+          "depositorName": "Depositor",
+          "depositorNamePlaceholder": "Enter depositor name."
+        },
+        "empty": {
+          "title": "No client info yet.",
+          "description": "Client info will be displayed here when created."
+        },
+        "tableHeader": {
+          "clientType": "Type"
+        }
+      },
+      "facility": {
+        "empty": {
+          "title": "No facilities yet.",
+          "description": "Facilities will be displayed here when added."
+        },
+        "toast": {
+          "priorityConflict": {
+            "text": "The priority conflicts with another facility.",
+            "subtext": "Please modify the priority."
+          }
+        },
+        "detailPanel": {
+          "title": "Facility Management",
+          "facilityInfo": "Facility Info",
+          "facilityName": "Facility Name",
+          "facilityNamePlaceholder": "(Required) Enter facility name.",
+          "operationStatus": "Status",
+          "status": {
+            "standby": "Standby",
+            "running": "Running"
+          },
+          "priority": "Priority",
+          "priorityPlaceholder": "(Required) Enter priority.",
+          "location": "Location",
+          "locationPlaceholder": "Enter location.",
+          "productionHistory": "Production History",
+          "unitTime": "Time per Unit",
+          "empty": {
+            "title": "No production records yet.",
+            "description": "The list will be displayed when production starts with this facility."
+          },
+          "errors": {
+            "invalidPriority": "Please enter a number greater than or equal to 1.",
+            "updateFailed": "Failed to update facility info: ",
+            "createFailed": "Failed to create facility: ",
+            "factoryNotFound": "Factory information not found. Please log in again.",
+            "unknownError": "Unknown error"
+          }
+        }
+      },
+      "unit": {
+        "title": "Unit Conversion",
+        "standardUnit": "Standard Unit",
+        "conversionUnit": "Conversion Unit",
+        "conversionFormula": "Conversion Formula",
+        "convert": "Convert Unit",
+        "placeholders": {
+          "standardUnit": "Enter standard unit.",
+          "conversionUnit": "Enter conversion unit.",
+          "search": "Enter material name or product name to search."
+        },
+        "errors": {
+          "enterConversionValue": "Please enter conversion value.",
+          "enterConversionUnit": "Please enter conversion unit.",
+          "addFailed": "Failed to add unit."
+        },
+        "preview": {
+          "autoCalculateDescription": "The conversion will be calculated automatically when all values are entered.",
+          "materialQuestion": "When receiving, how many {conversionUnit} is 1 {standardUnit}?",
+          "productQuestion": "When delivering, how many {standardUnit} is 1 {conversionUnit}?",
+          "unitDirection": "Standard Unit → Conversion Unit"
+        },
+        "empty": {
+          "title": "No units yet.",
+          "description": "Units will be displayed here when added.",
+          "noConversionInfo": "No unit conversion info for this item."
+        },
+        "tableHeader": {
+          "name": "Name",
+          "standardUnit": "Standard Unit",
+          "conversionUnit": "Conversion Unit",
+          "conversionFormula": "Conversion Formula"
+        }
       }
     }
   }

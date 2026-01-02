@@ -2,6 +2,7 @@ import { CaretDown } from '@phosphor-icons/react';
 import { useState } from 'react';
 import SelectProductMaterialDropdown from './modals/select-product-material-dropdown';
 import Checkbox from '@/ui/checkbox';
+import { useTranslations } from 'next-intl';
 
 interface UnitTableHeaderProps {
   onCategoryChange?: (category: string) => void;
@@ -13,15 +14,25 @@ interface UnitTableHeaderProps {
 
 export const UnitTableHeader = ({
   onCategoryChange,
-  selectedCategory = '전체',
+  selectedCategory,
   isAllSelected = false,
   onToggleSelectAll,
   hasItems = true,
 }: UnitTableHeaderProps) => {
+  const tCommon = useTranslations('common');
+  const tTableHeader = useTranslations('setting.masterData.unit.tableHeader');
   const [
     isSelectProductMaterialDropdownOpen,
     setIsSelectProductMaterialDropdownOpen,
   ] = useState(false);
+
+  // selectedCategory를 번역된 텍스트로 변환
+  const getCategoryLabel = (category: string) => {
+    if (category === 'all') return tCommon('all');
+    if (category === 'product') return tCommon('product');
+    if (category === 'material') return tCommon('material');
+    return category; // fallback
+  };
 
   return (
     <div className="flex h-12 items-center px-3 w-full border-t border-b border-lg Me_Body-1 text-sv">
@@ -35,7 +46,7 @@ export const UnitTableHeader = ({
         className="h-full flex-[0.6] px-3 flex justify-between items-center cursor-pointer relative hover:bg-bg transition-colors duration-200"
         onClick={() => setIsSelectProductMaterialDropdownOpen(true)}
       >
-        <p className="">{selectedCategory}</p>
+        <p className="">{getCategoryLabel(selectedCategory || 'all')}</p>
         <CaretDown size={16} weight="fill" className="text-sv" />
 
         {isSelectProductMaterialDropdownOpen && (
@@ -51,10 +62,10 @@ export const UnitTableHeader = ({
           </div>
         )}
       </div>
-      <p className="flex-1 px-3">이름</p>
-      <p className="flex-1 px-3">기준 단위</p>
-      <p className="flex-1 px-3">변환 단위</p>
-      <p className="flex-1 px-3">변환식</p>
+      <p className="flex-[1.2] px-3">{tTableHeader('name')}</p>
+      <p className="flex-1 px-3">{tTableHeader('standardUnit')}</p>
+      <p className="flex-1 px-3">{tTableHeader('conversionUnit')}</p>
+      <p className="flex-[1.4] px-3">{tTableHeader('conversionFormula')}</p>
       {/* <p className="flex-[0.7] px-3">액션</p> */}
     </div>
   );

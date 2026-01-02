@@ -1,5 +1,6 @@
 import MiniBtn from '@/ui/mini-btn';
 import SearchInput from '@/ui/search-input';
+import { useTranslations } from 'next-intl';
 
 interface SearchSectionProps {
   value: string;
@@ -16,12 +17,15 @@ const SearchSection = ({
   onEnter,
   onDeleteClick,
   hasSelectedItems = false,
-  deleteButtonText = '삭제',
+  deleteButtonText,
 }: SearchSectionProps) => {
+  const tCommon = useTranslations('common');
+  const tUnit = useTranslations('setting.masterData.unit');
+
   return (
     <div className="flex items-center pb-4 justify-between">
       <SearchInput
-        placeholder="자재명, 품목명을 입력해 검색하세요."
+        placeholder={tUnit('placeholders.search')}
         value={value}
         onChange={onChange}
         onKeyDown={(e) => {
@@ -31,7 +35,7 @@ const SearchSection = ({
         }}
       />
       <MiniBtn
-        text={deleteButtonText}
+        text={deleteButtonText || tCommon('delete')}
         variant={hasSelectedItems ? 'red' : 'whiteOutline'}
         onClick={hasSelectedItems ? onDeleteClick : undefined}
       />

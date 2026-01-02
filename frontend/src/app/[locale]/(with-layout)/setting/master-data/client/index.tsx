@@ -6,6 +6,7 @@ import { ClientListResponseModel } from '@/types/data-model';
 import Pagination from '@/components/pagination';
 import useMemberStore from '@/store/member-store';
 import NoHistoryBox from '@/ui/no-history-box';
+import { useTranslations } from 'next-intl';
 
 interface ClientProps {
   clientList: ClientListResponseModel | null;
@@ -26,6 +27,7 @@ const Client = ({
   toggleOne,
   refetchClient,
 }: ClientProps) => {
+  const tClient = useTranslations('setting.masterData.client');
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null);
   const factoryId = useMemberStore((state) => state.factoryId);
 
@@ -34,8 +36,8 @@ const Client = ({
       <div className="w-full px-10 mb-10">
         {!factoryId || clientList?.data.length === 0 ? (
           <NoHistoryBox
-            title="거래처 정보가 아직 없어요."
-            text="거래처 정보를 생성하면 이곳에 표시돼요."
+            title={tClient('empty.title')}
+            text={tClient('empty.description')}
           />
         ) : (
           <>

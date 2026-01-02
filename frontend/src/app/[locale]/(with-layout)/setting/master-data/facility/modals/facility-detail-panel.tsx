@@ -12,6 +12,7 @@ import { useEffect, useState } from 'react';
 import useGetEquipmentDetail from '@/hooks/factory/factory-equipment/use-get-equipment-detail';
 import NoHistoryBox from '@/ui/no-history-box';
 import useSubscriptionStore from '@/store/subscription-store';
+import { useTranslations } from 'next-intl';
 
 interface FacilityDetailPanelProps {
   facilityId?: number;
@@ -35,6 +36,8 @@ const FacilityDetailPanel = ({
   showWarningToast,
   facilityList,
 }: FacilityDetailPanelProps) => {
+  const tCommon = useTranslations('common');
+  const tFacility = useTranslations('setting.masterData.facility.detailPanel');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
@@ -146,14 +149,14 @@ const FacilityDetailPanel = ({
         onClose();
       } else {
         alert(
-          '설비 정보 수정에 실패하였습니다: ' +
-            (result?.error || '알 수 없는 오류')
+          tFacility('errors.updateFailed') +
+            (result?.error || tFacility('errors.unknownError'))
         );
       }
     } else {
       // 생성 (POST)
       if (!factoryId) {
-        alert('공장 정보가 없습니다. 다시 로그인 해주세요.');
+        alert(tFacility('errors.factoryNotFound'));
         return;
       }
       const payload = {
@@ -169,7 +172,8 @@ const FacilityDetailPanel = ({
         onClose(); // 생성 성공 후 판넬 닫기
       } else {
         alert(
-          '설비 생성에 실패하였습니다: ' + (result?.error || '알 수 없는 오류')
+          tFacility('errors.createFailed') +
+            (result?.error || tFacility('errors.unknownError'))
         );
       }
     }
@@ -177,12 +181,12 @@ const FacilityDetailPanel = ({
 
   return (
     <Panel
-      title="설비 관리"
+      title={tFacility('title')}
       onClose={onClose}
       headerButton={
         (!facility || isDirty) && (
           <MiniBtn
-            text="저장"
+            text={tCommon('save')}
             textColor="text-primary"
             bgColor="bg-primary-8"
             hoverColor="hover:bg-secondary-hover"
@@ -196,7 +200,7 @@ const FacilityDetailPanel = ({
         <div className="flex flex-col gap-10">
           {/* 설비 정보 */}
           <div className="flex flex-col gap-3 border-b border-lg">
-            <h3 className="Heading-3">설비 정보</h3>
+            <h3 className="Heading-3">{tFacility('facilityInfo')}</h3>
             <div className="flex flex-col">
               <Controller
                 name="name"
@@ -204,8 +208,8 @@ const FacilityDetailPanel = ({
                 rules={{ required: true }}
                 render={({ field }) => (
                   <InfoLabelValue
-                    label="설비명"
-                    placeholder="(필수) 설비명을 입력하세요."
+                    label={tFacility('facilityName')}
+                    placeholder={tFacility('facilityNamePlaceholder')}
                     required
                     {...field}
                     isEditing={!isViewer && hasSubscription()}
@@ -213,7 +217,7 @@ const FacilityDetailPanel = ({
                 )}
               />
               <InfoLabelValue
-                label="가동 상태"
+                label={tFacility('operationStatus')}
                 chip={{
                   status: (facility?.status ??
                     'standby') as EquipmentStatusType,
@@ -227,13 +231,13 @@ const FacilityDetailPanel = ({
                   min: 1,
                   pattern: {
                     value: /^[1-9]\d*$/,
-                    message: '1 이상의 숫자를 입력해주세요.',
+                    message: tFacility('errors.invalidPriority'),
                   },
                 }}
                 render={({ field }) => (
                   <InfoLabelValue
-                    label="자동 배정 순위"
-                    placeholder="(필수) 자동 배정 순위를 입력하세요."
+                    label={tFacility('priority')}
+                    placeholder={tFacility('priorityPlaceholder')}
                     isEditing={!isViewer && hasSubscription()}
                     inputType="text"
                     required
@@ -257,8 +261,8 @@ const FacilityDetailPanel = ({
                 control={control}
                 render={({ field }) => (
                   <InfoLabelValue
-                    label="설비위치"
-                    placeholder="설비위치를 입력하세요."
+                    label={tFacility('location')}
+                    placeholder={tFacility('locationPlaceholder')}
                     isEditing={!isViewer && hasSubscription()}
                     {...field}
                   />
@@ -269,7 +273,7 @@ const FacilityDetailPanel = ({
 
           {/* 특이사항 */}
           <div className="flex flex-col gap-3">
-            <h3 className="Heading-3">특이사항</h3>
+            <h3 className="Heading-3">{tCommon('note')}</h3>
             <Controller
               name="note"
               control={control}
@@ -277,7 +281,7 @@ const FacilityDetailPanel = ({
                 <TextareaAutosize
                   minRows={6}
                   className="w-full border border-lg rounded-lg pt-5 px-3 Re_Body-1 text-gr resize-none"
-                  placeholder="특이사항을 입력하세요."
+                  placeholder="-"
                   {...field}
                   disabled={isViewer || !hasSubscription()}
                 />
@@ -287,16 +291,18 @@ const FacilityDetailPanel = ({
 
           {/* 생산 히스토리 */}
           <div className="flex flex-col gap-3">
-            <h3 className="Heading-3">생산 히스토리</h3>
+            <h3 className="Heading-3">{tFacility('productionHistory')}</h3>
             <div className="flex flex-col">
               {facility && facility.plans && facility.plans.length > 0 ? (
                 <>
                   <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 text-sv rounded-sm cursor-default">
-                    <p className="px-3 flex-1">제품명</p>
-                    <p className="px-3 flex-1">생산 수량</p>
-                    <p className="px-3 flex-1">생산일자</p>
-                    <p className="px-3 flex-1">생산 마감일자</p>
-                    <p className="px-3 flex-1">단위당 시간</p>
+                    <p className="px-3 flex-1">{tCommon('productName')}</p>
+                    <p className="px-3 flex-1">{tCommon('productionQty')}</p>
+                    <p className="px-3 flex-1">{tCommon('productionDate')}</p>
+                    <p className="px-3 flex-1">
+                      {tCommon('expectedCompletionDate')}
+                    </p>
+                    <p className="px-3 flex-1">{tFacility('unitTime')}</p>
                   </div>
                   {facility.plans?.map((plan) => (
                     <FacilityHistoryItem key={plan.id} plan={plan} />
@@ -304,8 +310,8 @@ const FacilityDetailPanel = ({
                 </>
               ) : (
                 <NoHistoryBox
-                  title="생산 기록이 아직 없습니다."
-                  text="이 설비로 시작되면 목록이 표시됩니다."
+                  title={tFacility('empty.title')}
+                  text={tFacility('empty.description')}
                 />
               )}
             </div>

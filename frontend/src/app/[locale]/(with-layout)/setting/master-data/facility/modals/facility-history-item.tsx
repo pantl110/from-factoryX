@@ -4,12 +4,14 @@ import { useState } from 'react';
 import IconBtn from '@/ui/icon-btn';
 import { ArrowLineUpRight } from '@phosphor-icons/react';
 import ProductDetail from '@/app/[locale]/(with-layout)/stock/product/product-detail';
+import { useTranslations } from 'next-intl';
 
 interface FacilityHistoryItemProps {
   plan: FacilityPlanResponseModel;
 }
 
 const FacilityHistoryItem = ({ plan }: FacilityHistoryItemProps) => {
+  const tCommon = useTranslations('common');
   const [isProductDetailOpen, setIsProductDetailOpen] = useState(false);
   const avgProductionTime = calculateAvgProductionTime(
     plan.start_date,
@@ -39,9 +41,15 @@ const FacilityHistoryItem = ({ plan }: FacilityHistoryItemProps) => {
         <p className="flex-1 px-3">{formatISODateTime(plan.end_date)}</p>
         <p
           className="flex-1 px-3 truncate"
-          title={avgProductionTime !== '-' ? `${avgProductionTime}초` : '-'}
+          title={
+            avgProductionTime !== '-'
+              ? `${avgProductionTime}${tCommon('seconds')}`
+              : '-'
+          }
         >
-          {avgProductionTime !== '-' ? `${avgProductionTime}초` : '-'}
+          {avgProductionTime !== '-'
+            ? `${avgProductionTime}${tCommon('seconds')}`
+            : '-'}
         </p>
       </div>
 
