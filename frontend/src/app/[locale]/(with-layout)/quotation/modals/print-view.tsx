@@ -7,6 +7,7 @@ import {
   QuotationProductDetailResponseModel,
 } from '@/types/data-model';
 import { IconBtn, MiniBtn } from '@/ui';
+import { useTranslations } from 'next-intl';
 
 interface PrintViewProps {
   onClose?: () => void;
@@ -25,6 +26,7 @@ const PrintView = ({
   productListInfoTitle,
   productItems,
 }: PrintViewProps) => {
+  const t = useTranslations('quotation.printView');
   const contentRef = useRef<HTMLDivElement>(null);
   const reactToPrintFn = useReactToPrint({
     contentRef,
@@ -61,13 +63,13 @@ const PrintView = ({
 
         <div className="py-6 pt-6 w-full flex justify-between border-b border-lg">
           <div>
-            <h2 className="Heading-2">{documentTitle}를 출력하시겠어요?</h2>
+            <h2 className="Heading-2">{t('printTitle', { documentTitle })}</h2>
             <div className="mt-2.5 Me_Body-3 text-gr">
-              출력 전, {documentTitle} 내용을 한 번 더 확인해 주세요.
+              {t('printDescription', { documentTitle })}
             </div>
           </div>
           <MiniBtn
-            text={`${documentTitle} 출력하기`}
+            text={t('printButton', { documentTitle })}
             variant="primary"
             onClick={reactToPrintFn}
           />

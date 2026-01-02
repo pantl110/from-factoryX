@@ -1,6 +1,7 @@
 import Chip from '@/ui/chip';
 import Dropdown from '@/ui/dropdown/dropdown';
 import DropdownItem from '@/ui/dropdown/dropdown-item';
+import { useTranslations } from 'next-intl';
 
 interface QuotationStatusDropdownProps {
   onClose: () => void;
@@ -13,6 +14,8 @@ const QuotationStatusDropdown = ({
   onQuotationClick,
   onSuspendedClick,
 }: QuotationStatusDropdownProps) => {
+  const tStatus = useTranslations('project.status');
+
   return (
     <Dropdown width="w-full" onClose={onClose} padding="p-4" gap="gap-2.5">
       <DropdownItem
@@ -24,7 +27,7 @@ const QuotationStatusDropdown = ({
         chip={true}
       >
         <Chip
-          text="견적 요청"
+          text={tStatus('quotation')}
           bgColor="bg-yellow-8"
           textColor="text-yellow"
           hover="hover:bg-yellow-hover"
@@ -40,7 +43,7 @@ const QuotationStatusDropdown = ({
         chip={true}
       >
         <Chip
-          text="중단"
+          text={tStatus('suspended')}
           bgColor="bg-red-8"
           textColor="text-red"
           hover="hover:bg-red-hover"

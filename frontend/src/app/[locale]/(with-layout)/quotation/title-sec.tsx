@@ -9,6 +9,7 @@ import { WarningCircle } from '@phosphor-icons/react/dist/ssr';
 import useMemberStore from '@/store/member-store';
 import { useSearchParams } from 'next/navigation';
 import useSubscriptionStore from '@/store/subscription-store';
+import { useTranslations } from 'next-intl';
 
 // Extend ClientModel for quotation form to include due_date
 interface QuotationFormModel extends ClientModel {
@@ -52,6 +53,8 @@ const TitleSec = ({
   setShowErrors,
   refresh,
 }: TitleSecProps) => {
+  const tStatus = useTranslations('project.status');
+  const tTitleSec = useTranslations('quotation.titleSec');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
@@ -91,10 +94,10 @@ const TitleSec = ({
             <Chip
               text={
                 isOrderStatus
-                  ? '주문 확정'
+                  ? tStatus('confirmed')
                   : isSuspendedStatus
-                    ? '중단'
-                    : '견적 요청'
+                    ? tStatus('suspended')
+                    : tStatus('quotation')
               }
               bgColor={
                 isOrderStatus
@@ -225,7 +228,7 @@ const TitleSec = ({
           />
         </div>
         <p className="Heading-1 truncate w-full">
-          {clientName || '거래처명을 입력해 주세요.'}
+          {clientName || tTitleSec('enterClientName')}
         </p>
       </div>
 
@@ -233,8 +236,8 @@ const TitleSec = ({
       {isToastOpen && (
         <Toast
           icon={<WarningCircle size={20} className="text-red" />}
-          text="임시저장을 할 수 없어요."
-          subtext="임시저장을 하기 위해선 거래처명은 꼭 입력해야 해요."
+          text={tTitleSec('toast.cannotSaveDraft')}
+          subtext={tTitleSec('toast.clientNameRequired')}
           type="red"
           isVisible={isVisible}
         />

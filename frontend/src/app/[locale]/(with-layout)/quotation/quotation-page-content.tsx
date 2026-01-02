@@ -45,8 +45,12 @@ import { useQuotationHandlers } from '@/app/[locale]/(with-layout)/quotation/han
 import { QuotationFormModel } from '@/types/data-model';
 import TaxDetailPanel from '../tax/tax-detail-panel';
 import usePageStatusStore, { PageStatusModel } from '@/store/page-status-store';
+import { useTranslations } from 'next-intl';
 
 const QuotationPageContent = () => {
+  const tCommon = useTranslations('common');
+  const tDocumentType = useTranslations('document.type');
+  const tQuotation = useTranslations('quotation');
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -720,7 +724,9 @@ const QuotationPageContent = () => {
                   )}
                 </button>
                 <h2 className="flex-1 Heading-2">
-                  {projectStatus === 'confirmed' ? '주문서' : '견적서'}
+                  {projectStatus === 'confirmed'
+                    ? tDocumentType('orderDocument')
+                    : tDocumentType('quotationRequest')}
                 </h2>
               </div>
             </div>
@@ -731,7 +737,7 @@ const QuotationPageContent = () => {
                   isRightPanelExpanded ? 'pl-0' : 'pl-10'
                 }`}
               >
-                <h3 className="Heading-3">거래처 정보</h3>
+                <h3 className="Heading-3">{tCommon('clientInfo')}</h3>
                 <InputSection
                   control={control}
                   setValue={setValue}
@@ -800,13 +806,17 @@ const QuotationPageContent = () => {
       {isPrintOpen && (
         <OverlayView onClose={() => setIsPrintOpen(false)}>
           <PrintView
-            documentTitle={projectStatus === 'confirmed' ? '주문서' : '견적서'}
+            documentTitle={
+              projectStatus === 'confirmed'
+                ? tDocumentType('orderDocument')
+                : tDocumentType('quotationRequest')
+            }
             clientData={watchedClientData}
             dueDate={watch().due_date}
             productListInfoTitle={
               projectStatus === 'confirmed'
-                ? '주문 품목 정보'
-                : '견적 품목 정보'
+                ? tDocumentType('orderItemInfo')
+                : tDocumentType('quotationItemInfo')
             }
             productItems={quotationProducts}
             onClose={() => setIsPrintOpen(false)}
@@ -817,13 +827,17 @@ const QuotationPageContent = () => {
       {isEmailOpen && (
         <OverlayView onClose={() => setIsEmailOpen(false)}>
           <EmailView
-            documentTitle={projectStatus === 'confirmed' ? '주문서' : '견적서'}
+            documentTitle={
+              projectStatus === 'confirmed'
+                ? tDocumentType('orderDocument')
+                : tDocumentType('quotationRequest')
+            }
             clientData={watchedClientData}
             dueDate={watch().due_date}
             productListInfoTitle={
               projectStatus === 'confirmed'
-                ? '주문 품목 정보'
-                : '견적 품목 정보'
+                ? tDocumentType('orderItemInfo')
+                : tDocumentType('quotationItemInfo')
             }
             productItems={quotationProducts}
             quotationId={effectiveQuotationId ?? null}
@@ -831,7 +845,7 @@ const QuotationPageContent = () => {
             onClose={() => setIsEmailOpen(false)}
             onEmailSent={() => {
               setToastContent({
-                text: '이메일 전송이 완료되었습니다.',
+                text: tQuotation('toast.emailSent'),
                 subtext: '',
                 type: 'primary',
               });

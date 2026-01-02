@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { ArrowsInSimple } from '@phosphor-icons/react';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 
 interface EnlargeImageOverlayProps {
   imageUrl: string;
@@ -11,6 +12,8 @@ const EnlargeImageOverlay = ({
   imageUrl,
   onClose,
 }: EnlargeImageOverlayProps) => {
+  const t = useTranslations('quotation.enlargeImage');
+
   useEffect(() => {
     const originalStyle = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
@@ -35,7 +38,7 @@ const EnlargeImageOverlay = ({
       >
         <Image
           src={imageUrl}
-          alt="확대 이미지"
+          alt={t('alt')}
           width={800}
           height={600}
           className="h-full w-fit object-contain rounded-lg"

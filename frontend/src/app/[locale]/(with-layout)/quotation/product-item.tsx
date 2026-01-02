@@ -5,6 +5,7 @@ import { usePortalDropdown } from '@/hooks/use-portal-dropdown';
 import { ArrowLineUpRight } from '@phosphor-icons/react/dist/ssr';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
+import { useTranslations } from 'next-intl';
 
 interface ProductItemProps {
   data?: QuotationProductDetailResponseModel;
@@ -29,6 +30,8 @@ const ProductItem = ({
   onProductDetailClick,
   onlyRead = false,
 }: ProductItemProps) => {
+  const tCommon = useTranslations('common');
+  const tProductItem = useTranslations('quotation.productItem');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
@@ -90,7 +93,7 @@ const ProductItem = ({
           ) : (
             <input
               type="text"
-              placeholder="제품명 검색"
+              placeholder={tProductItem('searchProductName')}
               className="w-full outline-none"
               value={searchTerm}
               onChange={(e) => {
@@ -137,7 +140,7 @@ const ProductItem = ({
           ) : (
             <input
               type="text"
-              placeholder="(필수)"
+              placeholder={tCommon('required')}
               value={
                 data?.quantity === 0
                   ? ''
@@ -182,7 +185,7 @@ const ProductItem = ({
           ) : (
             <input
               type="text"
-              placeholder="(필수)"
+              placeholder={tCommon('required')}
               value={
                 data?.unit_price === 0
                   ? ''

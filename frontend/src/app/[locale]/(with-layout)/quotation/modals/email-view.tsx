@@ -14,6 +14,7 @@ import OrderDocumentPDFView from '@/components/pdf/order-document-pdf-view';
 import { useSendQuotationEmail } from '@/hooks';
 import Spinner from '@/ui/spinner';
 import OverlayView from '@/ui/ovelay-view';
+import { useTranslations } from 'next-intl';
 
 interface EmailViewProps {
   onClose?: () => void;
@@ -38,6 +39,7 @@ const EmailView = ({
   quotationId,
   projectStatus,
 }: EmailViewProps) => {
+  const t = useTranslations('quotation.emailView');
   const [isEmailSending, setIsEmailSending] = useState(false);
   // const [isPDFGenerating, setIsPDFGenerating] = useState(false);
   const pdfRef = useRef<HTMLDivElement>(null);
@@ -125,7 +127,7 @@ const EmailView = ({
       const base64 = dataUri.split(',')[1] || '';
       return base64;
     } catch (error) {
-      alert('PDF 생성 중 오류가 발생했습니다.' + error);
+      alert(t('pdfGenerationError') + error);
       return null;
     }
   };
@@ -185,9 +187,7 @@ const EmailView = ({
     if (isLoading || !quotationId) return;
 
     if (!clientData?.email) {
-      alert(
-        '거래처 이메일이 입력되지 않았습니다. 거래처 정보에서 이메일을 확인해 주세요.'
-      );
+      alert(t('emailNotEntered'));
       return;
     }
 
@@ -209,8 +209,7 @@ const EmailView = ({
       onClose?.(); // 모달 닫기
       onEmailSent?.(); // 토스트 표시를 위한 콜백 호출
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : '이메일 전송에 실패했습니다.';
+      const message = err instanceof Error ? err.message : t('emailSendFailed');
       alert(message);
       setIsEmailSending(false); // 에러 시에도 오버레이 닫기
     }
@@ -233,10 +232,10 @@ const EmailView = ({
           <div className="py-6 w-full flex justify-between border-b border-lg mb-6">
             <div>
               <h2 className="Heading-2">
-                이메일로 {documentTitle}를 보내시겠어요?
+                {t('sendEmailTitle', { documentTitle })}
               </h2>
               <div className="mt-2.5 Me_Body-3 text-gr">
-                받는 사람과 제목을 확인한 후, 이메일을 전송해 주세요.
+                {t('sendEmailDescription')}
               </div>
             </div>
             <div className="flex gap-2">
@@ -253,7 +252,7 @@ const EmailView = ({
 
               {/* 이메일 전송 버튼 */}
               <MiniBtn
-                text={`${documentTitle} 전송하기`}
+                text={t('sendButton', { documentTitle })}
                 textColor="text-wh"
                 bgColor="bg-primary"
                 hoverColor="hover:bg-primary-hover"

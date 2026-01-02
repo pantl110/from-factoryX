@@ -1,4 +1,5 @@
 import { OcrDataModel, ProjectStatusType } from '@/types/data-model';
+import { useTranslations } from 'next-intl';
 
 interface TabAreaProps {
   activeTab: 'quotation' | 'history';
@@ -15,6 +16,9 @@ const TabArea = ({
   projectStatus,
   hasUploadedFile = false,
 }: TabAreaProps) => {
+  const tDocumentType = useTranslations('document.type');
+  const tTabArea = useTranslations('quotation.tabArea');
+
   return (
     <div className="flex gap-4 items-center Heading-3 pb-1 pr-10 border-b border-[#eeeeee]">
       {(ocrData || hasUploadedFile) && (
@@ -26,7 +30,9 @@ const TabArea = ({
           } cursor-pointer`}
           onClick={activateQuotationTab}
         >
-          {projectStatus === 'confirmed' ? '주문서' : '견적요청서'}
+          {projectStatus === 'confirmed'
+            ? tDocumentType('orderDocument')
+            : tDocumentType('quotationRequest')}
         </button>
       )}
       <div
@@ -36,7 +42,7 @@ const TabArea = ({
             : 'text-gr'
         }`}
       >
-        히스토리
+        {tTabArea('history')}
       </div>
     </div>
   );

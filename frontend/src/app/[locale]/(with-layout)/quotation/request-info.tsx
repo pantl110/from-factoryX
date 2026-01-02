@@ -15,6 +15,7 @@ import { ProductNameDropdown } from '@/ui/dropdown/product-name-dropdown';
 import PriceInfo from '@/ui/price-info';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
+import { useTranslations } from 'next-intl';
 
 interface RequestInfoProps {
   onProductClick: (productId: number) => void;
@@ -33,6 +34,8 @@ const RequestInfo = ({
   ocrRequestData,
   productList,
 }: RequestInfoProps) => {
+  const tCommon = useTranslations('common');
+  const tRequestInfo = useTranslations('quotation.requestInfo');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
@@ -236,9 +239,9 @@ const RequestInfo = ({
   return (
     <>
       <div className="flex justify-between items-center relative">
-        <h3 className="Heading-3">요청 정보</h3>
+        <h3 className="Heading-3">{tRequestInfo('title')}</h3>
         <MiniBtn
-          text="제품 추가하기"
+          text={tRequestInfo('addProduct')}
           textColor="text-dg"
           borderColor="border-lg"
           icon={CaretDown}
@@ -271,13 +274,25 @@ const RequestInfo = ({
             <table className="w-full min-w-[938px]">
               <thead>
                 <tr className="flex items-center h-12 border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
-                  <th className="text-left px-3 flex-1">제품명</th>
-                  <th className="text-left px-3 flex-1">제품코드</th>
-                  <th className="text-left px-3 flex-1">규격</th>
-                  <th className="text-left px-3 flex-1">제작 수량</th>
-                  <th className="text-left px-3 flex-[0.8]">단위</th>
-                  <th className="text-left px-3 flex-1">단가</th>
-                  <th className="text-left px-3 flex-1">금액</th>
+                  <th className="text-left px-3 flex-1">
+                    {tCommon('productName')}
+                  </th>
+                  <th className="text-left px-3 flex-1">
+                    {tCommon('productCode')}
+                  </th>
+                  <th className="text-left px-3 flex-1">
+                    {tCommon('specification')}
+                  </th>
+                  <th className="text-left px-3 flex-1">
+                    {tCommon('manufacturingQuantity')}
+                  </th>
+                  <th className="text-left px-3 flex-[0.8]">
+                    {tCommon('unit')}
+                  </th>
+                  <th className="text-left px-3 flex-1">
+                    {tCommon('unitPrice')}
+                  </th>
+                  <th className="text-left px-3 flex-1">{tCommon('amount')}</th>
                   {!isViewer && hasSubscription() && <th className="w-9" />}
                 </tr>
               </thead>
@@ -331,9 +346,9 @@ const RequestInfo = ({
         </>
       ) : (
         <div className="py-8 h-full flex flex-col justify-center items-center gap-2 rounded-[4px] border border-lg mb-22">
-          <h4 className="Heading-4 text-dg">요청 정보가 아직 없어요.</h4>
+          <h4 className="Heading-4 text-dg">{tRequestInfo('empty.title')}</h4>
           <p className="R_Body-1 text-gr">
-            제품을 추가해서 단가를 측정해 보세요.
+            {tRequestInfo('empty.description')}
           </p>
         </div>
       )}

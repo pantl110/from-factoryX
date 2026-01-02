@@ -1,5 +1,6 @@
 import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
+import { useTranslations } from 'next-intl';
 
 interface StartProductionModalProps {
   onClose: () => void;
@@ -12,21 +13,20 @@ const StartProductionModal = ({
   onClick,
   isLoading = false,
 }: StartProductionModalProps) => {
+  const t = useTranslations('quotation.startProductionModal');
+  const tCommon = useTranslations('common');
+
   return (
-    <Modal
-      onClose={onClose}
-      title="이 주문서로 생산을 시작할까요?"
-      subtitle={`확정된 주문서가 맞다면 ‘생산 시작’을 눌러주세요.`}
-    >
+    <Modal onClose={onClose} title={t('title')} subtitle={t('subtitle')}>
       <div className="flex justify-end gap-[5px] mt-4">
         <MiniBtn
-          text="취소"
+          text={tCommon('cancel')}
           textColor="text-sv"
           onClick={onClose}
           hoverColor="hover:bg-bg"
         />
         <MiniBtn
-          text="생산 시작하기"
+          text={t('startButton')}
           textColor="text-wh"
           bgColor="bg-primary"
           onClick={onClick}

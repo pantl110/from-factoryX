@@ -1,6 +1,7 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
 import { UseFormWatch, UseFormReset } from 'react-hook-form';
+import { useTranslations } from 'next-intl';
 import {
   QuotationProductDetailResponseModel,
   ProductionDataModel,
@@ -70,6 +71,7 @@ export const useQuotationHandlers = ({
   taxId,
   linkTaxInvoice,
 }: QuotationHandlersProps) => {
+  const t = useTranslations('quotation.errors');
   const [isSaveDraftLoading, setIsSaveDraftLoading] = useState(false);
   const [isStartProductionLoading, setIsStartProductionLoading] =
     useState(false);
@@ -88,7 +90,7 @@ export const useQuotationHandlers = ({
         const formData = watch();
 
         if (!factoryId) {
-          throw new Error('공장 정보가 없습니다.');
+          throw new Error(t('factoryNotFound'));
         }
 
         // 주문확정일 때만 에러 표시 활성화
@@ -146,14 +148,14 @@ export const useQuotationHandlers = ({
       } catch (error) {
         // 에러 메시지 설정
         const errorMessage =
-          error instanceof Error ? error.message : '알 수 없는 오류';
+          error instanceof Error ? error.message : t('unknownError');
 
         // 날짜 형식 에러인 경우 다른 토스트 메시지 표시
-        if (errorMessage.includes('올바르지 않은 날짜 형식')) {
-          toast.setText('유효한 납기일자를 입력해 주세요.');
-          toast.setSubtext('YYYY-MM-DD 형식으로 입력해 주세요.');
+        if (errorMessage.includes(t('invalidDateFormat'))) {
+          toast.setText(t('validDueDateRequired'));
+          toast.setSubtext(t('dueDateFormat'));
         } else {
-          toast.setText('임시저장에 실패했습니다');
+          toast.setText(t('saveDraftFailed'));
           toast.setSubtext(errorMessage);
         }
 
@@ -176,6 +178,7 @@ export const useQuotationHandlers = ({
       setInitialQuotationProducts,
       setShowErrors,
       toast,
+      t,
     ]
   );
 
@@ -190,7 +193,7 @@ export const useQuotationHandlers = ({
       const formData = watch();
 
       if (!factoryId) {
-        throw new Error('공장 정보가 없습니다.');
+        throw new Error(t('factoryNotFound'));
       }
 
       // 주문확정 시에는 모든 제품이 완전해야 함
@@ -200,9 +203,7 @@ export const useQuotationHandlers = ({
       );
 
       if (incompleteProducts.length > 0) {
-        alert(
-          '주문확정을 위해서는 모든 제품의 수량과 단가가 입력되어야 합니다.'
-        );
+        alert(t('allProductsRequired'));
         return;
       }
 
@@ -276,9 +277,8 @@ export const useQuotationHandlers = ({
 
       // 에러가 발생한 경우 (null 반환)
       if (!result) {
-        const toastText = '생산 시작에 실패했습니다.';
-        const toastSubtext =
-          '현재 입력한 내용은 임시저장되었습니다. 다시 시도해 주세요.';
+        const toastText = t('startProductionFailed');
+        const toastSubtext = t('startProductionFailedSubtext');
 
         // 실패 시 현재 주문서 내용을 주문확정 상태로 저장 (is_confirm: true)
         try {
@@ -344,23 +344,22 @@ export const useQuotationHandlers = ({
       }
     } catch (error) {
       // 에러 메시지 추출
-      let errorText = '생산 시작에 실패했습니다.';
-      let errorSubtext =
-        '현재 입력한 내용은 임시저장되었습니다. 다시 시도해 주세요.';
+      let errorText = t('startProductionFailed');
+      let errorSubtext = t('startProductionFailedSubtext');
 
       if (error instanceof Error) {
         errorText = error.message;
 
         // 특정 에러 메시지에 따른 처리
-        if (errorText.includes('가동 가능한 설비가 없습니다')) {
-          errorText = '가동 가능한 설비가 없습니다.';
-          errorSubtext = '설비 등록 후 생산을 다시 시작해 주세요.';
-        } else if (errorText.includes('설비 조회 중 오류가 발생했습니다')) {
-          errorText = '설비 조회 중 오류가 발생했습니다.';
-          errorSubtext = '다시 시도해 주세요.';
-        } else if (errorText.includes('올바르지 않은 날짜 형식')) {
-          errorText = '올바르지 않은 날짜 형식입니다.';
-          errorSubtext = '날짜를 YYYY-MM-DD 형식으로 입력해 주세요.';
+        if (errorText.includes(t('noAvailableEquipment'))) {
+          errorText = t('noAvailableEquipment');
+          errorSubtext = t('noAvailableEquipmentSubtext');
+        } else if (errorText.includes(t('equipmentQueryError'))) {
+          errorText = t('equipmentQueryError');
+          errorSubtext = t('equipmentQueryErrorSubtext');
+        } else if (errorText.includes(t('invalidDateFormat'))) {
+          errorText = t('invalidDateFormatError');
+          errorSubtext = t('invalidDateFormatSubtext');
         }
       }
 
@@ -423,6 +422,7 @@ export const useQuotationHandlers = ({
     createdQuotationId,
     taxId,
     linkTaxInvoice,
+    t,
   ]);
 
   return {

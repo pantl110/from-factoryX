@@ -3,12 +3,15 @@ import { useGetQuotationHistory } from '@/hooks';
 import { formatISODate } from '@/utils';
 import { QuotationProductHistoryItemResponseModel } from '@/types/data-model';
 import HistoryItem from './history-item';
+import { useTranslations } from 'next-intl';
 
 interface HistoryProps {
   selectedProduct: number | null;
 }
 
 const History = ({ selectedProduct }: HistoryProps) => {
+  const t = useTranslations('quotation.history');
+  const tCommon = useTranslations('common');
   const [historyData, setHistoryData] = useState<
     QuotationProductHistoryItemResponseModel[]
   >([]);
@@ -39,9 +42,9 @@ const History = ({ selectedProduct }: HistoryProps) => {
   if (!selectedProduct) {
     return (
       <div className="py-8 h-full flex flex-col justify-center items-center gap-2 rounded-[4px] border border-[#E4E4E7]">
-        <h4 className="Heading-4 text-dg">히스토리가 아직 없어요.</h4>
-        <p className="R_Body-1 text-gr">
-          처음 등록된 제품이라, 과거 단가나 수량 기록이 아직 없어요.
+        <h4 className="Heading-4 text-dg">{t('empty.title')}</h4>
+        <p className="R_Body-1 text-gr whitespace-pre-line text-center">
+          {t('empty.description')}
         </p>
       </div>
     );
@@ -51,14 +54,14 @@ const History = ({ selectedProduct }: HistoryProps) => {
     return (
       <div className="flex flex-col">
         <div className="flex justify-between items-center h-10 mb-3">
-          <h3 className="Heading-3">요청 히스토리</h3>
+          <h3 className="Heading-3">{t('title')}</h3>
         </div>
         <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
-          <p className="flex-[1.2] py-1 px-3 ">날짜</p>
-          <p className="flex-2 py-1 px-3 ">제품정보</p>
-          <p className="flex-1 py-1 px-3 ">수량</p>
-          <p className="flex-1 py-1 px-3 ">단가</p>
-          <p className="flex-[1.3] py-1 px-3 ">금액</p>
+          <p className="flex-[1.2] py-1 px-3 ">{tCommon('date')}</p>
+          <p className="flex-2 py-1 px-3 ">{tCommon('productName')}</p>
+          <p className="flex-1 py-1 px-3 ">{tCommon('quantity')}</p>
+          <p className="flex-1 py-1 px-3 ">{tCommon('unitPrice')}</p>
+          <p className="flex-[1.3] py-1 px-3 ">{tCommon('totalAmount')}</p>
         </div>
         {historyData.map((item, idx) => (
           <HistoryItem
@@ -76,9 +79,9 @@ const History = ({ selectedProduct }: HistoryProps) => {
     // 히스토리 데이터 없을 때
     return (
       <div className="py-8 h-full flex flex-col justify-center items-center gap-2 rounded-[4px] border border-[#E4E4E7]">
-        <h4 className="Heading-4 text-dg">히스토리가 아직 없어요.</h4>
-        <p className="R_Body-1 text-gr">
-          처음 등록된 제품이라, 과거 단가나 수량 기록이 아직 없어요.
+        <h4 className="Heading-4 text-dg">{t('empty.title')}</h4>
+        <p className="R_Body-1 text-gr whitespace-pre-line">
+          {t('empty.description')}
         </p>
       </div>
     );

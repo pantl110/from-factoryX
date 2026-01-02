@@ -10,6 +10,7 @@ import useSubscriptionStore from '@/store/subscription-store';
 import TaxDetailPanel from '../tax/tax-detail-panel';
 import { useGetFactory } from '@/hooks';
 import NeedInfoModal from './modals/need-info-modal';
+import { useTranslations } from 'next-intl';
 
 interface ButtonSectionProps {
   setIsTaxCreatePanelOpen: (open: boolean) => void;
@@ -41,6 +42,9 @@ const ButtonSection = ({
   refresh,
 }: ButtonSectionProps) => {
   const router = useRouter();
+  const t = useTranslations('quotation.buttonSection');
+  const tCommon = useTranslations('common');
+  const tStartProduction = useTranslations('quotation.startProductionModal');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
@@ -79,7 +83,7 @@ const ButtonSection = ({
           }}
         >
           <MiniBtn
-            text={taxId ? '세금계산서 보기' : '세금계산서 생성하기'}
+            text={taxId ? t('viewTaxInvoice') : t('createTaxInvoice')}
             variant="whiteOutline"
             disabled={
               !isPartnersSubscription() ||
@@ -104,9 +108,8 @@ const ButtonSection = ({
                 <Tooltip
                   text={
                     !isPartnersSubscription()
-                      ? `Partners 플랜으로 업그레이드하면 
-                      세무/회계 기능을 사용할 수 있어요.`
-                      : '세금계산서는 주문을 확정한 후에 생성할 수 있어요.'
+                      ? t('tooltip.upgradeToPartners')
+                      : t('tooltip.confirmOrderFirst')
                   }
                   color="white"
                   position="left"
@@ -115,13 +118,13 @@ const ButtonSection = ({
             )}
         </div>
         <MiniBtn
-          text="출력하기"
+          text={tCommon('print')}
           variant="whiteOutline"
           onClick={onPrintClick}
           disabled={!hasSubscription()}
         />
         <MiniBtn
-          text="이메일 전송하기"
+          text={t('sendEmail')}
           variant="whiteOutline"
           onClick={
             hasFactoryName ? onEmailClick : () => setIsNeedInfoModalOpen(true)
@@ -137,7 +140,7 @@ const ButtonSection = ({
         {isOrderStatus ? (
           <>
             <MiniBtn
-              text="생산 시작하기"
+              text={tStartProduction('startButton')}
               variant="primary"
               icon={ArrowRight}
               iconPosition="right"
@@ -153,7 +156,7 @@ const ButtonSection = ({
         ) : (
           <>
             <MiniBtn
-              text="임시 저장"
+              text={t('saveDraft')}
               variant="secondary"
               onClick={async () => {
                 try {
@@ -170,7 +173,7 @@ const ButtonSection = ({
               }
             />
             <MiniBtn
-              text="주문 확정하기"
+              text={t('confirmOrder')}
               variant="primary"
               onClick={async () => {
                 try {

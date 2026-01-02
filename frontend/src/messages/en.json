@@ -50,11 +50,13 @@
     "email": "Email",
     "phone": "Phone",
     "fax": "Fax",
+    "managerName": "Manager Name",
     "transactionDate": "Transaction Date",
     "sellerInfo": "Seller Info",
     "writtenDate": "Written Date",
     "issuedDate": "Issued Date",
     "registeredDate": "Registered Date",
+    "date": "Date",
     "print": "Print",
     "add": "Add",
     "deleteAll": "Delete All",
@@ -67,6 +69,19 @@
       "risk": "Risk",
       "shortage": "Shortage"
     }
+  },
+  "dropzone": {
+    "dragAndDrop": "You can drag and drop files\nor upload them using the button below.",
+    "maxFiles": "(Max 10 files)",
+    "selectFromComputer": "Select from computer",
+    "fileTypes": {
+      "image": "Image",
+      "excel": "Excel",
+      "other": "Other"
+    },
+    "add": "Add",
+    "upload": "Upload",
+    "maxFilesError": "You can upload up to 10 files only."
   },
   "document": {
     "title": "Documents",
@@ -92,7 +107,8 @@
       "purchaseTaxInvoice": "Purchase Invoice",
       "cashReceipt": "Cash Receipt",
       "transactionStatementTitle": "Transaction Statement",
-      "orderItemInfo": "Order Item Info"
+      "orderItemInfo": "Order Item Info",
+      "quotationItemInfo": "Quotation Item Info"
     },
     "actionRemoved": "Plan Removed",
     "actionMemoUpdated": "Memo Updated",
@@ -595,6 +611,119 @@
       "noSelectedLog": {
         "title": "No log selected yet.",
         "description": "Click on a log to view details."
+      }
+    }
+  },
+  "quotation": {
+    "errors": {
+      "factoryNotFound": "Factory information not found.",
+      "unknownError": "Unknown error",
+      "invalidDateFormat": "Invalid date format",
+      "saveDraftFailed": "Failed to save draft",
+      "startProductionFailed": "Failed to start production.",
+      "startProductionFailedSubtext": "The current input has been saved as a draft. Please try again.",
+      "noAvailableEquipment": "No available equipment.",
+      "noAvailableEquipmentSubtext": "Please register equipment and try starting production again.",
+      "equipmentQueryError": "An error occurred while querying equipment.",
+      "equipmentQueryErrorSubtext": "Please try again.",
+      "invalidDateFormatError": "Invalid date format.",
+      "invalidDateFormatSubtext": "Please enter the date in YYYY-MM-DD format.",
+      "validDueDateRequired": "Please enter a valid due date.",
+      "dueDateFormat": "Please enter in YYYY-MM-DD format.",
+      "allProductsRequired": "All products must have quantity and unit price entered to confirm the order."
+    },
+    "emailView": {
+      "pdfGenerationError": "An error occurred while generating PDF.",
+      "emailNotEntered": "Client email is not entered. Please check the email in the client information.",
+      "emailSendFailed": "Failed to send email.",
+      "sendEmailTitle": "Would you like to send {documentTitle} by email?",
+      "sendEmailDescription": "Please check the recipient and subject, then send the email.",
+      "sendButton": "Send {documentTitle}"
+    },
+    "enlargeImage": {
+      "alt": "Enlarged image"
+    },
+    "needInfoModal": {
+      "title": "Company information is required to send email",
+      "subtitle": "Your company information is not registered, so the sender information in the quotation is empty. Please enter your company information first.",
+      "goToCompanyInfo": "Go to Company Information"
+    },
+    "printView": {
+      "printTitle": "Would you like to print {documentTitle}?",
+      "printDescription": "Please review the {documentTitle} content once more before printing.",
+      "printButton": "Print {documentTitle}"
+    },
+    "productEnrollment": {
+      "addExistingProduct": "Add Existing Product",
+      "addNewProduct": "Add New Product"
+    },
+    "startProductionModal": {
+      "title": "Would you like to start production with this order?",
+      "subtitle": "If this is the confirmed order, please click 'Start Production'.",
+      "startButton": "Start Production"
+    },
+    "buttonSection": {
+      "viewTaxInvoice": "View Tax Invoice",
+      "createTaxInvoice": "Create Tax Invoice",
+      "sendEmail": "Send Email",
+      "saveDraft": "Save Draft",
+      "confirmOrder": "Confirm Order",
+      "tooltip": {
+        "upgradeToPartners": "Upgrade to Partners plan\nto usetax and accounting features.",
+        "confirmOrderFirst": "You can create a tax invoice after confirming the order."
+      }
+    },
+    "history": {
+      "title": "Request History",
+      "empty": {
+        "title": "No history yet.",
+        "description": "This is a newly registered product,\nso there are no past unit price or quantity records yet."
+      }
+    },
+    "inputSection": {
+      "placeholders": {
+        "clientName": "Enter client name.",
+        "businessRegistrationNumber": "Enter business registration number.",
+        "representativeName": "Enter representative name.",
+        "dueDate": "Enter due date.",
+        "businessType": "Enter business type.",
+        "businessCategory": "Enter business category.",
+        "businessAddress": "Enter business address.",
+        "managerName": "Enter manager name.",
+        "managerEmail": "Enter email.",
+        "phone": "Enter phone number.",
+        "fax": "Enter fax number."
+      },
+      "errors": {
+        "invalidBusinessRegistrationNumber": "Invalid business registration number format.",
+        "invalidDateFormat": "Please enter in YYYY-MM-DD format.",
+        "invalidEmail": "Invalid email format.",
+        "invalidPhone": "Invalid phone number format.",
+        "invalidFax": "Invalid fax number format."
+      }
+    },
+    "productItem": {
+      "searchProductName": "Search product name"
+    },
+    "toast": {
+      "emailSent": "Email has been sent successfully."
+    },
+    "requestInfo": {
+      "title": "Request Info",
+      "addProduct": "Add Product",
+      "empty": {
+        "title": "No request info yet.",
+        "description": "Add products to measure unit prices."
+      }
+    },
+    "tabArea": {
+      "history": "History"
+    },
+    "titleSec": {
+      "enterClientName": "Please enter client name.",
+      "toast": {
+        "cannotSaveDraft": "Cannot save draft.",
+        "clientNameRequired": "Client name is required to save draft."
       }
     }
   }

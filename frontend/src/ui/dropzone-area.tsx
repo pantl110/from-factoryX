@@ -2,6 +2,7 @@
 
 import React, { useCallback, useState, useRef } from 'react';
 import { useDropzone } from 'react-dropzone';
+import { useTranslations } from 'next-intl';
 import MiniBtn from './mini-btn';
 import {
   Image,
@@ -31,6 +32,7 @@ const DropzoneArea = ({
   accept,
   onFileUpload,
 }: DropzoneProps) => {
+  const t = useTranslations('dropzone');
   const [files, setFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { isToastOpen, isVisible, showToast } = useToast();
@@ -140,7 +142,7 @@ const DropzoneArea = ({
     if (type.startsWith('image/')) {
       return {
         icon: <Image size={32} className="text-primary" alt="" />,
-        label: '이미지',
+        label: t('fileTypes.image'),
       };
     }
     if (type === 'application/pdf') {
@@ -157,12 +159,12 @@ const DropzoneArea = ({
     ) {
       return {
         icon: <MicrosoftExcelLogo size={32} className="text-primary" alt="" />,
-        label: '엑셀',
+        label: t('fileTypes.excel'),
       };
     }
     return {
       icon: <File size={32} className="text-primary" alt="" />,
-      label: '기타',
+      label: t('fileTypes.other'),
     };
   };
 
@@ -191,12 +193,11 @@ const DropzoneArea = ({
             <>
               {/* 기본 이미지 */}
               <input {...getInputProps()} />
-              <p className="Me_Body-2 text-dg">
-                파일을 끌어다 놓거나, 아래 버튼으로 업로드 할 수 있어요.{' '}
-                {variant === 'location' ? '(최대 10장)' : ''}
+              <p className="Me_Body-2 text-dg whitespace-pre-line text-center">
+                {t('dragAndDrop')} {variant === 'location' ? t('maxFiles') : ''}
               </p>
               <MiniBtn
-                text="내 컴퓨터에서 선택"
+                text={t('selectFromComputer')}
                 textColor="text-dg"
                 bgColor="bg-wh"
                 hoverColor="hover:bg-bg"
@@ -243,7 +244,7 @@ const DropzoneArea = ({
           <div className="mt-4 flex justify-end gap-[5px]">
             {fileCount > files.length && (
               <MiniBtn
-                text="추가"
+                text={t('add')}
                 textColor="text-sv"
                 hoverColor="hover:bg-bg"
                 onClick={() => {
@@ -257,7 +258,7 @@ const DropzoneArea = ({
 
             {variant !== 'location' && (
               <MiniBtn
-                text="업로드"
+                text={t('upload')}
                 textColor="text-wh"
                 bgColor="bg-primary"
                 hoverColor="hover:bg-primary-hover"
@@ -283,7 +284,7 @@ const DropzoneArea = ({
       {isToastOpen && (
         <Toast
           icon={<WarningCircle size={20} className="text-red" />}
-          text="파일은 최대 10개까지만 업로드할 수 있습니다."
+          text={t('maxFilesError')}
           subtext=""
           type="red"
           isVisible={isVisible}
