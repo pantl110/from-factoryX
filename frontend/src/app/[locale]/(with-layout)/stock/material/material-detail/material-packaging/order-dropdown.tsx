@@ -1,4 +1,5 @@
 import { Dropdown, DropdownItem } from '@/ui';
+import { useTranslations } from 'next-intl';
 import React from 'react';
 
 interface OrderDropdownProps {
@@ -7,16 +8,18 @@ interface OrderDropdownProps {
 }
 
 const OrderDropdown = ({ onClose, onSelectOrder }: OrderDropdownProps) => {
+  const t = useTranslations('stock.material.packaging.orderBy');
+
   return (
     <Dropdown onClose={onClose} width="w-[150px]">
       <DropdownItem
-        text="임박 순"
+        text={t('expirationDate')}
         onClick={() => {
           onSelectOrder('expiration_date');
         }}
       />
       <DropdownItem
-        text="입고 순"
+        text={t('lotNumber')}
         onClick={() => {
           onSelectOrder('lot_number');
         }}

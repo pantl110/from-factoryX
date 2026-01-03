@@ -24,6 +24,7 @@ import {
   useLocation,
   useMaterialProduct,
 } from '@/hooks';
+import { useTranslations } from 'next-intl';
 import { useStagedMaterials } from '@/app/[locale]/(with-layout)/stock/product/product-detail/bom/use-staged-materials';
 import ConnectMaterialModal from '../modals/connect-material-modal';
 import { useForm, useFieldArray } from 'react-hook-form';
@@ -60,6 +61,7 @@ const ProductDetail = ({
   onClose,
   onSuccess,
 }: ProductDetailProps) => {
+  const t = useTranslations('stock.stockLocation');
   const { getProductDetail, getProductList, product } = useGetProduct();
   const { createSingleProduct } = useCreateSingleProduct();
   const { updateProduct, isLoading: isProductUpdating } = useUpdateProduct();
@@ -614,7 +616,7 @@ const ProductDetail = ({
           <div className="flex flex-col gap-3">
             <div className="h-10 flex items-center justify-between">
               <h3 className="Heading-3 h-10 flex items-center text-dg ">
-                제품이 보관된 창고 위치
+                {t('title.product')}
               </h3>
               {locationListData &&
                 'locations' in locationListData &&

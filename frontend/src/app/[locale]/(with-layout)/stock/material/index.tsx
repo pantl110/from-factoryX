@@ -15,6 +15,7 @@ import { MaterialResponseModel } from '@/types/data-model';
 import NoHistoryBox from '@/ui/no-history-box';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
+import { useTranslations } from 'next-intl';
 
 interface MaterialProps {
   setIsMaterialDetailOpen: (v: boolean) => void;
@@ -27,6 +28,7 @@ const Material = ({
   isMaterialDetailOpen,
   setReloadFunctionToParent,
 }: MaterialProps) => {
+  const t = useTranslations('stock.material');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
@@ -175,7 +177,7 @@ const Material = ({
     <>
       <div className="flex items-center justify-between pb-4">
         <SearchInput
-          placeholder="자재명 또는 자재코드를 입력해 검색하세요."
+          placeholder={t('searchPlaceholder')}
           value={search}
           onChange={handleSearch}
         />
@@ -202,10 +204,7 @@ const Material = ({
           <Spinner />
         </div>
       ) : materialList.length === 0 ? (
-        <NoHistoryBox
-          title="자재가 아직 없어요."
-          text="자재가 생성되면 이곳에 표시돼요. "
-        />
+        <NoHistoryBox title={t('empty.title')} text={t('empty.description')} />
       ) : (
         <>
           <TableHeader

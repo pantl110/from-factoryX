@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { Modal, MiniBtn, DeleteModal, Toast } from '@/ui';
 import { InputArea } from './input-area';
 import { UsageHistory } from './usage-history';
@@ -24,6 +25,9 @@ export const MaterialPackagingDetailModal = ({
   onClose,
   onRepackagingUpdated,
 }: MaterialPackagingDetailModalProps) => {
+  const t = useTranslations('stock.material.modals.packagingDetail');
+  const tPackaging = useTranslations('stock.material.stockIn');
+  const tCommon = useTranslations('common');
   const mode = repackagingId ? 'update' : 'create';
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isErrorToast, setIsErrorToast] = useState(false);
@@ -67,23 +71,23 @@ export const MaterialPackagingDetailModal = ({
 
   const handleUpdateSuccess = useCallback(() => {
     showToastMessage(
-      '수정이 완료되었습니다.',
-      '수정된 내용이 저장되었어요.',
+      t('toast.updateSuccess.text'),
+      t('toast.updateSuccess.subtext'),
       'success',
       true
     );
     onRepackagingUpdated?.();
-  }, [showToastMessage, onRepackagingUpdated]);
+  }, [showToastMessage, onRepackagingUpdated, t]);
 
   const handleCreateSuccess = useCallback(() => {
     showToastMessage(
-      '소분 내역이 생성되었습니다.',
-      '소분 내역은 원자재 소분 내역에서 확인할 수 있어요.',
+      t('toast.createSuccess.text'),
+      t('toast.createSuccess.subtext'),
       'success',
       true
     );
     onRepackagingUpdated?.();
-  }, [showToastMessage, onRepackagingUpdated]);
+  }, [showToastMessage, onRepackagingUpdated, t]);
 
   const handleError = useCallback(
     (message: { text: string; subtext: string }) => {
@@ -125,7 +129,7 @@ export const MaterialPackagingDetailModal = ({
         <div className="pt-4 px-6 pb-6 max-h-[calc(85vh-68px)] overflow-y-auto scrollbar-hide">
           {/* 상세정보 */}
           <div className="flex flex-col gap-3">
-            <h4 className="Heading-4">상세정보</h4>
+            <h4 className="Heading-4">{t('detailInfo')}</h4>
             <InputArea
               repackagingId={repackagingId}
               nextRepackagingLotNumber={nextRepackagingLotNumber}
@@ -141,11 +145,9 @@ export const MaterialPackagingDetailModal = ({
             {/* 삭제 버튼 */}
             {mode === 'update' && (
               <div className="flex justify-between items-center p-5 bg-bg rounded-[12px]">
-                <p className="Me_Body-2 text-red">
-                  삭제 시 기록과 재고 차감은 복구되지 않아요
-                </p>
+                <p className="Me_Body-2 text-red">{t('deleteWarning')}</p>
                 <MiniBtn
-                  text="삭제"
+                  text={tCommon('delete')}
                   variant="red"
                   onClick={() => setIsDeleteModalOpen(true)}
                 />
@@ -161,9 +163,13 @@ export const MaterialPackagingDetailModal = ({
           {/* 버튼 */}
           {mode === 'create' && (
             <div className="flex justify-end gap-2.5 mt-5">
-              <MiniBtn text="취소" variant="white" onClick={onClose} />
               <MiniBtn
-                text="소분하기"
+                text={tCommon('cancel')}
+                variant="white"
+                onClick={onClose}
+              />
+              <MiniBtn
+                text={tPackaging('repackagingButton')}
                 variant="secondary"
                 type="submit"
                 form={formId}
@@ -173,9 +179,13 @@ export const MaterialPackagingDetailModal = ({
           )}
           {mode === 'update' && (
             <div className="flex justify-end gap-2.5 mt-5">
-              <MiniBtn text="취소" variant="white" onClick={onClose} />
               <MiniBtn
-                text="수정하기"
+                text={tCommon('cancel')}
+                variant="white"
+                onClick={onClose}
+              />
+              <MiniBtn
+                text={tCommon('confirm')}
                 variant="secondary"
                 type="submit"
                 form={formId}

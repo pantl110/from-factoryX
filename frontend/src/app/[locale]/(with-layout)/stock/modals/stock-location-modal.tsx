@@ -10,6 +10,7 @@ import { LocationModel } from '@/types/data-model';
 import { useLocation, useUploadFile } from '@/hooks';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
+import { useTranslations } from 'next-intl';
 
 interface StockLocationModalProps {
   mode: 'add' | 'update';
@@ -35,6 +36,8 @@ const StockLocationModal = ({
   onClose,
   onSuccess,
 }: StockLocationModalProps) => {
+  const t = useTranslations('stock.stockLocation.modal');
+  const tCommon = useTranslations('common');
   const { createLocation, updateLocation, isLoading } = useLocation();
   const { uploadMultipleFiles } = useUploadFile();
   const role = useMemberStore((state) => state.role);
@@ -170,26 +173,28 @@ const StockLocationModal = ({
   return (
     <Modal
       onClose={onClose}
-      title={mode === 'add' ? '창고 위치 추가' : '창고 위치'}
+      title={mode === 'add' ? t('title.add') : t('title.update')}
       width="w-[800px]"
     >
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3">
         <div className="flex flex-col gap-3 mt-4">
           <Input
-            label="창고 위치명"
+            label={t('labels.warehouseLocationName')}
             required
-            placeholder="A동 3층 렉 B-12"
+            placeholder={t('placeholders.warehouseLocationName')}
             value={watch('location')}
             {...register('location', { required: true })}
             showError={!!errors.location}
             errorMessage={
-              errors.location ? '창고 위치명을 입력해주세요.' : undefined
+              errors.location
+                ? t('errors.warehouseLocationNameRequired')
+                : undefined
             }
             disabledReadOnly={!canEdit}
           />
           <Input
-            label="상세 위치"
-            placeholder="왼쪽 2번째 칸, 바닥에서 3번째 선반"
+            label={t('labels.detailLocation')}
+            placeholder={t('placeholders.detailLocation')}
             value={watch('detail_location')}
             {...register('detail_location')}
             disabledReadOnly={!canEdit}
@@ -197,13 +202,13 @@ const StockLocationModal = ({
           <div className="flex flex-col gap-2 w-full">
             <div className="flex items-center gap-1 h-5">
               <label htmlFor="memo" className="Heading-5 text-sv">
-                메모
+                {t('labels.memo')}
               </label>
             </div>
             <textarea
               id="memo"
               rows={4}
-              placeholder="지게차 진입 불가, 소분 전용 구역 등"
+              placeholder={t('placeholders.memo')}
               {...register('memo')}
               className="w-full p-2 border border-lg rounded-[8px] resize-none focus:border-primary placeholder:text-sv "
               disabled={!canEdit}
@@ -215,7 +220,7 @@ const StockLocationModal = ({
           <div className="flex flex-col gap-2 w-full">
             {!canEdit && images.length > 0 && (
               <label htmlFor="warehouse-photos" className="Heading-5 text-sv">
-                창고 사진
+                {t('labels.warehousePhotos')}
               </label>
             )}
 
@@ -240,7 +245,7 @@ const StockLocationModal = ({
                       width={80}
                       height={80}
                       className="w-20 h-20 object-cover rounded-[8px] border border-lg"
-                      alt={`창고 사진 ${index + 1}`}
+                      alt={t('imageAlt', { index: index + 1 })}
                       quality={100}
                       unoptimized={true}
                     />
@@ -260,15 +265,15 @@ const StockLocationModal = ({
           </div>
         </div>
         {canEdit && (
-          <div className="flex justify-end gap-2.5 mt-5">
+          <div className="flex justify-end gap-2.5 mt-2.5">
             <MiniBtn
-              text="취소"
+              text={tCommon('cancel')}
               variant="white"
               onClick={onClose}
               type="button"
             />
             <MiniBtn
-              text="저장"
+              text={tCommon('save')}
               variant="primary"
               type="submit"
               disabled={isLoading}

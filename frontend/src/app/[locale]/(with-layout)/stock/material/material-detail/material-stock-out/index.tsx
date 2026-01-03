@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { MaterialStockOutItem } from './material-stock-out-item';
 import { useMaterialUsagePaginatedQuery } from '@/hooks/stock/material/use-material-usage';
 import { NoHistoryBox } from '@/ui';
@@ -11,6 +12,8 @@ interface MaterialStockOutProps {
 const PAGE_SIZE = 5;
 
 export const MaterialStockOut = ({ materialId }: MaterialStockOutProps) => {
+  const t = useTranslations('stock.material.stockOut');
+  const tCommon = useTranslations('common');
   const [currentPage, setCurrentPage] = useState(1);
 
   const { data, isLoading, error } = useMaterialUsagePaginatedQuery({
@@ -29,7 +32,7 @@ export const MaterialStockOut = ({ materialId }: MaterialStockOutProps) => {
   return (
     <div className="flex flex-col gap-3">
       <div className="h-10 flex items-center justify-between">
-        <h3 className="Heading-3 text-dg">원자재 사용 내역</h3>
+        <h3 className="Heading-3 text-dg">{t('title')}</h3>
       </div>
 
       {/* 표 헤더 부분 */}
@@ -39,11 +42,15 @@ export const MaterialStockOut = ({ materialId }: MaterialStockOutProps) => {
         ) : usageList.length > 0 ? (
           <>
             <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 cursor-default">
-              <p className="flex-1 px-3 text-sv">처리일자</p>
-              <p className="flex-1 px-3 text-sv">프로젝트명</p>
-              <p className="flex-1 px-3 text-sv">제품명</p>
-              <p className="flex-1 px-3 text-sv">적용 LOT</p>
-              <p className="flex-1 px-3 text-sv">사용량</p>
+              <p className="flex-1 px-3 text-sv">
+                {t('tableHeader.processDate')}
+              </p>
+              <p className="flex-1 px-3 text-sv">{tCommon('clientName')}</p>
+              <p className="flex-1 px-3 text-sv">{tCommon('productName')}</p>
+              <p className="flex-1 px-3 text-sv">
+                {t('tableHeader.appliedLot')}
+              </p>
+              <p className="flex-1 px-3 text-sv">{t('tableHeader.usage')}</p>
             </div>
             {usageList.map((usage) => (
               <MaterialStockOutItem key={usage.id} usage={usage} />
@@ -58,8 +65,8 @@ export const MaterialStockOut = ({ materialId }: MaterialStockOutProps) => {
           </>
         ) : (
           <NoHistoryBox
-            title="아직 사용 내역이 없어요."
-            text="원자재가 사용되면 이곳에서 확인할 수 있어요."
+            title={t('empty.title')}
+            text={t('empty.description')}
           />
         )}
       </div>

@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import Panel from '@/ui/panel';
 import React, { useEffect, useRef, useState } from 'react';
 import MaterialDetail, { MaterialInfoModel } from './material-detail';
@@ -12,7 +13,6 @@ import {
 } from '@/hooks';
 import { useMaterialReloadStore } from '@/store/material-reload-store';
 import ProductEnrollmentModal from '../modals/product-enrollment-modal';
-// import StockLocationUploadModal from '../../modals/stock-location-upload-modal';
 import ClientDetailPanel from '@/app/[locale]/(with-layout)/setting/master-data/client/modals/client-detail-panel';
 import Toast from '@/ui/toast';
 import { WarningCircle } from '@phosphor-icons/react/dist/ssr';
@@ -69,6 +69,8 @@ const MaterialDetailPanel = ({
   selectedMaterialId,
   onSuccess,
 }: MaterialDetailPanelProps) => {
+  const t = useTranslations('stock.material.detail');
+  const tCommon = useTranslations('common');
   const [isMaterialDetailDirty, setIsMaterialDetailDirty] = useState(false); // 원자재 디테일 판넬 수정 상태
   const [hasRequiredFieldsFilled, setHasRequiredFieldsFilled] = useState(true); // 필수 필드 채워짐 상태
   const [isProductEnrollmentModalOpen, setIsProductEnrollmentModalOpen] =
@@ -267,7 +269,7 @@ const MaterialDetailPanel = ({
             const errorMessage =
               error instanceof Error
                 ? error.message
-                : '소분 내역 삭제에 실패했어요.';
+                : t('errors.repackagingDeleteFailed');
             setToastText(errorMessage);
             setToastSubtext('');
             showToast();
@@ -322,8 +324,8 @@ const MaterialDetailPanel = ({
 
   // 중복 토스트 표시 함수
   const showDuplicateProductToast = () => {
-    setToastText('이미 존재하는 제품코드에요.');
-    setToastSubtext('다른 제품코드로 수정해주세요.');
+    setToastText(t('errors.duplicateProductCode'));
+    setToastSubtext(t('errors.duplicateProductCodeSubtext'));
     showToast();
   };
 
@@ -447,16 +449,16 @@ const MaterialDetailPanel = ({
       // 있는 값들 간의 관계 검증
       if (maxStockNum !== null && ropNum !== null) {
         if (maxStockNum <= ropNum) {
-          setToastText('수치를 다시 입력해주세요.');
-          setToastSubtext('적정 재고는 ROP보다 항상 크게 설정해야 해요.');
+          setToastText(t('validation.reenterValues'));
+          setToastSubtext(t('validation.maxStockGreaterThanRop'));
           showToast();
           return;
         }
       }
       if (ropNum !== null && standardStockNum !== null) {
         if (ropNum <= standardStockNum) {
-          setToastText('수치를 다시 입력해주세요.');
-          setToastSubtext('ROP는 안전 재고보다 항상 크게 설정해야 해요.');
+          setToastText(t('validation.reenterValues'));
+          setToastSubtext(t('validation.ropGreaterThanStandardStock'));
           showToast();
           return;
         }
@@ -467,8 +469,8 @@ const MaterialDetailPanel = ({
         ropNum === null
       ) {
         if (maxStockNum <= standardStockNum) {
-          setToastText('수치를 다시 입력해주세요.');
-          setToastSubtext('적정 재고는 안전 재고보다 항상 크게 설정해야 해요.');
+          setToastText(t('validation.reenterValues'));
+          setToastSubtext(t('validation.maxStockGreaterThanStandardStock'));
           showToast();
           return;
         }
@@ -477,12 +479,11 @@ const MaterialDetailPanel = ({
       if (Object.keys(payload).length > 0) {
         const result = await updateMaterial(selectedMaterialId, payload);
         if (!result || !result.success) {
-          const errorMessage =
-            result?.error || '원자재 정보 수정에 실패했어요.';
+          const errorMessage = result?.error || t('errors.updateFailed');
           // 자재코드 중복 에러인 경우 워딩 통일 및 subtext 추가
           if (errorMessage.includes('이미 존재하는 자재코드')) {
-            setToastText('이미 존재하는 자재코드에요.');
-            setToastSubtext('다른 자재코드로 수정해주세요.');
+            setToastText(t('errors.duplicateMaterialCode'));
+            setToastSubtext(t('errors.duplicateMaterialCodeSubtext'));
           } else {
             setToastText(errorMessage);
             setToastSubtext('');
@@ -566,12 +567,12 @@ const MaterialDetailPanel = ({
   return (
     <>
       <Panel
-        title="원자재 재고관리"
+        title={t('title')}
         onClose={() => setIsMaterialDetailOpen(false)}
         headerButton={
           isMaterialDetailDirty && (
             <MiniBtn
-              text="저장"
+              text={tCommon('save')}
               onClick={handleSaveMaterialDetail}
               hoverColor="hover:bg-secondary-hover"
               textColor="text-primary"

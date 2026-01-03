@@ -11,6 +11,7 @@ import { WarningCircle } from '@phosphor-icons/react';
 import { removeTrailingZeros, formatDate } from '@/utils';
 import { useQueryClient } from '@tanstack/react-query';
 import useMemberStore from '@/store/member-store';
+import { useTranslations } from 'next-intl';
 
 interface MaterialStockInDetailModalProps {
   historyId: number | null;
@@ -30,6 +31,9 @@ export const MaterialStockInDetailModal = ({
   onClose,
   onUpdateSuccess,
 }: MaterialStockInDetailModalProps) => {
+  const t = useTranslations('stock.material.modals.stockInDetail');
+  const tStockLocation = useTranslations('stock.stockLocation');
+  const tCommon = useTranslations('common');
   const { isToastOpen, isVisible, showToast } = useToast();
   const [toastText, setToastText] = useState('');
   const [toastSubtext, setToastSubtext] = useState('');
@@ -74,7 +78,10 @@ export const MaterialStockInDetailModal = ({
 
   const onSubmit = async (data: MaterialHistoryFormModel) => {
     if (!historyId) {
-      showToastMessage('이력 ID가 없습니다.', '올바른 이력을 선택해주세요.');
+      showToastMessage(
+        t('errors.historyIdNotFound.text'),
+        t('errors.historyIdNotFound.subtext')
+      );
       return;
     }
 
@@ -106,13 +113,13 @@ export const MaterialStockInDetailModal = ({
       const errorMessage = result.error || '';
       if (errorMessage.includes('유통기한 형식이 올바르지 않습니다')) {
         showToastMessage(
-          '유효한 유통기한을 입력해 주세요.',
-          'YYYY-MM-DD 형식으로 입력해 주세요.'
+          t('errors.invalidExpirationDate.text'),
+          t('errors.invalidExpirationDate.subtext')
         );
       } else {
         showToastMessage(
-          '수정에 실패했습니다.',
-          errorMessage || '잠시 후 다시 시도해 주세요.'
+          t('errors.updateFailed.text'),
+          errorMessage || t('errors.updateFailed.subtext')
         );
       }
     }
@@ -133,15 +140,15 @@ export const MaterialStockInDetailModal = ({
     <Modal onClose={onClose} width="w-[800px]" title={`[${lotNumber}]`}>
       {/* 상세정보 */}
       <div className="flex flex-col gap-3 pt-4">
-        <h4 className="Heading-4">상세정보</h4>
+        <h4 className="Heading-4">{t('detailInfo')}</h4>
         <form onSubmit={handleSubmit(onSubmit)}>
           <InfoLabelValue
-            label="입고 수량"
+            label={t('labels.stockInQuantity')}
             value={removeTrailingZeros(historyDetail.quantity)}
             disabled
           />
           <InfoLabelValue
-            label="남은 수량"
+            label={t('labels.remainingQuantity')}
             value={removeTrailingZeros(historyDetail.remaining_quantity)}
             disabled
           />
@@ -151,9 +158,9 @@ export const MaterialStockInDetailModal = ({
             control={control}
             render={({ field }) => (
               <InfoLabelValue
-                label="창고 위치"
+                label={tCommon('warehouseLocation')}
                 value={field.value || ''}
-                placeholder="창고 위치를 입력하세요."
+                placeholder={tStockLocation('placeholders.warehouseLocation')}
                 isEditing={true}
                 onChange={(e) => field.onChange(e.target.value || null)}
               />
@@ -165,7 +172,7 @@ export const MaterialStockInDetailModal = ({
             control={control}
             render={({ field }) => (
               <InfoLabelValue
-                label="유통기한"
+                label={tCommon('expirationDate')}
                 value={field.value || ''}
                 placeholder="YYYY-MM-DD"
                 isEditing={true}
@@ -180,14 +187,14 @@ export const MaterialStockInDetailModal = ({
           {/* 버튼 */}
           <div className="flex justify-end gap-2.5 mt-5">
             <MiniBtn
-              text="취소"
+              text={tCommon('cancel')}
               variant="white"
               onClick={onClose}
               disabled={isUpdating}
             />
             <MiniBtn
-              text="수정하기"
-              variant="secondary"
+              text={tCommon('confirm')}
+              variant="primary"
               type="submit"
               disabled={!isDirty || isUpdating}
             />

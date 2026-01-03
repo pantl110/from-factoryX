@@ -17,6 +17,7 @@ import {
 import TextareaAutosize from 'react-textarea-autosize';
 import { UseFormRegisterReturn } from 'react-hook-form';
 import { RoundChip } from '@/ui';
+import { useTranslations } from 'next-intl';
 
 interface InfoLabelValueProps {
   label: string;
@@ -66,6 +67,7 @@ const InfoLabelValue = ({
   register,
   disabled = false,
 }: InfoLabelValueProps) => {
+  const tCommon = useTranslations('common');
   const colors = chip
     ? chip.status === 'danger'
       ? { bgColor: 'bg-red-8', textColor: 'text-red' }
@@ -84,6 +86,18 @@ const InfoLabelValue = ({
 
   const renderChip = () => {
     if (!chip || !colors || !colors.color) return null;
+
+    // InventoryStatusType 번역 키 매핑
+    const getInventoryStatusText = (status: string): string => {
+      const statusMap: Record<string, string> = {
+        과재고: 'inventoryStatus.overstock',
+        충분: 'inventoryStatus.sufficient',
+        위험: 'inventoryStatus.risk',
+        부족: 'inventoryStatus.shortage',
+      };
+      const translationKey = statusMap[status];
+      return translationKey ? tCommon(translationKey) : status;
+    };
 
     return (
       <RoundChip
@@ -105,7 +119,13 @@ const InfoLabelValue = ({
                         ? '양호'
                         : chip.status in AccountsStatusColorMap
                           ? AccountsStatusMap[chip.status as AccountsStatusType] // AccountsStatusType은 한글로 표시
-                          : chip.status // 재고 상태는 그대로 표시 (충분, 부족)
+                          : typeof chip.status === 'string' &&
+                              (chip.status === '과재고' ||
+                                chip.status === '충분' ||
+                                chip.status === '위험' ||
+                                chip.status === '부족')
+                            ? getInventoryStatusText(chip.status) // 재고 상태 번역
+                            : chip.status // 기타 상태는 그대로 표시
         }
         color={colors.color}
       />

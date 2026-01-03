@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import { IconBtn, MiniBtn } from '@/ui';
@@ -23,6 +24,7 @@ export const MaterialStockInItem = ({
   onEditClick,
   expiryWarningDays,
 }: MaterialStockInItemProps) => {
+  const t = useTranslations('stock.material.stockIn');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
@@ -31,11 +33,11 @@ export const MaterialStockInItem = ({
 
   return (
     <div className="flex items-center h-14 border-b border-lg Me_Body-1 group cursor-default">
-      <div className="flex-[1.9] px-3 flex items-center justify-between">
+      <div className="flex-[2] px-3 flex items-center justify-between">
         <p className="text-dg">{history.lot_number || '-'}</p>
         {!isViewer && hasSubscription() && (
           <MiniBtn
-            text="소분하기"
+            text={t('repackagingButton')}
             variant="whiteOutline"
             height="h-8"
             padding="px-3"

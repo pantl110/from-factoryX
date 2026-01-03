@@ -10,8 +10,8 @@ interface ProductRequiringMaterialItemProps {
   unit: string;
   connectionId: number;
   handleOpenDeleteModal: (connectionId: number) => void;
-  onProductClick: (productId: number) => void; // 추가
-  productId: number; // 추가
+  onProductClick: (productId: number) => void;
+  productId: number;
 }
 
 const ProductRequiringMaterialItem = ({
@@ -21,8 +21,8 @@ const ProductRequiringMaterialItem = ({
   unit,
   connectionId,
   handleOpenDeleteModal,
-  onProductClick, // 추가
-  productId, // 추가
+  onProductClick,
+  productId,
 }: ProductRequiringMaterialItemProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
@@ -35,7 +35,6 @@ const ProductRequiringMaterialItem = ({
   };
 
   const handleProductClick = () => {
-    // 추가
     onProductClick(productId);
   };
 

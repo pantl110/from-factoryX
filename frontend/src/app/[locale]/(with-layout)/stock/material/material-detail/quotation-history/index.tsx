@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { MaterialHistoryResponseModel } from '@/types/data-model';
 import QuotationHistoryItem from './quotation-history-item';
 import NoHistoryBox from '@/ui/no-history-box';
@@ -20,27 +21,29 @@ const QuotationHistory = ({
   totalPages = 1,
   onPageChange,
 }: QuotationHistoryProps) => {
+  const t = useTranslations('stock.material.quotationHistory');
+  const tCommon = useTranslations('common');
+
   if (isLoading) {
     return <div className="h-50" />;
   }
 
   if (!histories || histories.length === 0) {
     return (
-      <NoHistoryBox
-        title="이 원자재의 거래처 정보가 아직 없어요."
-        text="이 원자재를 구입한 거래처 정보를 입력하면 단가가 표시돼요."
-      />
+      <NoHistoryBox title={t('empty.title')} text={t('empty.description')} />
     );
   }
 
   return (
     <div className="flex flex-col">
       <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 cursor-default">
-        <p className="flex-1 px-3 text-sv">거래처명</p>
-        <p className="flex-1 px-3 text-sv">최근 거래일</p>
-        <p className="flex-[0.5] px-3 text-sv">수량</p>
-        <p className="flex-[0.5] px-3 text-sv">단가</p>
-        <p className="flex-[0.5] text-sv px-3">금액</p>
+        <p className="flex-1 px-3 text-sv">{tCommon('clientName')}</p>
+        <p className="flex-1 px-3 text-sv">
+          {t('tableHeader.recentTransactionDate')}
+        </p>
+        <p className="flex-[0.5] px-3 text-sv">{tCommon('quantity')}</p>
+        <p className="flex-[0.5] px-3 text-sv">{tCommon('unitPrice')}</p>
+        <p className="flex-[0.5] text-sv px-3">{tCommon('totalAmount')}</p>
       </div>
       {histories.map((history) => (
         <QuotationHistoryItem

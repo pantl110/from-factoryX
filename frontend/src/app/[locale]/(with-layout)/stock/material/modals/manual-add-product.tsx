@@ -4,6 +4,7 @@ import MiniBtn from '@/ui/mini-btn';
 import { useForm } from 'react-hook-form';
 import { useState } from 'react';
 import { handleQuantityInput } from '@/utils/format-number';
+import { useTranslations } from 'next-intl';
 
 interface ManualAddProductProps {
   setIsManualAddMode: (v: boolean) => void;
@@ -20,6 +21,8 @@ const ManualAddProduct = ({
   checkDuplicateProductCode,
   showDuplicateProductToast,
 }: ManualAddProductProps) => {
+  const t = useTranslations('stock.material.modals.manualAddProduct');
+  const tCommon = useTranslations('common');
   // 각 필드의 값을 직접 관리
   const [formValues, setFormValues] = useState({
     name: '',
@@ -67,7 +70,7 @@ const ManualAddProduct = ({
         showDuplicateProductToast?.();
         setError('code', {
           type: 'manual',
-          message: '이미 존재하는 제품코드에요.',
+          message: t('errors.duplicateCode'),
         });
         return;
       }
@@ -94,8 +97,8 @@ const ManualAddProduct = ({
         <div className="flex gap-2.5">
           <div className="flex-1">
             <Input
-              placeholder="제품명을 입력하세요."
-              label="제품명"
+              placeholder={tCommon('placeholders.productName')}
+              label={tCommon('productName')}
               required
               {...register('name', {
                 required: true,
@@ -109,8 +112,8 @@ const ManualAddProduct = ({
           </div>
           <div className="flex-1">
             <Input
-              placeholder="제품코드를 입력하세요."
-              label="제품코드"
+              placeholder={tCommon('placeholders.productCode')}
+              label={tCommon('productCode')}
               required
               {...register('code', {
                 required: true,
@@ -126,8 +129,8 @@ const ManualAddProduct = ({
         <div className="flex gap-2.5 mt-2.5">
           <div className="flex-1">
             <Input
-              placeholder="규격을 입력하세요."
-              label="규격"
+              placeholder={tCommon('placeholders.specification')}
+              label={tCommon('specification')}
               required
               {...register('spec', {
                 required: true,
@@ -141,8 +144,8 @@ const ManualAddProduct = ({
           </div>
           <div className="flex-1">
             <Input
-              placeholder="단위를 입력하세요."
-              label="단위"
+              placeholder={tCommon('placeholders.unit')}
+              label={tCommon('unit')}
               required
               {...register('unit', {
                 required: true,
@@ -159,7 +162,7 @@ const ManualAddProduct = ({
           <div className="flex-1">
             <Input
               placeholder="EX) 100"
-              label="원자재 투입량"
+              label={t('labels.materialInputQuantity')}
               required
               type="text"
               {...register('quantity', {
@@ -193,13 +196,13 @@ const ManualAddProduct = ({
 
         <div className="flex gap-2 justify-end mt-3">
           <MiniBtn
-            text="취소"
+            text={tCommon('cancel')}
             variant="white"
             type="button"
             onClick={() => setIsManualAddMode(false)}
           />
           <MiniBtn
-            text="추가하기"
+            text={tCommon('add')}
             variant="primary"
             type="submit"
             disabled={!isFormValid()}

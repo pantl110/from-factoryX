@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
 import Modal from '@/ui/modal/modal';
 import SearchInput from '@/ui/search-input';
@@ -23,6 +24,8 @@ const CreateSubstituteModal = ({
   onClose,
   onSuccess,
 }: CreateSubstituteModalProps) => {
+  const t = useTranslations('stock.material.modals.createSubstitute');
+  const tCommon = useTranslations('common');
   const getMaterialListMutation = useGetMaterialListMutation();
   const createSubstituteMutation = useCreateSubstituteMutation();
 
@@ -65,7 +68,7 @@ const CreateSubstituteModal = ({
         curPage: result.curPage || page,
       });
     } catch (error) {
-      console.error('원자재 목록 조회 실패:', error);
+      console.error(t('errors.fetchFailed'), error);
       setMaterials([]);
       setPagination(null);
     }
@@ -120,14 +123,14 @@ const CreateSubstituteModal = ({
   return (
     <Modal
       onClose={onClose}
-      title="대체 가능한 원자재 연결"
+      title={t('title')}
       width="w-[800px]"
       height="max-h-[85%]"
       scroll={true}
     >
       <div className="mt-4 mb-3 px-6">
         <SearchInput
-          placeholder="연결할 원자재 또는 코드를 입력해 검색하세요."
+          placeholder={t('searchPlaceholder')}
           width="w-full"
           value={searchTerm}
           onChange={setSearchTerm}
@@ -139,7 +142,7 @@ const CreateSubstituteModal = ({
         {materials.length === 0 && getMaterialListMutation.isPending ? (
           <div className="h-50" />
         ) : materials.length === 0 ? (
-          <NoHistoryBox text="연결할 원자재가 없습니다." />
+          <NoHistoryBox text={t('empty')} />
         ) : (
           <>
             <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 cursor-default">
@@ -151,10 +154,10 @@ const CreateSubstituteModal = ({
                     : () => {}
                 }
               />
-              <p className="flex-1 px-3 text-sv">자재명</p>
-              <p className="flex-1 px-3 text-sv">자재코드</p>
-              <p className="flex-1 px-3 text-sv">규격</p>
-              <p className="flex-1 px-3 text-sv">단위</p>
+              <p className="flex-1 px-3 text-sv">{tCommon('materialName')}</p>
+              <p className="flex-1 px-3 text-sv">{tCommon('materialCode')}</p>
+              <p className="flex-1 px-3 text-sv">{tCommon('specification')}</p>
+              <p className="flex-1 px-3 text-sv">{tCommon('unit')}</p>
             </div>
 
             {materials.map((material) => (
@@ -183,9 +186,9 @@ const CreateSubstituteModal = ({
 
         {/* 버튼 */}
         <div className="flex gap-2.5 justify-end mt-3 pb-6">
-          <MiniBtn text="닫기" variant="white" onClick={onClose} />
+          <MiniBtn text={tCommon('cancel')} variant="white" onClick={onClose} />
           <MiniBtn
-            text="연결하기"
+            text={t('connectButton')}
             variant="primary"
             onClick={async () => {
               if (selectedMaterialIds.size === 0) return;

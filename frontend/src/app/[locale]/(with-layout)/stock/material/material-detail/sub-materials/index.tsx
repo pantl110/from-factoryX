@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import MiniBtn from '@/ui/mini-btn';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
@@ -30,6 +31,8 @@ export const SubMaterials = forwardRef<SubMaterialsRefModel, SubMaterialsProps>(
     },
     ref
   ) => {
+    const t = useTranslations('stock.material.subMaterials');
+    const tCommon = useTranslations('common');
     const role = useMemberStore((state) => state.role);
     const isViewer = role === 'viewer';
     const hasSubscription = useSubscriptionStore(
@@ -77,10 +80,10 @@ export const SubMaterials = forwardRef<SubMaterialsRefModel, SubMaterialsProps>(
     return (
       <div className="flex flex-col gap-3">
         <div className="h-10 flex items-center justify-between">
-          <h3 className="Heading-3 text-dg">대체 가능한 원자재</h3>
+          <h3 className="Heading-3 text-dg">{t('title')}</h3>
           {targetMaterials.length > 0 && (
             <MiniBtn
-              text="자재 연결하기"
+              text={t('connectButton')}
               variant="whiteOutline"
               disabled={isViewer || !hasSubscription()}
               onClick={() => {
@@ -96,13 +99,17 @@ export const SubMaterials = forwardRef<SubMaterialsRefModel, SubMaterialsProps>(
         ) : !error && targetMaterials.length > 0 ? (
           <div className="flex flex-col">
             <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 cursor-default">
-              <p className="flex-1 px-3 text-sv">자재명</p>
-              <p className="flex-1 px-3 text-sv">자재코드</p>
-              <p className="flex-1 px-3 text-sv">규격</p>
-              <p className="flex-1 px-3 text-sv">재고 수량</p>
-              <p className="flex-[0.5] px-3 text-sv">재고 상태</p>
+              <p className="flex-1 px-3 text-sv">{tCommon('materialName')}</p>
+              <p className="flex-1 px-3 text-sv">{tCommon('materialCode')}</p>
+              <p className="flex-1 px-3 text-sv">{tCommon('specification')}</p>
+              <p className="flex-1 px-3 text-sv">
+                {t('tableHeader.stockQuantity')}
+              </p>
+              <p className="flex-[0.5] px-3 text-sv">
+                {t('tableHeader.stockStatus')}
+              </p>
               {!isViewer && hasSubscription() && (
-                <p className="w-20 px-3 text-sv">액션</p>
+                <p className="w-20 px-3 text-sv">{tCommon('action')}</p>
               )}
             </div>
 
@@ -127,9 +134,9 @@ export const SubMaterials = forwardRef<SubMaterialsRefModel, SubMaterialsProps>(
           </div>
         ) : (
           <NoHistoryBox
-            title="연결된 자재가 없어요."
-            text="현재 자재 대신 사용할 수 있는 원자재를 등록할 수 있어요."
-            button="자재 연결하기"
+            title={t('empty.title')}
+            text={t('empty.description')}
+            button={t('connectButton')}
             onClick={() => {
               setIsCreateSubstituteModalOpen(true);
             }}

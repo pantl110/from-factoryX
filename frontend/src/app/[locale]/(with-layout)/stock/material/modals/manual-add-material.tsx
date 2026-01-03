@@ -4,6 +4,7 @@ import MiniBtn from '@/ui/mini-btn';
 import { useForm } from 'react-hook-form';
 import { useState } from 'react';
 import { handleQuantityInput } from '@/utils/format-number';
+import { useTranslations } from 'next-intl';
 
 interface ManualAddMaterialProps {
   noPrice?: boolean;
@@ -28,6 +29,8 @@ const ManualAddMaterial = ({
   showToast,
   usageQuantity = false,
 }: ManualAddMaterialProps) => {
+  const t = useTranslations('stock.material.modals.manualAdd');
+  const tCommon = useTranslations('common');
   // 각 필드의 값을 직접 관리
   const [formValues, setFormValues] = useState({
     name: '',
@@ -81,12 +84,12 @@ const ManualAddMaterial = ({
       const isDuplicate = await checkDuplicateMaterialCode(data.code);
       if (isDuplicate) {
         showToast?.(
-          '이미 존재하는 자재코드에요.',
-          '다른 자재코드로 수정해주세요.'
+          t('toast.duplicateCode.text'),
+          t('toast.duplicateCode.subtext')
         );
         setError('code', {
           type: 'manual',
-          message: '이미 존재하는 자재코드에요.',
+          message: t('errors.duplicateCode'),
         });
         return;
       }
@@ -94,21 +97,24 @@ const ManualAddMaterial = ({
     // 2. 기존 자재 코드 목록에서 확인
     if (existingMaterials.includes(data.code)) {
       showToast?.(
-        '이미 존재하는 자재코드에요.',
-        '다른 자재코드로 수정해주세요.'
+        t('toast.duplicateCode.text'),
+        t('toast.duplicateCode.subtext')
       );
       setError('code', {
         type: 'manual',
-        message: '이미 존재하는 자재코드에요.',
+        message: t('errors.duplicateCode'),
       });
       return;
     }
     // 3. 이미 선택된 자재 목록에서 확인
     if (selectedMaterials.some((mat) => mat.code === data.code)) {
-      showToast?.('이미 추가된 자재코드에요.', '다른 자재코드로 수정해주세요.');
+      showToast?.(
+        t('toast.alreadyAdded.text'),
+        t('toast.alreadyAdded.subtext')
+      );
       setError('code', {
         type: 'manual',
-        message: '이미 추가된 자재코드에요.',
+        message: t('errors.alreadyAdded'),
       });
       return;
     }
@@ -135,8 +141,8 @@ const ManualAddMaterial = ({
           <div className="flex w-full gap-2.5">
             <div className="flex-1">
               <Input
-                placeholder="EX) 투명 필름지"
-                label="자재명"
+                placeholder={t('placeholders.materialName')}
+                label={tCommon('materialName')}
                 required
                 {...register('name', {
                   required: true,
@@ -154,7 +160,7 @@ const ManualAddMaterial = ({
               <Input
                 showError={!!errors.code}
                 placeholder="EX) 123456"
-                label="자재코드"
+                label={tCommon('materialCode')}
                 required
                 {...register('code', {
                   required: true,
@@ -173,7 +179,7 @@ const ManualAddMaterial = ({
             <div className="flex-1">
               <Input
                 placeholder="EX) 500mm × 100m"
-                label="규격"
+                label={tCommon('specification')}
                 required
                 {...register('spec', {
                   required: true,
@@ -190,7 +196,7 @@ const ManualAddMaterial = ({
             <div className="flex-1">
               <Input
                 placeholder="EX) EA"
-                label="단위"
+                label={tCommon('unit')}
                 required
                 {...register('unit', {
                   required: true,
@@ -209,7 +215,9 @@ const ManualAddMaterial = ({
             <div className="flex-1">
               <Input
                 placeholder="EX) 100"
-                label={usageQuantity ? '사용 수량' : '수량'}
+                label={
+                  usageQuantity ? tCommon('usageQuantity') : tCommon('quantity')
+                }
                 required
                 type="text"
                 {...register('quantity', {
@@ -254,7 +262,7 @@ const ManualAddMaterial = ({
               <div className="flex-1">
                 <Input
                   placeholder="EX) 1,000"
-                  label="단가"
+                  label={tCommon('unitPrice')}
                   required
                   type="text"
                   {...register('price', {
@@ -287,13 +295,13 @@ const ManualAddMaterial = ({
         </div>
         <div className="flex gap-2 justify-end mt-3">
           <MiniBtn
-            text="취소"
+            text={tCommon('cancel')}
             variant="white"
             type="button"
             onClick={() => setIsManualAddMode(false)}
           />
           <MiniBtn
-            text="추가하기"
+            text={tCommon('add')}
             variant="primary"
             type="submit"
             disabled={!isFormValid()}

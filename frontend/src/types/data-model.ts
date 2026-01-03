@@ -1759,6 +1759,7 @@ export interface MaterialSimpleModel {
   unit: string;
   current_stock?: number | null;
   standard_stock?: number | null;
+  status?: InventoryStatusType | null;
 }
 
 // 대체 자재 관계 생성

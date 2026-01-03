@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import MiniBtn from '@/ui/mini-btn';
 import Input from '@/ui/input';
 import Modal from '@/ui/modal/modal';
@@ -26,6 +27,9 @@ interface ClientFormModel {
 }
 
 const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
+  const t = useTranslations('stock.material.modals.clientInfo');
+  const tQuotation = useTranslations('quotation.inputSection');
+  const tCommon = useTranslations('common');
   const {
     register,
     handleSubmit,
@@ -112,8 +116,8 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
 
   return (
     <Modal
-      title="거래처 정보를 입력해주세요."
-      subtitle="등록된 정보는 이후 문서 작성 시 자동으로 불러와져요."
+      title={t('title')}
+      subtitle={t('subtitle')}
       onClose={onClose}
       width="w-[600px]"
       scroll={true}
@@ -126,8 +130,8 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
         <div className="flex flex-col gap-4">
           <div className="flex-1 relative">
             <Input
-              label="거래처명"
-              placeholder="거래처명을 입력하세요."
+              label={tCommon('clientName')}
+              placeholder={t('placeholders.clientName')}
               required
               {...register('name', { required: true })}
               value={searchKeyword}
@@ -165,14 +169,16 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
           </div>
           <div className="flex-1">
             <Input
-              label="사업자등록번호"
-              placeholder="사업자등록번호를 입력하세요."
+              label={tCommon('businessRegistrationNumber')}
+              placeholder={tQuotation(
+                'placeholders.businessRegistrationNumber'
+              )}
               required
               {...register('businessRegistrationNumber', {
                 required: true,
                 validate: (v) =>
                   /^\d{3}-\d{2}-\d{5}$/.test(v ?? '') ||
-                  '사업자등록번호 형식이 올바르지 않습니다.',
+                  tQuotation('errors.invalidBusinessRegistrationNumber'),
               })}
               value={watch('businessRegistrationNumber') ?? ''}
               onChange={(e) => {
@@ -185,8 +191,8 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
             />
           </div>
           <Input
-            label="대표자명"
-            placeholder="대표자명을 입력하세요."
+            label={tCommon('representativeName')}
+            placeholder={tQuotation('placeholders.representativeName')}
             required
             {...register('representativeName', {
               required: true,
@@ -196,8 +202,8 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
           />
           <div className="flex gap-2.5">
             <Input
-              label="업태"
-              placeholder="업태를 입력하세요."
+              label={tCommon('businessType')}
+              placeholder={tQuotation('placeholders.businessType')}
               required
               {...register('businessType', {
                 required: true,
@@ -206,8 +212,8 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
               showError={!!errors.businessType}
             />
             <Input
-              label="종목"
-              placeholder="종목을 입력하세요."
+              label={tCommon('businessCategory')}
+              placeholder={tQuotation('placeholders.businessCategory')}
               required
               {...register('businessCategory', {
                 required: true,
@@ -218,9 +224,9 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
           </div>
           <div className="flex-1">
             <Input
-              label="사업장 주소"
+              label={tCommon('businessAddress')}
               required
-              placeholder="사업장 주소를 입력하세요."
+              placeholder={tQuotation('placeholders.businessAddress')}
               {...register('address', {
                 required: true,
               })}
@@ -231,13 +237,13 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
         </div>
         <div className="flex justify-end gap-2.5">
           <MiniBtn
-            text="취소"
+            text={tCommon('cancel')}
             variant="white"
             type="button"
             onClick={onClose}
           />
           <MiniBtn
-            text="다음"
+            text={tCommon('next')}
             variant="primary"
             type="submit"
             disabled={!isFormValid}

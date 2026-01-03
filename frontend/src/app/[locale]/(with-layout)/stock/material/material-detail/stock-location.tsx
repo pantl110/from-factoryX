@@ -9,6 +9,7 @@ import {
 import LocationItem from '../../location-item';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
+import { useTranslations } from 'next-intl';
 
 interface LocationFormModel {
   locations: {
@@ -47,6 +48,8 @@ const StockLocation = ({
   isLoading,
   onAddClick,
 }: StockLocationProps) => {
+  const t = useTranslations('stock.stockLocation');
+  const tCommon = useTranslations('common');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
@@ -61,9 +64,9 @@ const StockLocation = ({
     return (
       <div className="flex flex-col gap-3">
         <NoHistoryBox
-          title="등록된 창고 위치가 아직 없어요."
-          text="[추가하기] 버튼을 눌러 원자재가 보관된 창고를 등록해보세요."
-          button="추가하기"
+          title={t('empty.title')}
+          text={t('empty.description')}
+          button={tCommon('add')}
           onClick={onAddClick}
           disabled={isViewer || !hasSubscription?.()}
         />

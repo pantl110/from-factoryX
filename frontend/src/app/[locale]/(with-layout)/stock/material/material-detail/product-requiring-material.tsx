@@ -16,6 +16,7 @@ import Pagination from '@/components/pagination';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import MiniBtn from '@/ui/mini-btn';
+import { useTranslations } from 'next-intl';
 
 interface ProductRequiringMaterialProps {
   materialId: number;
@@ -45,6 +46,8 @@ const ProductRequiringMaterial = forwardRef<
     },
     ref
   ) => {
+    const t = useTranslations('stock.material.productRequiringMaterial');
+    const tCommon = useTranslations('common');
     const role = useMemberStore((state) => state.role);
     const isViewer = role === 'viewer';
     const hasSubscription = useSubscriptionStore(
@@ -159,10 +162,10 @@ const ProductRequiringMaterial = forwardRef<
     return (
       <div className="flex flex-col gap-3">
         <div className="h-10 flex items-center justify-between">
-          <h3 className="Heading-3 text-dg">이 자재가 사용된 제품</h3>
+          <h3 className="Heading-3 text-dg">{t('title')}</h3>
           {productConnections.length > 0 && (
             <MiniBtn
-              text="제품 연결하기"
+              text={t('connectButton')}
               variant="whiteOutline"
               onClick={() => setIsProductEnrollmentModalOpen(true)}
               disabled={isViewer || !hasSubscription()}
@@ -176,12 +179,18 @@ const ProductRequiringMaterial = forwardRef<
           ) : productConnections.length > 0 ? (
             <>
               <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 cursor-default">
-                <p className="flex-1 py-1 px-3 text-sv">제품명</p>
-                <p className="flex-1 py-1 px-3 text-sv">제품 코드</p>
-                <p className="flex-1 py-1 px-3 text-sv">규격</p>
-                <p className="flex-1 py-1 px-3 text-sv">단위</p>
+                <p className="flex-1 py-1 px-3 text-sv">
+                  {tCommon('productName')}
+                </p>
+                <p className="flex-1 py-1 px-3 text-sv">
+                  {tCommon('productCode')}
+                </p>
+                <p className="flex-1 py-1 px-3 text-sv">
+                  {tCommon('specification')}
+                </p>
+                <p className="flex-1 py-1 px-3 text-sv">{tCommon('unit')}</p>
                 {!isViewer && hasSubscription() && (
-                  <p className="w-20 px-3 text-sv">액션</p>
+                  <p className="w-20 px-3 text-sv">{tCommon('action')}</p>
                 )}
               </div>
               {getCurrentPageConnections().map((connection) => {
@@ -210,9 +219,9 @@ const ProductRequiringMaterial = forwardRef<
             </>
           ) : (
             <NoHistoryBox
-              title="이 원자재에 연결된 제품이 아직 없어요."
-              text="제품을 연결하면, 자재가 사용되는 제품이 이곳에 표시돼요."
-              button="제품 연결하기"
+              title={t('empty.title')}
+              text={t('empty.description')}
+              button={t('connectButton')}
               onClick={() => setIsProductEnrollmentModalOpen(true)}
               disabled={isViewer || !hasSubscription()}
             />

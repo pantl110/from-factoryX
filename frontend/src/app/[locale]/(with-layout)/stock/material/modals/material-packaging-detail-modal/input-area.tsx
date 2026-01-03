@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import InfoLabelValue from '@/ui/info-label-value';
 import { useForm, Controller, ControllerRenderProps } from 'react-hook-form';
 import {
@@ -44,6 +45,16 @@ export const InputArea = ({
   formId,
   onQuantityChange,
 }: InputAreaProps) => {
+  const t = useTranslations('stock.material.packaging.tableHeader');
+  const tPackaging = useTranslations(
+    'stock.material.modals.packagingDetail.inputArea'
+  );
+  const tStockLocation = useTranslations('stock.stockLocation');
+  const tCommon = useTranslations('common');
+  // 백엔드 에러 메시지 키워드는 항상 한국어로 오므로 하드코딩
+  const PARENT_LOT_ERROR_KEYWORD =
+    '수량 증가가 불가능합니다. 부모 이력의 잔량이 부족합니다';
+  const QUANTITY_INSUFFICIENT_KEYWORD = '소분 수량이 부족합니다';
   const mode = repackagingId ? 'update' : 'create';
 
   // update 모드일 때 repackaging 상세 데이터 가져오기
@@ -124,8 +135,8 @@ export const InputArea = ({
 
     if (trimmedExpiration && !isValidDateString(trimmedExpiration)) {
       onError?.({
-        text: '유효한 유통기한을 입력해 주세요.',
-        subtext: 'YYYY-MM-DD 형식으로 입력해 주세요.',
+        text: tPackaging('errors.invalidExpirationDate.text'),
+        subtext: tPackaging('errors.invalidExpirationDate.subtext'),
       });
       return;
     }
@@ -174,36 +185,34 @@ export const InputArea = ({
           error.message ||
           '';
         const detailMessage = detailMessageRaw.trim();
-        const parentLotErrorKeyword =
-          '수량 증가가 불가능합니다. 부모 이력의 잔량이 부족합니다';
-        const quantityInsufficientKeyword = '소분 수량이 부족합니다';
+        // 백엔드 에러 메시지는 항상 한국어로 오므로 하드코딩된 키워드 사용
         const isParentLotQuantityError = detailMessage.includes(
-          parentLotErrorKeyword
+          PARENT_LOT_ERROR_KEYWORD
         );
         const isQuantityInsufficientError = detailMessage.includes(
-          quantityInsufficientKeyword
+          QUANTITY_INSUFFICIENT_KEYWORD
         );
 
         onError?.({
           text:
             isParentLotQuantityError || isQuantityInsufficientError
-              ? '수량을 다시 확인해 주세요.'
+              ? tPackaging('errors.quantityCheck.text')
               : detailMessage ||
                 (mode === 'create'
-                  ? '소분 내역 생성 중 오류가 발생했습니다.'
-                  : '소분 내역 수정 중 오류가 발생했습니다.'),
+                  ? tPackaging('errors.createFailed.text')
+                  : tPackaging('errors.updateFailed.text')),
           subtext:
             isParentLotQuantityError || isQuantityInsufficientError
-              ? '부모 이력의 잔량이 부족해요.'
-              : '잠시 후 다시 시도해 주세요.',
+              ? tPackaging('errors.quantityCheck.subtext')
+              : tPackaging('errors.retryLater'),
         });
       } else {
         onError?.({
           text:
             mode === 'create'
-              ? '소분 내역 생성 중 오류가 발생했습니다.'
-              : '소분 내역 수정 중 오류가 발생했습니다.',
-          subtext: '잠시 후 다시 시도해 주세요.',
+              ? tPackaging('errors.createFailed.text')
+              : tPackaging('errors.updateFailed.text'),
+          subtext: tPackaging('errors.retryLater'),
         });
       }
     }
@@ -271,11 +280,15 @@ export const InputArea = ({
       )} */}
 
       <InfoLabelValue
-        label="부모 LOT 번호"
+        label={t('masterLotNumber')}
         value={effectiveParentLotNumber}
         disabled
       />
-      <InfoLabelValue label="소분 LOT 번호" value={displayLotNumber} disabled />
+      <InfoLabelValue
+        label={t('subLotNumber')}
+        value={displayLotNumber}
+        disabled
+      />
 
       <Controller
         name="quantity"
@@ -289,9 +302,9 @@ export const InputArea = ({
 
           return (
             <InfoLabelValue
-              label="수량"
+              label={tCommon('quantity')}
               value={displayValue}
-              placeholder="(필수) 소분할 수량을 입력하세요."
+              placeholder={tPackaging('placeholders.quantity')}
               required={true}
               isEditing={true}
               onChange={(e) => handleQuantityChange(field, e)}
@@ -318,9 +331,9 @@ export const InputArea = ({
         control={control}
         render={({ field }) => (
           <InfoLabelValue
-            label="창고 위치"
+            label={tCommon('warehouseLocation')}
             value={field.value}
-            placeholder="창고 위치를 입력하세요."
+            placeholder={tStockLocation('placeholders.warehouseLocation')}
             isEditing={true}
             onChange={(e) => handleLocationChange(field, e)}
           />
@@ -332,9 +345,9 @@ export const InputArea = ({
         control={control}
         render={({ field }) => (
           <InfoLabelValue
-            label="유통기한"
+            label={tCommon('expirationDate')}
             value={field.value}
-            placeholder="유통기한을 입력하세요"
+            placeholder={tPackaging('placeholders.expirationDate')}
             isEditing={true}
             onChange={(e) => handleDateChange(field, e)}
           />

@@ -20,6 +20,7 @@ import { SubMaterials, SubMaterialsRefModel } from './sub-materials';
 import { MaterialStockIn } from './material-stock-in';
 import { MaterialPackaging } from './material-packaging';
 import { MaterialStockOut } from './material-stock-out';
+import { useTranslations } from 'next-intl';
 
 export type { MaterialInfoModel } from './material-info';
 
@@ -110,6 +111,10 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
       name: 'locations',
     });
 
+    const t = useTranslations('stock.material');
+    const tDetail = useTranslations('stock.material.detail');
+    const tStockLocation = useTranslations('stock.stockLocation');
+    const tCommon = useTranslations('common');
     const role = useMemberStore((state) => state.role);
     const isViewer = role === 'viewer';
     const hasSubscription = useSubscriptionStore(
@@ -276,7 +281,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
           {/* 원자재 정보 */}
           <div className="flex flex-col gap-3">
             <h3 className="Heading-3 text-dg h-10 flex items-center">
-              원자재 정보
+              {tDetail('materialInfoTitle')}
             </h3>
             <MaterialInfo
               materialId={materialId}
@@ -291,11 +296,11 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
           <div className="flex flex-col gap-3">
             <div className="h-10 flex items-center justify-between">
               <h3 className="Heading-3 h-10 flex items-center text-dg">
-                원자재가 보관된 창고 위치
+                {tStockLocation('title.material')}
               </h3>
               {fields.length > 0 && (
                 <MiniBtn
-                  text="추가하기"
+                  text={tCommon('add')}
                   textColor="text-dg"
                   borderColor="border-lg"
                   hoverColor="hover:bg-bg"
@@ -345,7 +350,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
           <div className="flex flex-col gap-3">
             <div className="flex gap-2 items-center">
               <h3 className="Heading-3 text-dg h-10 flex items-center">
-                업체별 단가 비교
+                {t('priceComparison.title')}
               </h3>
             </div>
 
@@ -386,21 +391,6 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
 
           {/* 원자재 사용 내역 */}
           <MaterialStockOut materialId={materialId} />
-
-          {/* 원자재 입·출고 내역 */}
-          {/* <div className="flex flex-col gap-3">
-            <h3 className="Heading-3 text-dg h-10 flex items-center">
-              원자재 입고 및 사용 내역
-            </h3>
-
-            <MaterialStockLog
-              histories={stockHistories?.data}
-              isLoading={isStockLoading}
-              currentPage={stockCurrentPage}
-              totalPages={stockHistories?.pageCnt || 1}
-              onPageChange={handleStockPageChange}
-            />
-          </div> */}
         </div>
       </>
     );

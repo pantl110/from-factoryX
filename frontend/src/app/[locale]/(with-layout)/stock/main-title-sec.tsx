@@ -7,6 +7,7 @@ import ProductAddDropdown from './product/modals/product-add-dropdown';
 import MaterialAddDropdown from './material/modals/material-add-dropdown';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
+import { useLocale } from 'next-intl';
 
 interface MainTitleSecProps {
   selectedTab: StockTabType;
@@ -31,6 +32,7 @@ const MainTitleSec = ({
   onOpenCreatePanel,
   onOpenClientInfoModal,
 }: MainTitleSecProps) => {
+  const locale = useLocale();
   const factoryId = useMemberStore((state) => state.factoryId);
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
@@ -44,15 +46,24 @@ const MainTitleSec = ({
 
   const handleExcelDownload = () => {
     try {
+      // 로케일에 따라 다른 파일명 사용
       const filename =
         selectedTab === 'product'
-          ? 'product-excel.xlsx'
-          : 'material-excel.xlsx';
+          ? locale === 'en'
+            ? 'product-excel-en.xlsx'
+            : 'product-excel.xlsx'
+          : locale === 'en'
+            ? 'material-excel-en.xlsx'
+            : 'material-excel.xlsx';
 
       const downloadName =
         selectedTab === 'product'
-          ? '제품_등록_양식.xlsx'
-          : '자재_등록_양식.xlsx';
+          ? locale === 'en'
+            ? 'Product_Registration_Form.xlsx'
+            : '제품_등록_양식.xlsx'
+          : locale === 'en'
+            ? 'Material_Registration_Form.xlsx'
+            : '자재_등록_양식.xlsx';
 
       // 파일 다운로드
       const link = document.createElement('a'); // 다운로드 링크 생성

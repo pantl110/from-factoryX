@@ -7,6 +7,7 @@ import Toast from '@/ui/toast';
 import { WarningCircle } from '@phosphor-icons/react';
 import { useToast, useCreateProduct, useCreateMaterial } from '@/hooks';
 import Spinner from '@/ui/spinner';
+import { useTranslations } from 'next-intl';
 
 interface ExcelUploadModalProps {
   onClose: () => void;
@@ -19,9 +20,23 @@ const ExcelUploadModal = ({
   type = 'product',
   onSuccess,
 }: ExcelUploadModalProps) => {
+  const t = useTranslations('stock.material.modals.excelUpload');
+  // 엑셀 파일의 헤더는 로케일에 따라 동적으로 설정
+  const excelColumns = {
+    productName: t('excelColumns.productName'),
+    materialName: t('excelColumns.materialName'),
+    productCode: t('excelColumns.productCode'),
+    materialCode: t('excelColumns.materialCode'),
+    specification: t('excelColumns.specification'),
+    unit: t('excelColumns.unit'),
+    currentStock: t('excelColumns.currentStock'),
+    minStock: t('excelColumns.minStock'),
+    avgProductionTime: t('excelColumns.avgProductionTime'),
+    note: t('excelColumns.note'),
+  };
   const [hasFiles, setHasFiles] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [subtext, setSubtext] = useState('다시 시도해주세요.');
+  const [subtext, setSubtext] = useState(t('errors.tryAgain'));
 
   const { isToastOpen, isVisible, showToast } = useToast();
   const { createProduct } = useCreateProduct();
@@ -39,7 +54,27 @@ const ExcelUploadModal = ({
       } catch (err) {
         // handleUpload에서 이미 에러 처리를 했으므로 여기서는 파일 파싱 에러만 처리
         if (err instanceof Error) {
-          setSubtext(err.message + ' 파일을 확인 후 다시 시도해주세요.');
+          // 에러 메시지를 번역 키로 매핑
+          let errorKey = 'unknownError';
+          if (
+            err.message.includes('업로드할 데이터가 없습니다') ||
+            err.message.includes('No data to upload')
+          ) {
+            errorKey = 'noDataToUpload';
+          } else if (
+            err.message.includes('엑셀 파일 파싱에 실패했습니다') ||
+            err.message.includes('Failed to parse')
+          ) {
+            errorKey = 'parseFailed';
+          } else if (
+            err.message.includes('파일 읽기에 실패했습니다') ||
+            err.message.includes('Failed to read')
+          ) {
+            errorKey = 'fileReadFailed';
+          }
+          setSubtext(
+            t(`errors.${errorKey}`) + ' ' + t('errors.checkFileAndRetry')
+          );
           setHasFiles(false);
           showToast();
         }
@@ -69,7 +104,7 @@ const ExcelUploadModal = ({
         return 0;
       };
 
-      // 정수 필드는 반올림 처리 (버퍼 비율 제외)
+      // 정수 필드는 반올림 처리
       const extractRoundedInt = (value: unknown): number => {
         const num = extractNumber(value);
         return Math.round(num);
@@ -78,20 +113,30 @@ const ExcelUploadModal = ({
       // 원본 데이터에서 비어있는 데이터가 있는지 확인 (모든 필드가 비어있는 행은 제외)
       const hasEmptyData = dataToProcess.some((row) => {
         const name = String(
-          row[type === 'product' ? '제품명' : '자재명'] ?? ''
+          row[
+            type === 'product'
+              ? excelColumns.productName
+              : excelColumns.materialName
+          ] ?? ''
         );
         const code = String(
-          row[type === 'product' ? '제품 코드' : '자재 코드'] ?? ''
+          row[
+            type === 'product'
+              ? excelColumns.productCode
+              : excelColumns.materialCode
+          ] ?? ''
         );
-        const spec = String(row['규격'] ?? '');
-        const unit = String(row['단위'] ?? '');
+        const spec = String(row[excelColumns.specification] ?? '');
+        const unit = String(row[excelColumns.unit] ?? '');
 
         // 모든 필드가 비어있으면 건너뛰기 (자재/제품에 따라 다른 기준)
         let isAllEmpty = false;
         if (type === 'material') {
           // 자재: 자재명, 자재 코드, 규격, 단위, 현재 재고, 최소 재고 모두 비어있어야 함
-          const currentStock = String(row['현재 재고'] ?? '').trim();
-          const minStock = String(row['최소 재고'] ?? '').trim();
+          const currentStock = String(
+            row[excelColumns.currentStock] ?? ''
+          ).trim();
+          const minStock = String(row[excelColumns.minStock] ?? '').trim();
           isAllEmpty =
             name.trim() === '' &&
             code.trim() === '' &&
@@ -100,13 +145,14 @@ const ExcelUploadModal = ({
             currentStock === '' &&
             minStock === '';
         } else {
-          // 제품: 제품명, 제품 코드, 규격, 단위, 현재 재고, 평균 생산 시간(초), 버퍼 비율(%), 특이 사항 모두 비어있어야 함
-          const currentStock = String(row['현재 재고'] ?? '').trim();
-          const avgProductionTime = String(
-            row['평균 생산 시간(초)'] ?? ''
+          // 제품: 제품명, 제품 코드, 규격, 단위, 현재 재고, 평균 생산 시간(초), 특이 사항 모두 비어있어야 함
+          const currentStock = String(
+            row[excelColumns.currentStock] ?? ''
           ).trim();
-          const bufferRate = String(row['버퍼 비율(%)'] ?? '').trim();
-          const note = String(row['특이 사항'] ?? '').trim();
+          const avgProductionTime = String(
+            row[excelColumns.avgProductionTime] ?? ''
+          ).trim();
+          const note = String(row[excelColumns.note] ?? '').trim();
           isAllEmpty =
             name.trim() === '' &&
             code.trim() === '' &&
@@ -114,7 +160,6 @@ const ExcelUploadModal = ({
             unit.trim() === '' &&
             currentStock === '' &&
             avgProductionTime === '' &&
-            bufferRate === '' &&
             note === '';
         }
 
@@ -135,8 +180,8 @@ const ExcelUploadModal = ({
       if (hasEmptyData) {
         setSubtext(
           type === 'product'
-            ? '제품명, 제품 코드, 규격, 단위는 필수입니다. 모든 필수 항목을 확인해주세요.'
-            : '자재명, 자재 코드, 규격, 단위는 필수입니다. 모든 필수 항목을 확인해주세요.'
+            ? t('errors.requiredFields.product')
+            : t('errors.requiredFields.material')
         );
         showToast();
         return;
@@ -145,17 +190,27 @@ const ExcelUploadModal = ({
       // 빈 행을 필터링하는 함수
       const isEmptyRow = (row: ExcelRowModel) => {
         const name = String(
-          row[type === 'product' ? '제품명' : '자재명'] ?? ''
+          row[
+            type === 'product'
+              ? excelColumns.productName
+              : excelColumns.materialName
+          ] ?? ''
         ).trim();
         const code = String(
-          row[type === 'product' ? '제품 코드' : '자재 코드'] ?? ''
+          row[
+            type === 'product'
+              ? excelColumns.productCode
+              : excelColumns.materialCode
+          ] ?? ''
         ).trim();
-        const spec = String(row['규격'] ?? '').trim();
-        const unit = String(row['단위'] ?? '').trim();
+        const spec = String(row[excelColumns.specification] ?? '').trim();
+        const unit = String(row[excelColumns.unit] ?? '').trim();
 
         if (type === 'material') {
-          const currentStock = String(row['현재 재고'] ?? '').trim();
-          const minStock = String(row['최소 재고'] ?? '').trim();
+          const currentStock = String(
+            row[excelColumns.currentStock] ?? ''
+          ).trim();
+          const minStock = String(row[excelColumns.minStock] ?? '').trim();
           return (
             name === '' &&
             code === '' &&
@@ -165,12 +220,13 @@ const ExcelUploadModal = ({
             minStock === ''
           );
         } else {
-          const currentStock = String(row['현재 재고'] ?? '').trim();
-          const avgProductionTime = String(
-            row['평균 생산 시간(초)'] ?? ''
+          const currentStock = String(
+            row[excelColumns.currentStock] ?? ''
           ).trim();
-          const bufferRate = String(row['버퍼 비율(%)'] ?? '').trim();
-          const note = String(row['특이 사항'] ?? '').trim();
+          const avgProductionTime = String(
+            row[excelColumns.avgProductionTime] ?? ''
+          ).trim();
+          const note = String(row[excelColumns.note] ?? '').trim();
           return (
             name === '' &&
             code === '' &&
@@ -178,7 +234,6 @@ const ExcelUploadModal = ({
             unit === '' &&
             currentStock === '' &&
             avgProductionTime === '' &&
-            bufferRate === '' &&
             note === ''
           );
         }
@@ -189,22 +244,34 @@ const ExcelUploadModal = ({
         .filter((row) => !isEmptyRow(row))
         .map((row) => {
           const name = String(
-            row[type === 'product' ? '제품명' : '자재명'] ?? ''
+            row[
+              type === 'product'
+                ? t('excelColumns.productName')
+                : t('excelColumns.materialName')
+            ] ?? ''
           ).trim();
           const code = String(
-            row[type === 'product' ? '제품 코드' : '자재 코드'] ?? ''
+            row[
+              type === 'product'
+                ? t('excelColumns.productCode')
+                : t('excelColumns.materialCode')
+            ] ?? ''
           ).trim();
-          const unit = String(row['단위'] ?? '').trim();
-          const spec = String(row['규격'] ?? '').trim();
-          const currentStock = extractRoundedInt(row['현재 재고']);
+          const unit = String(row[t('excelColumns.unit')] ?? '').trim();
+          const spec = String(
+            row[t('excelColumns.specification')] ?? ''
+          ).trim();
+          const currentStock = extractRoundedInt(
+            row[t('excelColumns.currentStock')]
+          );
           const avgProductionTime =
             type === 'product'
-              ? extractRoundedInt(row['평균 생산 시간(초)'])
+              ? extractRoundedInt(row[excelColumns.avgProductionTime])
               : null;
-          const bufferRate =
-            type === 'product' ? extractNumber(row['버퍼 비율(%)']) : null;
           const minStock =
-            type === 'material' ? extractRoundedInt(row['최소 재고']) : null;
+            type === 'material'
+              ? extractRoundedInt(row[excelColumns.minStock])
+              : null;
 
           return {
             name,
@@ -217,19 +284,11 @@ const ExcelUploadModal = ({
             avgProductionTime > 0
               ? { average_production_time: avgProductionTime }
               : {}),
-            ...(type === 'product'
-              ? {
-                  buffer_rate:
-                    bufferRate !== null && bufferRate > 0
-                      ? bufferRate / 100
-                      : 0.1,
-                }
-              : {}),
             ...(type === 'material' && minStock !== null && minStock > 0
               ? { min_stock: minStock }
               : {}),
-            ...(type === 'product' && row['특이 사항']
-              ? { note: String(row['특이 사항']).trim() }
+            ...(type === 'product' && row[excelColumns.note]
+              ? { note: String(row[excelColumns.note]).trim() }
               : {}),
           };
         });
@@ -261,7 +320,7 @@ const ExcelUploadModal = ({
         }
 
         // 중복된 코드가 있다는 메시지가 포함되면 상위 컴포넌트에 알림
-        if (message && message.includes('중복된')) {
+        if (message && message.includes(t('duplicateCheck.keyword'))) {
           onClose();
           onSuccess?.(true); // 중복 코드가 있음을 알림
         } else {
@@ -269,24 +328,28 @@ const ExcelUploadModal = ({
           onSuccess?.(false); // 중복 코드가 없음을 알림
         }
       } else {
-        if (result.error.includes('이미 존재하는')) {
+        if (result.error.includes(t('duplicateCheck.alreadyExists'))) {
           // [] 안의 자재 코드 추출
           const codeMatch = result.error.match(/\[([^\]]+)\]/);
           const extractedCode = codeMatch ? codeMatch[1] : '';
           setSubtext(
-            extractedCode +
-              (type === 'product' ? ' 제품 코드' : ' 자재 코드') +
-              '가 이미 존재합니다. 파일을 확인 후 다시 시도해주세요.'
+            t('errors.codeAlreadyExists', {
+              code: extractedCode,
+              type:
+                type === 'product'
+                  ? t('excelColumns.productCode')
+                  : t('excelColumns.materialCode'),
+            })
           );
         } else {
-          setSubtext(result.error + ' 다시 시도해 주세요.');
+          setSubtext(result.error + ' ' + t('errors.tryAgain'));
         }
         showToast();
       }
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : '오류가 발생했습니다.';
-      setSubtext(errorMessage + ' 다시 시도해 주세요.');
+        err instanceof Error ? err.message : t('errors.unknownError');
+      setSubtext(errorMessage + ' ' + t('errors.tryAgain'));
       showToast();
       // 에러를 다시 throw하지 않음 (handleComplete의 catch로 전파되지 않도록)
     }
@@ -294,20 +357,18 @@ const ExcelUploadModal = ({
 
   const getTitle = () => {
     if (hasFiles) {
-      return '업로드된 파일을 확인해 주세요.';
+      return t('title.hasFiles');
     }
     return type === 'product'
-      ? '엑셀 파일을 업로드하여 재고를 등록해주세요.'
-      : '엑셀 파일로 자재 목록을 한번에 등록하세요.';
+      ? t('title.noFiles.product')
+      : t('title.noFiles.material');
   };
 
   const getSubtitle = () => {
     if (hasFiles) {
-      return '파일이 맞는지 확인 후, 업로드를 눌러주세요.';
+      return t('subtitle.hasFiles');
     }
-    return type === 'product'
-      ? '샘플 파일 양식에 맞춰 작성한 후 업로드해 주세요.'
-      : '샘플 파일 양식에 맞춰 작성한 후 업로드해 주세요.';
+    return t('subtitle.noFiles');
   };
 
   return (
@@ -346,8 +407,8 @@ const ExcelUploadModal = ({
         <Toast
           text={
             type === 'product'
-              ? '제품 등록에 실패했습니다.'
-              : '자재 등록에 실패했습니다.'
+              ? t('toast.productRegistrationFailed')
+              : t('toast.materialRegistrationFailed')
           }
           subtext={subtext}
           type="red"

@@ -8,6 +8,7 @@ import ManualAddProduct from './manual-add-product';
 import { useAssignProduct, useMaterialProduct } from '@/hooks';
 import useMemberStore from '@/store/member-store';
 import ConnetionItem from '../../modals/connetion-item';
+import { useTranslations } from 'next-intl';
 
 interface ProductEnrollmentModalProps {
   onClose: () => void;
@@ -29,6 +30,9 @@ const ProductEnrollmentModal = ({
   showDuplicateProductToast,
   showToast,
 }: ProductEnrollmentModalProps) => {
+  const t = useTranslations('stock.material.modals.productEnrollment');
+  const tCommon = useTranslations('common');
+  const tStock = useTranslations('stock');
   const [input, setInput] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const { assignProduct, isLoading: isAssignLoading } = useAssignProduct();
@@ -67,7 +71,7 @@ const ProductEnrollmentModal = ({
   const handleSelectProduct = (product: ProductResponseModel) => {
     // 이미 연결되어 있는 품목이면 토스트 표시 후 추가하지 않음
     if (connectedProductIds.includes(product.id)) {
-      showToast('이미 연결된 품목이에요.', '');
+      showToast(t('toast.alreadyConnected'), '');
       return;
     }
     const materialItemModel: MaterialItemModel = {
@@ -104,12 +108,15 @@ const ProductEnrollmentModal = ({
     // 사용 수량 0 검증
     const hasZeroQty = selectedProducts.some((p) => (p.quantity ?? 0) === 0);
     if (hasZeroQty) {
-      showToast('사용수량이 입력되지 않았어요.', '사용수량을 입력해주세요.');
+      showToast(
+        t('toast.quantityNotEntered.text'),
+        t('toast.quantityNotEntered.subtext')
+      );
       return;
     }
 
     if (!factoryId) {
-      alert('공장 정보가 없습니다. 잠시 후 다시 시도해주세요.');
+      alert(t('errors.factoryNotFound'));
       return;
     }
 
@@ -133,15 +140,15 @@ const ProductEnrollmentModal = ({
 
   return (
     <Modal
-      title="해당 원자재와 연결할 품목을 등록해 주세요."
-      subtitle="품목을 선택하거나 새로 추가한 뒤, 해당 품목 제작에 필요한 원자재 투입량을 설정해 주세요."
+      title={t('title')}
+      subtitle={t('subtitle')}
       width="w-[600px]"
       onClose={onClose}
       scroll={true}
     >
       <div className="my-4 flex gap-2.5 relative px-6">
         <SearchInput
-          placeholder="품목을 입력해 검색하세요."
+          placeholder={t('searchPlaceholder')}
           width="flex-1"
           value={input}
           onChange={(value) => {
@@ -160,7 +167,7 @@ const ProductEnrollmentModal = ({
           onBlur={() => setTimeout(() => setIsOpen(false), 150)}
         />
         <MiniBtn
-          text="직접 추가하기"
+          text={tStock('manualAddButton')}
           textColor="text-dg"
           borderColor="border-lg"
           hoverColor="hover:bg-bg"
@@ -217,13 +224,13 @@ const ProductEnrollmentModal = ({
 
         <div className="flex gap-2.5 justify-end">
           <MiniBtn
-            text="취소"
+            text={tCommon('cancel')}
             textColor="text-sv"
             hoverColor="hover:bg-bg"
             onClick={onClose}
           />
           <MiniBtn
-            text="추가하기"
+            text={tCommon('add')}
             textColor="text-wh"
             bgColor="bg-primary"
             hoverColor="hover:bg-primary-hover"

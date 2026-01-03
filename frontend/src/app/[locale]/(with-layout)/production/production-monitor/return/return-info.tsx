@@ -294,7 +294,7 @@ const ReturnInfo = ({
           </div>
           <div className="border-b border-lg">
             <InfoLabelValue
-              label={t('currentStock')}
+              label={tCommon('currentStock')}
               value={refundData.current_stock?.toLocaleString() || '-'}
               disabled={true}
             />

@@ -1,5 +1,6 @@
 import Dropdown from '@/ui/dropdown/dropdown';
 import DropdownItem from '@/ui/dropdown/dropdown-item';
+import { useTranslations } from 'next-intl';
 
 interface MaterialAddDropdownProps {
   onClose: () => void;
@@ -12,10 +13,12 @@ const MaterialAddDropdown = ({
   onOpenExcelModal,
   onOpenClientInfoModal,
 }: MaterialAddDropdownProps) => {
+  const t = useTranslations('stock.material.modals.materialAddDropdown');
+
   return (
     <Dropdown onClose={onClose}>
-      <DropdownItem text="개별 자재 추가" onClick={onOpenClientInfoModal} />{' '}
-      <DropdownItem text="엑셀로 한 번에 등록" onClick={onOpenExcelModal} />
+      <DropdownItem text={t('addIndividual')} onClick={onOpenClientInfoModal} />{' '}
+      <DropdownItem text={t('addByExcel')} onClick={onOpenExcelModal} />
     </Dropdown>
   );
 };

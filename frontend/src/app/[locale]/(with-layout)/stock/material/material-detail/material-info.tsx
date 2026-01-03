@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { useGetMaterial } from '@/hooks';
 import InfoLabelValue from '@/ui/info-label-value';
 import {
@@ -67,6 +68,8 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
     },
     ref
   ) => {
+    const t = useTranslations('stock.material.detail.info');
+    const tCommon = useTranslations('common');
     const role = useMemberStore((state) => state.role);
     const isViewer = role === 'viewer';
     const hasSubscription = useSubscriptionStore(
@@ -191,12 +194,12 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
             control={control}
             render={({ field }) => (
               <InfoLabelValue
-                label="자재명"
+                label={tCommon('materialName')}
                 value={field.value ?? '-'}
                 handleChange={field.onChange}
                 isEditing={!isViewer && hasSubscription()}
                 required
-                placeholder="(필수) 자재명을 입력하세요."
+                placeholder={t('placeholders.materialName')}
               />
             )}
           />
@@ -205,12 +208,12 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
             control={control}
             render={({ field }) => (
               <InfoLabelValue
-                label="자재 코드"
+                label={tCommon('materialCode')}
                 value={field.value ?? '-'}
                 handleChange={field.onChange}
                 isEditing={!isViewer && hasSubscription()}
                 required
-                placeholder="(필수) 자재 코드를 입력하세요."
+                placeholder={t('placeholders.materialCode')}
               />
             )}
           />
@@ -221,12 +224,12 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
             control={control}
             render={({ field }) => (
               <InfoLabelValue
-                label="규격"
+                label={tCommon('specification')}
                 value={field.value ?? '-'}
                 handleChange={field.onChange}
                 isEditing={!isViewer && hasSubscription()}
                 required
-                placeholder="(필수) 규격을 입력하세요."
+                placeholder={t('placeholders.specification')}
               />
             )}
           />
@@ -235,11 +238,11 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
             control={control}
             render={({ field }) => (
               <InfoLabelValue
-                label="단위"
+                label={tCommon('unit')}
                 value={field.value ?? '-'}
                 handleChange={field.onChange}
                 isEditing={!isViewer && hasSubscription()}
-                placeholder="단위를 입력하세요."
+                placeholder={t('placeholders.unit')}
                 required
               />
             )}
@@ -334,10 +337,10 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
 
               return (
                 <InfoLabelValue
-                  label="현재 재고"
+                  label={tCommon('currentStock')}
                   value={displayValue}
                   isEditing={!isViewer && hasSubscription()}
-                  placeholder="현재 재고를 입력하세요."
+                  placeholder={t('placeholders.currentStock')}
                   inputType="text"
                   handleChange={handleChangeCurrentStock}
                   onFocus={() => {
@@ -424,10 +427,10 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
 
               return (
                 <InfoLabelValue
-                  label="안전 재고"
+                  label={t('labels.standardStock')}
                   value={displayValue}
                   isEditing={!isViewer && hasSubscription()}
-                  placeholder="안전재고를 입력하세요."
+                  placeholder={t('placeholders.standardStock')}
                   inputType="text"
                   handleChange={handleChangeStandardStock}
                   onFocus={() => {
@@ -506,10 +509,10 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
 
               return (
                 <InfoLabelValue
-                  label="ROP"
+                  label={t('labels.rop')}
                   value={displayValue}
                   isEditing={!isViewer && hasSubscription()}
-                  placeholder="ROP를 입력하세요."
+                  placeholder={t('placeholders.rop')}
                   inputType="text"
                   handleChange={handleChangeRop}
                   onFocus={() => {
@@ -577,11 +580,11 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
 
               return (
                 <InfoLabelValue
-                  label="적정 재고"
+                  label={t('labels.maxStock')}
                   value={displayValue}
                   handleChange={handleChangeMaxStock}
                   isEditing={!isViewer && hasSubscription()}
-                  placeholder="적정 재고를 입력하세요."
+                  placeholder={t('placeholders.maxStock')}
                   onFocus={() => {
                     setIsMaxStockEditing(true);
                     if (
@@ -618,7 +621,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
             });
             return (
               <InfoLabelValue
-                label="재고 상태"
+                label={t('labels.stockStatus')}
                 chip={status ? { status } : undefined}
                 value={status ? '' : '-'}
                 isEditing={false}
@@ -655,7 +658,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
               const displayValue = isExpiryDaysEditing
                 ? formatNumber(field.value ?? '')
                 : field.value && field.value !== '-'
-                  ? `${formatNumber(field.value)}일`
+                  ? `${formatNumber(field.value)}${tCommon('days')}`
                   : (field.value ?? '-');
 
               // 읽기 모드이고 수정되지 않았을 때만 chip 표시
@@ -664,12 +667,12 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
 
               return (
                 <InfoLabelValue
-                  label="유통기한"
+                  label={tCommon('expirationDate')}
                   chip={shouldShowChip ? { status: expiryStatus } : undefined}
                   value={displayValue}
                   handleChange={handleChangeExpiryDays}
                   isEditing={!isViewer && hasSubscription()}
-                  placeholder="유통기한 위험일을 입력하세요."
+                  placeholder={t('placeholders.expiryDays')}
                   onFocus={() => setIsExpiryDaysEditing(true)}
                   onBlur={() => setIsExpiryDaysEditing(false)}
                 />
@@ -683,11 +686,11 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
             control={control}
             render={({ field }) => (
               <InfoLabelValue
-                label="특이사항"
+                label={tCommon('note')}
                 value={field.value ?? '-'}
                 handleChange={field.onChange}
                 isEditing={!isViewer && hasSubscription()}
-                placeholder="특이사항을 입력하세요."
+                placeholder="-"
                 textarea={true}
                 onChange={(e) => {
                   field.onChange(e);

@@ -6,6 +6,7 @@ import useSubscriptionStore from '@/store/subscription-store';
 import { MaterialResponseModel } from '@/types/data-model';
 import { RoundChip, Checkbox } from '@/ui';
 import { removeTrailingZeros } from '@/utils';
+import { useTranslations } from 'next-intl';
 
 interface TableItemProps {
   material: MaterialResponseModel;
@@ -20,6 +21,8 @@ const TableItem = ({
   checked,
   onToggle,
 }: TableItemProps) => {
+  const t = useTranslations('stock.material');
+  const tCommon = useTranslations('common');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
@@ -36,6 +39,24 @@ const TableItem = ({
     expiry_status: expiryStatus,
   } = material;
   const colors = status ? InventoryStatusColorMap[status] : null;
+
+  // 상태 번역 함수
+  const getStatusText = (status: string) => {
+    const statusMap: Record<string, string> = {
+      과재고: tCommon('inventoryStatus.overstock'),
+      충분: tCommon('inventoryStatus.sufficient'),
+      위험: tCommon('inventoryStatus.risk'),
+      부족: tCommon('inventoryStatus.shortage'),
+    };
+    return statusMap[status] || status;
+  };
+
+  // 유통기한 상태 번역 함수
+  const getExpiryStatusText = (status: string) => {
+    if (status === '위험') return t('expiryStatus.risk');
+    if (status === '양호') return t('expiryStatus.safe');
+    return status;
+  };
 
   return (
     <>
@@ -74,7 +95,7 @@ const TableItem = ({
           {status && colors ? (
             <div className="px-2">
               <RoundChip
-                text={status}
+                text={getStatusText(status)}
                 variant="sm"
                 color={colors.color ?? 'gray'}
               />
@@ -87,7 +108,7 @@ const TableItem = ({
           {expiryStatus ? (
             <div className="px-2">
               <RoundChip
-                text={expiryStatus}
+                text={getExpiryStatusText(expiryStatus)}
                 variant="sm"
                 color={expiryStatus === '위험' ? 'red' : 'secondary'}
               />

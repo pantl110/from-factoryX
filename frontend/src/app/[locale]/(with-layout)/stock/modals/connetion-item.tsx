@@ -1,6 +1,7 @@
 import { Minus, Plus, X } from '@phosphor-icons/react';
 import { useState, useRef, useEffect } from 'react';
 import { handleQuantityInput } from '@/utils/format-number';
+import { useTranslations } from 'next-intl';
 
 interface ConnetionItemProps {
   name: string;
@@ -17,6 +18,7 @@ const ConnetionItem = ({
   onDelete,
   onQuantityChange,
 }: ConnetionItemProps) => {
+  const tCommon = useTranslations('common');
   const [displayQuantity, setDisplayQuantity] = useState(quantity.toString());
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -120,7 +122,7 @@ const ConnetionItem = ({
       <p className="Me_body-1 text-dg">{name}</p>
       {/* 오른쪽 */}
       <div className="flex items-center gap-2.5">
-        <p className="Re_body-2 text-gr">사용 수량</p>
+        <p className="Re_body-2 text-gr">{tCommon('usageQuantity')}</p>
         <div className="flex items-center gap-1">
           <button
             className="Me_body-1 text-dg w-8 h-8 flex justify-center items-center rounded-full border border-lg hover:bg-bg disabled:opacity-50 disabled:cursor-not-allowed"

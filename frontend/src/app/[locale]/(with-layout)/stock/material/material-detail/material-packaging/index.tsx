@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import { useGetMaterialRepackagings } from '@/hooks';
@@ -21,6 +22,8 @@ export const MaterialPackaging = ({
   handleOpenDeleteModal,
   expiryWarningDays,
 }: MaterialPackagingProps) => {
+  const t = useTranslations('stock.material.packaging');
+  const tCommon = useTranslations('common');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
@@ -67,9 +70,13 @@ export const MaterialPackaging = ({
   return (
     <div className="flex flex-col gap-3">
       <div className="h-10 flex items-center justify-between relative">
-        <h3 className="Heading-3 text-dg">원자재 소분 내역</h3>
+        <h3 className="Heading-3 text-dg">{t('title')}</h3>
         <MiniBtn
-          text={orderBy === 'expiration_date' ? '임박 순' : '입고 순'}
+          text={
+            orderBy === 'expiration_date'
+              ? t('orderBy.expirationDate')
+              : t('orderBy.lotNumber')
+          }
           variant="whiteOutline"
           icon={CaretDown}
           iconSize={16}
@@ -103,13 +110,19 @@ export const MaterialPackaging = ({
           <>
             <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 cursor-default">
               {/* <p className="flex-[0.8] px-3 text-sv">상태</p> */}
-              <p className="flex-[1.5] px-3 text-sv">부모 LOT 번호</p>
-              <p className="flex-[1.5] px-3 text-sv">소분 LOT 번호</p>
-              <p className="flex-1 px-3 text-sv">수량</p>
-              <p className="flex-1 px-3 text-sv">창고 위치</p>
-              <p className="flex-1 px-3 text-sv">유통기한</p>
+              <p className="flex-[1.5] px-3 text-sv">
+                {t('tableHeader.masterLotNumber')}
+              </p>
+              <p className="flex-[1.5] px-3 text-sv">
+                {t('tableHeader.subLotNumber')}
+              </p>
+              <p className="flex-1 px-3 text-sv">{tCommon('quantity')}</p>
+              <p className="flex-1 px-3 text-sv">
+                {tCommon('warehouseLocation')}
+              </p>
+              <p className="flex-1 px-3 text-sv">{tCommon('expirationDate')}</p>
               {!isViewer && hasSubscription() && (
-                <p className="flex-1 px-3 text-sv">액션</p>
+                <p className="flex-1 px-3 text-sv">{tCommon('action')}</p>
               )}
             </div>
             {repackagings.map((repackaging) => (
@@ -133,8 +146,8 @@ export const MaterialPackaging = ({
           </>
         ) : (
           <NoHistoryBox
-            title="아직 소분된 원자재가 없어요."
-            text="대표 원자재를 소분하면 이곳에서 확인할 수 있어요."
+            title={t('empty.title')}
+            text={t('empty.description')}
           />
         )}
       </div>

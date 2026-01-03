@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import { ArrowLineUpRight, Trash } from '@phosphor-icons/react';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
@@ -22,6 +23,7 @@ export const SubMaterialItem = ({
   sourceMaterialId,
   handleOpenDeleteSubstituteModal,
 }: SubMaterialItemProps) => {
+  const tCommon = useTranslations('common');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
@@ -32,11 +34,41 @@ export const SubMaterialItem = ({
   const [isMaterialDetailPanelOpen, setIsMaterialDetailPanelOpen] =
     useState(false);
 
+  // 백엔드에서 받은 한글 상태를 번역 키로 매핑
+  const getStatusTranslationKey = (
+    status: string | null | undefined
+  ): string | null => {
+    if (!status) return null;
+
+    const statusMap: Record<string, string> = {
+      과재고: 'inventoryStatus.overstock',
+      충분: 'inventoryStatus.sufficient',
+      위험: 'inventoryStatus.risk',
+      부족: 'inventoryStatus.shortage',
+    };
+
+    return statusMap[status] || null;
+  };
+
   // 재고 상태 계산 함수
   const getStockStatus = (): {
     text: string;
     color: 'secondary' | 'red';
   } | null => {
+    // 백엔드에서 status를 받은 경우 우선 사용
+    if (material.status) {
+      const translationKey = getStatusTranslationKey(material.status);
+      if (translationKey) {
+        const isRedStatus =
+          material.status === '위험' || material.status === '부족';
+        return {
+          text: tCommon(translationKey),
+          color: isRedStatus ? ('red' as const) : ('secondary' as const),
+        };
+      }
+    }
+
+    // 백엔드에서 status가 없으면 기존 로직 사용
     const currentStock = material.current_stock ?? 0;
     const standardStock = material.standard_stock;
 
@@ -48,19 +80,19 @@ export const SubMaterialItem = ({
     // 현재 재고가 0이면 위험
     if (currentStock === 0) {
       return {
-        text: '위험',
+        text: tCommon('inventoryStatus.risk'),
         color: 'red' as const,
       };
     }
 
     if (currentStock >= standardStock) {
       return {
-        text: '충분',
+        text: tCommon('inventoryStatus.sufficient'),
         color: 'secondary' as const,
       };
     } else {
       return {
-        text: '부족',
+        text: tCommon('inventoryStatus.shortage'),
         color: 'red' as const,
       };
     }

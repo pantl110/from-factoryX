@@ -14,6 +14,7 @@ import { useMaterialReloadStore } from '@/store/material-reload-store';
 import { useGetMaterial, useCreateMaterialHistory } from '@/hooks';
 import { useForm } from 'react-hook-form';
 import useMemberStore from '@/store/member-store';
+import { useTranslations } from 'next-intl';
 
 interface MaterialEnrollmentProps {
   onClose: () => void;
@@ -33,6 +34,9 @@ const MaterialEnrollmentModal = ({
   clientId, // 추가: 상위에서 전달받는 거래처 ID
   showToast,
 }: MaterialEnrollmentProps) => {
+  const t = useTranslations('stock.material.modals.materialEnrollment');
+  const tCommon = useTranslations('common');
+  const tStock = useTranslations('stock');
   // 원자재 검색 드랍다운 관련
   const [input, setInput] = useState('');
   const [isOpen, setIsOpen] = useState(false);
@@ -126,7 +130,7 @@ const MaterialEnrollmentModal = ({
 
   const handleRegister = async () => {
     if (!factoryId) {
-      alert('공장 정보가 없습니다. 잠시 후 다시 시도해주세요.');
+      alert(t('errors.factoryNotFound'));
       return;
     }
 
@@ -147,7 +151,7 @@ const MaterialEnrollmentModal = ({
     if (result.success) {
       setIsSuccessModalOpen(true);
     } else {
-      alert(result.error || '원자재 이력 생성에 실패했습니다.');
+      alert(result.error || t('errors.createFailed'));
     }
   };
 
@@ -192,15 +196,9 @@ const MaterialEnrollmentModal = ({
 
   return (
     <Modal
-      title={
-        isSuccessModalOpen
-          ? '자재가 추가되었어요.'
-          : '이 거래처에서 구매한 원자재를 등록해주세요.'
-      }
+      title={isSuccessModalOpen ? t('title.success') : t('title.default')}
       subtitle={
-        isSuccessModalOpen
-          ? '추가된 자재는 목록에서 바로 확인할 수 있어요.'
-          : '입력한 거래처로부터 실제로 구매한 원자재 정보를 입력해 주세요.'
+        isSuccessModalOpen ? t('subtitle.success') : t('subtitle.default')
       }
       onClose={isSuccessModalOpen ? handleSuccessClose : onClose}
       width="w-[520px]"
@@ -210,7 +208,7 @@ const MaterialEnrollmentModal = ({
           <div className="flex justify-end h-12 gap-2.5 mt-4 items-center">
             <div className="flex-1 relative">
               <SearchInput
-                placeholder="원자재를 입력해 검색하세요."
+                placeholder={t('searchPlaceholder')}
                 width="w-full"
                 value={input}
                 onChange={(value) => {
@@ -246,7 +244,7 @@ const MaterialEnrollmentModal = ({
               )}
             </div>
             <MiniBtn
-              text="직접 추가하기"
+              text={tStock('manualAddButton')}
               textColor="text-dg"
               borderColor="border-lg"
               height="h-12"
@@ -316,11 +314,17 @@ const MaterialEnrollmentModal = ({
             {selectedMaterials.length > 0 && (
               <div className="mt-4 flex flex-col">
                 <div className="flex items-center h-12 border-t border-b border-[#eeeeee] Me_Body-1">
-                  <p className="flex-1 px-3 text-sv">자재명</p>
-                  <p className="w-[80px] px-3 text-sv">단위</p>
-                  <p className="flex-1 text-sv px-3">수량</p>
-                  <p className="w-[100px] text-sv px-3">단가</p>
-                  <p className="flex-1 text-sv px-3">금액</p>
+                  <p className="flex-1 px-3 text-sv">{t('tableHeader.name')}</p>
+                  <p className="w-[80px] px-3 text-sv">{tCommon('unit')}</p>
+                  <p className="w-[100px] text-sv px-3">
+                    {tCommon('quantity')}
+                  </p>
+                  <p className="w-[100px] text-sv px-3">
+                    {tCommon('unitPrice')}
+                  </p>
+                  <p className="flex-1 text-sv px-3">
+                    {t('tableHeader.total')}
+                  </p>
                   <div className="w-[40px]"></div>
                 </div>
                 <div className="flex flex-col">
@@ -342,7 +346,7 @@ const MaterialEnrollmentModal = ({
                         {mat.unit ?? '-'}
                       </p>
                       <div
-                        className="flex-1 px-3 min-w-0 truncate"
+                        className="w-[100px] px-3 min-w-0 truncate"
                         title={`${mat.quantity}`}
                       >
                         <input
@@ -389,7 +393,7 @@ const MaterialEnrollmentModal = ({
                               e.target.value = parseInt(value).toLocaleString();
                             }
                           }}
-                          placeholder="(필수)"
+                          placeholder={tCommon('required')}
                         />
                       </div>
                       <div
@@ -427,7 +431,7 @@ const MaterialEnrollmentModal = ({
                               e.target.value = parseInt(value).toLocaleString();
                             }
                           }}
-                          placeholder="(필수)"
+                          placeholder={tCommon('required')}
                         />
                       </div>
                       <p
@@ -474,14 +478,14 @@ const MaterialEnrollmentModal = ({
       <div className="flex h-10 gap-2.5 justify-end mt-4">
         {!isSuccessModalOpen && (
           <MiniBtn
-            text="취소"
+            text={tCommon('cancel')}
             onClick={onClose}
             variant="white"
             type="button"
           />
         )}
         <MiniBtn
-          text={isSuccessModalOpen ? '확인' : '추가하기'}
+          text={isSuccessModalOpen ? tCommon('confirm') : tCommon('add')}
           variant="primary"
           disabled={
             isSuccessModalOpen
