@@ -2,7 +2,7 @@ import { CaretRight } from '@phosphor-icons/react';
 // import SalesStatus from './sales-status';
 import TodoListItem from './todo-list-item';
 import MoBtn from '@/ui/mo-btn';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { MobileDashboardCountsResponseModel } from '@/types/data-model';
 
 interface TodoListProps {

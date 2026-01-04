@@ -1,7 +1,7 @@
 import FactoryXLogo from '@/ui/icons/factory-x-logo';
 import IconBtn from '@/ui/icon-btn';
 import { Bell } from '@phosphor-icons/react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 
 const TopBar = () => {
   const router = useRouter();

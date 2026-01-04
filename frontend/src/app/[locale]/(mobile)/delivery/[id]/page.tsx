@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import DeliveryInfo from '../../delivery-info';
 import Topbar from '../../topbar';
 import ProjectInfo from './project-info';
@@ -9,7 +10,6 @@ import { useGetProjectStatus, useGetQuotationProductDetail } from '@/hooks';
 import { ProjectStatusResponseModel } from '@/types/data-model';
 import Scan from './scan';
 import { MoBottomNavigation } from '@/ui';
-import { useRouter } from 'next/navigation';
 
 const DeliveryPage = () => {
   const params = useParams<{ id: string }>();

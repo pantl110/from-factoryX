@@ -7,6 +7,7 @@ import { SignupFormDataModel } from '@/types/data-model';
 import { validateEmail } from '@/utils/validation';
 import { useEmailVerification } from '@/hooks/users/use-email-verification';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface EmailStepProps {
   register: UseFormRegister<SignupFormDataModel>;
@@ -43,6 +44,7 @@ const EmailStep = ({
   const { sendVerificationCode, verifyCode, isSending, isChecking } =
     useEmailVerification();
   const [verificationError, setVerificationError] = useState<string>('');
+  const t = useTranslations('signup.emailStep');
 
   const handleSendVerificationCode = async () => {
     if (!watchedValues.email || errors.email) return;
@@ -57,7 +59,7 @@ const EmailStep = ({
       // 이메일 중복 또는 기타 오류 처리
       setError('email', {
         type: 'manual',
-        message: result.message || '이메일 인증 코드 발송에 실패했습니다.',
+        message: result.message || t('errors.sendFailed'),
       });
       return;
     }
@@ -73,9 +75,7 @@ const EmailStep = ({
 
     // 시간이 만료된 경우 우선적으로 만료 메시지 표시
     if (verification.timeLeft <= 0) {
-      setVerificationError(
-        '인증 시간이 만료되었습니다. 다시 인증을 요청해 주세요.'
-      );
+      setVerificationError(t('errors.verificationExpired'));
       return;
     }
 
@@ -98,14 +98,20 @@ const EmailStep = ({
       <div className="flex flex-col">
         <Input
           type="email"
-          placeholder="이메일을 입력해주세요."
-          label="이메일"
+          placeholder={t('email.placeholder')}
+          label={t('email.label')}
           disabled={verification.isVerificationSent}
           {...register('email', {
-            required: '이메일을 입력해주세요.',
+            required: t('email.required'),
             validate: (value) => {
-              const error = validateEmail(value);
-              return error || true; // error 시 // 이메일을 입력해주세요. // "이메일 형식이 올바르지 않습니다."
+              const error = validateEmail(value, (key: string) => {
+                // login.email.* 키를 signup.emailStep.email.*로 변환
+                if (key === 'login.email.required') return t('email.required');
+                if (key === 'login.email.invalidFormat')
+                  return t('email.invalidFormat');
+                return t(key);
+              });
+              return error || true; // error 시 t('email.required') 또는 t('email.invalidFormat')
             },
           })}
         />
@@ -119,8 +125,8 @@ const EmailStep = ({
         <div className="flex flex-col">
           <Input
             type="number"
-            placeholder="이메일로 전송된 6자리 인증 코드를 입력해주세요."
-            label="인증 코드"
+            placeholder={t('verificationCode.placeholder')}
+            label={t('verificationCode.label')}
             value={verificationCode}
             onChange={(e) => {
               setVerificationCode(e.target.value.slice(0, 6));
@@ -149,14 +155,18 @@ const EmailStep = ({
               }`}
               disabled={verification.timeLeft > 0}
             >
-              재전송
+              {t('buttons.resend')}
             </button>
           </div>
         </div>
       )}
       <MiniBtn
         width="w-full"
-        text={verification.isVerificationSent ? '인증 완료' : '이메일 인증'}
+        text={
+          verification.isVerificationSent
+            ? t('buttons.complete')
+            : t('buttons.sendVerification')
+        }
         bgColor="bg-primary"
         textColor="text-wh"
         hoverColor="hover:bg-primary-hover"

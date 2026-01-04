@@ -1,6 +1,6 @@
 import MoBtn from '@/ui/mo-btn';
 import { CaretRight } from '@phosphor-icons/react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 
 const SalesStatus = () => {
   const router = useRouter();

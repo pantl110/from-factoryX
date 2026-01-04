@@ -2,7 +2,7 @@
 
 import MiniBtn from '@/ui/mini-btn';
 import { ArrowRight } from '@phosphor-icons/react/dist/ssr';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import Tooltip from '@/ui/tooltip';
 import { useEffect, useState } from 'react';
 import useMemberStore from '@/store/member-store';

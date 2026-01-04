@@ -4,6 +4,7 @@
     "save": "Save",
     "cancel": "Cancel",
     "next": "Next",
+    "previous": "Previous",
     "delete": "Delete",
     "deleteAll": "Delete All",
     "deleteItems": "Delete {count} items",
@@ -42,6 +43,7 @@
     "materialCode": "Material Code",
     "placeholders": {
       "materialName": "Enter material name.",
+      "materialCode": "Enter material code.",
       "productName": "Enter product name.",
       "productCode": "Enter product code.",
       "specification": "Enter specification.",
@@ -579,22 +581,6 @@
     },
     "document": "Documents",
     "setting": "Settings"
-  },
-  "login": {
-    "title": "Login",
-    "email": {
-      "placeholder": "Please enter your email.",
-      "required": "Please enter your email.",
-      "invalidFormat": "Invalid email format."
-    },
-    "password": {
-      "label": "Password",
-      "placeholder": "Please enter your password.",
-      "required": "Please enter your password."
-    },
-    "button": "Login",
-    "signup": "Sign Up",
-    "findPassword": "Find Password"
   },
   "dashboard": {
     "mainTitle": "Factory X Dashboard",

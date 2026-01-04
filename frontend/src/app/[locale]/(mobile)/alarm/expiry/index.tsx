@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { CalendarDots, CaretRight } from '@phosphor-icons/react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import Title from '../title';
 import AlarmItem from '../alarm-item';
 import { MoBtn, NoHistoryBox } from '@/ui';

@@ -4,6 +4,7 @@ import MiniBtn from '@/ui/mini-btn';
 import useMemberStore from '@/store/member-store';
 import useAuthStore from '@/store/auth-store';
 import { useGetFactoryList, useCreateFactory, useGetMember } from '@/hooks';
+import { useTranslations } from 'next-intl';
 
 interface WelcomeProps {
   onNextStep: () => void;
@@ -11,6 +12,9 @@ interface WelcomeProps {
 }
 
 const Welcome = ({ onNextStep, onPrevStep }: WelcomeProps) => {
+  const t = useTranslations('onboarding.welcome');
+  const tCommon = useTranslations('common');
+  const tFirstStep = useTranslations('onboarding.firstStep');
   const { createFactory, isLoading } = useCreateFactory();
   const { getFactoryList } = useGetFactoryList();
   const { userInfo, setUserInfo } = useAuthStore();
@@ -82,30 +86,31 @@ const Welcome = ({ onNextStep, onPrevStep }: WelcomeProps) => {
           onNextStep();
         } else {
           // 공장 생성 실패 시 에러 처리
-          alert('공장 생성에 실패했습니다. 다시 시도해주세요.');
+          alert(t('errors.factoryCreateFailed'));
         }
       }
     } catch {
-      alert('공장 확인/생성 중 오류가 발생했습니다. 다시 시도해주세요.');
+      alert(t('errors.factoryCheckError'));
     }
   };
 
   return (
     <div className="bg-wh z-1 w-[600px] py-10 px-8 flex flex-col items-center rounded-lg">
-      <h3 className="Heading-3 text-primary mb-1">
-        이제 공장을 본격적으로 운영해볼까요?
-      </h3>
-      <p className="Me_Body-2 text-center">
-        운영을 시작하려면, 먼저 제품과 설비를 등록해야 해요. <br />
-        등록이 완료되면, 생산부터 재고까지 한눈에 관리할 수 있어요!
+      <h3 className="Heading-3 text-primary mb-1">{t('title')}</h3>
+      <p className="Me_Body-2 text-center whitespace-pre-line">
+        {t('description')}
       </p>
       <div className="p-7">
         <Image src={onboardingImage} alt="onboarding" />
       </div>
       <div className="w-full flex justify-end gap-2.5">
-        <MiniBtn text="이전" variant="white" onClick={onPrevStep} />
         <MiniBtn
-          text="다음"
+          text={tFirstStep('buttons.previous')}
+          variant="white"
+          onClick={onPrevStep}
+        />
+        <MiniBtn
+          text={tCommon('next')}
           variant="primary"
           onClick={handleFactoryOwnerStart}
           disabled={isLoading}

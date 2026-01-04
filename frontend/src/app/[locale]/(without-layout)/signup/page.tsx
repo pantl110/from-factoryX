@@ -1,6 +1,6 @@
 'use client';
 
-import Link from 'next/link';
+import { Link, useRouter } from '@/i18n/navigation';
 import { useForm } from 'react-hook-form';
 import { useVerification } from '@/hooks/users/use-verification';
 import { useSignup } from '@/hooks/users/use-signup';
@@ -10,11 +10,12 @@ import { useState } from 'react';
 import AgreeArea from './agree-area';
 import PasswordStep from './password-step';
 import EmailStep from './email-step';
-import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 const SignupPage = () => {
   const router = useRouter();
   const [verificationCode, setVerificationCode] = useState('');
+  const t = useTranslations('signup');
 
   const {
     register,
@@ -74,18 +75,20 @@ const SignupPage = () => {
   return (
     <>
       <div className="flex min-h-screen">
-        <div className="flex-1 flex flex-col items-center justify-center bg-primary">
+        <div className="flex-[0.8] bg-primary flex flex-col items-center justify-center">
           <FactoryXLogo width={168.908} height={30.558} color="white" />
         </div>
-        <div className="flex flex-col flex-1 gap-5 items-center justify-center w-full">
+        <div className="flex flex-col flex-[1.2] gap-5 items-center justify-center w-full">
           <div className="flex flex-col items-center">
-            <h2 className="Heading-2">회원가입</h2>
+            <h2 className="Heading-2">{t('title')}</h2>
             {verification.isVerificationSent &&
               !verification.isVerificationComplete && (
-                <p className="text-sv Me_Body-1">이메일 인증</p>
+                <p className="text-sv Me_Body-1">
+                  {t('steps.emailVerification')}
+                </p>
               )}
             {verification.isVerificationComplete && (
-              <p className="text-sv Me_Body-1">비밀번호 설정</p>
+              <p className="text-sv Me_Body-1">{t('steps.passwordSetup')}</p>
             )}
           </div>
           <form
@@ -130,8 +133,8 @@ const SignupPage = () => {
 
             {/* 로그인 비밀번호 찾기 */}
             <div className="flex justify-center items-center Me-Body-1 text-sv gap-5 mt-5">
-              <Link href="/login">로그인</Link>
-              <Link href="/findpassword">비밀번호 찾기</Link>
+              <Link href="/login">{t('links.login')}</Link>
+              <Link href="/findpassword">{t('links.findPassword')}</Link>
             </div>
           </form>
         </div>

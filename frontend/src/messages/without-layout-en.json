@@ -1,0 +1,639 @@
+{
+  "login": {
+    "title": "Login",
+    "email": {
+      "placeholder": "Please enter your email.",
+      "required": "Please enter your email.",
+      "invalidFormat": "Invalid email format."
+    },
+    "password": {
+      "label": "Password",
+      "placeholder": "Please enter your password.",
+      "required": "Please enter your password."
+    },
+    "button": "Login",
+    "signup": "Sign Up",
+    "findPassword": "Find Password"
+  },
+  "findPassword": {
+    "email": {
+      "label": "Email",
+      "placeholder": "Please enter your email.",
+      "required": "Please enter your email."
+    },
+    "verificationCode": {
+      "label": "Verification Code",
+      "placeholder": "Please enter the 6-digit verification code."
+    },
+    "title": {
+      "resetPassword": "Reset Password"
+    },
+    "subtitle": {
+      "emailVerification": "Email Verification",
+      "setPassword": "Set Password"
+    },
+    "password": {
+      "newPassword": {
+        "label": "New Password",
+        "placeholder": "Please enter your new password.",
+        "required": "Please enter your new password."
+      },
+      "confirmPassword": {
+        "label": "Confirm New Password",
+        "placeholder": "Please enter your new password again.",
+        "required": "Please confirm your new password."
+      },
+      "errors": {
+        "passwordMismatch": "Passwords do not match."
+      },
+      "buttons": {
+        "changePassword": "Change Password"
+      }
+    },
+    "errors": {
+      "verificationExpired": "Verification time has expired."
+    },
+    "buttons": {
+      "sendVerification": "Verify Email",
+      "complete": "Complete Verification",
+      "resend": "Resend"
+    }
+  },
+  "onboarding": {
+    "choosingRole": {
+      "title": "How would you like to start?",
+      "subtitle": "Register your factory or join an invited factory to get started!",
+      "owner": {
+        "title": "Start as Factory Owner",
+        "description": "Register and operate your own factory."
+      },
+      "employee": {
+        "title": "Start as Employee",
+        "description": "If you've been invited to a factory, you'll be automatically connected."
+      }
+    },
+    "firstStep": {
+      "title": "Please enter the product information to register.",
+      "spec": {
+        "placeholder": "EX) 100x300mmc"
+      },
+      "unit": {
+        "placeholder": "EX) EA"
+      },
+      "errors": {
+        "productListLoadFailed": "Failed to load product list: ",
+        "productCreateFailed": "Failed to create product: ",
+        "productUpdateFailed": "Failed to update product: ",
+        "productCreateError": "An error occurred while creating the product."
+      },
+      "buttons": {
+        "previous": "Previous"
+      }
+    },
+    "secondStep": {
+      "title": "Please add the materials needed to make this product.",
+      "validation": {
+        "materialNameRequired": "Please enter the material name.",
+        "materialCodeRequired": "Please enter the material code.",
+        "specRequired": "Please enter the specification.",
+        "unitRequired": "Please enter the unit.",
+        "usageQuantityRequired": "Please enter the usage quantity.",
+        "usageQuantityPositive": "Usage quantity must be a positive number.",
+        "usageQuantityDecimal": "Only one decimal place is allowed."
+      },
+      "errors": {
+        "productNotFound": "Product information not found. Please go back and register the product again.",
+        "assignFailed": "Failed to create and link materials: ",
+        "assignError": "An error occurred while creating and linking materials."
+      },
+      "toast": {
+        "duplicateCode": "This material code already exists.",
+        "duplicateCodeSubtext": "Please modify it to a different material code."
+      },
+      "placeholders": {
+        "spec": "EX) 100x300mm",
+        "unit": "EX) EA",
+        "usageQuantity": "EX) 1,000"
+      }
+    },
+    "welcome": {
+      "title": "Ready to start operating your factory?",
+      "description": "To get started, you need to register products and equipment first.\nOnce registration is complete, you can manage everything from production to inventory at a glance!",
+      "errors": {
+        "factoryCreateFailed": "Failed to create factory.",
+        "factoryCheckError": "An error occurred while checking/creating the factory."
+      }
+    },
+    "thirdStep": {
+      "title": "Welcome to Factory X!",
+      "description": {
+        "part1": "Now you can easily manage everything from production to inventory all in one place.",
+        "part2": "",
+        "part3": "Start operating your factory right away!",
+        "part4": "By",
+        "highlight": "pre-registering products and materials",
+        "part5": "you're already using,",
+        "part6": "you can use Factory X more efficiently."
+      },
+      "buttons": {
+        "start": "Start"
+      }
+    }
+  },
+  "signup": {
+    "termsOfService": {
+      "title": "Terms of Service",
+      "header": {
+        "announcementDate": "Announcement Date",
+        "announcementDateValue": "[2025-11-04]",
+        "effectiveDate": "Effective Date",
+        "effectiveDateValue": "[2025-11-11] (7 days after announcement)",
+        "documentVersion": "Document Version",
+        "documentVersionValue": "v1.1 (B2C/B2B Compatible·Global·Data Value·B2G Included)"
+      },
+      "article1": {
+        "title": "Article 1 (Purpose)",
+        "paragraph1": "These terms and conditions (the \"Terms\") govern the use of <strong>FactoryX</strong> and related services (web/mobile/API/agent/plugin, hereinafter \"Services\") provided by <strong>Amplab Inc.</strong> (hereinafter \"Company\") and establish the rights, obligations, responsibilities, personal information and data processing, fees and refunds, and dispute resolution between the Company and <strong>Users</strong> (individuals/sole proprietors/corporations/public institutions)."
+      },
+      "article2": {
+        "title": "Article 2 (Definitions)",
+        "item1": "\"User\" means any person (individual/sole proprietor/corporation/public institution) who accesses the Services and receives service provision in accordance with these Terms.",
+        "item2": "\"Administrator/Member\" refers to roles with permissions within corporate/institutional accounts.",
+        "item3": "\"Customer Data\" means all information (including personal/credit/business information) and processing results uploaded/created/linked by Users to the Services.",
+        "item4": "\"Sub-processor\" means subcontractors entrusted by the Company (cloud/IaaS, transmission/notification, model providers, etc.).",
+        "item5": "\"AI Services\" includes all generative/analytical AI, automation, OCR/STT/vision, etc.",
+        "item6": "\"Data Value Program\" (rewards/credits/coins, etc.) refers to a benefit system that may be provided as compensation for providing anonymized/pseudonymized statistics/insights.",
+        "item7": "\"B2G\" means transactions/provision with public/government/public corporations, etc.",
+        "item8": "\"Free Trial\" is a form where functions can be used free of charge for a certain period.",
+        "item9": "\"Workspace\" is an organizational unit space (including projects, documents, logs, payments, permissions).",
+        "item10": "\"API Service\" means programmatic access through the Company's OpenAPI."
+      },
+      "article3": {
+        "title": "Article 3 (Effectiveness·Amendment·Notice)",
+        "item1": "These Terms become effective when Users agree to the terms on the web/app and membership is approved.",
+        "item2": "The Company posts the Terms on the service initial screen and policy center.",
+        "item3": "When amending, the Company shall notify <strong>7 days in advance</strong> specifying the effective date and reason for amendment, and notify <strong>30 days in advance</strong> for changes unfavorable to Users.",
+        "item4": "If there is no explicit rejection until the effective date after notice, it is deemed agreed. Users may terminate if they do not agree."
+      },
+      "article4": {
+        "title": "Article 4 (Individual Terms·Policies)",
+        "item1": "Privacy Policy, Security Policy, API Terms, Sub-processor Disclosure List, Service Level Policy (SLA, paid only), Data Value Program Policy, Marketing Reception Policy, etc. apply.",
+        "item2": "In case of conflict, <strong>individual terms/written contracts</strong> take precedence over these Terms."
+      },
+      "article5": {
+        "title": "Article 5 (Registration·Qualification·Account Security)",
+        "item1": "Registration is done through procedures determined by the Company (email/social/mobile/two-factor authentication, etc.).",
+        "item2": "Minors require consent from legal representatives.",
+        "item3": "Users are responsible for managing accounts and passwords, and sharing with third parties is prohibited (account sharing is prohibited even within the same corporation)."
+      },
+      "article6": {
+        "title": "Article 6 (Service Content)",
+        "item1Part1": "Provides functions for ",
+        "item1Strong": "automatic collection (camera/CCTV/sensors/smartwatch/OCR/STT, etc.) → standardization → AI analysis → profitability-centered management decision support",
+        "item1Part2": " of factory field data.",
+        "item2": "Modular MES/ERP architecture allows selection and combination of necessary functions only, and is used on PC/tablet/mobile based on cloud.",
+        "item3": "May include API, third-party integration, agents/plugins, dashboards, documents/electronic tax invoices/settlement, logs/audit records, etc."
+      },
+      "article7": {
+        "title": "Article 7 (Free Trial·Beta)",
+        "item1": "Free trials and beta services may be provided/discontinued at the Company's discretion, and data transfer/preservation/availability are not guaranteed.",
+        "item2Part1": "Beta features may have frequent errors/changes and are not subject to ",
+        "item2Strong": "SLA·compensation",
+        "item2Part2": "."
+      },
+      "article8": {
+        "title": "Article 8 (Fees·Payment·Refund)",
+        "item1": "Pricing plans (monthly/annual, user/usage-based), API points, additional storage capacity, etc., pricing/payment methods/taxes/auto-renewal follow the <strong>Pricing Policy</strong>.",
+        "item2": "Withdrawal/refund follows relevant laws and the <strong>Refund Policy</strong> (including separate regulations for regular payments/annual discounts/API points).",
+        "item3": "In case of non-payment, suspension/termination/data deletion may occur after retry attempts (after notice).",
+        "item4": "B2G/Enterprise takes precedence with <strong>separate contract conditions</strong>."
+      },
+      "article9": {
+        "title": "Article 9 (Data Storage·Security·Availability)",
+        "item1": "Customer Data is stored in cloud infrastructure, and <strong>Region</strong> follows policy/contract.",
+        "item2": "The Company applies industry-standard technical and administrative protective measures and discloses/updates the <strong>Sub-processor List</strong>.",
+        "item3": "Availability is specified in SLA for paid users only, including <strong>monthly availability targets (e.g., 99.9%)</strong> and credit compensation criteria.",
+        "item4": "May be suspended for unavoidable reasons such as regular maintenance/failures/force majeure, with prior/subsequent notice."
+      },
+      "article10": {
+        "title": "Article 10 (Personal Information and Credit/Business Information Protection)",
+        "item1": "Complies with relevant laws (PIPA, Credit Information Act, etc.) and the <strong>Privacy Policy</strong>.",
+        "item2": "Users must ensure legal authority and notice when entering third-party personal information.",
+        "item3": "Exercise of data subject rights (access/correction/deletion/processing suspension/reception refusal, etc.) follows the policy."
+      },
+      "article11": {
+        "title": "Article 11 (Data Processing·AI Learning·Logs)",
+        "item1": "The Company may process Customer Data within the scope of purposes: <strong>provision·maintenance·improvement·security·customer support·billing/settlement·new feature development·statistics/research</strong>.",
+        "item2": "<strong>AI model training</strong> uses only <strong>anonymized/pseudonymized processed data</strong> and ensures that <strong>individuals or specific companies cannot be identified</strong>.",
+        "item3": "When Users explicitly permit (feedback button, opt-in program, etc.), sampled inputs/outputs may be reviewed limited to model improvement.",
+        "item4": "Access and processing history are stored as <strong>audit logs</strong> (retention period follows policy/contract)."
+      },
+      "article12": {
+        "title": "Article 12 (Data Value Program·Data Transactions)",
+        "item1": "The Company may operate a <strong>Data Value Program</strong>, and participation proceeds after separate notice and consent (compensation: credits/coins/in-kind, etc.).",
+        "item2": "B2B/B2G insights/report provision is performed only with <strong>anonymized/pseudonymized processing</strong>. <strong>Raw data provision is原则上 prohibited</strong>, and exceptions require contract/consent/legal basis as requirements.",
+        "item3": "Tax and accounting processing responsibility for rewards follows the policy."
+      },
+      "article13": {
+        "title": "Article 13 (AI Service Fair Use·Output Caution)",
+        "item1": "<strong>Fair Use Policy</strong>: Temporary restriction/blocking/pricing plan upgrade requests are possible for excessive calls/automation abuse/system load, and permanent restriction may be applied for repeated violations.",
+        "item2": "Users should be aware of non-uniqueness/hallucination possibilities of outputs, and <strong>important decisions require separate verification</strong>. The Company does not guarantee accuracy/suitability/infringement."
+      },
+      "article14": {
+        "title": "Article 14 (Prohibited Acts)",
+        "item1": "Prohibits violation of laws/terms, infringement of others' rights, reverse engineering/scraping/unauthorized crawling, account sharing/transfer, spam/malware distribution, abuse for building competing models/databases, unauthorized automated bulk processing, etc.",
+        "item2": "Violations may result in warnings/temporary suspension/termination/legal action."
+      },
+      "article15": {
+        "title": "Article 15 (Intellectual Property Rights·License·Feedback)",
+        "item1": "IP of Services and provided materials belongs to the Company.",
+        "item2": "Rights to Customer Data belong to Users, but <strong>use·pseudonymized/anonymized processing</strong> is permitted within the scope of these Terms and policies.",
+        "item3": "Suggestions/feedback provided by Users grant the Company a <strong>royalty-free worldwide license</strong>.",
+        "item4": "<strong>Reference Use</strong>: The Company may display User company names/logos as references, and will stop if Users refuse."
+      },
+      "article16": {
+        "title": "Article 16 (Third Party·API·Integration)",
+        "item1": "When integrating external services/hardware/open APIs, the terms/policies of the relevant suppliers must also be complied with.",
+        "item2": "The Company is not responsible for damages caused by third-party failures/changes (excluded for separate contracts).",
+        "item3": "API keys/secret keys are managed under User responsibility."
+      },
+      "article17": {
+        "title": "Article 17 (B2G Special Terms)",
+        "item1": "For B2G transactions, <strong>individual contracts</strong> take precedence regarding security levels, data storage/export, supervision/audit, availability, delivery/inspection, ordering party policies, etc.",
+        "item2": "Cooperates with <strong>security certification/physical control/data submission</strong> required by laws/policies."
+      },
+      "article18": {
+        "title": "Article 18 (Advertising Information Reception)",
+        "item1": "Users may agree to receive <strong>advertising information for profit purposes</strong> when agreeing to terms/privacy policy.",
+        "item2": "Reception refusal is possible at any time (no effect on messages sent before withdrawal)."
+      },
+      "article19": {
+        "title": "Article 19 (Contract Termination·Withdrawal·Data Preservation/Destruction)",
+        "item1": "Users may terminate/withdraw at any time.",
+        "item2": "Upon termination, <strong>destruction without delay</strong> except for preservation obligations under relevant laws/policies.",
+        "item3": "Enterprise/B2G applies data export/preservation/destruction regulations in contracts first."
+      },
+      "article20": {
+        "title": "Article 20 (Disclaimer of Warranty)",
+        "item1": "Services are provided \"as is.\" No implied warranty is made regarding suitability for specific purposes/non-infringement/uninterrupted availability, etc. (except for paid SLA specified scope).",
+        "item2": "Beta/free features are not subject to compensation."
+      },
+      "article21": {
+        "title": "Article 21 (Damages·Liability Limitation·Exemption)",
+        "item1": "Except for the Company's <strong>intent or gross negligence</strong>, the Company is not liable for indirect/special/consequential damages, lost profits, or data loss.",
+        "item2": "For paid users, the Company's total liability is limited to <strong>the limit of actual paid usage fees for the most recent 12 months</strong> (excluded for separate contracts).",
+        "item3": "Force majeure such as natural disasters/war/power outages/telecommunications carrier failures/cloud/IaaS failures are exempted.",
+        "item4": "If third-party disputes arise due to User violations/negligence, Users must exempt the Company and compensate for damages."
+      },
+      "article22": {
+        "title": "Article 22 (Dispute Resolution·Governing Law·Jurisdiction)",
+        "item1": "These Terms are governed by <strong>the laws of the Republic of Korea</strong>.",
+        "item2": "Disputes shall be subject to the exclusive jurisdiction of <strong>Seoul Central District Court</strong> as the court of first instance.",
+        "item3": "For disputes with overseas resident Users, <strong>KCAB International Arbitration</strong> may be selected by agreement of the parties (Seoul, arbitration rules, Korean or English)."
+      },
+      "article23": {
+        "title": "Article 23 (Export·Sanctions·Anti-Corruption)",
+        "item1": "Users must comply with relevant laws such as export controls/sanctions (e.g., U.S. EAR, OFAC) and anti-corruption (e.g., FCPA).",
+        "item2": "Provision/use to sanctioned/prohibited persons/countries is prohibited."
+      },
+      "article24": {
+        "title": "Article 24 (Language)",
+        "item1": "The Company's notices/notifications are in Korean. English translations may be provided for convenience, and <strong>in case of discrepancy, the Korean version takes precedence</strong>.",
+        "item2": "Overseas Users may choose Korean/English only for communication with the Company."
+      },
+      "supplementary": {
+        "title": "Supplementary Provisions",
+        "item1": "These Terms take effect 7 days after the announcement date.",
+        "item2": "Change history compared to previous versions is posted in the Policy Center."
+      }
+    },
+    "marketingInfo": {
+      "title": "Marketing Information Collection and Advertising Consent",
+      "section1": {
+        "title": "1. Purpose of Collection and Use",
+        "description": "The company may optionally use users' personal information for the following purposes.",
+        "item1": "Service-related news, new products/new features/events/promotions",
+        "item2": "Newsletters, webinars, industry trends, and reports",
+        "item3": "Personalized content and advertising delivery, and usage statistics analysis",
+        "note": "This is optional, and service use is not restricted even if you do not agree."
+      },
+      "section2": {
+        "title": "2. Items Collected and Used",
+        "item1": "Name, job title, company name",
+        "item2": "Email address, mobile phone number",
+        "item3": "Service usage records, access logs, cookies (for marketing analysis purposes only)"
+      },
+      "section3": {
+        "title": "3. Retention and Use Period",
+        "item1": "Retained and used for 2 years from the date of consent or until the user refuses to receive.",
+        "item2": "When refusing to receive or withdrawing consent, related information is immediately deleted and will not be sent thereafter."
+      },
+      "section4": {
+        "title": "4. How to Refuse Receipt",
+        "item1": "Click the \"Unsubscribe\" button at the bottom of the email",
+        "item2": "Or [My Page → Notification Settings → Refuse Marketing Information]",
+        "item3": "Or request via email (ceo@amplab.us)",
+        "note": "Even after refusing to receive, essential notices such as transaction/contract notices, payment/security/policy changes may still be sent."
+      },
+      "section5": {
+        "title": "5. No Third-Party Provision",
+        "description": "The company does not provide personal information to third parties for the purpose of sending advertising information without the user's prior consent."
+      },
+      "section6": {
+        "title": "6. Withdrawal of Consent",
+        "description": "Users can withdraw their consent at any time through the above contact information, and this does not affect the sending history before withdrawal."
+      }
+    },
+    "title": "Sign Up",
+    "steps": {
+      "emailVerification": "Email Verification",
+      "passwordSetup": "Password Setup"
+    },
+    "links": {
+      "login": "Login",
+      "findPassword": "Find Password"
+    },
+    "emailStep": {
+      "email": {
+        "label": "Email",
+        "placeholder": "Please enter your email.",
+        "required": "Please enter your email.",
+        "invalidFormat": "Invalid email format."
+      },
+      "verificationCode": {
+        "label": "Verification Code",
+        "placeholder": "Please enter the 6-digit verification code sent to your email."
+      },
+      "errors": {
+        "verificationExpired": "Verification time has expired. Please request verification again.",
+        "sendFailed": "Failed to send email verification code."
+      },
+      "buttons": {
+        "resend": "Resend",
+        "complete": "Complete Verification",
+        "sendVerification": "Verify Email"
+      }
+    },
+    "agreeArea": {
+      "agreeAll": "Agree to All",
+      "termsOfService": {
+        "label": "Terms of Service (Required)",
+        "viewButton": "View Policy"
+      },
+      "privacyPolicy": {
+        "label": "Privacy Policy (Required)",
+        "viewButton": "View Policy"
+      },
+      "marketingAgreement": {
+        "label": "Marketing Consent (Optional)",
+        "viewButton": "View Policy"
+      }
+    },
+    "privacyPolicy": {
+      "title": "Privacy Policy",
+      "header": {
+        "effectiveDate": "Effective Date",
+        "effectiveDateValue": "2025-11-20",
+        "firstPublishedDate": "First Published Date",
+        "firstPublishedDateValue": "[2025-11-12]",
+        "documentVersion": "Document Version",
+        "documentVersionValue": "v1.0 (KOR / ENG bilingual)",
+        "companyName": "Company Name",
+        "companyNameValue": "Amplab Inc.",
+        "businessRegistrationNumber": "Business Registration Number",
+        "businessRegistrationNumberValue": "825-86-03341",
+        "address": "Address",
+        "addressValue": "[Sejong Special Self-Governing City, Dajeongjungang-ro 20, Room 112]",
+        "contact": "Contact",
+        "contactValue": "0502-6823-5354",
+        "email": "Email",
+        "emailValue": "ceo@amplab.us",
+        "privacyOfficer": "Privacy Officer",
+        "privacyOfficerValue": "Jinyoung Kim (Chief Data Officer, CDO)"
+      },
+      "article1": {
+        "title": "Article 1 (General Provisions and Scope of Application)",
+        "paragraph1": "This Privacy Policy applies to",
+        "factoryX": "FactoryX",
+        "paragraph1Continued": "and all related services (web, mobile, API, cloud, on-device agents, etc.) provided by Amplab Inc. (hereinafter referred to as \"the Company\").",
+        "paragraph2": "The Company complies with relevant laws and regulations such as the Personal Information Protection Act and strives to safely protect users' personal information."
+      },
+      "article2": {
+        "title": "Article 2 (Personal Information Items Processed and Collection Methods)",
+        "section1Title": "1. Collection Channels",
+        "section1Item1": "Service registration, paid payments, and tax invoice issuance",
+        "section1Item2": "Account registration for clients (corporations/individual businesses), input of manager information",
+        "section1Item3": "Cloud integration, dashboard input, API calls, and automatic log generation",
+        "section1Item4": "Customer service inquiries, emails, surveys, and marketing consent, etc.",
+        "section2Title": "2. Items Processed",
+        "section2Item1": "(Required) Name, job title, email, mobile phone number, company name, business registration number, account ID, password",
+        "section2Item2": "(Optional) Department, position, payment information (card company name/billing address, etc.), customer service inquiry content, log/device information (IP, browser, access records)",
+        "section2Item3": "(System Collection) AI·OCR·STT input data, document/file metadata, API call records, error logs",
+        "section2Item4": "Sensitive information is not collected",
+        "section2Item4Continued": ", and video/audio data is used only as internal manufacturing data within the company."
+      },
+      "article3": {
+        "title": "Article 3 (Purpose of Processing Personal Information)",
+        "paragraph": "The Company processes collected information for the following purposes:",
+        "item1": "Contract Performance and Service Provision – Account management, authentication, customized dashboard configuration",
+        "item2": "Billing and Payment Management – Tax invoice issuance, settlement, refund processing",
+        "item3": "Service Maintenance and Quality Improvement – Failure response, error log analysis, R&D statistics",
+        "item4": "Security and Access Control – Anomaly detection, authentication, account protection",
+        "item5": "Customer Support and Counseling – Inquiry response, notice delivery",
+        "item6": "B2B·B2G Report Provision – Business data analysis and insights based on pseudonymization",
+        "item7": "Marketing and Event Notifications (Optional) – New service and promotion promotion (can be refused at any time)"
+      },
+      "article4": {
+        "title": "Article 4 (Retention and Use Period of Personal Information)",
+        "paragraph1": "In principle, personal information is destroyed without delay when service use is terminated or membership is withdrawn.",
+        "paragraph2": "However, the following items are exceptionally retained in accordance with laws or internal policies.",
+        "table": {
+          "header": {
+            "item": "Item",
+            "basis": "Retention Basis",
+            "period": "Retention Period"
+          },
+          "row1": {
+            "item": "Contract and Payment Records",
+            "basis": "E-Commerce Act",
+            "period": "5 years"
+          },
+          "row2": {
+            "item": "Tax Invoices, Accounting Records",
+            "basis": "Framework Act on National Taxes",
+            "period": "5 years"
+          },
+          "row3": {
+            "item": "Access Logs, IP, etc.",
+            "basis": "Communications Secret Protection Act",
+            "period": "3 months"
+          },
+          "row4": {
+            "item": "System Backups",
+            "basis": "Service Stabilization Purpose",
+            "period": "Automatically deleted after 90 days"
+          }
+        }
+      },
+      "article5": {
+        "title": "Article 5 (Third-Party Provision and Processing Entrustment of Personal Information)",
+        "paragraph1": "The Company does not provide personal information to third parties without user consent in principle.",
+        "paragraph2": "However, the following",
+        "processing": "processing entrustment",
+        "paragraph2Continued": "is performed for service operation.",
+        "paragraph3": "When transferring overseas, protective measures in accordance with EU Standard Contractual Clauses (SCC) are applied.",
+        "table": {
+          "header": {
+            "trustee": "Trustee",
+            "task": "Entrusted Task",
+            "country": "Transfer Country",
+            "retentionPeriod": "Retention Period",
+            "protection": "Protective Measures"
+          },
+          "row1": {
+            "trustee": "Amazon Web Services (AWS)",
+            "task": "Cloud Infrastructure (IaaS) Operation",
+            "country": "Singapore/Seoul Region",
+            "retentionPeriod": "During contract period",
+            "protection": "SCC-based encrypted transmission"
+          },
+          "row2": {
+            "trustee": "Google Cloud / Firebase",
+            "task": "Error logs, authentication, analytics",
+            "country": "USA/Singapore",
+            "retentionPeriod": "During contract period",
+            "protection": "Data encryption"
+          },
+          "row3": {
+            "trustee": "SendGrid / Mailgun",
+            "task": "Notification email delivery",
+            "country": "USA",
+            "retentionPeriod": "30 days after delivery",
+            "protection": "SSL/TLS transmission"
+          },
+          "row4": {
+            "trustee": "Stripe / Bootpay, etc.",
+            "task": "Payment Gateway (PG)",
+            "country": "Domestic/Overseas",
+            "retentionPeriod": "5 years",
+            "protection": "Payment security standard compliance"
+          },
+          "row5": {
+            "trustee": "Intercom / Slack",
+            "task": "Customer support/communication",
+            "country": "USA",
+            "retentionPeriod": "During contract period",
+            "protection": "Access control applied"
+          }
+        }
+      },
+      "article6": {
+        "title": "Article 6 (User Rights and Exercise Methods)",
+        "paragraph1": "Users can request",
+        "rights": "access, correction, deletion, processing suspension, and refusal to receive",
+        "paragraph1Continued": "regarding their personal information at any time. Users can request to refuse receipt.",
+        "paragraph2": "When requested via email(",
+        "emailLink": "ceo@amplab.us",
+        "paragraph2Continued": "), it will be processed",
+        "processingTime": "within 10 business days without delay",
+        "paragraph2Continued2": ".",
+        "paragraph3": "For residents of EU/EEA and California, GDPR and CPRA rights are additionally guaranteed.",
+        "item1": "Right to access and data portability (Art.20), right to object to automated decision-making (Art.22), right to erasure (Art.17)",
+        "item2": "Do Not Sell / Share rights and Opt-out link provision"
+      },
+      "article7": {
+        "title": "Article 7 (Operation of Cookies and Logs)",
+        "paragraph1": "The service uses essential cookies for login session maintenance and analysis.",
+        "paragraph2": "Marketing cookies are stored only after prior consent and can be refused in browser settings.",
+        "paragraph3": "Log data (IP, access time, browser type, etc.) is stored only for security and statistical purposes."
+      },
+      "article8": {
+        "title": "Article 8 (Destruction Procedures and Methods of Personal Information)",
+        "paragraph1": "Personal information is destroyed without delay after the collection purpose is achieved or the retention period expires.",
+        "paragraph2": "Electronic files are permanently deleted in an irrecoverable manner, and printed materials are shredded or incinerated.",
+        "paragraph3": "Automatic backup data is sequentially deleted on a 90-day cycle."
+      },
+      "article9": {
+        "title": "Article 9 (Measures to Ensure Safety of Personal Information)",
+        "paragraph": "The Company implements the following technical, administrative, and physical measures:",
+        "item1": "Technical Measures",
+        "item1Description": ": AES-256 encryption, SSL/TLS transmission, firewall·IDS/IPS operation, access control",
+        "item2": "Administrative Measures",
+        "item2Description": ": Principle of least privilege, regular security education, annual vulnerability inspection",
+        "item3": "Physical Measures",
+        "item3Description": ": Server room access control, CCTV management, security access management",
+        "item4": "Incident Response",
+        "item4Description": ": Immediate isolation upon detection of anomalies → DPO report → notification within 72 hours (GDPR compliance)"
+      },
+      "article10": {
+        "title": "Article 10 (Protection of Children's Personal Information)",
+        "paragraph1": "FactoryX does not provide services to children under the age of 14.",
+        "paragraph2": "Upon confirmation, service restrictions and personal information are immediately deleted."
+      },
+      "article11": {
+        "title": "Article 11 (Automated Decision-Making and Profiling)",
+        "paragraph1": "AI models are for statistics and recommendations based on business operation data,",
+        "noPersonalDecision": "and do not affect individual decision-making.",
+        "paragraph2": "Users can request explanations and exercise the right to object regarding model results (responded to upon email request)."
+      },
+      "article12": {
+        "title": "Article 12 (Overseas Transfer and Data Region)",
+        "paragraph1": "The main data storage is located in",
+        "awsRegions": "AWS Seoul and Singapore regions",
+        "paragraph1Continued": ".",
+        "paragraph2": "When transferring overseas, Standard Contractual Clauses (SCC) and additional protective measures (encryption/access control) are applied."
+      },
+      "article13": {
+        "title": "Article 13 (Privacy Officer and Contact Information)",
+        "dpo": "Privacy Officer (DPO)",
+        "dpoValue": ": Jinyoung Kim / CDO",
+        "contact": "Contact",
+        "contactValue": ": 0502-6823-5354 /",
+        "emailLink": "ceo@amplab.us",
+        "address": "Address",
+        "addressValue": ": [Headquarters address to be filled in]",
+        "paragraph": "Personal Information Infringement Report Center(",
+        "kisaLink": "privacy.kisa.or.kr",
+        "paragraphContinued": "), external agencies such as the Supreme Prosecutors' Office and National Police Agency can be reported to"
+      },
+      "article14": {
+        "title": "Article 14 (Obligation to Notify and Effective Date)",
+        "paragraph1": "This policy takes effect from November 20, 2025.",
+        "paragraph2": "When content is changed, notification is made through **website notice and email notification (30 days in advance)**.",
+        "paragraph3": "This policy is based on the Korean text, and the English translation is for reference only."
+      },
+      "supplementary": {
+        "title": "Supplementary Provisions",
+        "item1": "These terms take effect 7 days after the announcement date.",
+        "item2": "Change history compared to previous versions is posted in the Policy Center."
+      }
+    }
+  },
+  "billing": {
+    "loading": {
+      "processing": "Processing payment",
+      "registering": "Registering card"
+    },
+    "success": {
+      "subscriptionStarted": "Subscription started",
+      "cardRegistered": "Card registration completed"
+    },
+    "error": {
+      "paymentFailed": "Payment failed",
+      "cardRegistrationFailed": "Card registration failed"
+    },
+    "messages": {
+      "subscriptionStarted": "Subscription has started.",
+      "cardRegistrationCompleted": "Card registration has been completed."
+    },
+    "errors": {
+      "paymentInfoLoadFailed": "Failed to load payment information. Please try again.",
+      "paymentFailed": "Payment failed. Please try again.",
+      "cardRegistrationFailed": "Card registration failed.",
+      "cardRegistrationError": "An error occurred while registering the card."
+    },
+    "buttons": {
+      "retry": "Try again"
+    }
+  }
+}

@@ -2,7 +2,7 @@
 
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import Topbar from '../topbar';
 import ClientInfo from '../client-info';
 import AccountInfo from './account-info';

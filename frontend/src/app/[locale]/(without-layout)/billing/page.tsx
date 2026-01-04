@@ -4,7 +4,7 @@ import { useSearchParams } from 'next/navigation';
 import { CheckCircle, WarningCircle } from '@phosphor-icons/react';
 import MiniBtn from '@/ui/mini-btn';
 import Spinner from '@/ui/spinner';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import {
   useIssueBillingKey,
   useGetPaymentAuth,
@@ -13,10 +13,13 @@ import {
   useGetSubscriptionStatus,
 } from '@/hooks';
 import useSubscriptionStore from '@/store/subscription-store';
+import { useTranslations } from 'next-intl';
 
 const BillingPageContent = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const t = useTranslations('billing');
+  const tCommon = useTranslations('common');
   const { issueBillingKey, isLoading: isBillingKeyLoading } =
     useIssueBillingKey();
   const { getPaymentAuth, paymentAuth } = useGetPaymentAuth();
@@ -141,9 +144,7 @@ const BillingPageContent = () => {
               const creds = await fetchPaymentAuthWithRetry(factoryId);
               if (!creds) {
                 setCurrentStatus('error');
-                setMessage(
-                  '결제 정보를 불러오지 못했습니다. 다시 시도해주세요.'
-                );
+                setMessage(t('errors.paymentInfoLoadFailed'));
                 return;
               }
 
@@ -166,31 +167,31 @@ const BillingPageContent = () => {
                 ]);
                 await updateSubscriptionPersist(factoryId); // 구독 정보 localstorage 업데이트
                 setCurrentStatus('success');
-                setMessage('구독이 시작되었습니다.');
+                setMessage(t('messages.subscriptionStarted'));
                 return;
               } else {
                 setCurrentStatus('error');
-                setMessage('결제에 실패했습니다. 다시 시도해주세요.');
+                setMessage(t('errors.paymentFailed'));
                 return;
               }
             }
 
             // plan이 없으면 단순 카드 등록 완료
             setCurrentStatus('success');
-            setMessage('카드 등록이 완료되었습니다.');
+            setMessage(t('messages.cardRegistrationCompleted'));
           } else {
             setCurrentStatus('error');
             setMessage(
-              result.error || urlMessage || '카드 등록에 실패했습니다.'
+              result.error || urlMessage || t('errors.cardRegistrationFailed')
             );
           }
         } catch {
           setCurrentStatus('error');
-          setMessage(urlMessage || '카드 등록 중 오류가 발생했습니다.');
+          setMessage(urlMessage || t('errors.cardRegistrationError'));
         }
       } else if (status === 'fail') {
         setCurrentStatus('error');
-        setMessage(urlMessage || '카드 등록에 실패했습니다.');
+        setMessage(urlMessage || t('errors.cardRegistrationFailed'));
       }
     };
     handle();
@@ -219,7 +220,7 @@ const BillingPageContent = () => {
               <Spinner />
             </div>
             <h2 className="Heading-2 mt-8 text-center">
-              {plan ? '결제 중' : '카드 등록 중'}
+              {plan ? t('loading.processing') : t('loading.registering')}
             </h2>
           </div>
         )}
@@ -231,13 +232,15 @@ const BillingPageContent = () => {
               <CheckCircle size={120} weight="fill" className="text-primary" />
             </div>
             <h2 className="Heading-2 mt-8 text-center">
-              {plan ? '구독이 시작되었어요' : '카드 등록을 완료했어요'}
+              {plan
+                ? t('success.subscriptionStarted')
+                : t('success.cardRegistered')}
             </h2>
 
             {/* 버튼 */}
             <div className="w-full mt-20">
               <MiniBtn
-                text="확인"
+                text={tCommon('confirm')}
                 bgColor="bg-primary"
                 textColor="text-wh"
                 hoverColor="hover:bg-primary-hover"
@@ -255,7 +258,9 @@ const BillingPageContent = () => {
               <WarningCircle size={120} weight="fill" className="text-yellow" />
             </div>
             <h2 className="Heading-2 mt-8 text-center">
-              {plan ? '결제를 실패했어요' : '카드 등록에 실패했어요'}
+              {plan
+                ? t('error.paymentFailed')
+                : t('error.cardRegistrationFailed')}
             </h2>
             {message && (
               <p className="Body-2 mt-4 text-center whitespace-pre-line">
@@ -274,7 +279,7 @@ const BillingPageContent = () => {
             {/* 버튼 */}
             <div className="w-full mt-10">
               <MiniBtn
-                text="다시 시도하기"
+                text={t('buttons.retry')}
                 bgColor="bg-primary"
                 textColor="text-wh"
                 hoverColor="hover:bg-primary-hover"

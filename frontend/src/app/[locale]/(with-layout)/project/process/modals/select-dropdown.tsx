@@ -2,7 +2,7 @@ import { useTranslations } from 'next-intl';
 import { OcrDataModel } from '@/types/data-model';
 import Dropdown from '@/ui/dropdown/dropdown';
 import DropdownItem from '@/ui/dropdown/dropdown-item';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 
 interface SelectDropdownProps {
   onClose: () => void;

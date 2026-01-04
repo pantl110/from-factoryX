@@ -1,6 +1,6 @@
 import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 
 interface NeedInfoModalProps {

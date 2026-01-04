@@ -13,6 +13,7 @@ import { useEmailVerification } from '@/hooks/users/use-email-verification';
 import Input from '@/ui/input';
 import MiniBtn from '@/ui/mini-btn';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface EmailStepProps {
   register: UseFormRegister<ResetPasswordModel>;
@@ -44,6 +45,7 @@ const EmailStep = ({
   setValue,
   isChecking = false,
 }: EmailStepProps) => {
+  const t = useTranslations('findPassword');
   const watchedValues = watch();
   const emailVerification = useEmailVerification();
   const [verificationCode, setVerificationCode] = useState('');
@@ -71,7 +73,7 @@ const EmailStep = ({
       if (verificationCode) {
         // 시간이 만료된 경우 우선적으로 만료 메시지 표시
         if (verification.timeLeft <= 0) {
-          setError('code', { message: '인증 시간이 만료되었습니다.' });
+          setError('code', { message: t('errors.verificationExpired') });
           return;
         }
 
@@ -115,11 +117,11 @@ const EmailStep = ({
       <div className="flex flex-col">
         <Input
           type="email"
-          placeholder="이메일을 입력해주세요."
-          label="이메일"
+          placeholder={t('email.placeholder')}
+          label={t('email.label')}
           disabled={verification.isVerificationSent || isChecking}
           {...register('email', {
-            required: '이메일을 입력해주세요.',
+            required: t('email.required'),
             validate: (value) => {
               const error = validateEmail(value);
               return error || true;
@@ -136,8 +138,8 @@ const EmailStep = ({
         <div className="flex flex-col">
           <Input
             type="number"
-            placeholder="이메일로 전송된 6자리 인증 코드를 입력해주세요."
-            label="인증 코드"
+            placeholder={t('verificationCode.placeholder')}
+            label={t('verificationCode.label')}
             value={verificationCode}
             onChange={(e) => {
               setVerificationCode(e.target.value.slice(0, 6));
@@ -165,14 +167,18 @@ const EmailStep = ({
               }`}
               disabled={verification.timeLeft > 0}
             >
-              재전송
+              {t('buttons.resend')}
             </button>
           </div>
         </div>
       )}
       <MiniBtn
         width="w-full"
-        text={verification.isVerificationSent ? '인증 완료' : '이메일 인증'}
+        text={
+          verification.isVerificationSent
+            ? t('buttons.complete')
+            : t('buttons.sendVerification')
+        }
         bgColor="bg-primary"
         textColor="text-wh"
         hoverColor="hover:bg-primary-hover"

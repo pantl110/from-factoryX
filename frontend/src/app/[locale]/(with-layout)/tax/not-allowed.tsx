@@ -1,6 +1,6 @@
 import { Lock } from '@phosphor-icons/react';
 import MiniBtn from '@/ui/mini-btn';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import useMemberStore from '@/store/member-store';
 import { useTranslations } from 'next-intl';
 

@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { CaretRight, MoneyWavy } from '@phosphor-icons/react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import Title from '../title';
 import AlarmItem from '../alarm-item';

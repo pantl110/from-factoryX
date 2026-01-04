@@ -3,7 +3,8 @@
 import { LabelInfo } from '@/app/[locale]/(mobile)/label-info';
 import Topbar from '@/app/[locale]/(mobile)/topbar';
 import { MoBottomNavigation } from '@/ui';
-import { useSearchParams, useRouter, useParams } from 'next/navigation';
+import { useSearchParams, useParams } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { useEffect, useState } from 'react';
 
 const DeliveryDetailPage = () => {

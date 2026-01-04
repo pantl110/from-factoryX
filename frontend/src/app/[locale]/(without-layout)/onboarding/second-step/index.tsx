@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import InfoLabelValue from '@/ui/info-label-value';
 import MiniBtn from '@/ui/mini-btn';
 import { Plus, WarningCircle } from '@phosphor-icons/react/dist/ssr';
@@ -9,42 +9,54 @@ import * as yup from 'yup';
 import { SecondStepFormDataModel } from '../types';
 import { useGetProduct, useAssignMaterialProduct, useToast } from '@/hooks';
 import Toast from '@/ui/toast';
+import { useTranslations } from 'next-intl';
 
 interface SecondStepProps {
   onNextStep: () => void;
   onPrevStep: () => void;
 }
 
-// Yup 스키마 정의
-const validationSchema = yup.object({
-  materials: yup
-    .array()
-    .of(
-      yup.object({
-        materialName: yup.string().required('자재명을 입력해주세요.'),
-        materialCode: yup.string().required('자재코드를 입력해주세요.'),
-        spec: yup.string().required('규격을 입력해주세요.'),
-        unit: yup.string().required('단위를 입력해주세요.'),
-        usageQuantity: yup
-          .number()
-          .required('사용 수량을 입력해주세요.')
-          .positive('사용 수량은 양수여야 합니다.')
-          .test(
-            'decimal',
-            '소수점은 한자리까지만 입력 가능합니다.',
-            (value) => {
-              if (value === undefined || value === null) return true;
-              const decimalPlaces = value.toString().split('.')[1]?.length || 0;
-              return decimalPlaces <= 1;
-            }
-          ),
-      })
-    )
-    .min(1)
-    .required(),
-});
-
 const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
+  const t = useTranslations('onboarding.secondStep');
+  const tCommon = useTranslations('common');
+
+  // Yup 스키마 정의 (번역 함수 사용)
+  const validationSchema = useMemo(
+    () =>
+      yup.object({
+        materials: yup
+          .array()
+          .of(
+            yup.object({
+              materialName: yup
+                .string()
+                .required(t('validation.materialNameRequired')),
+              materialCode: yup
+                .string()
+                .required(t('validation.materialCodeRequired')),
+              spec: yup.string().required(t('validation.specRequired')),
+              unit: yup.string().required(t('validation.unitRequired')),
+              usageQuantity: yup
+                .number()
+                .required(t('validation.usageQuantityRequired'))
+                .positive(t('validation.usageQuantityPositive'))
+                .test(
+                  'decimal',
+                  t('validation.usageQuantityDecimal'),
+                  (value) => {
+                    if (value === undefined || value === null) return true;
+                    const decimalPlaces =
+                      value.toString().split('.')[1]?.length || 0;
+                    return decimalPlaces <= 1;
+                  }
+                ),
+            })
+          )
+          .min(1)
+          .required(),
+      }),
+    [t]
+  );
   const {
     register,
     handleSubmit,
@@ -246,9 +258,7 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
       // sessionStorage에서 생성된 제품 ID 가져오기
       const productId = sessionStorage.getItem('onboarding-product-id');
       if (!productId) {
-        alert(
-          '제품 정보를 찾을 수 없습니다. 이전을 눌러 제품 등록을 다시 진행해주세요.'
-        );
+        alert(t('errors.productNotFound'));
         return;
       }
 
@@ -271,10 +281,10 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
       if (result.success) {
         onNextStep();
       } else {
-        alert('원자재 생성 및 연결에 실패했습니다: ' + result.error);
+        alert(t('errors.assignFailed') + result.error);
       }
     } catch {
-      alert('원자재 생성 및 연결 중 오류가 발생했습니다.');
+      alert(t('errors.assignError'));
     }
   };
 
@@ -284,21 +294,30 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
         <div className="flex flex-col gap-7 w-full">
           {/* 타이틀 영역 */}
           <h3 className="Heading-3 text-primary flex justify-center">
-            해당 제품을 만들 때 필요한 원자재를 추가해 주세요.
+            {t('title')}
           </h3>
 
           {/* 표 영역  */}
           <div className="w-full">
             <div className="flex">
-              <InfoLabelValue label="제품명" value={firstProduct?.name || ''} />
               <InfoLabelValue
-                label="제품코드"
+                label={tCommon('productName')}
+                value={firstProduct?.name || ''}
+              />
+              <InfoLabelValue
+                label={tCommon('productCode')}
                 value={firstProduct?.code || ''}
               />
             </div>
             <div className="flex">
-              <InfoLabelValue label="규격" value={firstProduct?.spec || ''} />
-              <InfoLabelValue label="단위" value={firstProduct?.unit || ''} />
+              <InfoLabelValue
+                label={tCommon('specification')}
+                value={firstProduct?.spec || ''}
+              />
+              <InfoLabelValue
+                label={tCommon('unit')}
+                value={firstProduct?.unit || ''}
+              />
             </div>
           </div>
         </div>
@@ -333,7 +352,7 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
                   : 'bg-lg text-gr'
               }`}
             >
-              추가하기
+              {tCommon('add')}
               <Plus size={24} />
             </button>
           </div>
@@ -341,13 +360,13 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
           {/* 모달버튼 영역 */}
           <div className="w-full flex justify-end gap-2.5 mb-10">
             <MiniBtn
-              text="이전"
+              text={tCommon('previous')}
               variant="white"
               onClick={onPrevStep}
               type="button"
             />
             <MiniBtn
-              text="다음"
+              text={tCommon('next')}
               variant="primary"
               type="submit"
               disabled={!isValid || isLoading || isToastOpen}
@@ -358,8 +377,8 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
 
       {isToastOpen && (
         <Toast
-          text="이미 존재하는 자재코드에요."
-          subtext="다른 자재코드로 수정해주세요."
+          text={t('toast.duplicateCode')}
+          subtext={t('toast.duplicateCodeSubtext')}
           icon={<WarningCircle size={20} className="text-red" />}
           type="red"
           isVisible={isVisible}

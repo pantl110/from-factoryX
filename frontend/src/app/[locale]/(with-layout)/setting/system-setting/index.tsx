@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { useRouter, usePathname } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import usePageStatusStore from '@/store/page-status-store';
 import Chip from '@/ui/chip';

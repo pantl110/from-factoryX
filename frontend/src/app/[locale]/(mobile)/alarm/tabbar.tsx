@@ -2,7 +2,8 @@
 
 import TabItem from './tab-item';
 import { useState, useEffect, useMemo } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 
 const Tabbar = () => {
   const router = useRouter();

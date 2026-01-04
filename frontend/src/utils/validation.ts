@@ -11,28 +11,44 @@ export const validateEmail = (email: string, t?: (key: string) => string) => {
   return '';
 };
 
-export const validatePassword = (password: string) => {
-  if (!password) return '비밀번호를 입력해주세요.';
+export const validatePassword = (
+  password: string,
+  t?: (key: string) => string
+) => {
+  if (!password)
+    return t
+      ? t('signup.passwordStep.password.required')
+      : '비밀번호를 입력해주세요.';
 
   if (password.length < 8 || password.length > 20) {
-    return '비밀번호는 8자 이상 20자 이하여야 합니다.';
+    return t
+      ? t('signup.passwordStep.password.length')
+      : '비밀번호는 8자 이상 20자 이하여야 합니다.';
   }
 
   if (!/[A-Z]/.test(password)) {
-    return '영어 대문자(A-Z)를 포함해야 합니다.';
+    return t
+      ? t('signup.passwordStep.password.uppercase')
+      : '영어 대문자(A-Z)를 포함해야 합니다.';
   }
 
   if (!/[a-z]/.test(password)) {
-    return '영어 소문자(a-z)를 포함해야 합니다.';
+    return t
+      ? t('signup.passwordStep.password.lowercase')
+      : '영어 소문자(a-z)를 포함해야 합니다.';
   }
 
   if (!/[0-9]/.test(password)) {
-    return '숫자(0-9)를 포함해야 합니다.';
+    return t
+      ? t('signup.passwordStep.password.number')
+      : '숫자(0-9)를 포함해야 합니다.';
   }
 
   // 연속된 문자 또는 숫자 체크 (3개 이상)
   if (/(.)\1{2,}/.test(password)) {
-    return '연속된 문자나 숫자는 사용할 수 없습니다.';
+    return t
+      ? t('signup.passwordStep.password.consecutive')
+      : '연속된 문자나 숫자는 사용할 수 없습니다.';
   }
 
   // 쉬운 패턴 체크 - 정규식으로 한번에 처리

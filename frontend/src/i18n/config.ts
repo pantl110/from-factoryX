@@ -23,17 +23,30 @@ export default getRequestConfig(async ({ requestLocale }) => {
   }
 
   // 정적 import로 변경 (Next.js 빌드 타임에 해결)
-  let messages;
+  let baseMessages;
+  let withoutLayoutMessages;
   switch (locale) {
     case 'ko':
-      messages = (await import('../messages/ko.json')).default;
+      baseMessages = (await import('../messages/ko.json')).default;
+      withoutLayoutMessages = (
+        await import('../messages/without-layout-ko.json')
+      ).default;
       break;
     case 'en':
-      messages = (await import('../messages/en.json')).default;
+      baseMessages = (await import('../messages/en.json')).default;
+      withoutLayoutMessages = (
+        await import('../messages/without-layout-en.json')
+      ).default;
       break;
     default:
       notFound();
   }
+
+  // 메시지 병합
+  const messages = {
+    ...baseMessages,
+    ...withoutLayoutMessages,
+  };
 
   return {
     locale,

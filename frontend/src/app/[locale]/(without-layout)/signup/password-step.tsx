@@ -6,6 +6,7 @@ import { UseFormRegister, FieldErrors } from 'react-hook-form';
 import { SignupFormDataModel } from '@/types/data-model';
 import { validatePassword } from '@/utils/validation';
 import { UseSignupReturnModel } from '@/hooks/users/use-signup';
+import { useTranslations } from 'next-intl';
 
 interface PasswordStepProps {
   register: UseFormRegister<SignupFormDataModel>;
@@ -22,18 +23,34 @@ const PasswordStep = ({
   isValid,
   signup,
 }: PasswordStepProps) => {
+  const t = useTranslations('signup.passwordStep');
+
   return (
     <>
       <div className="flex flex-col">
         <Input
           type="password"
-          placeholder="비밀번호를 입력해주세요."
-          label="비밀번호"
+          placeholder={t('password.placeholder')}
+          label={t('password.label')}
           isShowPasswordToggle={true}
           {...register('password', {
-            required: '비밀번호를 입력해주세요.',
+            required: t('password.required'),
             validate: (value) => {
-              const error = validatePassword(value);
+              const error = validatePassword(value, (key: string) => {
+                // signup.passwordStep.password.* 키를 password.*로 변환
+                const keyMap: Record<string, string> = {
+                  'signup.passwordStep.password.required': 'password.required',
+                  'signup.passwordStep.password.length': 'password.length',
+                  'signup.passwordStep.password.uppercase':
+                    'password.uppercase',
+                  'signup.passwordStep.password.lowercase':
+                    'password.lowercase',
+                  'signup.passwordStep.password.number': 'password.number',
+                  'signup.passwordStep.password.consecutive':
+                    'password.consecutive',
+                };
+                return t(keyMap[key] || key);
+              });
               return error || true;
             },
           })}
@@ -49,15 +66,15 @@ const PasswordStep = ({
       <div className="flex flex-col">
         <Input
           type="password"
-          placeholder="비밀번호를 다시 입력해주세요."
-          label="비밀번호 확인"
+          placeholder={t('passwordConfirm.placeholder')}
+          label={t('passwordConfirm.label')}
           isShowPasswordToggle={true}
           {...register('password_confirm', {
-            required: '비밀번호 확인을 입력해주세요.',
+            required: t('passwordConfirm.required'),
             validate: (value) => {
               const passwordValue = watchedValues.password;
               if (value !== passwordValue) {
-                return '비밀번호가 일치하지 않습니다.';
+                return t('passwordConfirm.mismatch');
               }
               return true;
             },
@@ -78,7 +95,7 @@ const PasswordStep = ({
 
       <MiniBtn
         width="w-full"
-        text="가입 완료"
+        text={t('buttons.complete')}
         bgColor="bg-primary"
         textColor="text-wh"
         hoverColor="hover:bg-primary-hover"

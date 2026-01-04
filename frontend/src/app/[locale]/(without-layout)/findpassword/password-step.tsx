@@ -9,6 +9,7 @@ import { validatePassword } from '@/utils/validation';
 import { UseResetPasswordReturnModel } from '@/hooks/users/use-reset-password';
 import Input from '@/ui/input';
 import MiniBtn from '@/ui/mini-btn';
+import { useTranslations } from 'next-intl';
 
 interface PasswordStepProps {
   register: UseFormRegister<ResetPasswordModel>;
@@ -29,6 +30,7 @@ const PasswordStep = ({
   onSubmit,
   resetPassword,
 }: PasswordStepProps) => {
+  const t = useTranslations('findPassword.password');
   const watchedValues = watch();
 
   return (
@@ -36,11 +38,11 @@ const PasswordStep = ({
       <div className="flex flex-col">
         <Input
           type="password"
-          placeholder="새 비밀번호를 입력해주세요."
-          label="새 비밀번호"
+          placeholder={t('newPassword.placeholder')}
+          label={t('newPassword.label')}
           isShowPasswordToggle={true}
           {...register('new_password', {
-            required: '새 비밀번호를 입력해주세요.',
+            required: t('newPassword.required'),
             validate: (value) => {
               const error = validatePassword(value);
               return error || true;
@@ -58,14 +60,14 @@ const PasswordStep = ({
       <div className="flex flex-col">
         <Input
           type="password"
-          placeholder="새 비밀번호를 다시 입력해주세요."
-          label="새 비밀번호 확인"
+          placeholder={t('confirmPassword.placeholder')}
+          label={t('confirmPassword.label')}
           isShowPasswordToggle={true}
           {...register('new_password_confirm', {
-            required: '새 비밀번호 확인을 입력해주세요.',
+            required: t('confirmPassword.required'),
             validate: (value) => {
               if (value !== watchedValues.new_password) {
-                return '비밀번호가 일치하지 않습니다.';
+                return t('errors.passwordMismatch');
               }
               return true;
             },
@@ -85,7 +87,7 @@ const PasswordStep = ({
 
       <MiniBtn
         width="w-full"
-        text="비밀번호 변경"
+        text={t('buttons.changePassword')}
         bgColor="bg-primary"
         textColor="text-wh"
         hoverColor="hover:bg-primary-hover"

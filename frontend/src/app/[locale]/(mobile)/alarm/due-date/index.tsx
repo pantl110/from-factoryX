@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import { CaretRight, Package } from '@phosphor-icons/react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import Title from '../title';
 import AlarmItem from '../alarm-item';
 import NoHistoryBox from '@/ui/no-history-box';

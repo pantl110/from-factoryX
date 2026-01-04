@@ -2,7 +2,7 @@
 
 import IconBtn from '@/ui/icon-btn';
 import { CaretLeft } from '@phosphor-icons/react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 
 interface TopbarProps {
   title: string;

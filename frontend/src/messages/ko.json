@@ -4,6 +4,7 @@
     "save": "저장",
     "cancel": "취소",
     "next": "다음",
+    "previous": "이전",
     "delete": "삭제",
     "deleteItems": "{count}개 항목 삭제",
     "edit": "수정",
@@ -41,6 +42,7 @@
     "materialCode": "자재코드",
     "placeholders": {
       "materialName": "자재명을 입력하세요.",
+      "materialCode": "자재코드를 입력하세요.",
       "productName": "제품명을 입력하세요.",
       "productCode": "제품코드를 입력하세요.",
       "specification": "규격을 입력하세요.",
@@ -580,22 +582,6 @@
     },
     "document": "문서함",
     "setting": "설정"
-  },
-  "login": {
-    "title": "로그인",
-    "email": {
-      "placeholder": "이메일을 입력해주세요.",
-      "required": "이메일을 입력해주세요.",
-      "invalidFormat": "이메일 형식이 올바르지 않습니다."
-    },
-    "password": {
-      "label": "비밀번호",
-      "placeholder": "비밀번호를 입력해주세요.",
-      "required": "비밀번호를 입력해주세요."
-    },
-    "button": "로그인",
-    "signup": "회원가입",
-    "findPassword": "비밀번호 찾기"
   },
   "dashboard": {
     "mainTitle": "팩토리엑스 현황판",

@@ -8,6 +8,7 @@ import {
 } from 'react-hook-form';
 import { SecondStepFormDataModel } from '../types';
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface MaterialInputItemProps {
   plusMode?: boolean;
@@ -40,6 +41,8 @@ const MaterialInputItem = ({
   setValue,
   index,
 }: MaterialInputItemProps) => {
+  const t = useTranslations('onboarding.secondStep');
+  const tCommon = useTranslations('common');
   const [displayQuantity, setDisplayQuantity] = useState('');
 
   // 현재 값을 가져오기 위해 useWatch 사용
@@ -89,18 +92,18 @@ const MaterialInputItem = ({
         <div className="flex gap-2.5">
           <div className="flex-1">
             <Input
-              label="자재명"
+              label={tCommon('materialName')}
               type="text"
-              placeholder="자재명을 입력하세요."
+              placeholder={tCommon('placeholders.materialName')}
               required={true}
               {...register(`materials.${index}.materialName`)}
             />
           </div>
           <div className="flex-1">
             <Input
-              label="자재코드"
+              label={tCommon('materialCode')}
               type="text"
-              placeholder="자재코드를 입력하세요."
+              placeholder={tCommon('placeholders.materialCode')}
               required={true}
               {...register(`materials.${index}.materialCode`)}
             />
@@ -109,27 +112,27 @@ const MaterialInputItem = ({
         <div className="flex gap-2.5">
           <div className="flex-1">
             <Input
-              label="규격"
+              label={tCommon('specification')}
               type="text"
-              placeholder="EX) 100x300mm"
+              placeholder={t('placeholders.spec')}
               required={true}
               {...register(`materials.${index}.spec`)}
             />
           </div>
           <div className="flex-1">
             <Input
-              label="단위 "
+              label={tCommon('unit')}
               type="text"
-              placeholder="EX) EA"
+              placeholder={t('placeholders.unit')}
               required={true}
               {...register(`materials.${index}.unit`)}
             />
           </div>
           <div className="flex-1">
             <Input
-              label="사용 수량"
+              label={tCommon('usageQuantity')}
               type="text"
-              placeholder="EX) 1,000"
+              placeholder={t('placeholders.usageQuantity')}
               required={true}
               value={displayQuantity}
               onChange={handleQuantityChange}
@@ -150,7 +153,7 @@ const MaterialInputItem = ({
       {plusMode && (
         <div className="flex justify-end">
           <MiniBtn
-            text="삭제하기"
+            text={tCommon('delete')}
             textColor="text-dg"
             borderColor="border-lg"
             hoverColor="hover:bg-bg"

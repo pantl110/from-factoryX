@@ -6,7 +6,7 @@ import Welcome from './welcome';
 import FirstStep from './first-step';
 import SecondStep from './second-step';
 import ThirdStep from './third-step';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import ChoosingRole from './choosing-role';
 
 const OnboardingPage = () => {

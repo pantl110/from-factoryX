@@ -3,6 +3,8 @@
 import Checkbox from '@/ui/checkbox';
 import { UseFormSetValue, UseFormRegister } from 'react-hook-form';
 import { SignupFormDataModel } from '@/types/data-model';
+import { useTranslations } from 'next-intl';
+import { useLocale } from 'next-intl';
 
 interface AgreeAreaProps {
   watchedValues: SignupFormDataModel;
@@ -11,6 +13,8 @@ interface AgreeAreaProps {
 }
 
 const AgreeArea = ({ watchedValues, setValue, register }: AgreeAreaProps) => {
+  const t = useTranslations('signup.agreeArea');
+  const locale = useLocale();
   // 모두 동의 체크박스 상태 (모든 항목 포함)
   const isAllChecked =
     watchedValues.terms_of_service &&
@@ -69,7 +73,7 @@ const AgreeArea = ({ watchedValues, setValue, register }: AgreeAreaProps) => {
       <input type="hidden" {...register('marketing_agreement')} />
       <div className="flex gap-2">
         <Checkbox isChecked={isAllChecked} onToggle={handleToggleAll} />
-        <p className="text-bl Me_Body-1">모두 동의</p>
+        <p className="text-bl Me_Body-1">{t('agreeAll')}</p>
       </div>
       <div className="flex justify-between">
         <div className="flex gap-2">
@@ -77,13 +81,15 @@ const AgreeArea = ({ watchedValues, setValue, register }: AgreeAreaProps) => {
             isChecked={watchedValues.terms_of_service}
             onToggle={handleToggleService}
           />
-          <p className="text-sv Me_Body-1">서비스 이용약관 (필수)</p>
+          <p className="text-sv Me_Body-1">{t('termsOfService.label')}</p>
         </div>
         <button
           className="text-sv Me_Body-1 hover:text-primary"
-          onClick={() => window.open('/signup/terms-of-service', '_blank')}
+          onClick={() =>
+            window.open(`/${locale}/signup/terms-of-service`, '_blank')
+          }
         >
-          약관 보기
+          {t('termsOfService.viewButton')}
         </button>
       </div>
       <div className="flex justify-between">
@@ -92,13 +98,15 @@ const AgreeArea = ({ watchedValues, setValue, register }: AgreeAreaProps) => {
             isChecked={watchedValues.privacy_policy_agreement}
             onToggle={handleTogglePrivacy}
           />
-          <p className="text-sv Me_Body-1">개인정보 수집 및 이용 동의 (필수)</p>
+          <p className="text-sv Me_Body-1">{t('privacyPolicy.label')}</p>
         </div>
         <button
           className="text-sv Me_Body-1 hover:text-primary"
-          onClick={() => window.open('/signup/privacy-policy', '_blank')}
+          onClick={() =>
+            window.open(`/${locale}/signup/privacy-policy`, '_blank')
+          }
         >
-          약관 보기
+          {t('privacyPolicy.viewButton')}
         </button>
       </div>
       <div className="flex justify-between">
@@ -107,13 +115,15 @@ const AgreeArea = ({ watchedValues, setValue, register }: AgreeAreaProps) => {
             isChecked={watchedValues.marketing_agreement}
             onToggle={handleToggleMarketing}
           />
-          <p className="text-sv Me_Body-1">마케팅 정보 수신 동의 (선택)</p>
+          <p className="text-sv Me_Body-1">{t('marketingAgreement.label')}</p>
         </div>
         <button
           className="text-sv Me_Body-1 hover:text-primary"
-          onClick={() => window.open('/signup/marketing-info', '_blank')}
+          onClick={() =>
+            window.open(`/${locale}/signup/marketing-info`, '_blank')
+          }
         >
-          약관 보기
+          {t('marketingAgreement.viewButton')}
         </button>
       </div>
     </div>

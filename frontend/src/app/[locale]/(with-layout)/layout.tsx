@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { usePathname } from 'next/navigation';
+import { usePathname } from '@/i18n/navigation';
 import SideBar from '@/components/side-bar';
 import TopBar from '@/components/top-bar';
 import useAuthStore from '@/store/auth-store';

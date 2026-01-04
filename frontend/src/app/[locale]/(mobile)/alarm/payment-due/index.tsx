@@ -1,7 +1,7 @@
 import { MoneyWavy } from '@phosphor-icons/react';
 import Title from '../title';
 import AlarmItem from '../alarm-item';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 
 const PaymentDue = () => {
   const router = useRouter();

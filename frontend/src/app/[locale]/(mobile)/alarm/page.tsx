@@ -2,7 +2,8 @@
 
 import Topbar from '../topbar';
 import Tabbar from './tabbar';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { Suspense } from 'react';
 import DueDate from './due-date';
 // import PaymentDue from './payment-due';

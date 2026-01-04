@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import Input from '@/ui/input';
 import MiniBtn from '@/ui/mini-btn';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
 import { useForm } from 'react-hook-form';
 import { validateEmail } from '@/utils/validation';
 import { useRouter } from '@/i18n/navigation';

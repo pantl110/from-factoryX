@@ -1,6 +1,7 @@
 'use client';
 
-import { useRouter, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { useRef, useMemo } from 'react';
 import { MoBtn } from '@/ui';
 import ScanItem from './scan-item';

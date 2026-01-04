@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { RoundChip } from '@/ui/round-chip';
 import { getTaxStatusColor, ProjectStatusType } from '@/types/status-type';
 import Checkbox from '@/ui/checkbox';

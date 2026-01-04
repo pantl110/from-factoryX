@@ -1,5 +1,6 @@
 import { MoBtn } from '@/ui';
-import { useRouter, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 
 const ScanItem = () => {
   const router = useRouter();

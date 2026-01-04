@@ -3,7 +3,7 @@ import MiniBtn from '@/ui/mini-btn';
 import { useState } from 'react';
 import DeleteAccountModal from './modals/delete-account-modal';
 import { useLogout, useWithdraw } from '@/hooks';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 
 const DeleteAccount = () => {
   const t = useTranslations('setting.systemSetting.general.deleteAccount');

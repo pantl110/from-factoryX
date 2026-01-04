@@ -6,6 +6,7 @@ import { FirstStepFormDataModel } from '../types';
 import useCreateSingleProduct from '@/hooks/stock/product/use-create-single-product';
 import useUpdateProduct from '@/hooks/stock/product/use-update-product';
 import useGetProduct from '@/hooks/stock/product/use-get-product';
+import { useTranslations } from 'next-intl';
 
 interface FirstStepProps {
   onNextStep: () => void;
@@ -13,6 +14,8 @@ interface FirstStepProps {
 }
 
 const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
+  const t = useTranslations('onboarding.firstStep');
+  const tCommon = useTranslations('common');
   const { register, handleSubmit, reset, getValues, watch } =
     useForm<FirstStepFormDataModel>({
       defaultValues: {
@@ -71,7 +74,7 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
       const productListResult = await getProductList();
 
       if (!productListResult.success) {
-        alert('제품 목록 조회에 실패했습니다: ' + productListResult.error);
+        alert(t('errors.productListLoadFailed') + productListResult.error);
         return;
       }
 
@@ -94,7 +97,7 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
           );
           onNextStep();
         } else {
-          alert('제품 생성에 실패했습니다: ' + result.error);
+          alert(t('errors.productCreateFailed') + result.error);
         }
       } else {
         // 제품이 1개 이상이면 첫 번째 제품을 수정
@@ -114,11 +117,11 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
           );
           onNextStep();
         } else {
-          alert('제품 수정에 실패했습니다: ' + result.error);
+          alert(t('errors.productUpdateFailed') + result.error);
         }
       }
     } catch {
-      alert('제품 생성 중 오류가 발생했습니다.');
+      alert(t('errors.productCreateError'));
     }
   };
 
@@ -127,7 +130,7 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
       <div className="flex flex-col gap-7 w-full">
         {/* 타이틀 영역 */}
         <h3 className="Heading-3 text-primary flex justify-center">
-          등록할 제품 정보를 입력해주세요.
+          {t('title')}
         </h3>
 
         {/* input container */}
@@ -136,32 +139,32 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
             <div className="flex flex-col gap-2.5">
               <div className="flex gap-2.5 flex-1">
                 <Input
-                  label="제품명"
+                  label={tCommon('productName')}
                   type="text"
-                  placeholder="제품명을 입력하세요."
+                  placeholder={tCommon('placeholders.productName')}
                   required={true}
                   {...register('productName', { required: true })}
                 />
                 <Input
-                  label="제품 코드"
+                  label={tCommon('productCode')}
                   type="text"
-                  placeholder="제품코드를 입력하세요."
+                  placeholder={tCommon('placeholders.productCode')}
                   required={true}
                   {...register('productCode', { required: true })}
                 />
               </div>
               <div className="flex gap-2.5 flex-1">
                 <Input
-                  label="규격"
+                  label={tCommon('specification')}
                   type="text"
-                  placeholder="EX) 100x300mmc"
+                  placeholder={t('spec.placeholder')}
                   required={true}
                   {...register('spec', { required: true })}
                 />
                 <Input
-                  label="단위"
+                  label={tCommon('unit')}
                   type="text"
-                  placeholder="EX) EA"
+                  placeholder={t('unit.placeholder')}
                   required={true}
                   {...register('unit', { required: true })}
                 />
@@ -172,13 +175,13 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
           {/* 버튼 영역 */}
           <div className="w-full flex justify-end gap-2.5">
             <MiniBtn
-              text="이전"
+              text={t('buttons.previous')}
               variant="white"
               type="button"
               onClick={() => handlePrevStep(getValues())}
             />
             <MiniBtn
-              text="다음"
+              text={tCommon('next')}
               variant="primary"
               type="submit"
               disabled={!isValid || isLoading}
