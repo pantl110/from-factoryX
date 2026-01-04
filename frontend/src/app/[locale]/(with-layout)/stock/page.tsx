@@ -15,8 +15,10 @@ import { ClientModel } from '@/types/data-model';
 import Toast from '@/ui/toast';
 import { WarningCircle } from '@phosphor-icons/react';
 import useToast from '@/hooks/use-toast';
+import { useTranslations } from 'next-intl';
 
 const StockPageContent = () => {
+  const t = useTranslations('stock');
   const stockTab = usePageStatusStore((state) => state.stockTab);
   const setStockTab = usePageStatusStore((state) => state.setStockTab);
   const searchParams = useSearchParams();
@@ -171,8 +173,8 @@ const StockPageContent = () => {
       {/* 자재 코드 겹치면 토스트 */}
       {isToastOpen && (
         <Toast
-          text="이미 존재하는 자재코드에요."
-          subtext="다른 자재코드로 수정해주세요."
+          text={t('toast.duplicateMaterialCode.text')}
+          subtext={t('toast.duplicateMaterialCode.subtext')}
           type="red"
           isVisible={isVisible}
           icon={<WarningCircle size={20} />}
@@ -184,8 +186,8 @@ const StockPageContent = () => {
         <Toast
           text={
             stockTab === 'product'
-              ? '중복된 제품 코드는 등록되지 않았습니다.'
-              : '중복된 자재 코드는 등록되지 않았습니다.'
+              ? t('toast.duplicateCodeNotRegistered.product')
+              : t('toast.duplicateCodeNotRegistered.material')
           }
           subtext=""
           type="red"

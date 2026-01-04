@@ -5,6 +5,7 @@ import useSubscriptionStore from '@/store/subscription-store';
 import useMemberStore from '@/store/member-store';
 import { MemberRoleColorMap, MemberRoleType } from '@/types/status-type';
 import { RoundChip, MiniBtn } from '@/ui';
+import { useTranslations } from 'next-intl';
 
 interface LocationItemProps {
   image: string;
@@ -30,6 +31,8 @@ const LocationItem = ({
   onClick,
   onDelete,
 }: LocationItemProps) => {
+  const tCommon = useTranslations('common');
+  const tPermission = useTranslations('setting.systemSetting.permission');
   const userRole = useMemberStore((state) => state.role);
   const userHasSubscription = useSubscriptionStore(
     (state) => state.hasSubscription
@@ -39,7 +42,15 @@ const LocationItem = ({
     bgColor: 'bg-bg',
     textColor: 'text-dg',
   };
-  const roleText = getRoleText(role || '-');
+
+  // role을 번역 키로 변환
+  const getTranslatedRoleText = (role: string | null | undefined): string => {
+    if (!role || role === '-') return '-';
+    const roleKey = role as 'admin' | 'manager' | 'prod_manager' | 'viewer';
+    return tPermission(`roles.${roleKey}`) || getRoleText(role);
+  };
+
+  const roleText = getTranslatedRoleText(role);
 
   return (
     <div className={`flex gap-5 items-center cursor-pointer`} onClick={onClick}>
@@ -51,7 +62,7 @@ const LocationItem = ({
             width={110}
             height={110}
             className="w-[110px] h-[110px] object-cover rounded-[8px] border border-lg"
-            alt="미리보기"
+            alt={tCommon('preview')}
             quality={100}
             unoptimized={true}
           />
@@ -84,7 +95,7 @@ const LocationItem = ({
             </span>
             {canEdit && (
               <MiniBtn
-                text="삭제"
+                text={tCommon('delete')}
                 icon={Trash}
                 iconPosition="right"
                 iconSize={16}

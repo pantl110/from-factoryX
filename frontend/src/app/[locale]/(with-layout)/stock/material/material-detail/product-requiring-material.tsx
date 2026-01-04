@@ -47,6 +47,7 @@ const ProductRequiringMaterial = forwardRef<
     ref
   ) => {
     const t = useTranslations('stock.material.productRequiringMaterial');
+    const tStock = useTranslations('stock');
     const tCommon = useTranslations('common');
     const role = useMemberStore((state) => state.role);
     const isViewer = role === 'viewer';
@@ -165,7 +166,7 @@ const ProductRequiringMaterial = forwardRef<
           <h3 className="Heading-3 text-dg">{t('title')}</h3>
           {productConnections.length > 0 && (
             <MiniBtn
-              text={t('connectButton')}
+              text={tStock('connectButton.product')}
               variant="whiteOutline"
               onClick={() => setIsProductEnrollmentModalOpen(true)}
               disabled={isViewer || !hasSubscription()}
@@ -221,7 +222,7 @@ const ProductRequiringMaterial = forwardRef<
             <NoHistoryBox
               title={t('empty.title')}
               text={t('empty.description')}
-              button={t('connectButton')}
+              button={tStock('connectButton.product')}
               onClick={() => setIsProductEnrollmentModalOpen(true)}
               disabled={isViewer || !hasSubscription()}
             />

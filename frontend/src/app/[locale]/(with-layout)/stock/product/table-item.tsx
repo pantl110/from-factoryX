@@ -2,6 +2,7 @@ import Checkbox from '@/ui/checkbox';
 import { ProductResponseModel } from '@/types/data-model';
 import useSubscriptionStore from '@/store/subscription-store';
 import useMemberStore from '@/store/member-store';
+import { removeTrailingZeros } from '@/utils';
 
 interface TableItemProps {
   product: ProductResponseModel;
@@ -40,14 +41,14 @@ const TableItem = ({ product, onClick, checked, onToggle }: TableItemProps) => {
       <p
         className="flex-1 px-3 text-dg truncate"
         title={
-          product.current_stock === undefined || product.current_stock === null
-            ? '-'
-            : product.current_stock.toLocaleString()
+          product.current_stock !== null && product.current_stock !== undefined
+            ? removeTrailingZeros(product.current_stock)
+            : '-'
         }
       >
-        {product.current_stock === undefined || product.current_stock === null
-          ? '-'
-          : product.current_stock.toLocaleString()}
+        {product.current_stock !== null && product.current_stock !== undefined
+          ? removeTrailingZeros(product.current_stock)
+          : '-'}
       </p>
     </div>
   );

@@ -23,6 +23,7 @@
     "productionEquipment": "Equipment",
     "equipment": "Equipment",
     "productionTime": "Production Time",
+    "averageProductionTime": "Avg. Cycle",
     "productionDate": "Start Date",
     "expectedCompletionDate": "End Date",
     "deliveryDate": "Delivery Date",
@@ -47,7 +48,8 @@
       "unit": "Enter unit.",
       "enterNumber": "Enter a number.",
       "name": "Enter name.",
-      "phone": "Enter phone number."
+      "phone": "Enter phone number.",
+      "note": "-"
     },
     "clientInfo": "Client Info",
     "customer": "Customer",
@@ -81,6 +83,7 @@
     "print": "Print",
     "add": "Add",
     "note": "Note",
+    "preview": "Preview",
     "required": "(Required)",
     "seconds": "sec",
     "action": "Action",
@@ -95,7 +98,8 @@
       "sufficient": "Sufficient",
       "risk": "Risk",
       "shortage": "Shortage"
-    }
+    },
+    "listFormat": "{first} and {count} more"
   },
   "dropzone": {
     "dragAndDrop": "You can drag and drop files\nor upload them using the button below.",
@@ -116,7 +120,6 @@
     "editLog": "Edit Log",
     "documentTitleFormat": "[{clientName}] {title}",
     "productionDocumentTitleFormat": "PR-{date} {workInstruction}",
-    "specialNotes": "Notes",
     "memo": "Memo",
     "memoPlaceholder": "Enter a memo.",
     "noChangeHistory": "No change history.",
@@ -224,9 +227,21 @@
   },
   "navigation": {
     "dashboard": "Dashboard",
-    "project": "Project Management",
-    "stock": "Inventory Management",
-    "tax": "Tax & Accounting",
+    "project": "Projects",
+    "projectDropdown": {
+      "process": "Active Projects",
+      "completed": "Archived Projects"
+    },
+    "production": "Projects",
+    "quotation": "Projects",
+    "stock": "Inventory",
+    "product": "Product",
+    "material": "Material",
+    "tax": "Tax",
+    "taxDropdown": {
+      "draft": "Draft Tax Invoice",
+      "list": "Receivables & Payables"
+    },
     "document": "Documents",
     "setting": "Settings"
   },
@@ -261,8 +276,7 @@
     "pendingQuote": {
       "title": "Quote & Order Status",
       "noQuote": "No pending quotes.",
-      "noQuoteDescription": "Pending quotes will be displayed here when registered.",
-      "productList": "{firstProduct} and {count} more"
+      "noQuoteDescription": "Pending quotes will be displayed here when registered."
     },
     "processProject": {
       "title": "Production Projects",
@@ -344,7 +358,6 @@
       "tooltip": {
         "cloneProject": "If the same client requests again,\nclone this project to start immediately."
       },
-      "productList": "{firstProduct} and {count} more",
       "cloneModal": {
         "title": "Enter Due Date",
         "subtitle": "Please enter the due date for this project.",
@@ -641,7 +654,38 @@
     }
   },
   "stock": {
+    "title": "Inventory",
+    "excelDownloadButton": "Download Excel Template",
+    "addProductButton": "Add Product",
+    "addMaterialButton": "Add Material",
+    "tabs": {
+      "product": "Product",
+      "material": "Material"
+    },
+    "errors": {
+      "downloadFailed": "Failed to download file."
+    },
+    "toast": {
+      "duplicateMaterialCode": {
+        "text": "This material code already exists.",
+        "subtext": "Please modify it to a different material code."
+      },
+      "duplicateCodeNotRegistered": {
+        "product": "Duplicate product codes were not registered.",
+        "material": "Duplicate material codes were not registered."
+      }
+    },
+    "downloadFileName": {
+      "product": "Product_Registration_Form.xlsx",
+      "material": "Material_Registration_Form.xlsx"
+    },
     "manualAddButton": "Add Manually",
+    "productionQuantity": "Production Qty",
+    "deliveryQuantity": "Delivery Qty",
+    "connectButton": {
+      "material": "Link Material",
+      "product": "Link Product"
+    },
     "material": {
       "searchPlaceholder": "Enter material name or code to search.",
       "empty": {
@@ -659,7 +703,7 @@
         "safe": "Safe"
       },
       "packaging": {
-        "title": "Material Repackaging History",
+        "title": "Material Split History",
         "orderBy": {
           "expirationDate": "By Expiration",
           "lotNumber": "By Receipt"
@@ -669,13 +713,13 @@
           "subLotNumber": "Sub LOT"
         },
         "empty": {
-          "title": "No repackaged materials yet.",
-          "description": "When you repackage a master material, it will appear here."
+          "title": "No split materials yet.",
+          "description": "When you split a master material, it will appear here."
         }
       },
       "stockIn": {
         "title": "Material Stock-In & LOT Tracking",
-        "repackagingButton": "Repackage",
+        "repackagingButton": "Split Lot",
         "tableHeader": {
           "lotNumber": "LOT No.",
           "stockInQuantity": "Stock-In Qty",
@@ -712,13 +756,12 @@
       },
       "subMaterials": {
         "title": "Substitute Materials",
-        "connectButton": "Connect Material",
         "tableHeader": {
           "stockQuantity": "Stock Qty",
           "stockStatus": "Status"
         },
         "empty": {
-          "title": "No connected materials yet.",
+          "title": "No linked materials yet.",
           "description": "You can register materials that can be used instead of the current material."
         }
       },
@@ -727,10 +770,9 @@
       },
       "productRequiringMaterial": {
         "title": "Products Using This Material",
-        "connectButton": "Connect Product",
         "empty": {
-          "title": "No products connected to this material yet.",
-          "description": "When you connect products, materials used in those products will be displayed here."
+          "title": "No products linked to this material yet.",
+          "description": "When you link products, materials used in those products will be displayed here."
         }
       },
       "detail": {
@@ -738,6 +780,8 @@
         "title": "Material Management",
         "info": {
           "labels": {
+            "materialName": "Name",
+            "materialCode": "Code",
             "standardStock": "Safety Stock",
             "rop": "ROP",
             "maxStock": "Max Stock",
@@ -752,13 +796,12 @@
             "standardStock": "Enter safety stock.",
             "rop": "Enter ROP.",
             "maxStock": "Enter optimal stock.",
-            "expiryDays": "Enter expiration warning days.",
-            "specialNotes": "Enter special notes."
+            "expiryDays": "Enter expiration warning days."
           }
         },
         "errors": {
           "updateFailed": "Failed to update material information.",
-          "repackagingDeleteFailed": "Failed to delete repackaging history.",
+          "repackagingDeleteFailed": "Failed to delete split history.",
           "duplicateProductCode": "Product code already exists.",
           "duplicateProductCodeSubtext": "Please modify with a different product code.",
           "duplicateMaterialCode": "Material code already exists.",
@@ -777,12 +820,14 @@
           "addByExcel": "Bulk Add via Excel"
         },
         "createSubstitute": {
-          "title": "Connect Substitutable Materials",
+          "title": "Link Substitutable Materials",
           "searchPlaceholder": "Enter material name or code to search.",
-          "empty": "No materials to connect.",
-          "connectButton": "Connect",
+          "empty": "No materials to link.",
           "errors": {
             "fetchFailed": "Failed to fetch material list:"
+          },
+          "modal": {
+            "title": "Substitute Materials"
           }
         },
         "clientInfo": {
@@ -849,8 +894,8 @@
             "unit": "Unit",
             "currentStock": "Current Stock",
             "minStock": "Min Stock",
-            "avgProductionTime": "Avg Production Time (sec)",
-            "note": "Note"
+            "avgProductionTime": "Average Cycle Time (sec)",
+            "note": "Notes"
           },
           "duplicateCheck": {
             "keyword": "duplicate",
@@ -898,11 +943,11 @@
           }
         },
         "productEnrollment": {
-          "title": "Register products to connect with this material.",
+          "title": "Register products to link with this material.",
           "subtitle": "Select or add products, then set the material input quantity required for manufacturing each product.",
           "searchPlaceholder": "Enter product name to search.",
           "toast": {
-            "alreadyConnected": "This product is already connected.",
+            "alreadyConnected": "This product is already linked.",
             "quantityNotEntered": {
               "text": "Usage quantity not entered.",
               "subtext": "Please enter the usage quantity."
@@ -929,13 +974,13 @@
               "subtext": "Changes have been saved."
             },
             "createSuccess": {
-              "text": "Repackaging history created.",
-              "subtext": "You can view the repackaging history in the material repackaging history section."
+              "text": "Split history has been created",
+              "subtext": "You can view the split history in the material split history section."
             }
           },
           "inputArea": {
             "placeholders": {
-              "quantity": "(Required) Enter quantity to repackage.",
+              "quantity": "(Required) Enter quantity to split.",
               "expirationDate": "Enter expiration date"
             },
             "errors": {
@@ -948,23 +993,118 @@
                 "subtext": "Insufficient remaining quantity in parent history."
               },
               "createFailed": {
-                "text": "An error occurred while creating repackaging history."
+                "text": "An error occurred while creating split history."
               },
               "updateFailed": {
-                "text": "An error occurred while updating repackaging history."
+                "text": "An error occurred while updating split history."
               },
               "retryLater": "Please try again later."
             }
           },
           "usageHistory": {
-            "title": "Repackaged Material Usage History",
+            "title": "Split Material Usage History",
             "tableHeader": {
               "usage": "Material Usage"
             },
             "empty": {
               "title": "No usage history yet.",
-              "description": "Usage history will be displayed here when repackaged materials are used."
+              "description": "Usage history will be displayed here when split materials are used."
             }
+          }
+        }
+      }
+    },
+    "product": {
+      "searchPlaceholder": "Enter product name or code to search.",
+      "empty": {
+        "title": "No products yet.",
+        "description": "Products will appear here once created."
+      },
+      "bom": {
+        "title": "BOM/Packaging Recipe",
+        "tooltip": "Usage quantity is the amount of material needed to make one finished product",
+        "tableHeader": {
+          "usageQuantity": "Usage Qty",
+          "substituteMaterials": "Substitute",
+          "stockStatus": "Stock"
+        },
+        "stockStatus": {
+          "empty": {
+            "title": "No materials linked to this product yet.",
+            "description": "When you link materials, you can check the stock status here."
+          }
+        },
+        "stockStatusItem": {
+          "errors": {
+            "quantityNotEntered": {
+              "text": "Usage quantity is not entered.",
+              "subtext": "Please enter the usage quantity."
+            }
+          }
+        }
+      },
+      "modals": {
+        "productAddDropdown": {
+          "addIndividual": "Add Manually",
+          "addByExcel": "Bulk Add via Excel"
+        },
+        "connectMaterial": {
+          "title": "Select or add materials to link with the product.",
+          "subtitle": "After selecting or adding materials, set the usage quantity.",
+          "searchPlaceholder": "Enter material name to search.",
+          "toast": {
+            "alreadyConnected": "This material is already linked.",
+            "quantityNotEntered": {
+              "text": "Usage quantity is not entered.",
+              "subtext": "Please enter the usage quantity."
+            },
+            "factoryNotFound": "Factory information is not available.",
+            "createFailed": "Failed to create new material.",
+            "cannotGetId": "Cannot retrieve new material ID.",
+            "connectFailed": "Failed to link material.",
+            "connectError": "An error occurred while linking material."
+          }
+        }
+      },
+      "detail": {
+        "title": "Product Management",
+        "infoTitle": "Product Info",
+        "labels": {
+          "productName": "Name",
+          "productCode": "Code"
+        },
+        "placeholders": {
+          "currentStock": "Enter current stock quantity."
+        },
+        "errors": {
+          "updateFailed": "Failed to update product.",
+          "createFailed": "Failed to create product.",
+          "saveError": "An error occurred while saving.",
+          "factoryIdNotSet": "Factory ID is not set.",
+          "quantitySaveFailed": "Failed to save quantity changes.",
+          "connectionDeleteFailed": "Failed to delete connection:",
+          "connectionDeleteError": "An error occurred while deleting connection.",
+          "unknownError": "Unknown error"
+        }
+      },
+      "productHistory": {
+        "title": "Stock Movement History",
+        "tooltip": "When there is no impact on current stock, this is a cancellation of a previous stock-out due to a return.",
+        "empty": {
+          "title": "No stock history registered yet.",
+          "text": "When stock history related to stock-in or stock-out is registered, you can check it here."
+        },
+        "tableHeader": {
+          "processDate": "Date",
+          "movementLog": "Movement Log"
+        },
+        "projectStockHistoryModal": {
+          "title": "Stock Movement History",
+          "tableHeader": {
+            "processDate": "Date"
+          },
+          "empty": {
+            "text": "When stock history is modified, you can check it here."
           }
         }
       }
@@ -988,7 +1128,7 @@
         "placeholders": {
           "warehouseLocationName": "Building A, 3F, Rack B-12",
           "detailLocation": "2nd shelf from left, 3rd shelf from floor",
-          "memo": "Forklift access prohibited, repackaging only area, etc."
+          "memo": "Forklift access prohibited, Material splitting area, etc."
         },
         "errors": {
           "warehouseLocationNameRequired": "Please enter warehouse location name."
@@ -997,7 +1137,10 @@
       },
       "empty": {
         "title": "No warehouse locations registered yet.",
-        "description": "Click the [Add] button to register warehouses where materials are stored."
+        "description": {
+          "material": "Click the [Add] button to register warehouses where materials are stored.",
+          "product": "Click the [Add] button to register warehouses where products are stored."
+        }
       },
       "placeholders": {
         "warehouseLocation": "Enter warehouse location."
@@ -1314,7 +1457,7 @@
       },
       "permission": {
         "roles": {
-          "admin": "System Administrator",
+          "admin": "Administrator",
           "manager": "Operator",
           "prod_manager": "Production Manager",
           "viewer": "Viewer"

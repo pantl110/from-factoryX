@@ -15,6 +15,7 @@ import Toast from '@/ui/toast';
 import { WarningCircle } from '@phosphor-icons/react';
 import useMemberStore from '@/store/member-store';
 import ConnetionItem from '../../modals/connetion-item';
+import { useTranslations } from 'next-intl';
 
 interface ConnectMaterialModalProps {
   onClose: () => void;
@@ -57,6 +58,9 @@ const ConnectMaterialModal = ({
   const [toastSubtext, setToastSubtext] = useState('');
 
   const factoryId = useMemberStore((state) => state.factoryId);
+  const t = useTranslations('stock.product.modals.connectMaterial');
+  const tCommon = useTranslations('common');
+  const tStock = useTranslations('stock');
 
   const [selectedMaterials, setSelectedMaterials] = useState<
     MaterialItemModel[]
@@ -118,7 +122,7 @@ const ConnectMaterialModal = ({
     setInput('');
     // 이미 연결되어 있는 자재면 토스트 띄우고 추가하지 않음
     if (connectedMaterialIds.includes(item.id)) {
-      setToastText('이미 연결된 자재에요.');
+      setToastText(t('toast.alreadyConnected'));
       showToast();
       setIsDropdownOpen(false);
       return;
@@ -176,8 +180,8 @@ const ConnectMaterialModal = ({
       selectedMaterials.some((m) => (m.quantity ?? 0) === 0) ||
       newMaterials.some((m) => (m.quantity ?? 0) === 0);
     if (hasZeroQty) {
-      setToastText('사용수량이 입력되지 않았어요.');
-      setToastSubtext('사용수량을 입력해주세요.');
+      setToastText(t('toast.quantityNotEntered.text'));
+      setToastSubtext(t('toast.quantityNotEntered.subtext'));
       showToast();
       return;
     }
@@ -212,7 +216,7 @@ const ConnectMaterialModal = ({
       // 2) 수동 추가 원자재는 먼저 생성하여 id 확보
       if (newMaterials.length > 0) {
         if (!factoryId) {
-          setToastText('공장 정보가 없습니다.');
+          setToastText(t('toast.factoryNotFound'));
           setToastSubtext('');
           showToast();
           return;
@@ -227,14 +231,14 @@ const ConnectMaterialModal = ({
 
         const createResult = await createMaterial(createPayload);
         if (!createResult.success) {
-          setToastText('새 원자재 생성에 실패했어요.');
+          setToastText(t('toast.createFailed'));
           setToastSubtext(createResult.error || '');
           showToast();
           return;
         }
         const createdMaterialIds = createResult.data?.material_ids;
         if (!createdMaterialIds || createdMaterialIds.length === 0) {
-          setToastText('새 원자재 ID를 가져올 수 없어요.');
+          setToastText(t('toast.cannotGetId'));
           setToastSubtext('');
           showToast();
           return;
@@ -264,7 +268,7 @@ const ConnectMaterialModal = ({
       // 1. 새로운 원자재 생성
       if (newMaterials.length > 0) {
         if (!factoryId) {
-          setToastText('공장 정보가 없습니다.');
+          setToastText(t('toast.factoryNotFound'));
           setToastSubtext('');
           showToast();
           return;
@@ -280,7 +284,7 @@ const ConnectMaterialModal = ({
 
         const createResult = await createMaterial(createPayload);
         if (!createResult.success) {
-          setToastText('새 원자재 생성에 실패했어요.');
+          setToastText(t('toast.createFailed'));
           setToastSubtext(createResult.error || '');
           showToast();
           return;
@@ -289,7 +293,7 @@ const ConnectMaterialModal = ({
         // 생성된 원자재 ID들을 가져와서 연결 목록에 추가
         const createdMaterialIds = createResult.data?.material_ids;
         if (!createdMaterialIds || createdMaterialIds.length === 0) {
-          setToastText('새 원자재 ID를 가져올 수 없어요.');
+          setToastText(t('toast.cannotGetId'));
           setToastSubtext('');
           showToast();
           return;
@@ -323,7 +327,7 @@ const ConnectMaterialModal = ({
 
         const connectResult = await createMaterialProduct(connectPayload);
         if (!connectResult.success) {
-          setToastText('원자재 연결에 실패했어요.');
+          setToastText(t('toast.connectFailed'));
           setToastSubtext(connectResult.error || '');
           showToast();
           return;
@@ -335,7 +339,7 @@ const ConnectMaterialModal = ({
         await onSuccess();
       }
     } catch (error) {
-      setToastText('원자재 연결 중 오류가 발생했어요.');
+      setToastText(t('toast.connectError'));
       setToastSubtext(error instanceof Error ? error.message : String(error));
       showToast();
     }
@@ -343,8 +347,8 @@ const ConnectMaterialModal = ({
 
   return (
     <Modal
-      title="제품과 연결할 원자재를 선택하거나 새로 추가해 주세요."
-      subtitle="원자재를 선택하거나 새로 추가한 뒤, 사용수량을 설정해 주세요."
+      title={t('title')}
+      subtitle={t('subtitle')}
       width="w-[600px]"
       onClose={onClose}
       scroll={true}
@@ -352,7 +356,7 @@ const ConnectMaterialModal = ({
       <div>
         <div className="my-4 flex gap-2.5 px-6 relative">
           <SearchInput
-            placeholder="원자재를 입력해 검색하세요."
+            placeholder={t('searchPlaceholder')}
             width="flex-1"
             value={input}
             onChange={(value) => {
@@ -371,7 +375,7 @@ const ConnectMaterialModal = ({
             onBlur={() => setTimeout(() => setIsDropdownOpen(false), 150)}
           />
           <MiniBtn
-            text="직접 추가하기"
+            text={tStock('manualAddButton')}
             textColor="text-dg"
             borderColor="border-lg"
             hoverColor="hover:bg-bg"
@@ -451,13 +455,13 @@ const ConnectMaterialModal = ({
 
           <div className="flex gap-2.5 justify-end">
             <MiniBtn
-              text="취소"
+              text={tCommon('cancel')}
               textColor="text-sv"
               hoverColor="hover:bg-bg"
               onClick={onClose}
             />
             <MiniBtn
-              text="추가하기"
+              text={tCommon('add')}
               textColor="text-wh"
               bgColor="bg-primary"
               hoverColor="hover:bg-primary-hover"

@@ -14,6 +14,7 @@ import IconBtn from '@/ui/icon-btn';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import { RoundChip } from '@/ui';
+import { useTranslations } from 'next-intl';
 
 interface StockStatusItemProps {
   connection: MaterialProductConnectionModel;
@@ -41,6 +42,8 @@ const StockStatusItem = ({
   onStagedQuantityChange,
   onOpenSubstituteMaterialsModal,
 }: StockStatusItemProps) => {
+  const t = useTranslations('stock.product.bom.stockStatusItem');
+  const tCommon = useTranslations('common');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
@@ -124,8 +127,8 @@ const StockStatusItem = ({
   const handleSaveQuantity = async (newQuantity: number) => {
     if (isNaN(newQuantity) || newQuantity <= 0) {
       onInvalidQuantity(
-        '사용수량이 입력되지 않았어요.',
-        '사용수량을 입력해주세요.'
+        t('errors.quantityNotEntered.text'),
+        t('errors.quantityNotEntered.subtext')
       );
       // 유효하지 않은 값이면 원래 값으로 되돌리기
       materialQuantityForm.setValue('quantity', connection.quantity || 0);
@@ -178,7 +181,7 @@ const StockStatusItem = ({
         {connection.material_spec || '-'}
       </p>
 
-      <div className="flex-[0.8] px-3 text-dg flex items-center overflow-hidden">
+      <div className="flex-[0.8] px-3 text-dg flex items-center overflow-hidden ">
         <input
           type="text"
           className="focus:outline-none "
@@ -188,7 +191,7 @@ const StockStatusItem = ({
             maxWidth: '10ch',
           }}
           value={displayValue}
-          placeholder="(필수)"
+          placeholder={tCommon('required')}
           onChange={(e) => handleQuantityChangeLocal(e.target.value)}
           onBlur={(e) => {
             const cleanValue = e.target.value.replace(/[^0-9.]/g, '');
@@ -221,7 +224,7 @@ const StockStatusItem = ({
         {connection.material_unit || '-'}
       </p>
       <div
-        className={`flex-1 px-3 text-dg truncate h-full flex items-center ${
+        className={`flex-1 px-3 text-dg h-full flex items-center min-w-0 ${
           connection.substitutes.length > 0
             ? 'hover:bg-bg cursor-pointer transition-colors duration-200'
             : 'cursor-default'
@@ -230,7 +233,10 @@ const StockStatusItem = ({
         tabIndex={0}
         title={
           connection.substitutes.length > 0
-            ? `${connection.substitutes[0]} 외 ${connection.substitutes.length - 1}개`
+            ? tCommon('listFormat', {
+                first: connection.substitutes[0],
+                count: connection.substitutes.length - 1,
+              })
             : '-'
         }
         onClick={
@@ -239,9 +245,14 @@ const StockStatusItem = ({
             : undefined
         }
       >
-        {connection.substitutes.length > 0
-          ? `${connection.substitutes[0]} 외 ${connection.substitutes.length - 1}개`
-          : '-'}
+        <p className="truncate">
+          {connection.substitutes.length > 0
+            ? tCommon('listFormat', {
+                first: connection.substitutes[0],
+                count: connection.substitutes.length - 1,
+              })
+            : '-'}
+        </p>
       </div>
       <div className="flex-[0.5] px-3 text-dg flex justify-between">
         {status ? (

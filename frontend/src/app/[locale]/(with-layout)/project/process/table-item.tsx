@@ -70,9 +70,8 @@ const TableItem = ({
     project.status === 'confirmed' ||
     project.status === 'suspended'
       ? project.quotations[0].products.length > 1
-        ? t('productList', {
-            firstProduct:
-              project.quotations[0].products[0]?.product?.name || '',
+        ? tCommon('listFormat', {
+            first: project.quotations[0].products[0]?.product?.name || '',
             count: project.quotations[0].products.length - 1,
           })
         : project.quotations[0].products[0]?.product?.name || '-'
@@ -80,8 +79,8 @@ const TableItem = ({
           project.quotations.length > 0 &&
           project.quotations[0].products_info &&
           project.quotations[0].products_info.length > 1
-        ? t('productList', {
-            firstProduct: project.quotations[0].products_info[0]?.name || '',
+        ? tCommon('listFormat', {
+            first: project.quotations[0].products_info[0]?.name || '',
             count: project.quotations[0].products_info.length - 1,
           })
         : project.quotations[0].products_info[0]?.name || '-';

@@ -14,6 +14,7 @@ import Spinner from '@/ui/spinner';
 import NoHistoryBox from '@/ui/no-history-box';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
+import { useTranslations } from 'next-intl';
 
 interface ProductProps {
   setSelectedProductIdToParent?: (setter: (id: number | null) => void) => void;
@@ -27,6 +28,7 @@ const Product = ({
   setIsProductDetailPanelOpen,
   setReloadFunctionToParent,
 }: ProductProps) => {
+  const t = useTranslations('stock.product');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
@@ -156,7 +158,7 @@ const Product = ({
         <SearchInput
           value={searchKeyword}
           onChange={handleSearch}
-          placeholder="제품명 또는 제품코드를 입력해 검색하세요."
+          placeholder={t('searchPlaceholder')}
         />
         {productList.length > 0 && !isViewer && hasSubscription() && (
           <div className="flex gap-1">
@@ -189,10 +191,7 @@ const Product = ({
           <Spinner />
         </div>
       ) : productList.length === 0 ? (
-        <NoHistoryBox
-          title="제품이 아직 없어요."
-          text="제품이 생성되면 이곳에 표시돼요. "
-        />
+        <NoHistoryBox title={t('empty.title')} text={t('empty.description')} />
       ) : (
         <>
           <div>

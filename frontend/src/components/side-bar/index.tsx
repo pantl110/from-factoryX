@@ -10,14 +10,16 @@ import {
 } from '@phosphor-icons/react/dist/ssr';
 import SideBarItem from '@/components/side-bar/side-bar-item';
 import FactoryXLogo from '@/ui/icons/factory-x-logo';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter } from '@/i18n/navigation';
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface SideBarProps {
   onVisibilityChange?: (visible: boolean) => void;
 }
 
 const SideBar = ({ onVisibilityChange }: SideBarProps) => {
+  const t = useTranslations('navigation');
   const router = useRouter();
   const pathname = usePathname();
   const [isHovered, setIsHovered] = useState(false);
@@ -58,32 +60,39 @@ const SideBar = ({ onVisibilityChange }: SideBarProps) => {
           </div>
         </div>
         <div className="flex flex-col gap-1 px-2">
-          <SideBarItem icon={ChartBar} label="현황판" path="/dashboard" />
+          <SideBarItem
+            icon={ChartBar}
+            label={t('dashboard')}
+            path="/dashboard"
+          />
           <SideBarItem
             icon={Package}
-            label="PO 관리"
+            label={t('project')}
             path="/project"
             hasDropdown={true}
             dropdownItems={[
-              { label: '진행 중인 프로젝트', path: '/project/process' },
-              { label: '보관된 프로젝트', path: '/project/completed' },
+              { label: t('projectDropdown.process'), path: '/project/process' },
+              {
+                label: t('projectDropdown.completed'),
+                path: '/project/completed',
+              },
             ]}
           />
-          <SideBarItem icon={Warehouse} label="재고 관리" path="/stock" />
+          <SideBarItem icon={Warehouse} label={t('stock')} path="/stock" />
           <SideBarItem
             icon={MoneyWavy}
-            label="세무 관리"
+            label={t('tax')}
             path="/tax"
             hasDropdown={true}
             dropdownItems={[
-              { label: '세금계산서 작성함', path: '/tax/draft' },
-              { label: '채권 · 채무 관리', path: '/tax/list' },
+              { label: t('taxDropdown.draft'), path: '/tax/draft' },
+              { label: t('taxDropdown.list'), path: '/tax/list' },
             ]}
           />
-          <SideBarItem icon={Files} label="문서함" path="/document" />
+          <SideBarItem icon={Files} label={t('document')} path="/document" />
         </div>
         <div className="mt-auto px-2 mb-8">
-          <SideBarItem icon={Gear} label="설정" path="/setting" />
+          <SideBarItem icon={Gear} label={t('setting')} path="/setting" />
         </div>
       </aside>
     </>

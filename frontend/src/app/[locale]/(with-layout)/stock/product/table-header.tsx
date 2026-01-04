@@ -1,6 +1,7 @@
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import Checkbox from '@/ui/checkbox';
+import { useTranslations } from 'next-intl';
 
 interface TableHeaderProps {
   isAllChecked: boolean;
@@ -8,6 +9,7 @@ interface TableHeaderProps {
 }
 
 const TableHeader = ({ isAllChecked, onToggleAll }: TableHeaderProps) => {
+  const tCommon = useTranslations('common');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
@@ -22,11 +24,11 @@ const TableHeader = ({ isAllChecked, onToggleAll }: TableHeaderProps) => {
           onToggle={onToggleAll || (() => {})}
         />
       )}
-      <p className="flex-1 px-3 text-sv">제품명</p>
-      <p className="flex-1 px-3 text-sv">제품 코드</p>
-      <p className="flex-1 px-3 text-sv">규격</p>
-      <p className="flex-1 px-3 text-sv">단위</p>
-      <p className="flex-1 px-3 text-sv">현재 재고</p>
+      <p className="flex-1 px-3 text-sv">{tCommon('productName')}</p>
+      <p className="flex-1 px-3 text-sv">{tCommon('productCode')}</p>
+      <p className="flex-1 px-3 text-sv">{tCommon('specification')}</p>
+      <p className="flex-1 px-3 text-sv">{tCommon('unit')}</p>
+      <p className="flex-1 px-3 text-sv">{tCommon('currentStock')}</p>
     </div>
   );
 };

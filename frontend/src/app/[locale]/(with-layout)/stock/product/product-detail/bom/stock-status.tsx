@@ -6,6 +6,7 @@ import {
 import NoHistoryBox from '@/ui/no-history-box';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
+import { useTranslations } from 'next-intl';
 
 type ConnectionModelType =
   | MaterialProductConnectionModel
@@ -40,6 +41,9 @@ const StockStatus = ({
   onStagedQuantityChange,
   onOpenSubstituteMaterialsModal,
 }: StockStatusProps) => {
+  const t = useTranslations('stock.product.bom');
+  const tStock = useTranslations('stock');
+  const tCommon = useTranslations('common');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
@@ -55,14 +59,22 @@ const StockStatus = ({
         connections.length > 0 ? (
         <div>
           <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 cursor-default">
-            <p className="flex-1 px-3 text-sv">자재명</p>
-            <p className="flex-[0.8] px-3 text-sv">규격</p>
-            <p className="flex-[0.8] px-3 text-sv">소요량</p>
-            <p className="flex-[0.8] px-3 text-sv">단위</p>
-            <p className="flex-1 px-3 text-sv">대체 자재</p>
-            <p className="flex-[0.5] px-3 text-sv">재고 상태</p>
+            <p className="flex-1 px-3 text-sv">{tCommon('materialName')}</p>
+            <p className="flex-[0.8] px-3 text-sv">
+              {tCommon('specification')}
+            </p>
+            <p className="flex-[0.8] px-3 text-sv">
+              {t('tableHeader.usageQuantity')}
+            </p>
+            <p className="flex-[0.8] px-3 text-sv">{tCommon('unit')}</p>
+            <p className="flex-1 px-3 text-sv">
+              {t('tableHeader.substituteMaterials')}
+            </p>
+            <p className="flex-[0.5] px-3 text-sv">
+              {t('tableHeader.stockStatus')}
+            </p>
             {!isViewer && hasSubscription() && (
-              <p className="w-20 px-3 text-sv">액션</p>
+              <p className="w-20 px-3 text-sv">{tCommon('action')}</p>
             )}
           </div>
 
@@ -97,9 +109,9 @@ const StockStatus = ({
         </div>
       ) : (
         <NoHistoryBox
-          title="이 제품에 연결된 원자재가 아직 없어요."
-          text="원자재를 연결하면 이곳에서 재고 상태를 확인할 수 있어요."
-          button="자재 연결하기"
+          title={t('stockStatus.empty.title')}
+          text={t('stockStatus.empty.description')}
+          button={tStock('connectButton.material')}
           onClick={() => {
             onMaterialModalOpen();
           }}

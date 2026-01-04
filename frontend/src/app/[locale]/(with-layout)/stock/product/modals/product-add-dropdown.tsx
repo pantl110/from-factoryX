@@ -1,5 +1,6 @@
 import Dropdown from '@/ui/dropdown/dropdown';
 import DropdownItem from '@/ui/dropdown/dropdown-item';
+import { useTranslations } from 'next-intl';
 
 interface ProductAddDropdownProps {
   onClose: () => void;
@@ -12,10 +13,12 @@ const ProductAddDropdown = ({
   onOpenExcelModal,
   onOpenCreatePanel,
 }: ProductAddDropdownProps) => {
+  const t = useTranslations('stock.product.modals.productAddDropdown');
+
   return (
     <Dropdown onClose={onClose}>
-      <DropdownItem text="개별 제품 추가" onClick={onOpenCreatePanel} />
-      <DropdownItem text="엑셀로 한 번에 등록" onClick={onOpenExcelModal} />
+      <DropdownItem text={t('addIndividual')} onClick={onOpenCreatePanel} />
+      <DropdownItem text={t('addByExcel')} onClick={onOpenExcelModal} />
     </Dropdown>
   );
 };

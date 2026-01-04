@@ -9,6 +9,7 @@ import useMemberStore from '@/store/member-store';
 import { useTooltip } from '@/hooks';
 import Tooltip from '@/ui/tooltip';
 import { Info } from '@phosphor-icons/react';
+import { useTranslations } from 'next-intl';
 
 type ConnectionModelType =
   | MaterialProductConnectionModel
@@ -58,6 +59,8 @@ const Bom = ({
   onDeleteConnection,
   isLoading,
 }: BOMProps) => {
+  const t = useTranslations('stock.product.bom');
+  const tStock = useTranslations('stock');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
 
@@ -82,7 +85,7 @@ const Bom = ({
       <div className="h-10 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <h3 className="Heading-3 h-10 flex items-center text-dg">
-            BOM/패키징 레시피
+            {t('title')}
           </h3>
           <div
             className="relative"
@@ -92,18 +95,14 @@ const Bom = ({
             <Info size={20} className="text-gr cursor-help" />
             {isVisible && (
               <div className="absolute z-10 top-7 -left-2 w-140">
-                <Tooltip
-                  text="소요량은 완제품 1개 만들 때 필요한 자재 양"
-                  color="black"
-                  position="left"
-                />
+                <Tooltip text={t('tooltip')} color="black" position="left" />
               </div>
             )}
           </div>
         </div>
         {hasData && (
           <MiniBtn
-            text="자재 연결하기"
+            text={tStock('connectButton.material')}
             variant="whiteOutline"
             onClick={onMaterialModalOpen}
             disabled={isViewer || !hasSubscription()}

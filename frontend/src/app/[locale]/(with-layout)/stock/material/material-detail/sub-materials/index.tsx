@@ -32,6 +32,7 @@ export const SubMaterials = forwardRef<SubMaterialsRefModel, SubMaterialsProps>(
     ref
   ) => {
     const t = useTranslations('stock.material.subMaterials');
+    const tStock = useTranslations('stock');
     const tCommon = useTranslations('common');
     const role = useMemberStore((state) => state.role);
     const isViewer = role === 'viewer';
@@ -83,7 +84,7 @@ export const SubMaterials = forwardRef<SubMaterialsRefModel, SubMaterialsProps>(
           <h3 className="Heading-3 text-dg">{t('title')}</h3>
           {targetMaterials.length > 0 && (
             <MiniBtn
-              text={t('connectButton')}
+              text={tStock('connectButton.material')}
               variant="whiteOutline"
               disabled={isViewer || !hasSubscription()}
               onClick={() => {

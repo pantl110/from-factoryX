@@ -1,6 +1,7 @@
 import { ProductHistoryResponseModel } from '@/types/data-model';
 import ProductStockLogItem from './product-stock-log-item';
 import Pagination from '@/components/pagination';
+import { useTranslations } from 'next-intl';
 
 interface ProductStockLogProps {
   data: ProductHistoryResponseModel[];
@@ -20,17 +21,29 @@ const ProductStockLog = ({
   setPage,
   setIsProjectStockHistoryModalOpen,
 }: ProductStockLogProps) => {
+  const t = useTranslations('stock.product.productHistory');
+  const tStock = useTranslations('stock');
+  const tCommon = useTranslations('common');
+
   if (data.length === 0) return null;
   return (
     <>
       <div className="cursor-default">
         <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1">
-          <p className="flex-1 py-1 px-3 text-sv">처리일자</p>
-          <p className="flex-1 py-1 px-3 text-sv">거래처명</p>
-          <p className="flex-1 py-1 px-3 text-sv">생산 수량</p>
-          <p className="flex-1 py-1 px-3 text-sv">납품 수량</p>
-          <p className="flex-1 py-1 px-3 text-sv">현재 재고</p>
-          <p className="flex-1 py-1 px-3 text-sv">변동 로그</p>
+          <p className="flex-1 py-1 px-3 text-sv">
+            {t('tableHeader.processDate')}
+          </p>
+          <p className="flex-1 py-1 px-3 text-sv">{tCommon('clientName')}</p>
+          <p className="flex-1 py-1 px-3 text-sv">
+            {tStock('productionQuantity')}
+          </p>
+          <p className="flex-1 py-1 px-3 text-sv">
+            {tStock('deliveryQuantity')}
+          </p>
+          <p className="flex-1 py-1 px-3 text-sv">{tCommon('currentStock')}</p>
+          <p className="flex-1 py-1 px-3 text-sv">
+            {t('tableHeader.movementLog')}
+          </p>
         </div>
         {data.map((item) => (
           <ProductStockLogItem

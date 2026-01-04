@@ -194,7 +194,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
             control={control}
             render={({ field }) => (
               <InfoLabelValue
-                label={tCommon('materialName')}
+                label={t('labels.materialName')}
                 value={field.value ?? '-'}
                 handleChange={field.onChange}
                 isEditing={!isViewer && hasSubscription()}
@@ -208,7 +208,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
             control={control}
             render={({ field }) => (
               <InfoLabelValue
-                label={tCommon('materialCode')}
+                label={t('labels.materialCode')}
                 value={field.value ?? '-'}
                 handleChange={field.onChange}
                 isEditing={!isViewer && hasSubscription()}
@@ -690,7 +690,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
                 value={field.value ?? '-'}
                 handleChange={field.onChange}
                 isEditing={!isViewer && hasSubscription()}
-                placeholder="-"
+                placeholder={tCommon('placeholders.note')}
                 textarea={true}
                 onChange={(e) => {
                   field.onChange(e);

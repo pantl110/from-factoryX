@@ -1,3 +1,5 @@
+'use client';
+
 import { useEffect } from 'react';
 import NoHistoryBox from '@/ui/no-history-box';
 import { useProductHistory, useTooltip } from '@/hooks';
@@ -5,6 +7,7 @@ import { ProductHistoryListResponseModel } from '@/types/data-model';
 import ProductStockLog from './product-stock-log';
 import { Info } from '@phosphor-icons/react';
 import Tooltip from '@/ui/tooltip';
+import { useTranslations } from 'next-intl';
 
 interface ProductHistoryProps {
   productId: number | null;
@@ -23,6 +26,7 @@ const ProductHistory = ({
   // const [isProductStockLogDropdownOpen, setIsProductStockLogDropdownOpen] =
   //   useState(false); // 판넬의 제품 입·출고 내역 드롭다운
 
+  const t = useTranslations('stock.product.productHistory');
   const { listProductHistories, data, isLoading } = useProductHistory();
   const { isVisible, onMouseEnter, onMouseLeave } = useTooltip({});
 
@@ -65,7 +69,7 @@ const ProductHistory = ({
       <div className="flex flex-col gap-3">
         <div className="h-10 flex items-center gap-2">
           <h3 className="Heading-3 text-dg h-10 flex items-center">
-            재고 변동 내역
+            {t('title')}
           </h3>
           <div
             className="relative"
@@ -75,11 +79,7 @@ const ProductHistory = ({
             <Info size={20} className="text-gr cursor-help" />
             {isVisible && (
               <div className="absolute z-10 top-7 -left-2 w-140">
-                <Tooltip
-                  text="현재 재고의 영향이 없을 때는 반품으로 인해 이전 출고 내역을 취소한 처리입니다."
-                  color="black"
-                  position="left"
-                />
+                <Tooltip text={t('tooltip')} color="black" position="left" />
               </div>
             )}
           </div>
@@ -89,10 +89,7 @@ const ProductHistory = ({
         {isLoading ? (
           <div className="h-50" />
         ) : productId === null || histories.length === 0 ? (
-          <NoHistoryBox
-            title="등록된 재고 이력이 아직 없어요."
-            text="입고나 출고와 관련된 재고 이력이 등록되면 이곳에서 확인할 수 있어요."
-          />
+          <NoHistoryBox title={t('empty.title')} text={t('empty.text')} />
         ) : (
           <ProductStockLog
             data={histories}

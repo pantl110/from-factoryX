@@ -7,7 +7,7 @@ import ProductAddDropdown from './product/modals/product-add-dropdown';
 import MaterialAddDropdown from './material/modals/material-add-dropdown';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 
 interface MainTitleSecProps {
   selectedTab: StockTabType;
@@ -32,6 +32,7 @@ const MainTitleSec = ({
   onOpenCreatePanel,
   onOpenClientInfoModal,
 }: MainTitleSecProps) => {
+  const t = useTranslations('stock');
   const locale = useLocale();
   const factoryId = useMemberStore((state) => state.factoryId);
   const role = useMemberStore((state) => state.role);
@@ -58,12 +59,8 @@ const MainTitleSec = ({
 
       const downloadName =
         selectedTab === 'product'
-          ? locale === 'en'
-            ? 'Product_Registration_Form.xlsx'
-            : '제품_등록_양식.xlsx'
-          : locale === 'en'
-            ? 'Material_Registration_Form.xlsx'
-            : '자재_등록_양식.xlsx';
+          ? t('downloadFileName.product')
+          : t('downloadFileName.material');
 
       // 파일 다운로드
       const link = document.createElement('a'); // 다운로드 링크 생성
@@ -73,17 +70,17 @@ const MainTitleSec = ({
       link.click();
       document.body.removeChild(link);
     } catch {
-      alert('파일 다운로드에 실패했습니다.');
+      alert(t('errors.downloadFailed'));
     }
   };
 
   return (
     <div className="flex flex-col gap-8 pt-10 pr-10 pl-10">
       <div className="flex items-center justify-between">
-        <h1 className="Heading-1 text-dg">재고 관리</h1>
+        <h1 className="Heading-1 text-dg">{t('title')}</h1>
         <div className="flex gap-2.5">
           <MiniBtn
-            text="엑셀 양식 다운로드"
+            text={t('excelDownloadButton')}
             textColor="text-dg"
             borderColor="border-lg"
             hoverColor="hover:bg-bg"
@@ -95,7 +92,9 @@ const MainTitleSec = ({
               bgColor="bg-primary"
               textColor="text-wh"
               text={
-                selectedTab === 'product' ? '제품 추가하기' : '자재 추가하기'
+                selectedTab === 'product'
+                  ? t('addProductButton')
+                  : t('addMaterialButton')
               }
               icon={CaretDown}
               iconPosition="right"
@@ -136,14 +135,14 @@ const MainTitleSec = ({
           className={`${selectedTab === 'product' ? 'text-bl' : 'text-gr'} cursor-pointer`}
           onClick={() => handleTabClick('product')}
         >
-          제품
+          {t('tabs.product')}
         </button>
         <button
           type="button"
           className={`${selectedTab === 'material' ? 'text-bl' : 'text-gr'} cursor-pointer`}
           onClick={() => handleTabClick('material')}
         >
-          원자재
+          {t('tabs.material')}
         </button>
       </div>
     </div>

@@ -12,7 +12,6 @@ interface PendingQuoteItemProps {
 }
 
 const PendingQuoteItem = ({ project, onClick }: PendingQuoteItemProps) => {
-  const t = useTranslations('dashboard.pendingQuote');
   const tCommon = useTranslations('common');
   const tStatus = useTranslations('project.status');
 
@@ -22,8 +21,8 @@ const PendingQuoteItem = ({ project, onClick }: PendingQuoteItemProps) => {
     if (productCount === 1) {
       return project.quotations[0].products[0].product.name;
     }
-    return t('productList', {
-      firstProduct: project.quotations[0].products[0].product.name,
+    return tCommon('listFormat', {
+      first: project.quotations[0].products[0].product.name,
       count: productCount - 1,
     });
   };

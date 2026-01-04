@@ -1,4 +1,4 @@
-import { usePathname } from 'next/navigation';
+import { usePathname } from '@/i18n/navigation';
 import { CaretRight } from '@phosphor-icons/react';
 import {
   SettingTabType,
@@ -7,35 +7,7 @@ import {
 } from '@/components/top-bar/types';
 import usePageStatusStore, { PageStatusModel } from '@/store/page-status-store';
 import { locales } from '@/i18n/config';
-
-const crumbNameMap: Record<string, string> = {
-  dashboard: '현황판',
-
-  project: '프로젝트 관리',
-  completed: '보관된 프로젝트',
-  process: '진행 중인 프로젝트',
-
-  production: '프로젝트 관리',
-  return: '반품 관리',
-  quotation: '프로젝트 관리',
-
-  stock: '재고 관리',
-  product: '제품',
-  material: '원자재',
-
-  tax: '세무/회계',
-  list: '채권 · 채무 관리',
-  draft: '세금계산서 작성함',
-
-  document: '문서함',
-
-  setting: '설정',
-  general: '일반',
-  permission: '권한 설정',
-  subscription: '구독 관리',
-  equipment: '설비 관리',
-  client: '거래처 정보',
-};
+import { useTranslations } from 'next-intl';
 
 interface TopBarCrumbProps {
   stockTab?: StockTabType;
@@ -48,8 +20,36 @@ const TopBarCrumb = ({
   settingTab,
   settingChip,
 }: TopBarCrumbProps) => {
+  const tNav = useTranslations('navigation');
+  const tSetting = useTranslations('setting');
   const pathname = usePathname();
   const allCrumbs = pathname.split('/').filter(Boolean);
+
+  const getCrumbName = (crumb: string): string => {
+    const crumbMap: Record<string, () => string> = {
+      dashboard: () => tNav('dashboard'),
+      project: () => tNav('project'),
+      completed: () => tNav('projectDropdown.completed'),
+      process: () => tNav('projectDropdown.process'),
+      production: () => tNav('production'),
+      quotation: () => tNav('quotation'),
+      stock: () => tNav('stock'),
+      product: () => tNav('product'),
+      material: () => tNav('material'),
+      tax: () => tNav('tax'),
+      list: () => tNav('taxDropdown.list'),
+      draft: () => tNav('taxDropdown.draft'),
+      document: () => tNav('document'),
+      setting: () => tNav('setting'),
+      general: () => tSetting('systemSetting.chips.general'),
+      permission: () => tSetting('systemSetting.chips.permission'),
+      subscription: () => tSetting('systemSetting.chips.subscription'),
+      equipment: () => tSetting('masterData.chips.facility'),
+      client: () => tSetting('masterData.chips.client'),
+    };
+
+    return crumbMap[crumb]?.() || crumb;
+  };
 
   // 첫 번째 요소가 locale인 경우 제외
   const crumbs =
@@ -96,31 +96,42 @@ const TopBarCrumb = ({
   // 설정 페이지인 경우 탭과 칩 상태 추가
   if (crumbs[0] === 'setting') {
     if (settingTab === 'system') {
-      finalCrumbs = ['setting', '시스템 설정'];
+      finalCrumbs = ['setting', 'system'];
       if (
         settingChip &&
         ['general', 'permission', 'subscription'].includes(settingChip)
       ) {
-        finalCrumbs.push(crumbNameMap[settingChip] || settingChip);
+        finalCrumbs.push(settingChip);
       }
     } else if (settingTab === 'master') {
-      finalCrumbs = ['setting', '마스터 데이터 관리'];
+      finalCrumbs = ['setting', 'master'];
       if (settingChip && ['equipment', 'client'].includes(settingChip)) {
-        finalCrumbs.push(crumbNameMap[settingChip] || settingChip);
+        finalCrumbs.push(settingChip);
       }
     }
   }
 
   return (
     <div className="flex items-center gap-1">
-      {finalCrumbs.map((crumb, idx) => (
-        <div key={idx} className="flex items-center gap-1">
-          <p className="Re_Body-1 text-dg">{crumbNameMap[crumb] || crumb}</p>
-          {idx < finalCrumbs.length - 1 && (
-            <CaretRight size={16} className="text-[#8c8c8c]" />
-          )}
-        </div>
-      ))}
+      {finalCrumbs.map((crumb, idx) => {
+        let displayText: string;
+        if (crumb === 'system') {
+          displayText = tSetting('tabs.system');
+        } else if (crumb === 'master') {
+          displayText = tSetting('tabs.master');
+        } else {
+          displayText = getCrumbName(crumb);
+        }
+
+        return (
+          <div key={idx} className="flex items-center gap-1">
+            <p className="Re_Body-1 text-dg">{displayText}</p>
+            {idx < finalCrumbs.length - 1 && (
+              <CaretRight size={16} className="text-[#8c8c8c]" />
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 };

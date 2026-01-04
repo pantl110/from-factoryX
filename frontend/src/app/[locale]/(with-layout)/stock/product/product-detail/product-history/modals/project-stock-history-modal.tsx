@@ -6,6 +6,7 @@ import NoHistoryBox from '@/ui/no-history-box';
 import Pagination from '@/components/pagination';
 import MiniBtn from '@/ui/mini-btn';
 import { formatISODate } from '@/utils';
+import { useTranslations } from 'next-intl';
 
 interface ProjectStockHistoryModalProps {
   projectId?: number;
@@ -18,6 +19,11 @@ const ProjectStockHistoryModal = ({
   productId,
   onClose,
 }: ProjectStockHistoryModalProps) => {
+  const t = useTranslations(
+    'stock.product.productHistory.projectStockHistoryModal'
+  );
+  const tStock = useTranslations('stock');
+  const tCommon = useTranslations('common');
   const { listProductHistories, data, isLoading } = useProductHistory();
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -48,7 +54,7 @@ const ProjectStockHistoryModal = ({
   return (
     <Modal
       onClose={onClose}
-      title="재고 변동 내역"
+      title={t('title')}
       subtitle={histories.length > 0 ? histories[0].client_name : ''}
       scroll={true}
     >
@@ -59,10 +65,18 @@ const ProjectStockHistoryModal = ({
           {histories.length > 0 ? (
             <>
               <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1">
-                <p className="flex-1 py-1 px-3 text-sv">처리일자</p>
-                <p className="flex-1 py-1 px-3 text-sv">생산 수량</p>
-                <p className="flex-1 py-1 px-3 text-sv">납품 수량</p>
-                <p className="flex-1 py-1 px-3 text-sv">현재 재고</p>
+                <p className="flex-1 py-1 px-3 text-sv">
+                  {t('tableHeader.processDate')}
+                </p>
+                <p className="flex-1 py-1 px-3 text-sv">
+                  {tStock('productionQuantity')}
+                </p>
+                <p className="flex-1 py-1 px-3 text-sv">
+                  {tStock('deliveryQuantity')}
+                </p>
+                <p className="flex-1 py-1 px-3 text-sv">
+                  {tCommon('currentStock')}
+                </p>
               </div>
 
               <div className="overflow-y-auto max-h-[calc(85vh-220px)] scrollbar-hide pb-4">
@@ -100,18 +114,23 @@ const ProjectStockHistoryModal = ({
                   />
                 )}
                 <div className="flex justify-end mt-4">
-                  <MiniBtn text="닫기" variant="primary" onClick={onClose} />
+                  <MiniBtn
+                    text={tCommon('close')}
+                    variant="primary"
+                    onClick={onClose}
+                  />
                 </div>
               </div>
             </>
           ) : (
             <>
-              <NoHistoryBox
-                text="재고 내역이 수정되면 이곳에서 확인할 수 있어요."
-                height="h-25"
-              />
+              <NoHistoryBox text={t('empty.text')} height="h-25" />
               <div className="flex justify-end mt-4 mb-4">
-                <MiniBtn text="닫기" variant="primary" onClick={onClose} />
+                <MiniBtn
+                  text={tCommon('close')}
+                  variant="primary"
+                  onClick={onClose}
+                />
               </div>
             </>
           )}

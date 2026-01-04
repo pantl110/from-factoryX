@@ -66,9 +66,7 @@ export const DocumentSection = ({
 
       {/* 특이사항 */}
       <div className="flex flex-col gap-3">
-        <h3 className="Heading-3 h-10 items-center flex">
-          {t('specialNotes')}
-        </h3>
+        <h3 className="Heading-3 h-10 items-center flex">{tCommon('note')}</h3>
         {plansData
           .filter(
             (item, index, self) =>

@@ -188,7 +188,7 @@ const CreateSubstituteModal = ({
         <div className="flex gap-2.5 justify-end mt-3 pb-6">
           <MiniBtn text={tCommon('cancel')} variant="white" onClick={onClose} />
           <MiniBtn
-            text={t('connectButton')}
+            text={tCommon('link')}
             variant="primary"
             onClick={async () => {
               if (selectedMaterialIds.size === 0) return;

@@ -4,6 +4,7 @@ import { useEffect, forwardRef, useImperativeHandle, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
+import { useTranslations } from 'next-intl';
 // import { WarningCircle } from '@phosphor-icons/react';
 
 interface ProductInfoProps {
@@ -19,6 +20,8 @@ export interface ProductInfoModel {
 
 const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
   ({ formData, productId, onIsDirtyChange, onIsValidChange }, ref) => {
+    const t = useTranslations('stock.product.detail');
+    const tCommon = useTranslations('common');
     const role = useMemberStore((state) => state.role);
     const isViewer = role === 'viewer';
     const hasSubscription = useSubscriptionStore(
@@ -80,8 +83,8 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
               rules={{ required: true }}
               render={({ field }) => (
                 <InfoLabelValue
-                  label="제품명"
-                  placeholder="(필수) 제품명을 입력하세요."
+                  label={t('labels.productName')}
+                  placeholder={`${tCommon('required')} ${tCommon('placeholders.productName')}`}
                   required
                   value={field.value}
                   onChange={(e) => {
@@ -97,8 +100,8 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
               rules={{ required: true }}
               render={({ field }) => (
                 <InfoLabelValue
-                  label="제품 코드"
-                  placeholder="(필수) 제품 코드를 입력하세요."
+                  label={t('labels.productCode')}
+                  placeholder={`${tCommon('required')} ${tCommon('placeholders.productCode')}`}
                   required
                   value={field.value}
                   onChange={(e) => {
@@ -116,8 +119,8 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
               rules={{ required: true }}
               render={({ field }) => (
                 <InfoLabelValue
-                  label="규격"
-                  placeholder="(필수) 규격을 입력하세요."
+                  label={tCommon('specification')}
+                  placeholder={`${tCommon('required')} ${tCommon('placeholders.specification')}`}
                   isEditing={!isViewer && hasSubscription()}
                   required
                   value={field.value}
@@ -133,8 +136,8 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
               rules={{ required: true }}
               render={({ field }) => (
                 <InfoLabelValue
-                  label="단위"
-                  placeholder="(필수) 단위를 입력하세요."
+                  label={tCommon('unit')}
+                  placeholder={`${tCommon('required')} ${tCommon('placeholders.unit')}`}
                   isEditing={!isViewer && hasSubscription()}
                   required
                   value={field.value}
@@ -168,10 +171,10 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
 
                 return (
                   <InfoLabelValue
-                    label="현재 재고"
+                    label={tCommon('currentStock')}
                     value={displayValue}
                     isEditing={!isViewer && hasSubscription()}
-                    placeholder="현재 재고 수량을 입력하세요."
+                    placeholder={t('placeholders.currentStock')}
                     inputType="text"
                     onFocus={() => {
                       setIsStockEditing(true);
@@ -237,13 +240,13 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
               control={control}
               render={({ field }) => (
                 <InfoLabelValue
-                  label="평균 생산 시간"
+                  label={tCommon('averageProductionTime')}
                   value={
                     field.value === undefined ||
                     field.value === null ||
                     (typeof field.value === 'string' && field.value === '')
                       ? '-'
-                      : `${field.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}초`
+                      : `${field.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}${tCommon('seconds')}`
                   }
                   isEditing={!isViewer && hasSubscription()}
                   inputType="text"
@@ -256,11 +259,11 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
             control={control}
             render={({ field }) => (
               <InfoLabelValue
-                label="특이사항"
+                label={tCommon('note')}
                 value={field.value || ''}
                 isEditing={!isViewer && hasSubscription()}
                 textarea={true}
-                placeholder="특이사항을 입력하세요."
+                placeholder={tCommon('placeholders.note')}
                 onChange={(e) => {
                   field.onChange(e);
                 }}
@@ -268,16 +271,6 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
             )}
           />
         </div>
-
-        {/* <div className="px-4 py-2 flex gap-1 rounded-[8px] bg-bg items-center">
-          <div className="w-4 h-4 flex items-center justify-center">
-            <WarningCircle size={16} className="text-sv" />
-          </div>
-          <span className="text-sv Re_Body-2">
-            개별 단위는 품목 한 개 기준의 단위이고, 재고 관리 단위는 입·출고 시
-            수량을 관리하는 기준이에요.
-          </span>
-        </div> */}
       </>
     );
   }

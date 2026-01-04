@@ -12,11 +12,6 @@ import {
   MaterialProductConnectionModel,
   ProductMaterialConnectionModel,
 } from '@/types/data-model';
-
-type ConnectionModelType =
-  | MaterialProductConnectionModel
-  | ProductMaterialConnectionModel;
-
 import {
   useGetProduct,
   useUpdateProduct,
@@ -41,6 +36,10 @@ import SubstituteMaterialsModal from './bom/modals/substitute-materials-modal';
 import NoHistoryBox from '@/ui/no-history-box';
 import DeleteModal from '@/ui/modal/delete-modal';
 
+type ConnectionModelType =
+  | MaterialProductConnectionModel
+  | ProductMaterialConnectionModel;
+
 interface ProductDetailProps {
   productId: number | null;
   onClose: () => void;
@@ -62,6 +61,9 @@ const ProductDetail = ({
   onSuccess,
 }: ProductDetailProps) => {
   const t = useTranslations('stock.stockLocation');
+  const tProduct = useTranslations('stock.product.detail');
+  const tCommon = useTranslations('common');
+  const tMaterial = useTranslations('stock.material.detail.errors');
   const { getProductDetail, getProductList, product } = useGetProduct();
   const { createSingleProduct } = useCreateSingleProduct();
   const { updateProduct, isLoading: isProductUpdating } = useUpdateProduct();
@@ -335,8 +337,8 @@ const ProductDetail = ({
           );
           if (isDuplicate) {
             showToastMessage(
-              '이미 존재하는 제품코드에요.',
-              '다른 제품코드로 수정해주세요.'
+              tMaterial('duplicateProductCode'),
+              tMaterial('duplicateProductCodeSubtext')
             );
             return { success: false };
           }
@@ -371,8 +373,9 @@ const ProductDetail = ({
           return { success: true, productId };
         } else {
           showToastMessage(
-            '제품 수정에 실패하였습니다. ' +
-              (result?.error || '알 수 없는 오류')
+            tProduct('errors.updateFailed') +
+              ' ' +
+              (result?.error || tProduct('errors.unknownError'))
           );
           return { success: false };
         }
@@ -381,8 +384,8 @@ const ProductDetail = ({
         const isDuplicate = await checkCodeDuplicate(currentFormData.code);
         if (isDuplicate) {
           showToastMessage(
-            '이미 존재하는 제품코드에요.',
-            '다른 제품코드로 수정해주세요.'
+            tMaterial('duplicateProductCode'),
+            tMaterial('duplicateProductCodeSubtext')
           );
           return { success: false };
         }
@@ -390,7 +393,7 @@ const ProductDetail = ({
         // 로컬스토리지에서 factoryId 가져오기
         const storedFactoryId = factoryId;
         if (!storedFactoryId) {
-          showToastMessage('공장 ID가 설정되지 않았습니다.');
+          showToastMessage(tProduct('errors.factoryIdNotSet'));
           return { success: false };
         }
 
@@ -422,14 +425,15 @@ const ProductDetail = ({
           return { success: true };
         } else {
           showToastMessage(
-            '제품 생성에 실패하였습니다. ' +
-              (result?.error || '알 수 없는 오류')
+            tProduct('errors.createFailed') +
+              ' ' +
+              (result?.error || tProduct('errors.unknownError'))
           );
           return { success: false };
         }
       }
     } catch (error) {
-      showToastMessage('저장 중 오류가 발생했습니다. ' + error);
+      showToastMessage(tProduct('errors.saveError') + ' ' + error);
       return { success: false };
     }
   };
@@ -513,7 +517,7 @@ const ProductDetail = ({
         setQuantityChanges({}); // 변경사항 초기화
         setIsQuantityDirty(false);
       } catch {
-        alert('수량 변경사항 저장에 실패했습니다.');
+        alert(tProduct('errors.quantitySaveFailed'));
         return;
       }
     }
@@ -567,7 +571,7 @@ const ProductDetail = ({
   // factory ID가 없으면 로딩 상태나 에러 메시지를 표시
   if (!factoryId) {
     return (
-      <Panel title="제품 재고관리" onClose={onClose}>
+      <Panel title={tProduct('title')} onClose={onClose}>
         <></>
       </Panel>
     );
@@ -576,12 +580,12 @@ const ProductDetail = ({
   return (
     <>
       <Panel
-        title="제품 재고관리"
+        title={tProduct('title')}
         onClose={onClose}
         headerButton={
           (isDirty || isLocationDirty || isQuantityDirty) && (
             <MiniBtn
-              text="저장"
+              text={tCommon('save')}
               textColor="text-primary"
               bgColor="bg-primary-8"
               hoverColor="hover:bg-secondary-hover"
@@ -601,7 +605,7 @@ const ProductDetail = ({
           <div className="flex flex-col gap-3">
             {/* 제품 정보 */}
             <h3 className="Heading-3 text-dg h-10 flex items-center">
-              제품 정보
+              {tProduct('infoTitle')}
             </h3>
             <ProductInfo
               formData={formData}
@@ -622,7 +626,7 @@ const ProductDetail = ({
                 'locations' in locationListData &&
                 locationListData.locations.length > 0 && (
                   <MiniBtn
-                    text="추가하기"
+                    text={tCommon('add')}
                     variant="whiteOutline"
                     disabled={isViewer || !hasSubscription()}
                     onClick={() => {
@@ -638,9 +642,9 @@ const ProductDetail = ({
             ) : locationListData && 'locations' in locationListData ? (
               locationListData.locations.length === 0 ? (
                 <NoHistoryBox
-                  title="등록된 창고 위치가 아직 없어요."
-                  text="[추가하기] 버튼을 눌러 제품이 보관된 창고를 등록해보세요."
-                  button="추가하기"
+                  title={t('empty.title')}
+                  text={t('empty.description.product')}
+                  button={tCommon('add')}
                   onClick={() => {
                     setSelectedLocation(null);
                     setIsStockLocationModalOpen(true);
@@ -681,9 +685,9 @@ const ProductDetail = ({
               )
             ) : (
               <NoHistoryBox
-                title="등록된 창고 위치가 아직 없어요."
-                text="[추가] 버튼을 눌러 제품이 보관된 창고를 등록해보세요."
-                button="창고 위치 추가"
+                title={t('empty.title')}
+                text={t('empty.description.product')}
+                button={t('modal.title.add')}
                 onClick={() => {
                   setSelectedLocation(null);
                   setIsStockLocationModalOpen(true);
@@ -858,12 +862,13 @@ const ProductDetail = ({
                   }
                 } else {
                   showToastMessage(
-                    '연결 삭제에 실패했습니다: ' +
-                      (result.error || '알 수 없는 오류')
+                    tProduct('errors.connectionDeleteFailed') +
+                      ' ' +
+                      (result.error || tProduct('errors.unknownError'))
                   );
                 }
               } catch {
-                showToastMessage('연결 삭제 중 오류가 발생했습니다.');
+                showToastMessage(tProduct('errors.connectionDeleteError'));
               } finally {
                 setIsDeletingConnection(false);
                 setIsDeleteConnectionModalOpen(false);

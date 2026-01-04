@@ -65,7 +65,7 @@ const StockLocation = ({
       <div className="flex flex-col gap-3">
         <NoHistoryBox
           title={t('empty.title')}
-          text={t('empty.description')}
+          text={t('empty.description.material')}
           button={tCommon('add')}
           onClick={onAddClick}
           disabled={isViewer || !hasSubscription?.()}

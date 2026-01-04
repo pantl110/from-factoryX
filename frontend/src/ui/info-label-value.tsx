@@ -68,6 +68,7 @@ const InfoLabelValue = ({
   disabled = false,
 }: InfoLabelValueProps) => {
   const tCommon = useTranslations('common');
+  const tMaterial = useTranslations('stock.material');
   const colors = chip
     ? chip.status === 'danger'
       ? { bgColor: 'bg-red-8', textColor: 'text-red' }
@@ -114,9 +115,9 @@ const InfoLabelValue = ({
                   : chip.status === 'danger'
                     ? '위험'
                     : chip.status === 'warning'
-                      ? '위험'
+                      ? tMaterial('expiryStatus.risk')
                       : chip.status === 'safe'
-                        ? '양호'
+                        ? tMaterial('expiryStatus.safe')
                         : chip.status in AccountsStatusColorMap
                           ? AccountsStatusMap[chip.status as AccountsStatusType] // AccountsStatusType은 한글로 표시
                           : typeof chip.status === 'string' &&
