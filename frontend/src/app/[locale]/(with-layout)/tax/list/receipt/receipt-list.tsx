@@ -12,6 +12,7 @@ import useMemberStore from '@/store/member-store';
 import AccountsPanel from '../accounts-panel';
 import TableHeader from '../table-header';
 import AccountStatusDropdown from '../account-status-dropdown';
+import { useTranslations } from 'next-intl';
 
 interface ReceiptListProps {
   className?: string;
@@ -37,6 +38,9 @@ const ReceiptList = ({ className = '' }: ReceiptListProps) => {
   // 공장 ID 가져오기
   const factoryId = useMemberStore((state) => state.factoryId);
   const role = useMemberStore((state) => state.role);
+  const t = useTranslations('tax.list.receipt');
+  const tList = useTranslations('tax.list');
+  const tCommon = useTranslations('common');
 
   // useUpdateCashReceipt hook
   const { mutateAsync: updateCashReceipt } = useUpdateCashReceipt();
@@ -180,7 +184,7 @@ const ReceiptList = ({ className = '' }: ReceiptListProps) => {
       setAllChecked(false);
       setSearchQuery('');
     } catch {
-      alert('현금영수증 숨김/복구에 실패했습니다.');
+      alert(t('errors.hideRestoreFailed'));
     } finally {
       setIsHideRestoreLoading(false);
     }
@@ -194,13 +198,17 @@ const ReceiptList = ({ className = '' }: ReceiptListProps) => {
             <SearchInput
               value={searchQuery}
               onChange={handleSearchChange}
-              placeholder="거래처명이나 제품명을 입력해 검색하세요."
+              placeholder={tList('searchPlaceholder')}
             />
             {/* 숨김 버튼: 숨김 목록 보기 중이거나, 일반 목록에서 데이터가 있을 때 */}
             {role && !['viewer', 'prod_manager'].includes(role) && (
               <div className="flex gap-1">
                 <MiniBtn
-                  text={checkedCount === 0 ? '숨긴 목록 보기' : '취소'}
+                  text={
+                    checkedCount === 0
+                      ? tList('buttons.showHidden')
+                      : tCommon('cancel')
+                  }
                   textColor="text-dg"
                   borderColor={showHidden ? 'border-none' : 'border-lg'}
                   bgColor={showHidden ? 'bg-bg' : 'bg-white'}
@@ -211,15 +219,17 @@ const ReceiptList = ({ className = '' }: ReceiptListProps) => {
                   text={
                     checkedCount === 0
                       ? showHidden
-                        ? '복구하기'
-                        : '숨기기'
+                        ? tList('buttons.restore')
+                        : tList('buttons.hide')
                       : checkedCount === cashReceipts.length
                         ? showHidden
-                          ? '전체 항목 복구하기'
-                          : '전체 항목 숨기기'
+                          ? tList('buttons.restoreAll')
+                          : tList('buttons.hideAll')
                         : showHidden
-                          ? `${checkedCount}개 항목 복구하기`
-                          : `${checkedCount}개 항목 숨기기`
+                          ? tList('buttons.restoreItems', {
+                              count: checkedCount,
+                            })
+                          : tList('buttons.hideItems', { count: checkedCount })
                   }
                   variant={checkedCount > 0 ? 'red' : 'primary'}
                   onClick={handleHideRestore}
@@ -240,13 +250,13 @@ const ReceiptList = ({ className = '' }: ReceiptListProps) => {
               <EmptySpace
                 title={
                   showHidden
-                    ? '아직 숨긴 현금영수증이 없어요.'
-                    : '아직 발급된 현금영수증이 없어요.'
+                    ? t('empty.hiddenTitle')
+                    : t('empty.noReceiptsTitle')
                 }
                 description={
                   showHidden
-                    ? '표시하지 않을 현금영수증을 숨기면 이곳에서 다시 볼 수 있어요.'
-                    : '발급 후 이곳에서 내역을 확인하실 수 있어요.'
+                    ? t('empty.hiddenDescription')
+                    : t('empty.noReceiptsDescription')
                 }
                 height="h-50"
                 className="mt-2"
@@ -274,7 +284,7 @@ const ReceiptList = ({ className = '' }: ReceiptListProps) => {
                   {cashReceipts.length === 0 ? (
                     <div className="flex h-14 items-center px-3 w-full min-w-[1192px] border-b border-lg Me_Body-1 text-dg">
                       <p className="text-gr w-full">
-                        해당 채무 상태의 현금영수증이 없어요.
+                        {t('empty.noStatusReceipts')}
                       </p>
                     </div>
                   ) : (

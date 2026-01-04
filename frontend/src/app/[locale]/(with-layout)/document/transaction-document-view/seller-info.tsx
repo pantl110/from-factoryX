@@ -11,6 +11,7 @@ interface SellerInfoProps {
 
 const SellerInfo = ({ lastDeliveryDate, factoryData }: SellerInfoProps) => {
   const tCommon = useTranslations('common');
+  const tDocument = useTranslations('document');
 
   return (
     <div className="flex flex-col gap-3">
@@ -34,7 +35,7 @@ const SellerInfo = ({ lastDeliveryDate, factoryData }: SellerInfoProps) => {
             value={factoryData?.representative_name || '-'}
           />
           <InfoLabelValue
-            label={tCommon('transactionDate')}
+            label={tDocument('finalDeliveryDate')}
             value={lastDeliveryDate}
           />
         </div>

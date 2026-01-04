@@ -27,12 +27,15 @@ import useSubscriptionStore from '@/store/subscription-store';
 import AccountsPanel from './accounts-panel';
 import LinkProjectModal from './accounts-panel/modals/link-project-modal';
 import AccountStatusDropdown from './account-status-dropdown';
+import { useTranslations } from 'next-intl';
 
 const TaxPageContent = () => {
   const role = useMemberStore((state) => state.role);
   // 구독 상태 확인
   const { isPartnersSubscription } = useSubscriptionStore();
   const searchParams = useSearchParams();
+  const tList = useTranslations('tax.list');
+  const tCommon = useTranslations('common');
 
   // URL 쿼리 파라미터에서 탭 정보 읽기
   const tabParam = searchParams.get('tab');
@@ -335,7 +338,7 @@ const TaxPageContent = () => {
         if (!taxItem)
           return Promise.resolve({
             success: false,
-            error: '세금계산서를 찾을 수 없습니다.',
+            error: tList('errors.taxInvoiceNotFound'),
           });
 
         return updateTaxInvoiceApi(taxId, {
@@ -362,10 +365,10 @@ const TaxPageContent = () => {
         setAllChecked(false); // 체크박스 상태 리셋
         setSearchQuery(''); // 검색어 초기화
       } else {
-        alert('세금계산서 숨김/복구에 실패했습니다.');
+        alert(tList('errors.hideRestoreFailed'));
       }
     } catch (error) {
-      alert('세금계산서 숨김/복구 중 오류 발생: ' + error);
+      alert(tList('errors.hideRestoreError', { error: String(error) }));
     } finally {
       setIsHideRestoreLoading(false); // 로딩 종료
     }
@@ -390,7 +393,7 @@ const TaxPageContent = () => {
               <SearchInput
                 value={searchQuery}
                 onChange={handleSearchChange}
-                placeholder="거래처명이나 제품명을 입력해 검색하세요."
+                placeholder={tList('searchPlaceholder')}
               />
               {/* 숨김 버튼: 숨김 목록 보기 중이거나, 일반 목록에서 데이터가 없고 숨김 데이터도 없을 때 */}
               {(showHidden || (!showHidden && hasItem)) &&
@@ -398,7 +401,11 @@ const TaxPageContent = () => {
                 !['viewer', 'prod_manager'].includes(role) && (
                   <div className="flex gap-1">
                     <MiniBtn
-                      text={checkedCount === 0 ? '숨긴 목록 보기' : '취소'}
+                      text={
+                        checkedCount === 0
+                          ? tList('buttons.showHidden')
+                          : tCommon('cancel')
+                      }
                       textColor="text-dg"
                       borderColor={showHidden ? 'border-none' : 'border-lg'}
                       bgColor={showHidden ? 'bg-bg' : 'bg-white'}
@@ -409,15 +416,19 @@ const TaxPageContent = () => {
                       text={
                         checkedCount === 0
                           ? showHidden
-                            ? '복구하기'
-                            : '숨기기'
+                            ? tList('buttons.restore')
+                            : tList('buttons.hide')
                           : checkedCount === taxData.length
                             ? showHidden
-                              ? '전체 항목 복구하기'
-                              : '전체 항목 숨기기'
+                              ? tList('buttons.restoreAll')
+                              : tList('buttons.hideAll')
                             : showHidden
-                              ? `${checkedCount}개 항목 복구하기`
-                              : `${checkedCount}개 항목 숨기기`
+                              ? tList('buttons.restoreItems', {
+                                  count: checkedCount,
+                                })
+                              : tList('buttons.hideItems', {
+                                  count: checkedCount,
+                                })
                       }
                       variant={checkedCount > 0 ? 'red' : 'primary'}
                       onClick={handleHideRestore}
@@ -445,17 +456,17 @@ const TaxPageContent = () => {
                     <EmptySpace
                       title={
                         showHidden
-                          ? '아직 숨긴 세금계산서가 없어요.'
+                          ? tList('empty.hiddenTitle')
                           : hasItem
-                            ? '세금계산서가 숨겨진 상태예요.'
-                            : '아직 등록된 세금계산서가 없어요.'
+                            ? tList('empty.hiddenStateTitle')
+                            : tList('empty.noTaxInvoicesTitle')
                       }
                       description={
                         showHidden
-                          ? '표시하지 않을 세금계산서를 숨기면 이곳에서 다시 볼 수 있어요.'
+                          ? tList('empty.hiddenDescription')
                           : hasItem
-                            ? "숨긴 세금계산서를 다시 보려면, 상단의 '숨긴 목록 보기' 버튼을 눌러 복구해 주세요."
-                            : '세금계산서를 생성하면 이곳에서 확인할 수 있어요.'
+                            ? tList('empty.hiddenStateDescription')
+                            : tList('empty.noTaxInvoicesDescription')
                       }
                       height="h-50"
                       className="mt-2"
@@ -483,8 +494,8 @@ const TaxPageContent = () => {
                         <div className="flex h-14 items-center px-3 w-full min-w-[1192px] border-b border-lg Me_Body-1 text-dg">
                           <p className="text-gr w-full">
                             {selectedTaxType === 'purchase'
-                              ? '해당 채무 상태의 세금계산서가 없어요.'
-                              : '해당 채권 상태의 세금계산서가 없어요.'}
+                              ? tList('empty.noStatusPurchase')
+                              : tList('empty.noStatusSales')}
                           </p>
                         </div>
                       ) : (

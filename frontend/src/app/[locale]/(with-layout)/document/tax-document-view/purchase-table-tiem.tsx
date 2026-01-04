@@ -21,7 +21,7 @@ const PurchaseTableTiem = ({
   setIsLinkModalOpen,
   setSelectedLineItem,
 }: PurchaseTableTiemProps) => {
-  const tCommon = useTranslations('common');
+  const tList = useTranslations('tax.list');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
 
@@ -46,7 +46,7 @@ const PurchaseTableTiem = ({
         {Number(lineItem.unit_price).toLocaleString()}
       </p>
       <p
-        className={`${canLink ? 'flex-[1.5]' : 'flex-1'} px-3 truncate`}
+        className="flex-1 px-3 truncate"
         title={(
           Number(lineItem.amount) + Number(lineItem.tax)
         ).toLocaleString()}
@@ -54,9 +54,9 @@ const PurchaseTableTiem = ({
         {(Number(lineItem.amount) + Number(lineItem.tax)).toLocaleString()}
       </p>
       {canLink && (
-        <div className="px-3 flex-[1.5]">
+        <div className="px-3 flex-[1.9]">
           <MiniBtn
-            text={tCommon('link')}
+            text={tList('tableHeader.projectLink.purchase')}
             textColor="text-dg"
             borderColor="border-lg"
             hoverColor="hover:bg-bg"

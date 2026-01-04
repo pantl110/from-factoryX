@@ -5,6 +5,7 @@ import { RoundChip, MiniBtn, IconBtn } from '@/ui';
 import { ArrowLineUpRight } from '@phosphor-icons/react';
 import useMemberStore from '@/store/member-store';
 import Checkbox from '@/ui/checkbox';
+import { useTranslations } from 'next-intl';
 
 interface TableItemProps {
   item: CashReceiptResponseModel;
@@ -23,12 +24,14 @@ const TableItem = ({
   const isViewer = role === 'viewer';
   const isProdManager = role === 'prod_manager';
   const { account } = item;
+  const tList = useTranslations('tax.list');
+  const tCommon = useTranslations('common');
 
   // 채권 상태 가져오기
   const accountStatus = account?.status || 'waiting';
   const statusText =
     AccountsStatusMap[accountStatus as keyof typeof AccountsStatusMap] ||
-    '대기';
+    tList('status.waiting');
   const statusColor =
     AccountsStatusColorMap[accountStatus as keyof typeof AccountsStatusColorMap]
       ?.color || 'gray';
@@ -52,7 +55,7 @@ const TableItem = ({
         onToggle={onToggle}
         disabled={isProdManager || isViewer}
       />
-      <div className="pl-2 pr-4 w-[150px]">
+      <div className="pl-2 pr-4 w-[192px]">
         <RoundChip text={statusText} variant="sm" color={statusColor} />
       </div>
       <p className="flex-[1.5] px-3 text-dg truncate" title={item.client_name}>
@@ -89,7 +92,7 @@ const TableItem = ({
           />
         ) : (
           <MiniBtn
-            text="연결하기"
+            text={tCommon('link')}
             variant="hoverWhite"
             height="h-8"
             onClick={(e) => {

@@ -1,7 +1,9 @@
 'use client';
 
 import { TaxDocumentType } from '@/types/status-type';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 
 interface MainTitleSecProps {
   selectedTaxType: TaxDocumentType | null;
@@ -14,16 +16,23 @@ const MainTitleSec = ({
 }: MainTitleSecProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const tabs: string[] = ['매출 세금계산서', '매입 세금계산서', '현금영수증'];
+  const tDocument = useTranslations('document.type');
+  const tNavigation = useTranslations('navigation');
 
-  const handleTabClick = (tab: string) => {
-    if (tab === '매출 세금계산서') {
+  const tabs = [
+    { key: 'sales', label: tDocument('salesTaxInvoice') },
+    { key: 'purchase', label: tDocument('purchaseTaxInvoice') },
+    { key: 'receipt', label: tDocument('cashReceipt') },
+  ];
+
+  const handleTabClick = (tabKey: string) => {
+    if (tabKey === 'sales') {
       setSelectedTaxType('sales');
       router.push('/tax/list?tab=sales');
-    } else if (tab === '매입 세금계산서') {
+    } else if (tabKey === 'purchase') {
       setSelectedTaxType('purchase');
       router.push('/tax/list?tab=purchase');
-    } else if (tab === '현금영수증') {
+    } else if (tabKey === 'receipt') {
       setSelectedTaxType(null);
       router.push('/tax/list?tab=receipt');
     }
@@ -35,26 +44,26 @@ const MainTitleSec = ({
   return (
     <div className="flex flex-col gap-8 pt-10 pr-10 pl-10">
       <div className="flex items-center justify-between relative">
-        <div className="Heading-1 text-dg">채권 · 채무 관리</div>
+        <div className="Heading-1 text-dg">
+          {tNavigation('taxDropdown.list')}
+        </div>
       </div>
 
       <div className="flex gap-4 items-center Heading-3">
         {tabs.map((tab) => {
           const isActive =
-            (tab === '매출 세금계산서' && currentTab === 'sales') ||
-            (tab === '매입 세금계산서' && currentTab === 'purchase') ||
-            (tab === '현금영수증' && isReceiptTab) ||
+            (tab.key === 'sales' && currentTab === 'sales') ||
+            (tab.key === 'purchase' && currentTab === 'purchase') ||
+            (tab.key === 'receipt' && isReceiptTab) ||
             // 쿼리 파라미터가 없을 때 기본값으로 매출 탭 활성화
-            (tab === '매출 세금계산서' &&
-              !currentTab &&
-              selectedTaxType === 'sales');
+            (tab.key === 'sales' && !currentTab && selectedTaxType === 'sales');
           return (
             <button
-              key={tab}
+              key={tab.key}
               className={`${isActive ? 'text-dg' : 'text-gr'} cursor-pointer`}
-              onClick={() => handleTabClick(tab)}
+              onClick={() => handleTabClick(tab.key)}
             >
-              {tab}
+              {tab.label}
             </button>
           );
         })}

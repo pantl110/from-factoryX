@@ -2,10 +2,12 @@ import { Lock } from '@phosphor-icons/react';
 import MiniBtn from '@/ui/mini-btn';
 import { useRouter } from 'next/navigation';
 import useMemberStore from '@/store/member-store';
+import { useTranslations } from 'next-intl';
 
 const NotAllowed = () => {
   const router = useRouter();
   const factoryId = useMemberStore((state) => state.factoryId);
+  const t = useTranslations('tax.notAllowed');
   return (
     <div className="flex justify-center items-center z-10 w-[calc(100vw-256px)] h-[calc(100vh-60px)] fixed top-15 left-64 bg-white/50 backdrop-blur-lg">
       <div className="z-12 bg-wh w-[600px] flex flex-col gap-4 p-6 rounded-[8px] border border-lg items-center">
@@ -14,17 +16,15 @@ const NotAllowed = () => {
         </div>
 
         <div className="flex flex-col gap-1">
-          <h3 className="Heading-3">세무/회계 기능이 잠겨있어요.</h3>
+          <h3 className="Heading-3">{t('title')}</h3>
           <p className="text-gr text-center whitespace-pre-line">
-            {factoryId
-              ? `Partners 플랜으로 업그레이드하면\n세무/회계 기능을 사용할 수 있어요.`
-              : `실제 공장을 생성하거나 초대받아\n운영자 권한으로 접속해야 사용할 수 있어요`}
+            {factoryId ? t('messageWithFactory') : t('messageWithoutFactory')}
           </p>
         </div>
 
         <div className="flex gap-2.5 w-full justify-end">
           <MiniBtn
-            text="대시보드로 돌아가기"
+            text={t('backToDashboard')}
             variant={factoryId ? 'white' : 'primary'}
             onClick={() => {
               router.push('/dashboard');
@@ -32,7 +32,7 @@ const NotAllowed = () => {
           />
           {factoryId && (
             <MiniBtn
-              text="자세히 보기"
+              text={t('viewDetails')}
               variant="primary"
               onClick={() => {
                 router.push('/setting?chip=subscription');

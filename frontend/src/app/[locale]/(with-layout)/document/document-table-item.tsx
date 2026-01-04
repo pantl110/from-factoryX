@@ -16,13 +16,16 @@ import TransactionDocumentView from './transaction-document-view';
 import OrderDocumentView from './order-document-view';
 import ProductionDocumentView from './production-document-view';
 import ReceiptDetailPanel from '@/app/[locale]/(with-layout)/tax/list/receipt/modals/receipt-detail-panel';
+import LinkTaxModal from '@/app/[locale]/(with-layout)/project/process/modals/link-tax-modal/link-tax-modal';
+import LinkProjectModal from '@/app/[locale]/(with-layout)/tax/list/accounts-panel/modals/link-project-modal';
 import {
   formatISODate,
   getLastDeliveryDate,
   getProductNames,
   getProductNamesDisplay,
 } from '@/utils';
-import { RoundChip, Tooltip, Panel } from '@/ui';
+import { RoundChip, Tooltip, Panel, MiniBtn } from '@/ui';
+import { TaxLineItemModel } from '@/types/data-model';
 
 interface DocumentTableItemProps {
   data:
@@ -35,12 +38,17 @@ interface DocumentTableItemProps {
 
 const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
   const tDocumentType = useTranslations('document.type');
+  const tList = useTranslations('tax.list');
   const [isOrderPanelOpen, setIsOrderPanelOpen] = useState(false);
   const [isTransactionPanelOpen, setIsTransactionPanelOpen] = useState(false);
   const [isWorkInstructionPanelOpen, setIsWorkInstructionPanelOpen] =
     useState(false);
   const [isTaxPanelOpen, setIsTaxPanelOpen] = useState(false);
   const [isCashReceiptPanelOpen, setIsCashReceiptPanelOpen] = useState(false);
+  const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
+  const [selectedLineItem, setSelectedLineItem] =
+    useState<TaxLineItemModel | null>(null);
+  const [isLinkProjectModalOpen, setIsLinkProjectModalOpen] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState({
     left: 0,
     top: 0,
@@ -120,13 +128,13 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
               />
             </div>
             <p
-              className="px-3 flex-[1.3] truncate"
+              className="px-3 flex-[1.2] truncate"
               title={taxData.client_info.name || '-'}
             >
               {taxData.client_info.name || '-'}
             </p>
             <p
-              className="px-3 flex-[1.3] truncate"
+              className="px-3 flex-[1.2] truncate"
               title={getProductNamesDisplay(
                 taxData.line_items?.map((p) => p.name) || []
               )}
@@ -438,16 +446,62 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
               : tDocumentType('purchaseTaxInvoice')
           }
           onClose={() => setIsTaxPanelOpen(false)}
+          headerButton={
+            taxData.tax_invoice_type === 'sales' ? (
+              <MiniBtn
+                text={tList('tableHeader.projectLink.sales')}
+                textColor="text-dg"
+                borderColor="border-lg"
+                hoverColor="hover:bg-bg"
+                onClick={() => {
+                  setIsLinkProjectModalOpen(true);
+                }}
+              />
+            ) : undefined
+          }
         >
-          <TaxDocumentView taxId={data.id} />
+          <TaxDocumentView
+            taxId={data.id}
+            canLink={taxData.tax_invoice_type === 'purchase'}
+            setIsLinkModalOpen={setIsLinkModalOpen}
+            setSelectedLineItem={setSelectedLineItem}
+          />
         </Panel>
       )}
+
+      {/* 매입 세금계산서 자재 연결 모달 */}
+      {isLinkModalOpen &&
+        taxData.tax_invoice_type === 'purchase' &&
+        taxData.id && (
+          <LinkTaxModal
+            onClose={() => setIsLinkModalOpen(false)}
+            linkedItemId={taxData.id}
+            type="tax"
+            clientId={taxData.client}
+            selectedLineItem={selectedLineItem || undefined}
+            onSuccess={() => {
+              setIsLinkModalOpen(false);
+            }}
+          />
+        )}
+
+      {/* 매출 세금계산서 프로젝트 연결 모달 */}
+      {isLinkProjectModalOpen &&
+        taxData.tax_invoice_type === 'sales' &&
+        taxData.id && (
+          <LinkProjectModal
+            onClose={() => setIsLinkProjectModalOpen(false)}
+            taxId={taxData.id}
+            onSuccess={() => {
+              setIsLinkProjectModalOpen(false);
+            }}
+          />
+        )}
       {/* 현금영수증 디테일 판넬 */}
       {isCashReceiptPanelOpen && (
         <ReceiptDetailPanel
           itemId={cashReceiptData.id}
           onClose={() => setIsCashReceiptPanelOpen(false)}
-          showLinkButton={false}
         />
       )}
     </>

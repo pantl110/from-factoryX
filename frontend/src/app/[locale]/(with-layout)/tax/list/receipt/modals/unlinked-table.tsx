@@ -1,4 +1,5 @@
 import { MaterialHistoryResponseModel } from '@/types/data-model';
+import { useTranslations } from 'next-intl';
 import Checkbox from '@/ui/checkbox';
 import UnlinkedTableItem from './unlinked-table-item';
 import { useCallback, useRef, useEffect } from 'react';
@@ -18,6 +19,7 @@ const UnlinkedTable = ({
   onToggleSelect,
   onLoadMore,
 }: UnlinkedTableProps) => {
+  const tCommon = useTranslations('common');
   const containerRef = useRef<HTMLDivElement | null>(null);
   const onLoadMoreRef = useRef(onLoadMore);
 
@@ -60,12 +62,12 @@ const UnlinkedTable = ({
           }
           onToggle={onToggleSelectAll || (() => {})}
         />
-        <p className="flex-[1.5] px-3 text-sv">자재명</p>
-        <p className="flex-1 px-3 text-sv">규격</p>
-        <p className="flex-[0.7] px-3 text-sv">수량</p>
-        <p className="flex-[0.5] px-3 text-sv">단위</p>
-        <p className="flex-[0.7] px-3 text-sv">단가</p>
-        <p className="flex-1 px-3 text-sv">금액</p>
+        <p className="flex-[1.3] px-3 text-sv">{tCommon('materialName')}</p>
+        <p className="flex-[0.5] px-3 text-sv">{tCommon('specification')}</p>
+        <p className="flex-[0.7] px-3 text-sv">{tCommon('quantity')}</p>
+        <p className="flex-[0.5] px-3 text-sv">{tCommon('unit')}</p>
+        <p className="flex-[0.9] px-3 text-sv">{tCommon('unitPrice')}</p>
+        <p className="flex-[0.9] px-3 text-sv">{tCommon('totalAmount')}</p>
       </div>
       {unlinkedMaterialHistory.map((item) => (
         <UnlinkedTableItem

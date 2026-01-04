@@ -36,10 +36,8 @@ const PurchaseItemInfo = ({
           <p className="px-3 flex-1">{tCommon('specification')}</p>
           <p className="px-3 flex-1">{tCommon('quantity')}</p>
           <p className="px-3 flex-1">{tCommon('unitPrice')}</p>
-          <p className={`px-3 ${canLink ? 'flex-[1.5]' : 'flex-1'}`}>
-            {tCommon('totalAmount')}
-          </p>
-          {canLink && <p className="px-3 flex-[1.5]">{tCommon('link')}</p>}
+          <p className="flex-1 px-3">{tCommon('totalAmount')}</p>
+          {canLink && <p className="px-3 flex-[1.9]">{tCommon('action')}</p>}
         </div>
 
         {lineItems.map((lineItem, index) => (

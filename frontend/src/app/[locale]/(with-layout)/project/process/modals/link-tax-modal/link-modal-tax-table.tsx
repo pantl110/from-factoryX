@@ -42,7 +42,7 @@ const LinkModalTaxTable = ({
             <p className="flex-[0.5] px-3">{tCommon('unit')}</p>
             <p className="flex-[0.7] px-3">{tCommon('unitPrice')}</p>
             <p className="flex-1 px-3">{tCommon('amount')}</p>
-            <p className="flex-1 px-3">{tCommon('transactionDate')}</p>
+            <p className="flex-1 px-3">{t('linkModal.purchaseDate')}</p>
           </div>
           {items.map((item, index) => (
             <LinkModalTaxTableItem

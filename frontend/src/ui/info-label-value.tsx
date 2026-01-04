@@ -12,7 +12,6 @@ import {
   ExpiryStatusColorMap,
   AccountsStatusType,
   AccountsStatusColorMap,
-  AccountsStatusMap,
 } from '@/types/status-type';
 import TextareaAutosize from 'react-textarea-autosize';
 import { UseFormRegisterReturn } from 'react-hook-form';
@@ -69,6 +68,7 @@ const InfoLabelValue = ({
 }: InfoLabelValueProps) => {
   const tCommon = useTranslations('common');
   const tMaterial = useTranslations('stock.material');
+  const tList = useTranslations('tax.list');
   const colors = chip
     ? chip.status === 'danger'
       ? { bgColor: 'bg-red-8', textColor: 'text-red' }
@@ -119,7 +119,9 @@ const InfoLabelValue = ({
                       : chip.status === 'safe'
                         ? tMaterial('expiryStatus.safe')
                         : chip.status in AccountsStatusColorMap
-                          ? AccountsStatusMap[chip.status as AccountsStatusType] // AccountsStatusType은 한글로 표시
+                          ? tList(
+                              'status.' + (chip.status as AccountsStatusType)
+                            )
                           : typeof chip.status === 'string' &&
                               (chip.status === '과재고' ||
                                 chip.status === '충분' ||

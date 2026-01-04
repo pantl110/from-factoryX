@@ -26,6 +26,7 @@ const ClientInfo = ({
   initialData,
 }: ClientInfoProps) => {
   const tCommon = useTranslations('common');
+  const tTax = useTranslations('tax');
   const tErrors = useTranslations('tax.createTaxPanel.clientInfo.errors');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
@@ -184,7 +185,7 @@ const ClientInfo = ({
 
   return (
     <div className="flex-1 flex flex-col gap-5">
-      <h3 className="Heading-3">{tCommon('clientInfo')}</h3>
+      <h3 className="Heading-3">{tTax('buyerInfo')}</h3>
       <form className="flex flex-col gap-4">
         <div className="flex gap-2">
           <div className="flex-1 relative">

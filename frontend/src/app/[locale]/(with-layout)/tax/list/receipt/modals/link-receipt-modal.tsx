@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
 import SearchInput from '@/ui/search-input';
@@ -22,6 +23,8 @@ const LinkReceiptModal = ({
   taxAmount,
   receiptId,
 }: LinkTaxModalProps) => {
+  const t = useTranslations('tax.list.receipt.linkReceiptModal');
+  const tCommon = useTranslations('common');
   const [searchKeyword, setSearchKeyword] = useState('');
   const [unlinkedMaterialHistory, setUnlinkedMaterialHistory] = useState<
     MaterialHistoryResponseModel[]
@@ -158,8 +161,8 @@ const LinkReceiptModal = ({
   return (
     <Modal
       width="w-[1000px]"
-      title="현금영수증에 구매 내역을 연결해주세요."
-      subtitle="영수증에는 자재명이 따로 안 보여요. 자재를 직접 연결하면 추적과 단가를 정확히 관리할 수 있어요."
+      title={t('title')}
+      subtitle={t('subtitle')}
       onClose={onClose}
       scroll={true}
     >
@@ -181,11 +184,11 @@ const LinkReceiptModal = ({
             <div className="flex-2 flex flex-col gap-3">
               <div className="flex justify-between items-center">
                 <SearchInput
-                  placeholder="연결할 내역에 대한 원자재를 입력해 검색하세요."
+                  placeholder={t('searchPlaceholder')}
                   onChange={(value) => setSearchKeyword(value)}
                 />
                 <MiniBtn
-                  text="선택 항목 추가하기"
+                  text={t('buttons.addSelected')}
                   hoverColor="hover:bg-bg"
                   textColor="text-dg"
                   borderColor="border-lg"
@@ -202,7 +205,7 @@ const LinkReceiptModal = ({
                   onLoadMore={handleLoadMoreUnlinked}
                 />
               ) : (
-                <NoHistoryBox text="연결할 자재가 없어요." height="h-[496px]" />
+                <NoHistoryBox text={t('empty')} height="h-[496px]" />
               )}
             </div>
 
@@ -210,10 +213,10 @@ const LinkReceiptModal = ({
             <div className="flex-1 flex flex-col gap-2.5">
               <div className="flex justify-between items-center h-12">
                 <p className="Heading-5 text-dg">
-                  {linkedMaterialHistory.length}개 선택
+                  {t('selectedCount', { count: linkedMaterialHistory.length })}
                 </p>
                 <MiniBtn
-                  text="전체 삭제"
+                  text={tCommon('deleteAll')}
                   hoverColor="hover:bg-bg"
                   textColor="text-dg"
                   borderColor="border-lg"
@@ -270,14 +273,14 @@ const LinkReceiptModal = ({
           {/* 버튼 영역 */}
           <div className={`flex gap-2.5 pt-2 justify-end`}>
             <MiniBtn
-              text="취소"
+              text={tCommon('cancel')}
               hoverColor="hover:bg-bg"
               textColor="text-sv"
               onClick={onClose}
             />
             <div className="flex gap-2.5">
               <MiniBtn
-                text="내역 연결하기"
+                text={t('buttons.link')}
                 hoverColor="hover:bg-primary-hover"
                 bgColor="bg-primary"
                 textColor="text-wh"

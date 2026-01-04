@@ -16,13 +16,13 @@ const UnlinkedTableItem = ({
     <div className="flex items-center h-14 border-b border-lg Me_Body-1">
       <Checkbox isChecked={isChecked} onToggle={onToggle || (() => {})} />
       <p
-        className="flex-[1.5] px-3 text-dg Me_Body-1 truncate"
+        className="flex-[1.3] px-3 text-dg Me_Body-1 truncate"
         title={item.material_name}
       >
         {item.material_name}
       </p>
       <p
-        className="flex-1 px-3 text-dg Me_Body-1 truncate"
+        className="flex-[0.5] px-3 text-dg Me_Body-1 truncate"
         title={item.material_spec}
       >
         {item.material_spec}
@@ -40,13 +40,13 @@ const UnlinkedTableItem = ({
         {item.material_unit}
       </p>
       <p
-        className="flex-[0.7] px-3 text-dg Me_Body-1 truncate"
+        className="flex-[0.9] px-3 text-dg Me_Body-1 truncate"
         title={item.unit_price?.toLocaleString()}
       >
         {item.unit_price?.toLocaleString()}
       </p>{' '}
       <p
-        className="flex-1 px-3 text-dg Me_Body-1 truncate"
+        className="flex-[0.9] px-3 text-dg Me_Body-1 truncate"
         title={item.amount?.toLocaleString()}
       >
         {item.amount?.toLocaleString()}

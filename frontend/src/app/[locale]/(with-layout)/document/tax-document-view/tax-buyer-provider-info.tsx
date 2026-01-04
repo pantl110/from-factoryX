@@ -15,13 +15,14 @@ const TaxBuyerProviderInfo = ({
   clientInfo,
 }: TaxBuyerProviderInfoProps) => {
   const tCommon = useTranslations('common');
+  const tTax = useTranslations('tax');
 
   // clientInfo가 null인 경우 처리
   if (!clientInfo) {
     return (
       <div className="flex flex-col gap-3">
         <h3 className="Heading-3 h-10 items-center flex">
-          {taxType === 'sales' ? tCommon('clientInfo') : tCommon('buyerInfo')}
+          {taxType === 'sales' ? tTax('sellerInfo') : tTax('buyerInfo')}
         </h3>
         <div className="width-full border-b border-lg">
           <InfoLabelValue label={tCommon('clientName')} value="-" />
@@ -43,7 +44,7 @@ const TaxBuyerProviderInfo = ({
   return (
     <div className="flex flex-col gap-3">
       <h3 className="Heading-3 h-10 items-center flex">
-        {taxType === 'sales' ? tCommon('clientInfo') : tCommon('buyerInfo')}
+        {taxType === 'sales' ? tTax('sellerInfo') : tTax('buyerInfo')}
       </h3>
       <div className="width-full border-b border-lg">
         <InfoLabelValue

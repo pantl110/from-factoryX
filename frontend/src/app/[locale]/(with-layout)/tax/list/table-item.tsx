@@ -51,7 +51,9 @@ const TableItem = ({
 
   return (
     <div
-      className="flex items-center border-b border-lg h-14 w-full min-w-[1192px] text-bl Me_Body-1 hover:bg-bg transition-colors duration-200 cursor-pointer"
+      className={`flex items-center border-b border-lg h-14 w-full text-bl Me_Body-1 hover:bg-bg transition-colors duration-200 cursor-pointer ${
+        taxType === 'sales' ? 'min-w-[1360px]' : 'min-w-[1192px]'
+      }`}
       onClick={handleRowClick}
       role="button"
       tabIndex={0}
@@ -64,7 +66,7 @@ const TableItem = ({
         onToggle={handleToggle}
         disabled={isProdManager || isViewer}
       />
-      <div className="pl-2 pr-4 w-[180px]">
+      <div className="pl-2 pr-4 w-[192px]">
         <RoundChip text={statusText} variant="sm" color={statusColor} />
       </div>
       <p

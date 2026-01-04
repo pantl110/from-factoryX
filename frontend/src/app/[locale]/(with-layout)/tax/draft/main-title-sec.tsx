@@ -14,6 +14,7 @@ interface MainTitleSecProps {
 
 const MainTitleSec = ({ selectedTab, setSelectedTab }: MainTitleSecProps) => {
   const t = useTranslations('tax.draft');
+  const tNavigation = useTranslations('navigation');
   const tabs: Array<'all' | 'temporary' | 'pending'> = [
     'all',
     'temporary',
@@ -30,7 +31,9 @@ const MainTitleSec = ({ selectedTab, setSelectedTab }: MainTitleSecProps) => {
     <>
       <div className="flex flex-col gap-8 pt-10 pr-10 pl-10">
         <div className="flex items-center justify-between relative">
-          <div className="Heading-1 text-dg">{t('title')}</div>
+          <div className="Heading-1 text-dg">
+            {tNavigation('taxDropdown.draft')}
+          </div>
           <MiniBtn
             text={t('createButton')}
             variant="primary"

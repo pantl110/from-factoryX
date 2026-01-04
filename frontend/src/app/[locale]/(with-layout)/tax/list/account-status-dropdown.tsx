@@ -1,7 +1,8 @@
 import Dropdown from '@/ui/dropdown/dropdown';
 import DropdownItem from '@/ui/dropdown/dropdown-item';
-import { AccountsStatusColorMap, AccountsStatusMap } from '@/types/status-type';
+import { AccountsStatusColorMap } from '@/types/status-type';
 import { AccountsStatusType } from '@/types/status-type';
+import { useTranslations } from 'next-intl';
 
 interface AccountStatusDropdownProps {
   onClose: () => void;
@@ -14,29 +15,32 @@ const AccountStatusDropdown = ({
   onSelect,
   width,
 }: AccountStatusDropdownProps) => {
+  const tList = useTranslations('tax.list');
+  const tCommon = useTranslations('common');
+
   const statusOptions: Array<{
     label: string;
     value: AccountsStatusType | undefined;
     textColor: string;
   }> = [
-    { label: '전체', value: undefined, textColor: 'text-dg' },
+    { label: tCommon('all'), value: undefined, textColor: 'text-dg' },
     {
-      label: AccountsStatusMap.overdue,
+      label: tList('status.overdue'),
       value: 'overdue',
       textColor: AccountsStatusColorMap.overdue.textColor || 'text-red',
     },
     {
-      label: AccountsStatusMap.partial,
+      label: tList('status.partial'),
       value: 'partial',
       textColor: AccountsStatusColorMap.partial.textColor || 'text-orange',
     },
     {
-      label: AccountsStatusMap.waiting,
+      label: tList('status.waiting'),
       value: 'waiting',
       textColor: AccountsStatusColorMap.waiting.textColor || 'text-dg',
     },
     {
-      label: AccountsStatusMap.completed,
+      label: tList('status.completed'),
       value: 'completed',
       textColor: AccountsStatusColorMap.completed.textColor || 'text-primary',
     },

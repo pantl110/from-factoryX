@@ -129,6 +129,7 @@ const CreatTaxPanel = ({
   const t = useTranslations('tax.createTaxPanel');
   const tTax = useTranslations('tax');
   const tCommon = useTranslations('common');
+  const tDocumentType = useTranslations('document.type');
 
   // 주문제품 정보 폼 변경 핸들러
   const handleProductInfoChange = useCallback(
@@ -627,7 +628,7 @@ const CreatTaxPanel = ({
   return (
     <>
       <Panel
-        title={t('title')}
+        title={tDocumentType('salesTaxInvoice')}
         onClose={onClose}
         headerButton={headerButton}
         ref={panelRef}

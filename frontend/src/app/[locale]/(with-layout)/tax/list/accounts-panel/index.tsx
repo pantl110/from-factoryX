@@ -39,7 +39,8 @@ const AccountsPanel = ({
   const t = useTranslations('tax.list');
   const tCommon = useTranslations('common');
   const tNav = useTranslations('navigation');
-  const tDocument = useTranslations('document.taxInvoice');
+  const tDocumentType = useTranslations('document.type');
+  const tDetailPanel = useTranslations('tax.detailPanel');
   // 모달, 판넬 상태
   const [isTaxDetailOpen, setIsTaxDetailOpen] = useState(false);
   const [isCashReceiptDetailOpen, setIsCashReceiptDetailOpen] = useState(false);
@@ -348,8 +349,8 @@ const AccountsPanel = ({
           item={taxItem}
           title={
             isPurchase
-              ? tDocument('purchaseTaxInvoice')
-              : tDocument('salesTaxInvoice')
+              ? tDetailPanel('purchaseTaxInvoiceTitle')
+              : tDetailPanel('salesTaxInvoiceTitle')
           }
         />
       )}
@@ -361,7 +362,7 @@ const AccountsPanel = ({
             {/* top 고정 부위*/}
             <div className="sticky pt-8 top-0 bg-wh">
               <div className="flex justify-between h-13 border-b border-lg">
-                <h3 className="Heading-3">{tDocument('cashReceipt')}</h3>
+                <h3 className="Heading-3">{tDocumentType('cashReceipt')}</h3>
                 <IconBtn icon={X} onClick={handleCloseCashReceiptDetail} />
               </div>
             </div>

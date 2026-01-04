@@ -232,7 +232,7 @@ const Info = React.forwardRef<InfoHandleModel, InfoProps>(
 
           <form>
             <div className="flex">
-              <div className="relative flex-1">
+              <div className="relative flex-1 min-w-0">
                 <Controller
                   name="collection_terms"
                   control={control}
@@ -241,62 +241,67 @@ const Info = React.forwardRef<InfoHandleModel, InfoProps>(
                       label={t('labels.collectionTerms')}
                       value={
                         <div
-                          className="flex items-center justify-between w-full cursor-pointer"
+                          className="flex items-center justify-between w-full cursor-pointer gap-2"
                           onClick={() => setIsTermOpen((prev) => !prev)}
                         >
-                          {isCustom ? (
-                            <Controller
-                              name="collection_terms_custom"
-                              control={control}
-                              render={({ field: customField }) => (
-                                <input
-                                  className="flex-1 bg-transparent outline-none"
-                                  placeholder={
-                                    isPurchase
-                                      ? t(
-                                          'placeholders.collectionTerms.purchase.term'
-                                        ) +
-                                        t(
-                                          'placeholders.collectionTerms.purchase.input'
-                                        )
-                                      : t(
-                                          'placeholders.collectionTerms.sales.term'
-                                        ) +
-                                        t(
-                                          'placeholders.collectionTerms.sales.input'
-                                        )
-                                  }
-                                  value={customField.value || ''}
-                                  onChange={(e) => {
-                                    customField.onChange(e.target.value);
-                                  }}
-                                  onClick={(e) => e.stopPropagation()}
-                                />
-                              )}
-                            />
-                          ) : (
-                            <span
-                              className={`truncate ${
-                                !watchedCollectionTerms ? 'text-gr' : ''
-                              }`}
-                            >
-                              {displayTerm ||
-                                (isPurchase
-                                  ? t(
-                                      'placeholders.collectionTerms.purchase.term'
-                                    ) +
-                                    t(
-                                      'placeholders.collectionTerms.purchase.select'
-                                    )
-                                  : t(
-                                      'placeholders.collectionTerms.sales.term'
-                                    ) +
-                                    t(
-                                      'placeholders.collectionTerms.sales.select'
-                                    ))}
-                            </span>
-                          )}
-                          <CaretDown size={18} className="text-gr" />
+                          <div className="flex-1 min-w-0">
+                            {isCustom ? (
+                              <Controller
+                                name="collection_terms_custom"
+                                control={control}
+                                render={({ field: customField }) => (
+                                  <input
+                                    className="w-full bg-transparent outline-none break-words"
+                                    placeholder={
+                                      isPurchase
+                                        ? t(
+                                            'placeholders.collectionTerms.purchase.term'
+                                          ) +
+                                          t(
+                                            'placeholders.collectionTerms.purchase.input'
+                                          )
+                                        : t(
+                                            'placeholders.collectionTerms.sales.term'
+                                          ) +
+                                          t(
+                                            'placeholders.collectionTerms.sales.input'
+                                          )
+                                    }
+                                    value={customField.value || ''}
+                                    onChange={(e) => {
+                                      customField.onChange(e.target.value);
+                                    }}
+                                    onClick={(e) => e.stopPropagation()}
+                                  />
+                                )}
+                              />
+                            ) : (
+                              <span
+                                className={`break-words ${
+                                  !watchedCollectionTerms ? 'text-gr' : ''
+                                }`}
+                              >
+                                {displayTerm ||
+                                  (isPurchase
+                                    ? t(
+                                        'placeholders.collectionTerms.purchase.term'
+                                      ) +
+                                      t(
+                                        'placeholders.collectionTerms.purchase.select'
+                                      )
+                                    : t(
+                                        'placeholders.collectionTerms.sales.term'
+                                      ) +
+                                      t(
+                                        'placeholders.collectionTerms.sales.select'
+                                      ))}
+                              </span>
+                            )}
+                          </div>
+                          <CaretDown
+                            size={18}
+                            className="text-gr flex-shrink-0"
+                          />
                         </div>
                       }
                     />

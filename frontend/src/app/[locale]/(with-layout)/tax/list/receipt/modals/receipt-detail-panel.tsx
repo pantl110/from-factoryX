@@ -1,3 +1,4 @@
+import { useTranslations } from 'next-intl';
 import InfoLabelValue from '@/ui/info-label-value';
 import Panel from '@/ui/panel';
 import { useGetCashReceiptDetail } from '@/hooks';
@@ -21,6 +22,11 @@ const ReceiptDetailPanel = ({
   showPanel = true,
   showLinkButton = true,
 }: ReceiptDetailPanelProps) => {
+  const t = useTranslations('tax.list.receipt.detailPanel');
+  const tCommon = useTranslations('common');
+  const tDocumentType = useTranslations('document.type');
+  const tList = useTranslations('tax.list');
+  const tTax = useTranslations('tax');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
 
@@ -45,51 +51,57 @@ const ReceiptDetailPanel = ({
       {isLoading || error ? null : (
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-3">
-            <h3 className="Heading-3 h-10 items-center flex">거래 정보</h3>
+            <h3 className="Heading-3 h-10 items-center flex">
+              {t('transactionInfo')}
+            </h3>
             <div>
               <InfoLabelValue
-                label="거래일자"
+                label={t('transactionDate')}
                 value={cashReceipt?.transaction_date}
               />
               <InfoLabelValue
-                label="승인번호"
+                label={t('approvalNumber')}
                 value={cashReceipt?.nts_confirm_num}
               />
               <InfoLabelValue
-                label="거래구분"
+                label={t('tradeType')}
                 value={cashReceipt?.trade_type}
               />
               <InfoLabelValue
-                label="거래용도"
+                label={t('tradeUsage')}
                 value={cashReceipt?.trade_usage}
               />
             </div>
           </div>
 
           <div className="flex flex-col gap-3">
-            <h3 className="Heading-3 h-10 items-center flex">구매처 정보</h3>
+            <h3 className="Heading-3 h-10 items-center flex">
+              {tTax('buyerInfo')}
+            </h3>
             <div>
               <InfoLabelValue
-                label="거래처명"
+                label={tCommon('clientName')}
                 value={cashReceipt?.client_info.name}
               />
               <InfoLabelValue
-                label="사업자등록번호"
+                label={tCommon('businessRegistrationNumber')}
                 value={cashReceipt?.client_info.business_registration_number}
               />
               <InfoLabelValue
-                label="대표자명"
+                label={tCommon('representativeName')}
                 value={cashReceipt?.client_info.representative_name}
               />
               <InfoLabelValue
-                label="사업장 주소"
+                label={tCommon('businessAddress')}
                 value={cashReceipt?.client_info.address}
               />
             </div>
           </div>
 
           <div className="flex flex-col gap-3">
-            <h3 className="Heading-3 h-10 items-center flex">구매 자재 정보</h3>
+            <h3 className="Heading-3 h-10 items-center flex">
+              {tCommon('purchaseMaterialInfo')}
+            </h3>
             <PriceInfo
               supplyAmount={cashReceipt?.transaction_amount || 0}
               taxAmount={cashReceipt?.tax_amount || 0}
@@ -121,12 +133,12 @@ const ReceiptDetailPanel = ({
   return (
     <>
       <Panel
-        title="현금영수증"
+        title={tDocumentType('cashReceipt')}
         onClose={onClose}
         headerButton={
           showLinkButton ? (
             <MiniBtn
-              text="내역 연결하기"
+              text={tList('tableHeader.projectLink.purchase')}
               textColor="text-dg"
               borderColor="border-lg"
               hoverColor="hover:bg-bg"

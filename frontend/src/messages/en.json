@@ -60,10 +60,9 @@
       "fax": "Enter fax number.",
       "companyName": "Enter company name."
     },
-    "clientInfo": "Client Info",
     "customer": "Customer",
     "supplier": "Supplier",
-    "buyerInfo": "Buyer Info",
+    "clientInfo": "Client Info",
     "orderProductInfo": "Order Product Info",
     "purchaseMaterialInfo": "Purchase Material Info",
     "quantity": "Quantity",
@@ -83,8 +82,8 @@
     "fax": "Fax",
     "role": "Role",
     "managerName": "Manager Name",
-    "transactionDate": "Transaction Date",
     "sellerInfo": "Seller Info",
+    "buyerInfo": "Buyer Info",
     "writtenDate": "Written Date",
     "issuedDate": "Issued Date",
     "registeredDate": "Registered Date",
@@ -136,6 +135,7 @@
     "noDocuments": "No documents yet.",
     "noDocumentsDescription": "Documents will be displayed here when created.",
     "transactionStatement": "[{name}] Transaction Statement",
+    "finalDeliveryDate": "Final Delivery",
     "actionAdded": "Plan Added",
     "type": {
       "documentType": "Type",
@@ -188,9 +188,12 @@
     "receipt": "Receipt",
     "request": "Request",
     "taxAmount": "Tax Amount",
+    "sellerInfo": "Seller (Supplier) Info",
+    "buyerInfo": "Buyer (Recipient) Info",
     "linkModal": {
       "emptyText": "Once tax invoices are created, you can review them here and link them to projects.",
       "taxTableEmptyText": "No material purchase history to link.",
+      "purchaseDate": "Purchase Date",
       "title": {
         "project": "Select a sales tax invoice to link to the project.",
         "tax": "Link the selected material from the purchase tax invoice to the purchase history.",
@@ -219,6 +222,18 @@
         "selectLineItem": "Please select a tax invoice product to link."
       }
     },
+    "detailPanel": {
+      "buttons": {
+        "cancelPublish": "Cancel Publish"
+      }
+    },
+    "notAllowed": {
+      "title": "Tax/Accounting features are locked.",
+      "messageWithFactory": "Upgrade to Partners plan to\nuse tax/accounting features.",
+      "messageWithoutFactory": "You need to create an actual factory or be invited\nand access with operator permissions to use this feature",
+      "backToDashboard": "Back to Dashboard",
+      "viewDetails": "View Details"
+    },
     "publishStatus": {
       "temporary": "Draft",
       "pending": "Pending",
@@ -228,7 +243,6 @@
       "failed": "Failed"
     },
     "draft": {
-      "title": "Draft Tax Invoice",
       "createButton": "Create Tax Invoice",
       "tabs": {
         "all": "All",
@@ -259,6 +273,38 @@
       }
     },
     "list": {
+      "searchPlaceholder": "Search by client name or product name.",
+      "status": {
+        "waiting": "Waiting",
+        "partial": "Partial",
+        "completed": "Completed",
+        "overdue": "Overdue"
+      },
+      "tableHeader": {
+        "projectLink": {
+          "purchase": "Link Purchase Order",
+          "sales": "Link Project"
+        }
+      },
+      "buttons": {
+        "showHidden": "Show Hidden",
+        "restore": "Restore",
+        "hide": "Hide",
+        "restoreAll": "Restore All Items",
+        "hideAll": "Hide All Items",
+        "restoreItems": "Restore {count} Items",
+        "hideItems": "Hide {count} Items"
+      },
+      "empty": {
+        "hiddenTitle": "No hidden tax invoices yet.",
+        "hiddenDescription": "Hidden tax invoices will appear here.",
+        "hiddenStateTitle": "Tax invoices are hidden.",
+        "hiddenStateDescription": "Click 'Show Hidden' at the top to restore hidden tax invoices.",
+        "noTaxInvoicesTitle": "No tax invoices registered yet.",
+        "noTaxInvoicesDescription": "Tax invoices will appear here once created.",
+        "noStatusPurchase": "No tax invoices with this payable status.",
+        "noStatusSales": "No tax invoices with this receivable status."
+      },
       "accountPayment": {
         "title": {
           "editPayment": "Edit Payment Info",
@@ -353,10 +399,49 @@
         }
       },
       "errors": {
+        "taxInvoiceNotFound": "Tax invoice not found.",
+        "hideRestoreFailed": "Failed to hide/restore tax invoice.",
+        "hideRestoreError": "Error occurred while hiding/restoring tax invoice: {error}",
         "emailSendFailed": "Failed to send email.",
         "deletePaymentDetailFailed": "Failed to delete payment/deposit detail.",
         "invalidDueDate": "Please enter a valid due date.",
         "saveAccountFailed": "Failed to save tax invoice account information."
+      },
+      "receipt": {
+        "empty": {
+          "hiddenTitle": "No hidden cash receipts yet.",
+          "hiddenDescription": "Hidden cash receipts will appear here.",
+          "noReceiptsTitle": "No cash receipts issued yet.",
+          "noReceiptsDescription": "You can check the details here after issuance.",
+          "noStatusReceipts": "No cash receipts with this account status."
+        },
+        "errors": {
+          "hideRestoreFailed": "Failed to hide/restore cash receipt."
+        },
+        "linkReceiptModal": {
+          "title": "Link purchase history to cash receipt.",
+          "subtitle": "Cash receipts don't show material names separately. By linking materials directly, you can accurately manage tracking and unit prices.",
+          "searchPlaceholder": "Enter material name to search for history to link.",
+          "empty": "No materials to link.",
+          "selectedCount": "{count} selected",
+          "buttons": {
+            "addSelected": "Add Selected Items",
+            "link": "Link History"
+          },
+          "priceInfo": {
+            "title": "Transaction Amount",
+            "selectedAmount": "Selected Amount",
+            "differenceAmount": "Difference"
+          }
+        },
+        "detailPanel": {
+          "transactionInfo": "Transaction Info",
+          "approvalNumber": "Approval No.",
+          "transactionDate": "Trans. Date",
+          "tradeType": "Trans. Type",
+          "tradeUsage": "Trans. Purpose",
+          "purchaseInfo": "Partner Info"
+        }
       },
       "info": {
         "title": {

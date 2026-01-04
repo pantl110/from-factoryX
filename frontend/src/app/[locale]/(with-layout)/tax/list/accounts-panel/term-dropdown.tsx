@@ -15,12 +15,18 @@ const TermDropdown = ({ onClose, onSelect }: TermDropdownProps) => {
       <DropdownItem
         text={t('invoice30')}
         onClick={() => onSelect('INVOICE_30')}
+        breakWords
       />
       <DropdownItem
         text={t('invoiceEomNext')}
         onClick={() => onSelect('INVOICE_EOM_NEXT')}
+        breakWords
       />
-      <DropdownItem text={t('custom')} onClick={() => onSelect('CUSTOM')} />
+      <DropdownItem
+        text={t('custom')}
+        onClick={() => onSelect('CUSTOM')}
+        breakWords
+      />
     </Dropdown>
   );
 };

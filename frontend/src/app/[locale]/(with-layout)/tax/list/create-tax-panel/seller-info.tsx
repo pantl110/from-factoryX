@@ -52,6 +52,7 @@ const SellerInfo = ({
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const tCommon = useTranslations('common');
+  const tTax = useTranslations('tax');
   const tPlaceholders = useTranslations('common.placeholders');
 
   // 공장 상세 조회 후 초기값 세팅
@@ -176,7 +177,7 @@ const SellerInfo = ({
 
   return (
     <div className="flex-1 flex flex-col gap-5">
-      <h3 className="Heading-3">{tCommon('sellerInfo')}</h3>
+      <h3 className="Heading-3">{tTax('sellerInfo')}</h3>
       <form className="flex flex-col gap-4">
         <div className="flex gap-2">
           <div className="flex-1">

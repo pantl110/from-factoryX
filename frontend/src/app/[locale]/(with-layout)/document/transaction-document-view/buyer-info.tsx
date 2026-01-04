@@ -14,7 +14,7 @@ const BuyerInfo = ({ quotationData }: BuyerInfoProps) => {
   return (
     <div className="flex flex-col gap-3">
       <h3 className="Heading-3 h-10 items-center flex">
-        {tCommon('clientInfo')}
+        {tCommon('buyerInfo')}
       </h3>
       <div className="width-full border-b border-lg">
         <div className="flex">

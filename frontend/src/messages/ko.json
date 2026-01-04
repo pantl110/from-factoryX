@@ -59,10 +59,9 @@
       "fax": "팩스 번호를 입력하세요.",
       "companyName": "회사명을 입력하세요."
     },
-    "clientInfo": "거래처 정보",
     "customer": "수주처",
     "supplier": "발주처",
-    "buyerInfo": "구매처 정보",
+    "clientInfo": "거래처 정보",
     "orderProductInfo": "주문 제품 정보",
     "purchaseMaterialInfo": "구매 자재 정보",
     "quantity": "수량",
@@ -82,8 +81,8 @@
     "fax": "팩스 번호",
     "role": "권한",
     "managerName": "담당자명",
-    "transactionDate": "거래일자",
     "sellerInfo": "판매처 정보",
+    "buyerInfo": "구매처 정보",
     "writtenDate": "작성일자",
     "issuedDate": "발행일자",
     "registeredDate": "등록일자",
@@ -136,6 +135,7 @@
     "noDocuments": "문서가 아직 없어요.",
     "noDocumentsDescription": "문서가 생성되면 이곳에 표시돼요.",
     "transactionStatement": "[{name}]{case} 거래명세서",
+    "finalDeliveryDate": "최종납기일",
     "actionAdded": "생산 계획 추가",
     "type": {
       "documentType": "문서 유형",
@@ -188,9 +188,12 @@
     "receipt": "영수",
     "request": "청구",
     "taxAmount": "세액",
+    "sellerInfo": "판매처(공급자) 정보",
+    "buyerInfo": "구매처(공급받는 자) 정보",
     "linkModal": {
       "emptyText": "세금계산서가 생성되면 이곳에서 확인 후, 프로젝트를 연결 할 수  있어요.",
       "taxTableEmptyText": "연결할 자재 구매 내역이 없어요.",
+      "purchaseDate": "구매일자",
       "title": {
         "project": "프로젝트에 연결할 매출 세금계산서를 선택해주세요.",
         "tax": "매입 세금계산서에서 선택한 자재를 구매 내역에 연결하세요.",
@@ -219,6 +222,19 @@
         "selectLineItem": "연결할 세금계산서 제품을 선택해주세요."
       }
     },
+    "detailPanel": {
+      "buttons": {
+        "cancelPublish": "발행 취소"
+      }
+    },
+    "notAllowed": {
+      "title": "세무/회계 기능이 잠겨있어요.",
+      "messageWithFactory": "Partners 플랜으로 업그레이드하면\n세무/회계 기능을 사용할 수 있어요.",
+      "messageWithoutFactory": "실제 공장을 생성하거나 초대받아\n운영자 권한으로 접속해야 사용할 수 있어요",
+      "backToDashboard": "대시보드로 돌아가기",
+      "viewDetails": "자세히 보기"
+    },
+
     "publishStatus": {
       "temporary": "임시 저장",
       "pending": "전송 대기",
@@ -228,7 +244,6 @@
       "failed": "발행 실패"
     },
     "draft": {
-      "title": "세금계산서 작성함",
       "createButton": "세금계산서 생성하기",
       "tabs": {
         "all": "전체",
@@ -259,6 +274,38 @@
       }
     },
     "list": {
+      "searchPlaceholder": "거래처명이나 제품명을 입력해 검색하세요.",
+      "status": {
+        "waiting": "대기",
+        "partial": "일부",
+        "completed": "완료",
+        "overdue": "연체"
+      },
+      "tableHeader": {
+        "projectLink": {
+          "purchase": "발주서 연결",
+          "sales": "프로젝트 연결"
+        }
+      },
+      "buttons": {
+        "showHidden": "숨긴 목록 보기",
+        "restore": "복구하기",
+        "hide": "숨기기",
+        "restoreAll": "전체 항목 복구하기",
+        "hideAll": "전체 항목 숨기기",
+        "restoreItems": "{count}개 항목 복구하기",
+        "hideItems": "{count}개 항목 숨기기"
+      },
+      "empty": {
+        "hiddenTitle": "아직 숨긴 세금계산서가 없어요.",
+        "hiddenDescription": "표시하지 않을 세금계산서를 숨기면 이곳에서 다시 볼 수 있어요.",
+        "hiddenStateTitle": "세금계산서가 숨겨진 상태예요.",
+        "hiddenStateDescription": "숨긴 세금계산서를 다시 보려면, 상단의 '숨긴 목록 보기' 버튼을 눌러 복구해 주세요.",
+        "noTaxInvoicesTitle": "아직 등록된 세금계산서가 없어요.",
+        "noTaxInvoicesDescription": "세금계산서를 생성하면 이곳에서 확인할 수 있어요.",
+        "noStatusPurchase": "해당 채무 상태의 세금계산서가 없어요.",
+        "noStatusSales": "해당 채권 상태의 세금계산서가 없어요."
+      },
       "accountPayment": {
         "title": {
           "editPayment": "지급 정보 수정",
@@ -353,10 +400,49 @@
         }
       },
       "errors": {
+        "taxInvoiceNotFound": "세금계산서를 찾을 수 없습니다.",
+        "hideRestoreFailed": "세금계산서 숨김/복구에 실패했습니다.",
+        "hideRestoreError": "세금계산서 숨김/복구 중 오류 발생: {error}",
         "emailSendFailed": "이메일 발송에 실패했습니다.",
         "deletePaymentDetailFailed": "회수/지급 상세내역 삭제에 실패했습니다.",
         "invalidDueDate": "유효한 납기일자를 입력해 주세요.",
         "saveAccountFailed": "세금계산서 채권/채무 정보 저장에 실패했습니다."
+      },
+      "receipt": {
+        "empty": {
+          "hiddenTitle": "아직 숨긴 현금영수증이 없어요.",
+          "hiddenDescription": "표시하지 않을 현금영수증을 숨기면 이곳에서 다시 볼 수 있어요.",
+          "noReceiptsTitle": "아직 발급된 현금영수증이 없어요.",
+          "noReceiptsDescription": "발급 후 이곳에서 내역을 확인하실 수 있어요.",
+          "noStatusReceipts": "해당 채무 상태의 현금영수증이 없어요."
+        },
+        "errors": {
+          "hideRestoreFailed": "현금영수증 숨김/복구에 실패했습니다."
+        },
+        "linkReceiptModal": {
+          "title": "현금영수증에 구매 내역을 연결해주세요.",
+          "subtitle": "영수증에는 자재명이 따로 안 보여요. 자재를 직접 연결하면 추적과 단가를 정확히 관리할 수 있어요.",
+          "searchPlaceholder": "연결할 내역에 대한 원자재를 입력해 검색하세요.",
+          "empty": "연결할 자재가 없어요.",
+          "selectedCount": "{count}개 선택",
+          "buttons": {
+            "addSelected": "선택 항목 추가하기",
+            "link": "내역 연결하기"
+          },
+          "priceInfo": {
+            "title": "거래 금액",
+            "selectedAmount": "선택 금액",
+            "differenceAmount": "차액"
+          }
+        },
+        "detailPanel": {
+          "transactionInfo": "거래 정보",
+          "approvalNumber": "승인번호",
+          "transactionDate": "거래일자",
+          "tradeType": "거래구분",
+          "tradeUsage": "거래용도",
+          "purchaseInfo": "구매처 정보"
+        }
       },
       "info": {
         "title": {

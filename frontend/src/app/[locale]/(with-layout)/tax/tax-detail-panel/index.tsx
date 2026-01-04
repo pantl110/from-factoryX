@@ -6,13 +6,11 @@ import {
 import Panel from '@/ui/panel';
 import TaxDocumentView from '@/app/[locale]/(with-layout)/document/tax-document-view';
 import MiniBtn from '@/ui/mini-btn';
-import { useGetTaxInvoiceDetail, useToast, useCancelTaxInvoice } from '@/hooks';
+import { useGetTaxInvoiceDetail, useCancelTaxInvoice } from '@/hooks';
 import { useState, useEffect } from 'react';
-import Toast from '@/ui/toast';
-import { CheckCircle } from '@phosphor-icons/react';
 import LinkTaxModal from '../../project/process/modals/link-tax-modal/link-tax-modal';
 import CreateTaxPanel from '../list/create-tax-panel';
-import PublishTaxModal from './publish-tax-modal';
+import { useTranslations } from 'next-intl';
 
 // 세금계산서 편집용 제품 데이터 타입
 interface TaxProductEditModel {
@@ -44,7 +42,6 @@ const TaxDetailPanel = ({
   onTaxCreated,
 }: TaxDetailPanelProps) => {
   // 모달
-  const [isPublishModalOpen, setIsPublishModalOpen] = useState(false);
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   // 정보
   const [item, setItem] = useState<PublishedTaxInvoiceResponseModel | null>(
@@ -58,9 +55,10 @@ const TaxDetailPanel = ({
   const [createdTaxId, setCreatedTaxId] = useState<number | null>(null);
 
   const { getTaxInvoiceDetail, isLoading } = useGetTaxInvoiceDetail();
-  const { isToastOpen, isVisible, showToast } = useToast();
   const { cancelTaxInvoice, isLoading: isCancelLoading } =
     useCancelTaxInvoice();
+  const tDetailPanel = useTranslations('tax.detailPanel');
+  const tDocumentType = useTranslations('document.type');
 
   // 처음 마운트 시에만 데이터 가져오기 & 편집 모드 설정
   useEffect(() => {
@@ -103,10 +101,8 @@ const TaxDetailPanel = ({
     return null;
   }
 
-  // item이 존재할 때만 isDraft 계산
-  const isDraft = item?.barobill_state === '임시저장';
-  const isPendingTransmission =
-    item?.barobill_state === '발급완료' && item?.nts_send_state === '전송전';
+  // 세금계산서 상태 확인 (전송 대기 상태 확인)
+  const isPendingTransmission = item?.publish_status === 'pending';
 
   return (
     <>
@@ -136,37 +132,18 @@ const TaxDetailPanel = ({
         />
       ) : (
         <Panel
-          title={`${item?.tax_invoice_type === 'sales' ? '매출' : '매입'} 세금계산서`}
+          title={
+            item?.tax_invoice_type === 'sales'
+              ? tDocumentType('salesTaxInvoice')
+              : tDocumentType('purchaseTaxInvoice')
+          }
           onClose={onClose}
           headerButton={
             <>
-              {item && isDraft && (
-                <div className="flex gap-2">
-                  <MiniBtn
-                    text="수정하기"
-                    textColor="text-dg"
-                    borderColor="border-lg"
-                    hoverColor="hover:bg-bg"
-                    onClick={() => {
-                      setIsEditingMode(true);
-                    }}
-                  />
-                  <MiniBtn
-                    text="발행하기"
-                    textColor="text-wh"
-                    bgColor="bg-primary"
-                    hoverColor="hover:bg-primary-hover"
-                    onClick={() => {
-                      setIsPublishModalOpen(true);
-                    }}
-                  />
-                </div>
-              )}
-
               {/* 전송 대기 시 취소 가능 */}
               {isPendingTransmission && (
                 <MiniBtn
-                  text="발행 취소"
+                  text={tDetailPanel('buttons.cancelPublish')}
                   textColor="text-red"
                   bgColor="bg-red-8"
                   hoverColor="hover:bg-red-hover"
@@ -193,23 +170,6 @@ const TaxDetailPanel = ({
         </Panel>
       )}
 
-      {/* 세금계산서 발행 모달 */}
-      {isPublishModalOpen && (
-        <PublishTaxModal
-          taxId={itemId || createdTaxId || 0}
-          onClose={() => setIsPublishModalOpen(false)}
-          onSuccess={() => {
-            // 발행 성공 후 모달과 판넬을 닫고 토스트 표시
-            setIsPublishModalOpen(false); // 모달 닫기
-            onClose(); // 판넬 닫기
-            // 판넬이 닫힌 후 토스트 나오기 위해 250ms 딜레이
-            setTimeout(() => {
-              showToast();
-            }, 250);
-          }}
-        />
-      )}
-
       {canLink && isLinkModalOpen && itemId && (
         <LinkTaxModal
           onClose={() => setIsLinkModalOpen(false)}
@@ -228,16 +188,6 @@ const TaxDetailPanel = ({
               setItem({ ...item, line_items: updatedLineItems });
             }
           }}
-        />
-      )}
-
-      {isToastOpen && (
-        <Toast
-          icon={<CheckCircle size={20} className="text-primary" />}
-          text="세금계산서 발행이 완료되었어요."
-          subtext="세금계산서는 발행일 기준으로 처리돼요."
-          type="primary"
-          isVisible={isVisible}
         />
       )}
     </>
