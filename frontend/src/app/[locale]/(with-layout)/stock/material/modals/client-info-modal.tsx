@@ -28,8 +28,8 @@ interface ClientFormModel {
 
 const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
   const t = useTranslations('stock.material.modals.clientInfo');
-  const tQuotation = useTranslations('quotation.inputSection');
   const tCommon = useTranslations('common');
+  const tQuotation = useTranslations('quotation.inputSection');
   const {
     register,
     handleSubmit,
@@ -131,7 +131,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
           <div className="flex-1 relative">
             <Input
               label={tCommon('clientName')}
-              placeholder={t('placeholders.clientName')}
+              placeholder={`${tCommon('required')} ${t('placeholders.clientName')}`}
               required
               {...register('name', { required: true })}
               value={searchKeyword}
@@ -170,9 +170,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
           <div className="flex-1">
             <Input
               label={tCommon('businessRegistrationNumber')}
-              placeholder={tQuotation(
-                'placeholders.businessRegistrationNumber'
-              )}
+              placeholder={`${tCommon('required')} ${tCommon('placeholders.businessRegistrationNumber')}`}
               required
               {...register('businessRegistrationNumber', {
                 required: true,
@@ -192,7 +190,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
           </div>
           <Input
             label={tCommon('representativeName')}
-            placeholder={tQuotation('placeholders.representativeName')}
+            placeholder={`${tCommon('required')} ${tCommon('placeholders.representativeName')}`}
             required
             {...register('representativeName', {
               required: true,
@@ -203,7 +201,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
           <div className="flex gap-2.5">
             <Input
               label={tCommon('businessType')}
-              placeholder={tQuotation('placeholders.businessType')}
+              placeholder={`${tCommon('required')} ${tCommon('placeholders.businessType')}`}
               required
               {...register('businessType', {
                 required: true,
@@ -213,7 +211,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
             />
             <Input
               label={tCommon('businessCategory')}
-              placeholder={tQuotation('placeholders.businessCategory')}
+              placeholder={`${tCommon('required')} ${tCommon('placeholders.businessCategory')}`}
               required
               {...register('businessCategory', {
                 required: true,
@@ -226,7 +224,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
             <Input
               label={tCommon('businessAddress')}
               required
-              placeholder={tQuotation('placeholders.businessAddress')}
+              placeholder={`${tCommon('required')} ${tCommon('placeholders.businessAddress')}`}
               {...register('address', {
                 required: true,
               })}

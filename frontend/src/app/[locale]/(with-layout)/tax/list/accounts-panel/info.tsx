@@ -3,7 +3,6 @@ import { IconBtn, InfoLabelValue, MiniBtn, RoundChip } from '@/ui';
 import React, { useState, useEffect, useImperativeHandle } from 'react';
 import { ArrowLineUpRight, CaretDown } from '@phosphor-icons/react';
 import TermDropdown from './term-dropdown';
-import { TermType, TERM_LABEL_MAP } from './types';
 import { TaxInvoiceAccountModel } from '@/types/data-model';
 import { useForm, Controller } from 'react-hook-form';
 import { formatISODate, formatDate } from '@/utils';
@@ -11,6 +10,7 @@ import {
   getAgreedPaymentDateByCollectionTerm,
   getDaysUntilPayment,
 } from './utils';
+import { useTranslations } from 'next-intl';
 
 interface AccountFormModel {
   collection_terms: CollectionTermsType | null;
@@ -50,6 +50,10 @@ const Info = React.forwardRef<InfoHandleModel, InfoProps>(
     },
     ref
   ) => {
+    const t = useTranslations('tax.list.info');
+    const tCommon = useTranslations('common');
+    const tAccountPayment = useTranslations('tax.list.accountPayment.labels');
+    const tLinkProject = useTranslations('tax.list.linkProjectModal');
     const accountsStatus: AccountsStatusType = account?.status ?? 'waiting';
 
     const [isTermOpen, setIsTermOpen] = useState(false);
@@ -100,15 +104,23 @@ const Info = React.forwardRef<InfoHandleModel, InfoProps>(
     const watchedCustomTerm = watch('collection_terms_custom');
     const watchedAgreedPaymentDate = watch('agreed_payment_date');
     const isCustom = watchedCollectionTerms === 'CUSTOM';
+    const getTermLabel = (term: CollectionTermsType | null): string => {
+      if (!term || term === 'CUSTOM') return '';
+      if (term === 'INVOICE_30') return t('terms.invoice30');
+      if (term === 'INVOICE_EOM_NEXT') return t('terms.invoiceEomNext');
+      return '';
+    };
     const displayTerm = isCustom
       ? watchedCustomTerm || ''
-      : watchedCollectionTerms
-        ? TERM_LABEL_MAP[watchedCollectionTerms as TermType]
-        : '';
+      : getTermLabel(watchedCollectionTerms);
 
-    const title = isPurchase ? '매입채무 정보' : '매출채권 정보';
-    const statusLabel = isPurchase ? '채무 상태' : '채권 상태';
-    const remainLabel = isPurchase ? '미지급금액(잔액)' : '미수금액(잔액)';
+    const title = isPurchase ? t('title.purchase') : t('title.sales');
+    const statusLabel = isPurchase
+      ? t('statusLabel.purchase')
+      : t('statusLabel.sales');
+    const remainLabel = isPurchase
+      ? t('labels.amountPayable')
+      : t('labels.amountReceivable');
 
     const handleProjectClick = () => {
       if (projectId) {
@@ -130,21 +142,25 @@ const Info = React.forwardRef<InfoHandleModel, InfoProps>(
           <div className="flex gap-2">
             {type === 'tax' && (
               <MiniBtn
-                text="세금계산서 상세보기"
+                text={t('buttons.viewTaxInvoice')}
                 variant="whiteOutline"
                 onClick={handleOpenTaxDetail}
               />
             )}
             {type === 'cash-receipt' && (
               <MiniBtn
-                text="현금영수증 상세보기"
+                text={t('buttons.viewCashReceipt')}
                 variant="whiteOutline"
                 onClick={handleOpenCashReceiptDetail}
               />
             )}
             {!isPurchase && (
               <MiniBtn
-                text={projectId ? '프로젝트 바로가기' : '프로젝트 연결하기'}
+                text={
+                  projectId
+                    ? t('buttons.goToProject')
+                    : tLinkProject('linkButton')
+                }
                 variant="whiteOutline"
                 onClick={handleProjectClick}
               />
@@ -156,7 +172,7 @@ const Info = React.forwardRef<InfoHandleModel, InfoProps>(
         <div>
           <div className="flex">
             <InfoLabelValue
-              label="거래처명"
+              label={tCommon('clientName')}
               value={
                 <div
                   className="flex items-center gap-2 w-full cursor-pointer"
@@ -181,13 +197,15 @@ const Info = React.forwardRef<InfoHandleModel, InfoProps>(
             />
             {!isPurchase && (
               <InfoLabelValue
-                label="청구서 발송"
+                label={t('labels.invoiceSent')}
                 value={
                   <RoundChip
                     text={
                       (account?.invoice_sent_count ?? 0) === 0
-                        ? '미발송'
-                        : `${account?.invoice_sent_count}회 발송`
+                        ? t('invoiceSent.notSent')
+                        : t('invoiceSent.sentCount', {
+                            count: account?.invoice_sent_count ?? 0,
+                          })
                     }
                     variant="sm"
                     color={
@@ -203,7 +221,7 @@ const Info = React.forwardRef<InfoHandleModel, InfoProps>(
 
           <div className="flex">
             <InfoLabelValue
-              label="청구금액(합계)"
+              label={t('labels.totalBilledAmount')}
               value={`${totalBilledAmount.toLocaleString()}원`}
             />
             <InfoLabelValue
@@ -220,7 +238,7 @@ const Info = React.forwardRef<InfoHandleModel, InfoProps>(
                   control={control}
                   render={() => (
                     <InfoLabelValue
-                      label="결제 조건"
+                      label={t('labels.collectionTerms')}
                       value={
                         <div
                           className="flex items-center justify-between w-full cursor-pointer"
@@ -235,8 +253,18 @@ const Info = React.forwardRef<InfoHandleModel, InfoProps>(
                                   className="flex-1 bg-transparent outline-none"
                                   placeholder={
                                     isPurchase
-                                      ? '지급 조건을 입력하세요'
-                                      : '수금 조건을 입력하세요'
+                                      ? t(
+                                          'placeholders.collectionTerms.purchase.term'
+                                        ) +
+                                        t(
+                                          'placeholders.collectionTerms.purchase.input'
+                                        )
+                                      : t(
+                                          'placeholders.collectionTerms.sales.term'
+                                        ) +
+                                        t(
+                                          'placeholders.collectionTerms.sales.input'
+                                        )
                                   }
                                   value={customField.value || ''}
                                   onChange={(e) => {
@@ -254,8 +282,18 @@ const Info = React.forwardRef<InfoHandleModel, InfoProps>(
                             >
                               {displayTerm ||
                                 (isPurchase
-                                  ? '지급 조건을 선택하세요'
-                                  : '수금 조건을 선택하세요')}
+                                  ? t(
+                                      'placeholders.collectionTerms.purchase.term'
+                                    ) +
+                                    t(
+                                      'placeholders.collectionTerms.purchase.select'
+                                    )
+                                  : t(
+                                      'placeholders.collectionTerms.sales.term'
+                                    ) +
+                                    t(
+                                      'placeholders.collectionTerms.sales.select'
+                                    ))}
                             </span>
                           )}
                           <CaretDown size={18} className="text-gr" />
@@ -301,7 +339,11 @@ const Info = React.forwardRef<InfoHandleModel, InfoProps>(
                   control={control}
                   render={({ field }) => (
                     <InfoLabelValue
-                      label={isPurchase ? '약정 지급일' : '약정 입금일'}
+                      label={
+                        isPurchase
+                          ? tAccountPayment('expectedPaymentDate')
+                          : tAccountPayment('expectedDepositDate')
+                      }
                       value={
                         <div className="flex items-center gap-2 w-full">
                           {field.value && daysUntilPayment && (
@@ -357,8 +399,8 @@ const Info = React.forwardRef<InfoHandleModel, InfoProps>(
               control={control}
               render={({ field }) => (
                 <InfoLabelValue
-                  label="특이사항"
-                  placeholder="특이사항을 입력하세요."
+                  label={tCommon('note')}
+                  placeholder={tCommon('note') + '을 입력하세요.'}
                   value={field.value || ''}
                   isEditing
                   textarea

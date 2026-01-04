@@ -7,6 +7,7 @@ import LinkProjectTable from './link-project-table';
 import { ProjectResponseModel } from '@/types/data-model';
 import useGetUnlinkedProjects from '@/hooks/project/use-get-unlinked-projects';
 import useLinkTaxInvoice from '@/hooks/tax/use-link-tax-invoice';
+import { useTranslations } from 'next-intl';
 
 interface LinkProjectModalProps {
   onClose: () => void;
@@ -19,6 +20,8 @@ const LinkProjectModal = ({
   taxId,
   onSuccess,
 }: LinkProjectModalProps) => {
+  const t = useTranslations('tax.list.linkProjectModal');
+  const tCommon = useTranslations('common');
   const [searchKeyword, setSearchKeyword] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [orderBy, setOrderBy] = useState<string>('-start_date');
@@ -88,14 +91,14 @@ const LinkProjectModal = ({
   return (
     <Modal
       width="w-[1000px]"
-      title="세금계산서에 연결할 프로젝트를 선택해주세요."
-      subtitle="프로젝트를 세금계산서와 연동하면, 거래 내역이 자동으로 반영돼요."
+      title={t('title')}
+      subtitle={t('subtitle')}
       onClose={onClose}
       scroll={true}
     >
       <div className="flex flex-col gap-4 mt-4 px-6">
         <SearchInput
-          placeholder="연결할 프로젝트의 거래처명이나 제품명을 입력해 검색하세요."
+          placeholder={t('searchPlaceholder')}
           onChange={(value) => setSearchKeyword(value)}
         />
 
@@ -116,9 +119,13 @@ const LinkProjectModal = ({
             setSelectedId={setSelectedId}
           />
           <div className="flex gap-2.5 pt-2 justify-end">
-            <MiniBtn text="취소" variant="white" onClick={onClose} />
             <MiniBtn
-              text="프로젝트 연결하기"
+              text={tCommon('cancel')}
+              variant="white"
+              onClick={onClose}
+            />
+            <MiniBtn
+              text={t('linkButton')}
               hoverColor="hover:bg-primary-hover"
               variant="primary"
               disabled={!selectedId || isLinking}

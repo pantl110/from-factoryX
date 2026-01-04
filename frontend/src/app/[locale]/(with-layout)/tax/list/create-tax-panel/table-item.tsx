@@ -9,6 +9,7 @@ import { useGetProduct } from '@/hooks';
 import ProductDetail from '@/app/[locale]/(with-layout)/stock/product/product-detail';
 import IconBtn from '@/ui/icon-btn';
 import useMemberStore from '@/store/member-store';
+import { useTranslations } from 'next-intl';
 
 interface TableItemFormDataModel {
   products: Array<{
@@ -29,6 +30,7 @@ interface TableItemProps {
 const TableItem = ({ index, onRemove }: TableItemProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
+  const tCommon = useTranslations('common');
 
   const { watch, setValue, trigger } = useFormContext<TableItemFormDataModel>();
   const { getProductDetail } = useGetProduct();
@@ -115,7 +117,7 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
                 }
               }}
               onBlur={() => setTimeout(() => setIsDropdownOpen(false), 150)}
-              placeholder="품목명"
+              placeholder={tCommon('productName')}
               className="text-dg outline-none w-full"
             />
           )}
@@ -152,7 +154,7 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
             type="text"
             value={quantity === 0 ? '' : formatNumber(quantity)}
             onChange={(e) => handleNumberInput('quantity', e.target.value)}
-            placeholder="(필수)"
+            placeholder={tCommon('required')}
             className="text-dg focus:outline-none w-full"
             disabled={isViewer}
           />
@@ -162,7 +164,7 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
             type="text"
             value={unitPrice === 0 ? '' : formatNumber(unitPrice)}
             onChange={(e) => handleNumberInput('unitPrice', e.target.value)}
-            placeholder="(필수)"
+            placeholder={tCommon('required')}
             className="text-dg focus:outline-none w-full"
             disabled={isViewer}
           />

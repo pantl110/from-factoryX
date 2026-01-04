@@ -1,10 +1,11 @@
 import { TransactionType } from '@/types/status-type';
 import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
+import { useTranslations } from 'next-intl';
 
 interface ClaimReceiptTaxModalProps {
   onClose: () => void;
-  issueType: '청구' | '영수';
+  issueType: 'invoice' | 'receipt';
   handleTemporarySave: (transactionType: TransactionType) => Promise<boolean>;
   setIsEditingMode: (isEditingMode: boolean) => void;
 }
@@ -15,15 +16,18 @@ const ClaimReceiptTaxModal = ({
   handleTemporarySave,
   setIsEditingMode,
 }: ClaimReceiptTaxModalProps) => {
-  // const [isNextModalOpen, setIsNextModalOpen] = useState(false);
-  // const [isSubmitting, setIsSubmitting] = useState(false);
+  const t = useTranslations('tax.createTaxPanel.claimReceiptTaxModal');
+  const tTax = useTranslations('tax');
+  const tCommon = useTranslations('common');
+  const issueTypeLabel =
+    issueType === 'invoice' ? tTax('request') : tTax('receipt');
 
   const getTitle = () => {
-    return `${issueType} 방식으로 세금계산서를 생성할까요?`;
+    return t('title', { issueType: issueTypeLabel });
   };
 
   const getSubtitle = () => {
-    return `${issueType} 방식으로 발행된 세금계산서는 문서 뷰에 '${issueType}'로 표시돼요.`;
+    return t('subtitle', { issueType: issueTypeLabel });
   };
 
   return (
@@ -31,20 +35,20 @@ const ClaimReceiptTaxModal = ({
       <Modal title={getTitle()} subtitle={getSubtitle()} onClose={onClose}>
         <div className="flex justify-end gap-[5px] mt-4">
           <MiniBtn
-            text="취소"
+            text={tCommon('cancel')}
             textColor="text-sv"
             hoverColor="hover:bg-bg"
             onClick={onClose}
           />
           <MiniBtn
-            text="확인"
+            text={tCommon('confirm')}
             textColor="text-wh"
             bgColor="bg-primary"
             hoverColor="hover:bg-primary-hover"
             onClick={async () => {
               try {
                 const isSuccess = await handleTemporarySave(
-                  issueType === '청구' ? 'invoice' : 'receipt'
+                  issueType === 'invoice' ? 'invoice' : 'receipt'
                 );
                 // 성공했을 때만 편집 모드 해제 및 모달 닫기
                 if (isSuccess) {

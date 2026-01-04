@@ -5,6 +5,7 @@ import { PencilSimple, Trash } from '@phosphor-icons/react';
 import { IconBtn } from '@/ui';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
+import { useTranslations } from 'next-intl';
 
 interface TableItemProps {
   item: PaymentDetailResponseModel;
@@ -17,6 +18,7 @@ const TableItem = ({
   onOpenDeleteModal,
   onOpenEditModal,
 }: TableItemProps) => {
+  const tCommon = useTranslations('common');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
@@ -34,7 +36,8 @@ const TableItem = ({
     item.payment_date,
     item.expected_payment_date
   );
-  const overdueDays = overdueDaysCount > 0 ? `${overdueDaysCount}일` : '-';
+  const overdueDays =
+    overdueDaysCount > 0 ? `${overdueDaysCount}${tCommon('days')}` : '-';
 
   return (
     <div className="flex items-center border-b border-lg h-14 w-full text-bl Me_Body-1 cursor-default">
@@ -44,14 +47,19 @@ const TableItem = ({
       <p className="flex-1 px-3 text-dg truncate" title={paymentDate}>
         {paymentDate}
       </p>
-      <p className="flex-1 px-3 text-dg truncate" title={`${amount}원`}>
-        {amount}원
+      <p
+        className="flex-[1.2] px-3 text-dg truncate"
+        title={`${amount}${tCommon('won')}`}
+      >
+        {amount}
+        {tCommon('won')}
       </p>
       <p
-        className="flex-1 px-3 text-dg truncate"
-        title={`${outstandingAmount}원`}
+        className="flex-[1.2] px-3 text-dg truncate"
+        title={`${outstandingAmount}${tCommon('won')}`}
       >
-        {outstandingAmount}원
+        {outstandingAmount}
+        {tCommon('won')}
       </p>
       <p
         className={`flex-1 px-3 truncate ${

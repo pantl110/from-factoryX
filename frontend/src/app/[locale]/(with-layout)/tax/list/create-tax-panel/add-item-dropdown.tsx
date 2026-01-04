@@ -1,5 +1,6 @@
 import Dropdown from '@/ui/dropdown/dropdown';
 import DropdownItem from '@/ui/dropdown/dropdown-item';
+import { useTranslations } from 'next-intl';
 
 interface AddItemDropdownProps {
   onClose: () => void;
@@ -7,13 +8,12 @@ interface AddItemDropdownProps {
 }
 
 const AddItemDropdown = ({ onClose, onSelect }: AddItemDropdownProps) => {
+  const t = useTranslations('tax.createTaxPanel.addItemDropdown');
+
   return (
-    <Dropdown onClose={onClose} width="w-[180px]">
-      <DropdownItem
-        text="기존 제품 추가"
-        onClick={() => onSelect('existing')}
-      />
-      <DropdownItem text="새로운 제품 추가" onClick={() => onSelect('new')} />
+    <Dropdown onClose={onClose} width="w-fit min-w-[180px] mr-0.5">
+      <DropdownItem text={t('existing')} onClick={() => onSelect('existing')} />
+      <DropdownItem text={t('new')} onClick={() => onSelect('new')} />
     </Dropdown>
   );
 };

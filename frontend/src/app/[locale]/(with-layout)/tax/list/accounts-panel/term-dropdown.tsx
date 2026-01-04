@@ -1,5 +1,6 @@
 import { Dropdown, DropdownItem } from '@/ui';
 import type { TermType } from './types';
+import { useTranslations } from 'next-intl';
 
 interface TermDropdownProps {
   onClose: () => void;
@@ -7,17 +8,19 @@ interface TermDropdownProps {
 }
 
 const TermDropdown = ({ onClose, onSelect }: TermDropdownProps) => {
+  const t = useTranslations('tax.list.info.terms');
+
   return (
     <Dropdown onClose={onClose} width="w-[323px]">
       <DropdownItem
-        text="세금계산서 발행 후 30일 이내 입금"
+        text={t('invoice30')}
         onClick={() => onSelect('INVOICE_30')}
       />
       <DropdownItem
-        text="세금계산서 발행 익월 말일 입금"
+        text={t('invoiceEomNext')}
         onClick={() => onSelect('INVOICE_EOM_NEXT')}
       />
-      <DropdownItem text="직접 입력" onClick={() => onSelect('CUSTOM')} />
+      <DropdownItem text={t('custom')} onClick={() => onSelect('CUSTOM')} />
     </Dropdown>
   );
 };

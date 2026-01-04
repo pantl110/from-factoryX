@@ -2,6 +2,7 @@ import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
 import Checkbox from '@/ui/checkbox';
 import useMemberStore from '@/store/member-store';
 import { RoundChip } from '@/ui';
+import { useTranslations } from 'next-intl';
 
 interface TableItemProps {
   item: PublishedTaxInvoiceResponseModel;
@@ -16,14 +17,17 @@ const TableItem = ({
   onToggle,
   onItemClick,
 }: TableItemProps) => {
+  const t = useTranslations('tax.publishStatus');
+  const tTax = useTranslations('tax');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const isProdManager = role === 'prod_manager';
+
   const chipText =
     item.publish_status === 'temporary'
-      ? '임시 저장'
+      ? t('temporary')
       : item.publish_status === 'pending'
-        ? '전송 대기'
+        ? t('pending')
         : '-';
   const chipColor:
     | 'primary'
@@ -37,9 +41,9 @@ const TableItem = ({
     | 'white'
     | 'whiteOutline'
     | 'grayBlue' =
-    chipText === '임시 저장'
+    item.publish_status === 'temporary'
       ? 'secondary'
-      : chipText === '전송 대기'
+      : item.publish_status === 'pending'
         ? 'grayBlue'
         : 'gray';
 
@@ -81,7 +85,9 @@ const TableItem = ({
       </div>
       <div className="px-2 flex-2">
         <RoundChip
-          text={item.tax_invoice_type === 'sales' ? '매출' : '매입'}
+          text={
+            item.tax_invoice_type === 'sales' ? tTax('sales') : tTax('purchase')
+          }
           color={
             (item.tax_invoice_type === 'sales' ? 'secondary' : 'red') as
               | 'primary'

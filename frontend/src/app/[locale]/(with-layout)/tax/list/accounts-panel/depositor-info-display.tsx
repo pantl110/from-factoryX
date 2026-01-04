@@ -1,4 +1,5 @@
 import { InfoLabelValue } from '@/ui';
+import { useTranslations } from 'next-intl';
 
 interface DepositorInfoDisplayProps {
   depositorName?: string;
@@ -8,13 +9,18 @@ interface DepositorInfoDisplayProps {
 export const DepositorInfoDisplay = ({
   depositorName,
 }: DepositorInfoDisplayProps) => {
+  const t = useTranslations('setting.masterData.client.depositorInfo');
+
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="Heading-3">입금 확인 정보</h3>
+      <h3 className="Heading-3">{t('title')}</h3>
 
       <div>
         <div className="flex border-b border-lg w-full">
-          <InfoLabelValue label="입금자명" value={depositorName || '-'} />
+          <InfoLabelValue
+            label={t('depositorName')}
+            value={depositorName || '-'}
+          />
         </div>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import { InfoLabelValue } from '@/ui';
+import { useTranslations } from 'next-intl';
 
 interface AccountInfoDisplayProps {
   bankName?: string;
@@ -12,17 +13,22 @@ export const AccountInfoDisplay = ({
   accountNumber,
   accountHolder,
 }: AccountInfoDisplayProps) => {
+  const t = useTranslations('setting.masterData.client.accountInfo');
+
   return (
     <div className="flex flex-col gap-3">
-      <h3 className="Heading-3">지급 계좌 정보</h3>
+      <h3 className="Heading-3">{t('title')}</h3>
 
       <div>
         <div className="flex">
-          <InfoLabelValue label="은행명" value={bankName || '-'} />
-          <InfoLabelValue label="계좌번호" value={accountNumber || '-'} />
+          <InfoLabelValue label={t('bankName')} value={bankName || '-'} />
+          <InfoLabelValue
+            label={t('accountNumber')}
+            value={accountNumber || '-'}
+          />
         </div>
         <div className="flex border-b border-lg w-full">
-          <InfoLabelValue label="예금주" value={accountHolder || '-'} />
+          <InfoLabelValue label={t('holder')} value={accountHolder || '-'} />
         </div>
       </div>
     </div>

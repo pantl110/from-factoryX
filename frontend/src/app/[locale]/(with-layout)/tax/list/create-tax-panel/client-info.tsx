@@ -6,6 +6,7 @@ import { ClientNameDropdown } from '@/ui/dropdown/client-name-dropdown';
 import { ClientResponseModel, TaxClientInfoModel } from '@/types/data-model';
 import { formatBusinessNumber } from '@/hooks';
 import useMemberStore from '@/store/member-store';
+import { useTranslations } from 'next-intl';
 
 interface ClientInfoProps {
   onFormChange: (
@@ -24,6 +25,8 @@ const ClientInfo = ({
   showErrors = false,
   initialData,
 }: ClientInfoProps) => {
+  const tCommon = useTranslations('common');
+  const tErrors = useTranslations('tax.createTaxPanel.clientInfo.errors');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
 
@@ -181,14 +184,14 @@ const ClientInfo = ({
 
   return (
     <div className="flex-1 flex flex-col gap-5">
-      <h3 className="Heading-3">거래처 정보</h3>
+      <h3 className="Heading-3">{tCommon('clientInfo')}</h3>
       <form className="flex flex-col gap-4">
         <div className="flex gap-2">
           <div className="flex-1 relative">
             <Input
-              label="거래처명"
+              label={tCommon('clientName')}
               required
-              placeholder="거래처명을 입력하세요."
+              placeholder={`${tCommon('placeholders.clientName')}`}
               showError={shouldShowError('companyName')}
               value={formData.companyName || ''}
               onChange={(e) => {
@@ -223,16 +226,15 @@ const ClientInfo = ({
           </div>
           <div className="flex-1">
             <Input
-              label="사업자등록번호"
+              label={tCommon('businessRegistrationNumber')}
               required
-              placeholder="사업자등록번호를 입력하세요."
+              placeholder={`${tCommon('placeholders.businessRegistrationNumber')}`}
               showError={shouldShowError('businessNumber')}
               {...register('businessNumber', {
-                required: '사업자등록번호는 필수입니다.',
+                required: tErrors('businessNumberRequired'),
                 pattern: {
                   value: /^\d{3}-\d{2}-\d{5}$/,
-                  message:
-                    '올바른 사업자등록번호 형식입니다. (예: 123-45-67890)',
+                  message: tErrors('businessNumberInvalid'),
                 },
                 onChange: (e) => {
                   const formatted = formatBusinessNumber(e.target.value);
@@ -249,12 +251,12 @@ const ClientInfo = ({
         </div>
         <div>
           <Input
-            label="대표자명"
+            label={tCommon('representativeName')}
             required
-            placeholder="대표자명을 입력하세요."
+            placeholder={`${tCommon('placeholders.representativeName')}`}
             showError={shouldShowError('representativeName')}
             {...register('representativeName', {
-              required: '대표자명은 필수입니다.',
+              required: tErrors('representativeNameRequired'),
               onChange: () => {
                 handleFieldChange('representativeName');
               },
@@ -265,12 +267,12 @@ const ClientInfo = ({
         <div className="flex gap-2">
           <div className="flex-1">
             <Input
-              label="업태"
+              label={tCommon('businessType')}
               required
-              placeholder="업태를 입력하세요."
+              placeholder={`${tCommon('placeholders.businessType')}`}
               showError={shouldShowError('businessType')}
               {...register('businessType', {
-                required: '업태는 필수입니다.',
+                required: tErrors('businessTypeRequired'),
                 onChange: () => {
                   handleFieldChange('businessType');
                 },
@@ -280,12 +282,12 @@ const ClientInfo = ({
           </div>
           <div className="flex-1">
             <Input
-              label="종목"
+              label={tCommon('businessCategory')}
               required
-              placeholder="종목을 입력하세요."
+              placeholder={`${tCommon('placeholders.businessCategory')}`}
               showError={shouldShowError('businessCategory')}
               {...register('businessCategory', {
-                required: '종목은 필수입니다.',
+                required: tErrors('businessCategoryRequired'),
                 onChange: () => {
                   handleFieldChange('businessCategory');
                 },
@@ -295,8 +297,8 @@ const ClientInfo = ({
           </div>
         </div>
         <Input
-          label="사업장 주소"
-          placeholder="사업장 주소를 입력하세요."
+          label={tCommon('businessAddress')}
+          placeholder={tCommon('placeholders.businessAddress')}
           showError={shouldShowError('address')}
           {...register('address', {
             onChange: () => {

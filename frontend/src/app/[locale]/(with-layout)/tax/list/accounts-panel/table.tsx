@@ -8,6 +8,7 @@ import { PaymentDetailResponseModel } from '@/types/data-model';
 import { NoHistoryBox } from '@/ui';
 import useSubscriptionStore from '@/store/subscription-store';
 import useMemberStore from '@/store/member-store';
+import { useTranslations } from 'next-intl';
 
 interface TableProps {
   isPurchase: boolean;
@@ -26,6 +27,9 @@ const Table = ({
   onOpenDeleteAccountPaymentModal,
   onOpenEditAccountPaymentModal,
 }: TableProps) => {
+  const t = useTranslations('tax.list.tableArea.table');
+  const tLabels = useTranslations('tax.list.accountPayment.labels');
+  const tCommon = useTranslations('common');
   const { getPaymentDetails } = useGetPaymentDetails();
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
@@ -91,10 +95,18 @@ const Table = ({
     },
   });
 
-  const remainHeader = isPurchase ? '미지급금(잔액)' : '미수금액(잔액)';
-  const paidHeader = isPurchase ? '지급 금액' : '받은 금액';
-  const expectedDateHeader = isPurchase ? '약정 지급일' : '약정 입금일';
-  const dateHeader = isPurchase ? '지급일' : '입금일';
+  const remainHeader = isPurchase
+    ? t('headers.payableAmount')
+    : t('headers.receivableAmount');
+  const paidHeader = isPurchase
+    ? tLabels('paymentAmount')
+    : tLabels('receivedAmount');
+  const expectedDateHeader = isPurchase
+    ? t('headers.scheduledPaymentDate')
+    : t('headers.scheduledDepositDate');
+  const dateHeader = isPurchase
+    ? tLabels('paymentDate')
+    : tLabels('depositDate');
 
   const isInitialLoading = isLoading && paymentDetails.length === 0;
 
@@ -106,7 +118,7 @@ const Table = ({
     <div className="max-h-[600px] overflow-y-auto">
       {paymentDetails.length === 0 ? (
         <NoHistoryBox
-          text={isPurchase ? '지급 내역이 없습니다.' : '입금 내역이 없습니다.'}
+          text={isPurchase ? t('empty.payment') : t('empty.deposit')}
         />
       ) : (
         <>
@@ -114,11 +126,11 @@ const Table = ({
           <div className="text-sv flex items-center w-full h-12 border-t border-b border-lg Me_Body-1 cursor-default">
             <p className="flex-1 px-3">{expectedDateHeader}</p>
             <p className="flex-1 px-3">{dateHeader}</p>
-            <p className="flex-1 px-3">{paidHeader}</p>
-            <p className="flex-1 px-3">{remainHeader}</p>
-            <p className="flex-1 px-3">연체일</p>
+            <p className="flex-[1.2] px-3">{paidHeader}</p>
+            <p className="flex-[1.2] px-3">{remainHeader}</p>
+            <p className="flex-1 px-3">{t('headers.overdueDays')}</p>
             {!isViewer && !isProdManager && hasSubscription() && (
-              <p className="w-30 px-3">액션</p>
+              <p className="w-30 px-3">{tCommon('action')}</p>
             )}
           </div>
 
@@ -138,7 +150,9 @@ const Table = ({
               ref={loadMoreRef}
               className="h-14 flex items-center justify-center"
             >
-              {isFetchingNextPage && <div className="text-dg">로딩 중...</div>}
+              {isFetchingNextPage && (
+                <div className="text-dg">{tCommon('loading')}</div>
+              )}
             </div>
           )}
         </>

@@ -49,7 +49,16 @@
       "enterNumber": "Enter a number.",
       "name": "Enter name.",
       "phone": "Enter phone number.",
-      "note": "-"
+      "note": "-",
+      "clientName": "Enter client name.",
+      "businessRegistrationNumber": "Enter business registration number.",
+      "representativeName": "Enter representative name.",
+      "businessType": "Enter business type.",
+      "businessCategory": "Enter business category.",
+      "businessAddress": "Enter business address.",
+      "email": "Enter email.",
+      "fax": "Enter fax number.",
+      "companyName": "Enter company name."
     },
     "clientInfo": "Client Info",
     "customer": "Customer",
@@ -194,8 +203,8 @@
       },
       "selectedMaterialTitle": "Selected Material from Purchase Tax Invoice",
       "searchPlaceholder": {
-        "project": "Enter the client name to search for items to link.",
-        "tax": "Enter the material name to search for items to link."
+        "project": "Search by client name.",
+        "tax": "Search by material name."
       },
       "period": {
         "1month": "1 Month",
@@ -217,6 +226,247 @@
       "published": "Published",
       "cancled": "Cancelled",
       "failed": "Failed"
+    },
+    "draft": {
+      "title": "Draft Tax Invoice",
+      "createButton": "Create Tax Invoice",
+      "tabs": {
+        "all": "All",
+        "temporary": "Draft",
+        "pending": "Pending"
+      },
+      "searchPlaceholder": "Search by client name or product name.",
+      "tableHeaders": {
+        "status": "Status"
+      },
+      "empty": {
+        "all": {
+          "title": "No draft or pending tax invoices.",
+          "text": "Once you create a tax invoice, you can view it here."
+        },
+        "temporary": {
+          "title": "No draft tax invoices yet.",
+          "text": "Once you create a tax invoice, you can view it here."
+        },
+        "pending": {
+          "title": "No pending tax invoices yet.",
+          "text": "Once you create a tax invoice, you can view it here."
+        }
+      },
+      "errors": {
+        "partialFailure": "Failed to process some tax invoices.",
+        "processingError": "An error occurred while processing tax invoices."
+      }
+    },
+    "list": {
+      "accountPayment": {
+        "title": {
+          "editPayment": "Edit Payment Info",
+          "createPayment": "Add Payment Detail",
+          "editDeposit": "Edit Deposit Info",
+          "createDeposit": "Add Deposit Detail"
+        },
+        "labels": {
+          "expectedPaymentDate": "Scheduled Payment Date",
+          "expectedDepositDate": "Scheduled Deposit Date",
+          "paymentDate": "Payment Date",
+          "depositDate": "Deposit Date",
+          "paymentAmount": "Payment Amount",
+          "receivedAmount": "Received Amount",
+          "outstandingPayment": "Outstanding Amount (Payable)",
+          "outstandingDeposit": "Outstanding Amount (Receivable)"
+        },
+        "placeholders": {
+          "paymentAmount": "Enter payment amount.",
+          "receivedAmount": "Enter received amount."
+        },
+        "errors": {
+          "accountNotFound": "Account information not found.",
+          "paymentDateInvalid": "Please enter a valid payment date format.",
+          "depositDateInvalid": "Please enter a valid deposit date format.",
+          "expectedPaymentDateInvalid": "Please enter a valid scheduled payment date format.",
+          "expectedDepositDateInvalid": "Please enter a valid scheduled deposit date format.",
+          "dateFormat": "Please enter in YYYY-MM-DD format.",
+          "paymentDateRequired": "Please enter payment date.",
+          "depositDateRequired": "Please enter deposit date.",
+          "expectedPaymentDateRequired": "Please enter scheduled payment date.",
+          "expectedDepositDateRequired": "Please enter scheduled deposit date.",
+          "paymentAmountRequired": "Please enter payment amount.",
+          "receivedAmountRequired": "Please enter received amount.",
+          "paymentAmountInvalid": "Please enter payment amount correctly.",
+          "receivedAmountInvalid": "Please enter received amount correctly.",
+          "paymentAmountMin": "Payment amount must be greater than 0.",
+          "receivedAmountMin": "Received amount must be greater than 0.",
+          "paymentAmountExceeds": "Payment amount exceeds outstanding payment.",
+          "receivedAmountExceeds": "Received amount exceeds outstanding deposit.",
+          "paymentAmountMax": "Must be {amount} KRW or less.",
+          "receivedAmountMax": "Must be {amount} KRW or less.",
+          "updatePaymentFailed": "Failed to update payment info.",
+          "createPaymentFailed": "Failed to save payment info.",
+          "updateDepositFailed": "Failed to update deposit info.",
+          "createDepositFailed": "Failed to save deposit info.",
+          "unknownError": "An unknown error occurred."
+        }
+      },
+      "sendEmailModal": {
+        "title": "Send Email",
+        "subtitle": "Send a billing notification email to the manager.",
+        "labels": {
+          "recipient": "Recipient",
+          "subject": "Subject",
+          "content": "Content"
+        },
+        "placeholders": {
+          "recipient": "Enter email.",
+          "subject": "Enter subject.",
+          "content": "Enter content."
+        },
+        "errors": {
+          "recipientRequired": "Please enter recipient.",
+          "recipientInvalid": "Please enter a valid email format.",
+          "subjectRequired": "Please enter subject.",
+          "contentRequired": "Please enter content."
+        },
+        "emailTemplate": {
+          "greeting": "Hello, {clientName}.",
+          "body1": "We are writing to request payment for the {month} amount due.",
+          "body2": "The tax invoice for this settlement has been issued. The details are as follows.",
+          "settlementAmount": "Amount Due: KRW {amount}",
+          "paymentDeadline": "Payment Due Date: {date}",
+          "body3": "If you have any questions or foresee any difficulty making the payment by the due date,",
+          "body4": "please feel free to contact us.",
+          "closing": "Thank you."
+        },
+        "subjectTemplate": {
+          "withFactory": "[{factoryName}] Payment Request for {month}",
+          "withoutFactory": "Payment Request for {month}"
+        },
+        "sendButton": "Send Email"
+      },
+      "linkProjectModal": {
+        "title": "Select a project to link to the tax invoice.",
+        "subtitle": "When you link a project to a tax invoice, transaction details will be automatically reflected.",
+        "searchPlaceholder": "Search by client name or product name.",
+        "linkButton": "Link Project",
+        "empty": {
+          "text": "No projects to link."
+        }
+      },
+      "errors": {
+        "emailSendFailed": "Failed to send email.",
+        "deletePaymentDetailFailed": "Failed to delete payment/deposit detail.",
+        "invalidDueDate": "Please enter a valid due date.",
+        "saveAccountFailed": "Failed to save tax invoice account information."
+      },
+      "info": {
+        "title": {
+          "purchase": "Accounts Payable Info",
+          "sales": "Accounts Receivable Info"
+        },
+        "statusLabel": {
+          "purchase": "Status",
+          "sales": "Status"
+        },
+        "buttons": {
+          "viewTaxInvoice": "View Tax Invoice",
+          "viewCashReceipt": "View Cash Receipt",
+          "goToProject": "Go to Project"
+        },
+        "labels": {
+          "invoiceSent": "Invoice Sent",
+          "totalBilledAmount": "Total Billed Amount",
+          "amountPayable": "Amount Payable",
+          "amountReceivable": "Amount Receivable",
+          "collectionTerms": "Payment Terms"
+        },
+        "placeholders": {
+          "collectionTerms": {
+            "purchase": {
+              "term": "payment terms",
+              "input": "Enter ",
+              "select": "Select "
+            },
+            "sales": {
+              "term": "collection terms",
+              "input": "Enter ",
+              "select": "Select "
+            }
+          }
+        },
+        "invoiceSent": {
+          "notSent": "Not Sent",
+          "sentCount": "Sent {count} times"
+        },
+        "terms": {
+          "invoice30": "Payment within 30 days after tax invoice issuance",
+          "invoiceEomNext": "Payment by end of month following tax invoice issuance",
+          "custom": "Custom"
+        }
+      },
+      "tableArea": {
+        "title": {
+          "payment": "Payment Details",
+          "deposit": "Deposit Details"
+        },
+        "buttons": {
+          "sendEmail": "Send Email",
+          "enterPayment": "Add Payment Detail",
+          "enterDeposit": "Add Deposit Detail"
+        },
+        "table": {
+          "headers": {
+            "overdueDays": "Days Overdue",
+            "payableAmount": "Payable Amount",
+            "receivableAmount": "Receivable Amount",
+            "scheduledPaymentDate": "Scheduled Date",
+            "scheduledDepositDate": "Scheduled Date"
+          },
+          "empty": {
+            "payment": "No payment details.",
+            "deposit": "No deposit details."
+          }
+        }
+      }
+    },
+    "createTaxPanel": {
+      "claimReceiptTaxModal": {
+        "title": "Create tax invoice using {issueType} method?",
+        "subtitle": "Tax invoices issued using {issueType} method will be displayed as '{issueType}' in the document view."
+      },
+      "addItemDropdown": {
+        "existing": "Add Existing Product",
+        "new": "Add New Product"
+      },
+      "clientInfo": {
+        "errors": {
+          "businessNumberRequired": "Business registration number is required.",
+          "businessNumberInvalid": "Please enter a valid business registration number format. (e.g., 123-45-67890)",
+          "representativeNameRequired": "Representative name is required.",
+          "businessTypeRequired": "Business type is required.",
+          "businessCategoryRequired": "Business category is required."
+        }
+      },
+      "productInfo": {
+        "empty": {
+          "title": "No products registered yet.",
+          "text": "Products can be added later to pre-issued tax invoices."
+        }
+      },
+      "buttons": {
+        "selectIssueType": "Select Issue Type"
+      },
+      "errors": {
+        "createTaxInvoiceFailed": "Failed to create tax invoice.",
+        "createTaxInvoiceError": "Failed to create tax invoice: ",
+        "factoryIdNotSet": "Factory ID is not set.",
+        "createClientFailed": "Failed to create client: ",
+        "updateClientFailed": "Failed to update client information: ",
+        "unknownError": "Unknown error",
+        "saveError": "An error occurred while saving: ",
+        "barobillCheckFailed": "Failed to verify tax invoice user.",
+        "tryAgain": "Please try again."
+      },
+      "title": "Tax Invoice"
     }
   },
   "language": {
@@ -687,7 +937,7 @@
       "product": "Link Product"
     },
     "material": {
-      "searchPlaceholder": "Enter material name or code to search.",
+      "searchPlaceholder": "Search by material name or code.",
       "empty": {
         "title": "No materials yet.",
         "description": "Materials will appear here once created."
@@ -821,7 +1071,7 @@
         },
         "createSubstitute": {
           "title": "Link Substitutable Materials",
-          "searchPlaceholder": "Enter material name or code to search.",
+          "searchPlaceholder": "Search by material name or code.",
           "empty": "No materials to link.",
           "errors": {
             "fetchFailed": "Failed to fetch material list:"
@@ -932,7 +1182,7 @@
             "success": "Added materials can be viewed in the list immediately.",
             "default": "Please enter information about materials actually purchased from the entered client."
           },
-          "searchPlaceholder": "Enter material name to search.",
+          "searchPlaceholder": "Search by material name.",
           "tableHeader": {
             "name": "Name",
             "total": "Total"
@@ -945,7 +1195,7 @@
         "productEnrollment": {
           "title": "Register products to link with this material.",
           "subtitle": "Select or add products, then set the material input quantity required for manufacturing each product.",
-          "searchPlaceholder": "Enter product name to search.",
+          "searchPlaceholder": "Search by product name.",
           "toast": {
             "alreadyConnected": "This product is already linked.",
             "quantityNotEntered": {
@@ -1015,7 +1265,7 @@
       }
     },
     "product": {
-      "searchPlaceholder": "Enter product name or code to search.",
+      "searchPlaceholder": "Search by product name or code.",
       "empty": {
         "title": "No products yet.",
         "description": "Products will appear here once created."
@@ -1051,7 +1301,7 @@
         "connectMaterial": {
           "title": "Select or add materials to link with the product.",
           "subtitle": "After selecting or adding materials, set the usage quantity.",
-          "searchPlaceholder": "Enter material name to search.",
+          "searchPlaceholder": "Search by material name.",
           "toast": {
             "alreadyConnected": "This material is already linked.",
             "quantityNotEntered": {
@@ -1215,17 +1465,8 @@
     },
     "inputSection": {
       "placeholders": {
-        "clientName": "Enter client name.",
-        "businessRegistrationNumber": "Enter business registration number.",
-        "representativeName": "Enter representative name.",
         "dueDate": "Enter due date.",
-        "businessType": "Enter business type.",
-        "businessCategory": "Enter business category.",
-        "businessAddress": "Enter business address.",
-        "managerName": "Enter manager name.",
-        "managerEmail": "Enter email.",
-        "phone": "Enter phone number.",
-        "fax": "Enter fax number."
+        "managerName": "Enter manager name."
       },
       "errors": {
         "invalidBusinessRegistrationNumber": "Invalid business registration number format.",
@@ -1273,8 +1514,8 @@
         "unit": "Unit Conversion"
       },
       "placeholders": {
-        "clientSearch": "Enter client name, representative name, phone number, etc. to search.",
-        "facilitySearch": "Enter facility name to search."
+        "clientSearch": "Search by client name, phone number, etc.",
+        "facilitySearch": "Search by facility name."
       },
       "errors": {
         "equipmentDeleteFailed": "An error occurred while deleting equipment.",
@@ -1286,25 +1527,14 @@
           "title": "Payment Account Info",
           "bankName": "Bank Name",
           "bankNamePlaceholder": "Enter bank name.",
-          "accountNumber": "Account Number",
+          "accountNumber": "Account No.",
           "accountNumberPlaceholder": "Enter account number.",
           "holder": "Holder",
           "holderPlaceholder": "Enter holder name."
         },
         "clientInfo": {
           "title": "Client Info",
-          "clientType": "Client Type",
-          "placeholders": {
-            "companyName": "(Required) Enter company name.",
-            "businessRegistrationNumber": "(Required) Enter business registration number.",
-            "representativeName": "(Required) Enter representative name.",
-            "businessType": "(Required) Enter business type.",
-            "businessCategory": "(Required) Enter business category.",
-            "businessAddress": "(Required) Enter business address.",
-            "email": "Enter email.",
-            "phone": "Enter phone number.",
-            "fax": "Enter fax number."
-          }
+          "clientType": "Client Type"
         },
         "depositorInfo": {
           "title": "Depositor Info",
@@ -1368,7 +1598,7 @@
         "placeholders": {
           "standardUnit": "Enter standard unit.",
           "conversionUnit": "Enter conversion unit.",
-          "search": "Enter material name or product name to search."
+          "search": "Search by material name or product name."
         },
         "errors": {
           "enterConversionValue": "Please enter conversion value.",

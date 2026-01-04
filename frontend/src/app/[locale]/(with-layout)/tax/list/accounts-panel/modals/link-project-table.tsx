@@ -4,6 +4,7 @@ import LinkProjectTableItem from './link-project-table-item';
 import { ProjectResponseModel } from '@/types/data-model';
 import NoHistoryBox from '@/ui/no-history-box';
 import Spinner from '@/ui/spinner';
+import { useTranslations } from 'next-intl';
 
 interface LinkProjectTableProps {
   items: ProjectResponseModel[];
@@ -26,6 +27,9 @@ const LinkProjectTable = ({
   selectedId,
   setSelectedId,
 }: LinkProjectTableProps) => {
+  const tCommon = useTranslations('common');
+  const tEmpty = useTranslations('tax.list.linkProjectModal.empty');
+
   return (
     <div>
       {isLoading ? (
@@ -35,14 +39,14 @@ const LinkProjectTable = ({
       ) : items && items.length > 0 ? (
         <>
           <div className="text-sv flex items-center w-full h-12 border-t border-b border-lg Me_Body-1">
-            <p className="flex-[0.6] px-3">진행상태</p>
-            <p className="flex-1 px-3">거래처명</p>
-            <p className="flex-1 px-3">제품명</p>
+            <p className="flex-[0.6] px-3">{tCommon('status')}</p>
+            <p className="flex-1 px-3">{tCommon('clientName')}</p>
+            <p className="flex-1 px-3">{tCommon('productName')}</p>
             <div
               className="px-3 flex-[0.8] h-full flex items-center gap-1 hover:bg-bg cursor-pointer"
               onClick={onOrderingToggle}
             >
-              <p className="">생산일자</p>
+              <p className="">{tCommon('productionDate')}</p>
               <CaretUpDownIcon size={21} className="text-sv" />
             </div>
           </div>
@@ -66,7 +70,7 @@ const LinkProjectTable = ({
           )}
         </>
       ) : (
-        <NoHistoryBox text="연결할 프로젝트가 없어요." />
+        <NoHistoryBox text={tEmpty('text')} />
       )}
     </div>
   );

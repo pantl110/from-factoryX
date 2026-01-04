@@ -48,7 +48,16 @@
       "enterNumber": "숫자를 입력하세요.",
       "name": "이름을 입력하세요.",
       "phone": "연락처를 입력하세요.",
-      "note": "-"
+      "note": "-",
+      "clientName": "거래처명을 입력하세요.",
+      "businessRegistrationNumber": "사업자등록번호를 입력하세요.",
+      "representativeName": "대표자명을 입력하세요.",
+      "businessType": "업태를 입력하세요.",
+      "businessCategory": "종목을 입력하세요.",
+      "businessAddress": "사업장 주소를 입력하세요.",
+      "email": "이메일을 입력하세요.",
+      "fax": "팩스 번호를 입력하세요.",
+      "companyName": "회사명을 입력하세요."
     },
     "clientInfo": "거래처 정보",
     "customer": "수주처",
@@ -217,6 +226,247 @@
       "published": "발행 완료",
       "cancled": "발행 취소",
       "failed": "발행 실패"
+    },
+    "draft": {
+      "title": "세금계산서 작성함",
+      "createButton": "세금계산서 생성하기",
+      "tabs": {
+        "all": "전체",
+        "temporary": "임시 저장",
+        "pending": "전송 대기"
+      },
+      "searchPlaceholder": "거래처명이나 제품명을 입력해 검색하세요.",
+      "tableHeaders": {
+        "status": "진행 상태"
+      },
+      "empty": {
+        "all": {
+          "title": "임시 저장 또는 전송 대기 중인 세금계산서가 없어요.",
+          "text": "세금계산서를 생성하면 이곳에서 확인하실 수 있어요."
+        },
+        "temporary": {
+          "title": "아직 임시 저장된 세금계산서가 없어요.",
+          "text": "세금계산서를 생성하면 이곳에서 확인하실 수 있어요."
+        },
+        "pending": {
+          "title": "아직 전송 대기 중인 세금계산서가 없어요.",
+          "text": "세금계산서를 생성하면 이곳에서 확인하실 수 있어요."
+        }
+      },
+      "errors": {
+        "partialFailure": "일부 세금계산서 처리에 실패했습니다.",
+        "processingError": "세금계산서 처리 중 오류가 발생했습니다."
+      }
+    },
+    "list": {
+      "accountPayment": {
+        "title": {
+          "editPayment": "지급 정보 수정",
+          "createPayment": "지급 정보 입력",
+          "editDeposit": "입금 정보 수정",
+          "createDeposit": "입금 정보 입력"
+        },
+        "labels": {
+          "expectedPaymentDate": "약정 지급일",
+          "expectedDepositDate": "약정 입금일",
+          "paymentDate": "지급일",
+          "depositDate": "입금일",
+          "paymentAmount": "지급 금액",
+          "receivedAmount": "받은 금액",
+          "outstandingPayment": "미지급액(잔액)",
+          "outstandingDeposit": "미수금액(잔액)"
+        },
+        "placeholders": {
+          "paymentAmount": "지급 금액을 입력하세요.",
+          "receivedAmount": "받은 금액을 입력하세요."
+        },
+        "errors": {
+          "accountNotFound": "계정 정보를 찾을 수 없습니다.",
+          "paymentDateInvalid": "올바른 지급일 형식을 입력해 주세요.",
+          "depositDateInvalid": "올바른 입금일 형식을 입력해 주세요.",
+          "expectedPaymentDateInvalid": "올바른 약정 지급일 형식을 입력해 주세요.",
+          "expectedDepositDateInvalid": "올바른 약정 입금일 형식을 입력해 주세요.",
+          "dateFormat": "YYYY-MM-DD 형식으로 입력해 주세요.",
+          "paymentDateRequired": "지급일을 입력해 주세요.",
+          "depositDateRequired": "입금일을 입력해 주세요.",
+          "expectedPaymentDateRequired": "약정 지급일을 입력해 주세요.",
+          "expectedDepositDateRequired": "약정 입금일을 입력해 주세요.",
+          "paymentAmountRequired": "지급 금액을 입력해 주세요.",
+          "receivedAmountRequired": "받은 금액을 입력해 주세요.",
+          "paymentAmountInvalid": "지급 금액을 올바르게 입력해 주세요.",
+          "receivedAmountInvalid": "받은 금액을 올바르게 입력해 주세요.",
+          "paymentAmountMin": "지급 금액은 0보다 커야 합니다.",
+          "receivedAmountMin": "받은 금액은 0보다 커야 합니다.",
+          "paymentAmountExceeds": "지급 금액이 미지급액보다 큽니다.",
+          "receivedAmountExceeds": "받은 금액이 미수금액보다 큽니다.",
+          "paymentAmountMax": "{amount}원 이하여야 합니다.",
+          "receivedAmountMax": "{amount}원 이하여야 합니다.",
+          "updatePaymentFailed": "지급 정보 수정에 실패했습니다.",
+          "createPaymentFailed": "지급 정보 저장에 실패했습니다.",
+          "updateDepositFailed": "입금 정보 수정에 실패했습니다.",
+          "createDepositFailed": "입금 정보 저장에 실패했습니다.",
+          "unknownError": "알 수 없는 오류가 발생했습니다."
+        }
+      },
+      "sendEmailModal": {
+        "title": "메일 보내기",
+        "subtitle": "담당자에게 청구 관련 안내 메일을 발송합니다.",
+        "labels": {
+          "recipient": "받는 사람",
+          "subject": "제목",
+          "content": "내용"
+        },
+        "placeholders": {
+          "recipient": "이메일을 입력하세요.",
+          "subject": "제목을 입력하세요.",
+          "content": "내용을 입력하세요."
+        },
+        "errors": {
+          "recipientRequired": "받는 사람을 입력해 주세요.",
+          "recipientInvalid": "올바른 이메일 형식을 입력해 주세요.",
+          "subjectRequired": "제목을 입력해 주세요.",
+          "contentRequired": "내용을 입력해 주세요."
+        },
+        "emailTemplate": {
+          "greeting": "안녕하세요. {clientName} 담당자님.",
+          "body1": "{month}월 정산 금액 관련하여 입금 요청드립니다.",
+          "body2": "해당 건의 세금계산서 발행은 완료되었으며, 정산 금액은 아래와 같습니다.",
+          "settlementAmount": "정산금액: {amount}원",
+          "paymentDeadline": "입금기한: {date}",
+          "body3": "기한 내 입금이 어려우시거나 금액 관련 문의가 있으시면",
+          "body4": "편하게 연락 부탁드립니다.",
+          "closing": "감사합니다."
+        },
+        "subjectTemplate": {
+          "withFactory": "[{factoryName}] {month}월 정산 금액 입금 요청드립니다",
+          "withoutFactory": "{month}월 정산 금액 입금 요청드립니다"
+        },
+        "sendButton": "메일 보내기"
+      },
+      "linkProjectModal": {
+        "title": "세금계산서에 연결할 프로젝트를 선택해주세요.",
+        "subtitle": "프로젝트를 세금계산서와 연동하면, 거래 내역이 자동으로 반영돼요.",
+        "searchPlaceholder": "연결할 프로젝트의 거래처명이나 제품명을 입력해 검색하세요.",
+        "linkButton": "프로젝트 연결하기",
+        "empty": {
+          "text": "연결할 프로젝트가 없어요."
+        }
+      },
+      "errors": {
+        "emailSendFailed": "이메일 발송에 실패했습니다.",
+        "deletePaymentDetailFailed": "회수/지급 상세내역 삭제에 실패했습니다.",
+        "invalidDueDate": "유효한 납기일자를 입력해 주세요.",
+        "saveAccountFailed": "세금계산서 채권/채무 정보 저장에 실패했습니다."
+      },
+      "info": {
+        "title": {
+          "purchase": "매입채무 정보",
+          "sales": "매출채권 정보"
+        },
+        "statusLabel": {
+          "purchase": "채무 상태",
+          "sales": "채권 상태"
+        },
+        "buttons": {
+          "viewTaxInvoice": "세금계산서 상세보기",
+          "viewCashReceipt": "현금영수증 상세보기",
+          "goToProject": "프로젝트 바로가기"
+        },
+        "labels": {
+          "invoiceSent": "청구서 발송",
+          "totalBilledAmount": "청구금액(합계)",
+          "amountPayable": "미지급액(잔액)",
+          "amountReceivable": "미수금액(잔액)",
+          "collectionTerms": "결제 조건"
+        },
+        "placeholders": {
+          "collectionTerms": {
+            "purchase": {
+              "term": "지급 조건",
+              "input": "을 입력하세요",
+              "select": "을 선택하세요"
+            },
+            "sales": {
+              "term": "수금 조건",
+              "input": "을 입력하세요",
+              "select": "을 선택하세요"
+            }
+          }
+        },
+        "invoiceSent": {
+          "notSent": "미발송",
+          "sentCount": "{count}회 발송"
+        },
+        "terms": {
+          "invoice30": "세금계산서 발행 후 30일 이내 입금",
+          "invoiceEomNext": "세금계산서 발행 익월 말일 입금",
+          "custom": "직접 입력"
+        }
+      },
+      "tableArea": {
+        "title": {
+          "payment": "지급 상세 내역",
+          "deposit": "회수 상세 내역"
+        },
+        "buttons": {
+          "sendEmail": "메일 보내기",
+          "enterPayment": "지급 정보 입력하기",
+          "enterDeposit": "입금 정보 입력하기"
+        },
+        "table": {
+          "headers": {
+            "overdueDays": "연체일",
+            "payableAmount": "미지급액(잔액)",
+            "receivableAmount": "미수금액(잔액)",
+            "scheduledPaymentDate": "약정 지급일",
+            "scheduledDepositDate": "약정 입금일"
+          },
+          "empty": {
+            "payment": "지급 내역이 없습니다.",
+            "deposit": "입금 내역이 없습니다."
+          }
+        }
+      }
+    },
+    "createTaxPanel": {
+      "claimReceiptTaxModal": {
+        "title": "{issueType} 방식으로 세금계산서를 생성할까요?",
+        "subtitle": "{issueType} 방식으로 발행된 세금계산서는 문서 뷰에 '{issueType}'로 표시돼요."
+      },
+      "addItemDropdown": {
+        "existing": "기존 제품 추가",
+        "new": "새로운 제품 추가"
+      },
+      "clientInfo": {
+        "errors": {
+          "businessNumberRequired": "사업자등록번호는 필수입니다.",
+          "businessNumberInvalid": "올바른 사업자등록번호 형식입니다. (예: 123-45-67890)",
+          "representativeNameRequired": "대표자명은 필수입니다.",
+          "businessTypeRequired": "업태는 필수입니다.",
+          "businessCategoryRequired": "종목은 필수입니다."
+        }
+      },
+      "productInfo": {
+        "empty": {
+          "title": "제품이 아직 등록되지 않았어요.",
+          "text": "선발행된 세금계산서에는 추후 제품이 추가될 수 있어요."
+        }
+      },
+      "buttons": {
+        "selectIssueType": "발행 방식 선택하기"
+      },
+      "errors": {
+        "createTaxInvoiceFailed": "세금계산서 생성에 실패했습니다.",
+        "createTaxInvoiceError": "세금계산서 생성 실패: ",
+        "factoryIdNotSet": "공장 ID가 설정되지 않았습니다.",
+        "createClientFailed": "거래처 생성에 실패했습니다: ",
+        "updateClientFailed": "거래처 정보 수정에 실패했습니다: ",
+        "unknownError": "알 수 없는 오류",
+        "saveError": "저장 중 오류가 발생했습니다: ",
+        "barobillCheckFailed": "세금계산서 사용자 확인에 실패했습니다.",
+        "tryAgain": "다시 시도해 주세요."
+      },
+      "title": "세금계산서"
     }
   },
   "language": {
@@ -1215,17 +1465,8 @@
     },
     "inputSection": {
       "placeholders": {
-        "clientName": "거래처명을 입력하세요.",
-        "businessRegistrationNumber": "사업자등록번호를 입력하세요.",
-        "representativeName": "대표자명을 입력하세요.",
         "dueDate": "납기일자를 입력하세요.",
-        "businessType": "업태를 입력하세요.",
-        "businessCategory": "종목을 입력하세요.",
-        "businessAddress": "사업장 주소를 입력하세요.",
-        "managerName": "담당자명을 입력하세요.",
-        "managerEmail": "이메일을 입력하세요.",
-        "phone": "연락처를 입력하세요.",
-        "fax": "팩스 번호를 입력하세요."
+        "managerName": "담당자명을 입력하세요."
       },
       "errors": {
         "invalidBusinessRegistrationNumber": "올바른 사업자등록번호 형식이 아닙니다.",
@@ -1293,18 +1534,7 @@
         },
         "clientInfo": {
           "title": "거래처 정보",
-          "clientType": "거래처 구분",
-          "placeholders": {
-            "companyName": "(필수) 회사명을 입력하세요.",
-            "businessRegistrationNumber": "(필수) 사업자등록번호를 입력하세요.",
-            "representativeName": "(필수) 대표자명을 입력하세요.",
-            "businessType": "(필수) 업태를 입력하세요.",
-            "businessCategory": "(필수) 종목을 입력하세요.",
-            "businessAddress": "(필수) 사업장 주소를 입력하세요.",
-            "email": "이메일을 입력하세요.",
-            "phone": "연락처를 입력하세요.",
-            "fax": "팩스 번호를 입력하세요."
-          }
+          "clientType": "거래처 구분"
         },
         "depositorInfo": {
           "title": "입금 확인 정보",

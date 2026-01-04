@@ -32,7 +32,6 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
     'setting.systemSetting.permission.inviteModal'
   );
   const tPermission = useTranslations('setting.systemSetting.permission');
-  const tClientInfo = useTranslations('setting.masterData.client.clientInfo');
 
   const [isSuccessOpen, setIsSuccessOpen] = useState(false);
   const [changeAuthEmail, setChangeAuthEmail] = useState<string | null>(null);
@@ -219,7 +218,7 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
                 render={({ field }) => (
                   <div>
                     <Input
-                      placeholder={tClientInfo('placeholders.email')}
+                      placeholder={tCommon('placeholders.email')}
                       value={field.value}
                       onChange={(e) => field.onChange(e)}
                       onBlur={() => field.onBlur()}

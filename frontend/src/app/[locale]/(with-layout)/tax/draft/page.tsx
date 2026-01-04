@@ -21,8 +21,12 @@ import TableItem from './table-item';
 import NotAllowed from '../not-allowed';
 import useSubscriptionStore from '@/store/subscription-store';
 import useMemberStore from '@/store/member-store';
+import { useTranslations } from 'next-intl';
 
 const TaxDraftPage = () => {
+  const t = useTranslations('tax.draft');
+  const tCommon = useTranslations('common');
+  const tTax = useTranslations('tax');
   // 구독 상태 확인
   const { isPartnersSubscription } = useSubscriptionStore();
   const role = useMemberStore((state) => state.role);
@@ -30,8 +34,8 @@ const TaxDraftPage = () => {
   const isProdManager = role === 'prod_manager';
 
   const [selectedTab, setSelectedTab] = useState<
-    '전체' | '임시 저장' | '전송 대기'
-  >('전체');
+    'all' | 'temporary' | 'pending'
+  >('all');
 
   const [isTaxDetailPanelOpen, setIsTaxDetailPanelOpen] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState<number | null>(null);
@@ -62,12 +66,7 @@ const TaxDraftPage = () => {
         q: searchQuery || undefined,
         ordering:
           sortOrder === 'desc' ? '-transaction_date' : 'transaction_date',
-        publish_status:
-          selectedTab === '전체'
-            ? 'all'
-            : selectedTab === '임시 저장'
-              ? 'temporary'
-              : 'pending',
+        publish_status: selectedTab,
       });
 
       if (result.success && result.data) {
@@ -168,12 +167,7 @@ const TaxDraftPage = () => {
           q: searchQuery || undefined,
           ordering:
             sortOrder === 'desc' ? '-transaction_date' : 'transaction_date',
-          publish_status:
-            selectedTab === '전체'
-              ? 'all'
-              : selectedTab === '임시 저장'
-                ? 'temporary'
-                : 'pending',
+          publish_status: selectedTab,
         });
 
         if (result.success && result.data) {
@@ -183,13 +177,13 @@ const TaxDraftPage = () => {
         // 일부 처리 실패 시 에러 처리
         const failedResults = results.filter((result) => !result.success);
         alert(
-          `일부 세금계산서 처리에 실패했습니다. ${failedResults.map(
+          `${t('errors.partialFailure')} ${failedResults.map(
             (result) => result.error
           )}`
         );
       }
     } catch {
-      alert('세금계산서 처리 중 오류가 발생했습니다.');
+      alert(t('errors.processingError'));
     }
   };
 
@@ -232,7 +226,7 @@ const TaxDraftPage = () => {
   ]);
 
   // 탭 변경 핸들러
-  const handleTabChange = (tab: '전체' | '임시 저장' | '전송 대기') => {
+  const handleTabChange = (tab: 'all' | 'temporary' | 'pending') => {
     setSelectedTab(tab);
     // 탭 변경 시 첫 페이지로 이동, 체크박스 초기화, 검색어 초기화
     setCurrentPage(1);
@@ -254,7 +248,7 @@ const TaxDraftPage = () => {
         />
         <div className="px-10 pb-10">
           <SearchDeleteTable
-            placeholder="거래처명이나 제품명을 입력해 검색하세요."
+            placeholder={t('searchPlaceholder')}
             checkedCount={checkedCount}
             deleteButtonText={getDeleteButtonText()}
             onDelete={() => setIsDeleteModalOpen(true)}
@@ -274,14 +268,8 @@ const TaxDraftPage = () => {
             </div>
           ) : !taxInvoices || taxInvoices?.data.length === 0 ? (
             <NoHistoryBox
-              title={
-                selectedTab === '전체'
-                  ? '임시 저장 또는 전송 대기 중인 세금계산서가 없어요.'
-                  : selectedTab === '임시 저장'
-                    ? '아직 임시 저장된 세금계산서가 없어요.'
-                    : '아직 전송 대기 중인 세금계산서가 없어요.'
-              }
-              text="세금계산서를 생성하면 이곳에서 확인하실 수 있어요."
+              title={t(`empty.${selectedTab}.title`)}
+              text={t(`empty.${selectedTab}.text`)}
             />
           ) : (
             <>
@@ -292,17 +280,17 @@ const TaxDraftPage = () => {
                     onToggle={toggleAll}
                     disabled={isProdManager || isViewer}
                   />
-                  <p className="px-3 w-[150px]">진행 상태</p>
-                  <p className="px-3 flex-2">구분</p>
-                  <p className="px-3 flex-2">거래처명</p>
-                  <p className="px-3 w-[200px]">공급가액</p>
-                  <p className="px-3 w-[200px]">세액</p>
-                  <p className="px-3 w-[200px]">합계금액</p>
+                  <p className="px-3 w-[150px]">{t('tableHeaders.status')}</p>
+                  <p className="px-3 flex-2">{tTax('type')}</p>
+                  <p className="px-3 flex-2">{tCommon('clientName')}</p>
+                  <p className="px-3 w-[200px]">{tCommon('supplyAmount')}</p>
+                  <p className="px-3 w-[200px]">{tTax('taxAmount')}</p>
+                  <p className="px-3 w-[200px]">{tCommon('totalAmount')}</p>
                   <div
                     className="px-3 w-[200px] h-full flex items-center gap-1 hover:bg-bg cursor-pointer"
                     onClick={handleDateSort}
                   >
-                    <p className="">발행일자</p>
+                    <p className="">{tCommon('issuedDate')}</p>
                     <CaretUpDownIcon size={21} className="text-sv" />
                   </div>
                 </div>

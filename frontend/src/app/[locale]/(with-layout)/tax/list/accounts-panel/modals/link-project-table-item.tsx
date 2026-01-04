@@ -1,8 +1,10 @@
 import { ProjectResponseModel } from '@/types/data-model';
+import { ProjectStatusType } from '@/types/status-type';
 import { RoundChip } from '@/ui/round-chip';
 import { getProjectStatusColor } from '@/utils';
 import { getProductNamesDisplay } from '@/utils/get-product-names-display';
 import { getStartDate } from '@/utils';
+import { useTranslations } from 'next-intl';
 
 interface LinkProjectTableItemProps {
   onItemClick: () => void;
@@ -15,21 +17,9 @@ const LinkProjectTableItem = ({
   isSelected,
   item,
 }: LinkProjectTableItemProps) => {
-  const getDisplayText = (status: string): string => {
-    const displayMap: Record<string, string> = {
-      quotation: '견적 요청',
-      confirmed: '주문 확정',
-      pending: '생산 대기',
-      production: '생산 중',
-      manufactured: '생산 완료',
-      delivery: '납품',
-      completed: '완료',
-      suspended: '중단',
-    };
-    return displayMap[status] || '견적 요청';
-  };
+  const t = useTranslations('project.status');
 
-  const displayText = getDisplayText(item.status);
+  const displayText = t(item.status as ProjectStatusType) || t('quotation');
   const chipColor = getProjectStatusColor(item.status);
 
   const clientName =

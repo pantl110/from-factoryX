@@ -6,6 +6,7 @@ import { useGetFactory } from '@/hooks';
 import { formatISODate } from '@/utils';
 import useMemberStore from '@/store/member-store';
 import { SellerInfoFormDataModel } from '../type';
+import { useTranslations } from 'next-intl';
 
 interface SellerInfoProps {
   onFormChange: (
@@ -50,6 +51,8 @@ const SellerInfo = ({
   const factoryId = useMemberStore((state) => state.factoryId);
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
+  const tCommon = useTranslations('common');
+  const tPlaceholders = useTranslations('common.placeholders');
 
   // 공장 상세 조회 후 초기값 세팅
   useEffect(() => {
@@ -173,17 +176,17 @@ const SellerInfo = ({
 
   return (
     <div className="flex-1 flex flex-col gap-5">
-      <h3 className="Heading-3">판매처 정보</h3>
+      <h3 className="Heading-3">{tCommon('sellerInfo')}</h3>
       <form className="flex flex-col gap-4">
         <div className="flex gap-2">
           <div className="flex-1">
             <Input
-              label="거래처명"
+              label={tCommon('companyName')}
               required
-              placeholder="거래처명을 입력하세요."
+              placeholder={`${tPlaceholders('companyName')}`}
               showError={shouldShowError('companyName')}
               {...register('companyName', {
-                required: '거래처명은 필수입니다.',
+                required: true,
                 onChange: () => {
                   handleFieldChange('companyName');
                 },
@@ -193,16 +196,15 @@ const SellerInfo = ({
           </div>
           <div className="flex-1">
             <Input
-              label="사업자등록번호"
+              label={tCommon('businessRegistrationNumber')}
               required
-              placeholder="사업자등록번호를 입력하세요."
+              placeholder={`${tPlaceholders('businessRegistrationNumber')}`}
               showError={shouldShowError('businessNumber')}
               {...register('businessNumber', {
-                required: '사업자등록번호는 필수입니다.',
+                required: true,
                 pattern: {
                   value: /^\d{3}-\d{2}-\d{5}$/,
-                  message:
-                    '올바른 사업자등록번호 형식입니다. (예: 123-45-67890)',
+                  message: '',
                 },
                 onChange: (e) => {
                   const formatted = formatBusinessNumber(e.target.value);
@@ -219,12 +221,12 @@ const SellerInfo = ({
         </div>
         <div>
           <Input
-            label="대표자명"
+            label={tCommon('representativeName')}
             required
-            placeholder="대표자명을 입력하세요."
+            placeholder={`${tPlaceholders('representativeName')}`}
             showError={shouldShowError('representativeName')}
             {...register('representativeName', {
-              required: '대표자명은 필수입니다.',
+              required: true,
               onChange: () => {
                 handleFieldChange('representativeName');
               },
@@ -235,12 +237,12 @@ const SellerInfo = ({
         <div className="flex gap-2">
           <div className="flex-1">
             <Input
-              label="업태"
+              label={tCommon('businessType')}
               required
-              placeholder="업태를 입력하세요."
+              placeholder={`${tPlaceholders('businessType')}`}
               showError={shouldShowError('businessType')}
               {...register('businessType', {
-                required: '업태는 필수입니다.',
+                required: true,
                 onChange: () => {
                   handleFieldChange('businessType');
                 },
@@ -250,12 +252,12 @@ const SellerInfo = ({
           </div>
           <div className="flex-1">
             <Input
-              label="종목"
+              label={tCommon('businessCategory')}
               required
-              placeholder="종목을 입력하세요."
+              placeholder={`${tPlaceholders('businessCategory')}`}
               showError={shouldShowError('businessCategory')}
               {...register('businessCategory', {
-                required: '종목은 필수입니다.',
+                required: true,
                 onChange: () => {
                   handleFieldChange('businessCategory');
                 },
@@ -265,8 +267,8 @@ const SellerInfo = ({
           </div>
         </div>
         <Input
-          label="사업장 주소"
-          placeholder="사업장 주소를 입력하세요."
+          label={tCommon('businessAddress')}
+          placeholder={tPlaceholders('businessAddress')}
           showError={shouldShowError('address')}
           {...register('address', {
             onChange: () => {
@@ -277,15 +279,15 @@ const SellerInfo = ({
         />
         <div>
           <Input
-            label="작성일자"
+            label={tCommon('writtenDate')}
             required
-            placeholder="YYYY-MM-DD"
+            placeholder={`YYYY-MM-DD`}
             showError={shouldShowError('writeDate')}
             {...register('writeDate', {
-              required: '작성일자는 필수입니다.',
+              required: true,
               pattern: {
                 value: /^\d{4}-\d{2}-\d{2}$/,
-                message: '올바른 날짜 형식입니다. (예: 2024-01-01)',
+                message: '',
               },
               onChange: (e) => {
                 const formatted = formatDate(e.target.value);

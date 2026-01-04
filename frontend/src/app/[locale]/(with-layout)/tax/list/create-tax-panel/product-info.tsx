@@ -5,6 +5,7 @@ import { FormProvider, useForm, useFieldArray } from 'react-hook-form';
 import { useImperativeHandle, forwardRef, useEffect } from 'react';
 import { useGetProduct } from '@/hooks';
 import useMemberStore from '@/store/member-store';
+import { useTranslations } from 'next-intl';
 
 // 세금계산서 편집용 제품 데이터 타입
 interface TaxProductEditModel {
@@ -54,6 +55,8 @@ const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
   ) => {
     const role = useMemberStore((state) => state.role);
     const isViewer = role === 'viewer';
+    const t = useTranslations('tax.createTaxPanel.productInfo');
+    const tCommon = useTranslations('common');
 
     const { getProductDetail } = useGetProduct();
 
@@ -134,19 +137,28 @@ const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
       <FormProvider {...methods}>
         <div>
           {fields.length === 0 ? (
-            <NoHistoryBox
-              title="제품이 아직 등록되지 않았어요."
-              text="선발행된 세금계산서에는 추후 제품이 추가될 수 있어요."
-            />
+            <NoHistoryBox title={t('empty.title')} text={t('empty.text')} />
           ) : (
             <>
               <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 cursor-default">
-                <p className="flex-1 py-1 px-3 text-sv">제품명</p>
-                <p className="flex-1 py-1 px-3 text-sv">제품 코드</p>
-                <p className="flex-1 py-1 px-3 text-sv">규격</p>
-                <p className="flex-1 py-1 px-3 text-sv">제작 수량</p>
-                <p className="w-[100px] py-1 px-3 text-sv">단가</p>
-                <p className="flex-1 py-1 px-3 text-sv">금액</p>
+                <p className="flex-1 py-1 px-3 text-sv">
+                  {tCommon('productName')}
+                </p>
+                <p className="flex-1 py-1 px-3 text-sv">
+                  {tCommon('productCode')}
+                </p>
+                <p className="flex-1 py-1 px-3 text-sv">
+                  {tCommon('specification')}
+                </p>
+                <p className="flex-1 py-1 px-3 text-sv">
+                  {tCommon('manufacturingQuantity')}
+                </p>
+                <p className="w-[100px] py-1 px-3 text-sv">
+                  {tCommon('unitPrice')}
+                </p>
+                <p className="flex-1 py-1 px-3 text-sv">
+                  {tCommon('totalAmount')}
+                </p>
                 {!isViewer && <div className="w-9" />}
               </div>
 

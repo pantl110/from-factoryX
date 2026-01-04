@@ -5,14 +5,20 @@ import MiniBtn from '@/ui/mini-btn';
 import CreatTaxPanel from '../list/create-tax-panel';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
+import { useTranslations } from 'next-intl';
 
 interface MainTitleSecProps {
-  selectedTab: '전체' | '임시 저장' | '전송 대기';
-  setSelectedTab: (tab: '전체' | '임시 저장' | '전송 대기') => void;
+  selectedTab: 'all' | 'temporary' | 'pending';
+  setSelectedTab: (tab: 'all' | 'temporary' | 'pending') => void;
 }
 
 const MainTitleSec = ({ selectedTab, setSelectedTab }: MainTitleSecProps) => {
-  const tabs = ['전체', '임시 저장', '전송 대기'];
+  const t = useTranslations('tax.draft');
+  const tabs: Array<'all' | 'temporary' | 'pending'> = [
+    'all',
+    'temporary',
+    'pending',
+  ];
   const factoryId = useMemberStore((state) => state.factoryId);
   const role = useMemberStore((state) => state.role);
   const isPartnersSubscription = useSubscriptionStore((state) =>
@@ -24,9 +30,9 @@ const MainTitleSec = ({ selectedTab, setSelectedTab }: MainTitleSecProps) => {
     <>
       <div className="flex flex-col gap-8 pt-10 pr-10 pl-10">
         <div className="flex items-center justify-between relative">
-          <div className="Heading-1 text-dg">세금계산서 작성함</div>
+          <div className="Heading-1 text-dg">{t('title')}</div>
           <MiniBtn
-            text="세금계산서 생성하기"
+            text={t('createButton')}
             variant="primary"
             onClick={() => {
               setIsCreatTaxPanelOpen(true);
@@ -45,11 +51,9 @@ const MainTitleSec = ({ selectedTab, setSelectedTab }: MainTitleSecProps) => {
             <button
               key={tab}
               className={`${selectedTab === tab ? 'text-dg' : 'text-gr'} cursor-pointer`}
-              onClick={() =>
-                setSelectedTab(tab as '전체' | '임시 저장' | '전송 대기')
-              }
+              onClick={() => setSelectedTab(tab)}
             >
-              {tab}
+              {t(`tabs.${tab}`)}
             </button>
           ))}
         </div>

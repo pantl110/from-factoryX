@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { DeleteModal, IconBtn, MiniBtn, OverlayView, Panel, Toast } from '@/ui';
 import TableArea from './table-area';
 import { WarningCircle, X } from '@phosphor-icons/react';
+import { useTranslations } from 'next-intl';
 import {
   useGetTaxInvoiceAccount,
   useToast,
@@ -35,6 +36,10 @@ const AccountsPanel = ({
   itemId,
   type = 'tax',
 }: AccountsPanelProps) => {
+  const t = useTranslations('tax.list');
+  const tCommon = useTranslations('common');
+  const tNav = useTranslations('navigation');
+  const tDocument = useTranslations('document.taxInvoice');
   // 모달, 판넬 상태
   const [isTaxDetailOpen, setIsTaxDetailOpen] = useState(false);
   const [isCashReceiptDetailOpen, setIsCashReceiptDetailOpen] = useState(false);
@@ -178,8 +183,8 @@ const AccountsPanel = ({
       }
       handleCloseSendEmailModal();
     } else if (result.error) {
-      setErrorText('이메일 발송에 실패했습니다.');
-      setErrorSubtext(result.error || '알 수 없는 오류가 발생했습니다.');
+      setErrorText(t('errors.emailSendFailed'));
+      setErrorSubtext(result.error || t('accountPayment.errors.unknownError'));
       showToast();
     }
   };
@@ -208,8 +213,8 @@ const AccountsPanel = ({
       }
       handleCloseDeleteAccountPaymentModal();
     } else if (result.error) {
-      setErrorText('회수/지급 상세내역 삭제에 실패했습니다.');
-      setErrorSubtext(result.error || '알 수 없는 오류가 발생했습니다.');
+      setErrorText(t('errors.deletePaymentDetailFailed'));
+      setErrorSubtext(result.error || t('accountPayment.errors.unknownError'));
       showToast();
       handleCloseDeleteAccountPaymentModal();
     }
@@ -237,8 +242,8 @@ const AccountsPanel = ({
     if (values.agreed_payment_date) {
       const dateString = formatISODate(values.agreed_payment_date);
       if (!isValidDateString(dateString)) {
-        setErrorText('유효한 납기일자를 입력해 주세요.');
-        setErrorSubtext('YYYY-MM-DD 형식으로 입력해 주세요.');
+        setErrorText(t('errors.invalidDueDate'));
+        setErrorSubtext(t('accountPayment.errors.dateFormat'));
         showToast();
         return;
       }
@@ -257,8 +262,8 @@ const AccountsPanel = ({
       setIsFormDirty(false);
       onClose();
     } else if (result.error) {
-      setErrorText('세금계산서 채권/채무 정보 저장에 실패했습니다.');
-      setErrorSubtext(result.error || '알 수 없는 오류가 발생했습니다.');
+      setErrorText(t('errors.saveAccountFailed'));
+      setErrorSubtext(result.error || t('accountPayment.errors.unknownError'));
       showToast();
     }
   };
@@ -266,12 +271,12 @@ const AccountsPanel = ({
   return (
     <>
       <Panel
-        title="채권 · 채무 관리"
+        title={tNav('taxDropdown.list')}
         onClose={onClose}
         headerButton={
           isFormDirty ? (
             <MiniBtn
-              text="저장"
+              text={tCommon('save')}
               variant="secondary"
               onClick={handleSave}
               disabled={isSaving}
@@ -341,7 +346,11 @@ const AccountsPanel = ({
         <TaxDocumentOverlay
           onClose={handleCloseTaxDetail}
           item={taxItem}
-          title={isPurchase ? '매입 세금계산서' : '매출 세금계산서'}
+          title={
+            isPurchase
+              ? tDocument('purchaseTaxInvoice')
+              : tDocument('salesTaxInvoice')
+          }
         />
       )}
 
@@ -352,7 +361,7 @@ const AccountsPanel = ({
             {/* top 고정 부위*/}
             <div className="sticky pt-8 top-0 bg-wh">
               <div className="flex justify-between h-13 border-b border-lg">
-                <h3 className="Heading-3">현금영수증</h3>
+                <h3 className="Heading-3">{tDocument('cashReceipt')}</h3>
                 <IconBtn icon={X} onClick={handleCloseCashReceiptDetail} />
               </div>
             </div>

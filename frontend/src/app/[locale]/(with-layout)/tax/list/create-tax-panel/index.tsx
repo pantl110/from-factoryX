@@ -32,6 +32,7 @@ import ProductInfo, {
   ProductFormDataModel,
 } from './product-info';
 import { WarningCircle } from '@phosphor-icons/react';
+import { useTranslations } from 'next-intl';
 
 // 세금계산서 편집용 제품 데이터 타입
 interface TaxProductEditModel {
@@ -67,7 +68,7 @@ const CreatTaxPanel = ({
   const [isIssueTypeDropdownOpen, setIsIssueTypeDropdownOpen] = useState(false);
   const [isClaimTaxModalOpen, setIsClaimTaxModalOpen] = useState(false);
   const [selectedIssueType, setSelectedIssueType] = useState<
-    '청구' | '영수' | null
+    'invoice' | 'receipt' | null
   >(null);
   const [isProductDetailOpen, setIsProductDetailOpen] = useState(false); // 새로운 제품 추가 디테일판넬 상태
 
@@ -125,6 +126,9 @@ const CreatTaxPanel = ({
   const factoryId = useMemberStore((state) => state.factoryId);
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
+  const t = useTranslations('tax.createTaxPanel');
+  const tTax = useTranslations('tax');
+  const tCommon = useTranslations('common');
 
   // 주문제품 정보 폼 변경 핸들러
   const handleProductInfoChange = useCallback(
@@ -146,19 +150,20 @@ const CreatTaxPanel = ({
         if (result.success) {
           return result.data;
         } else {
-          alert(result.error || '세금계산서 생성에 실패했습니다.');
+          alert(result.error || t('errors.createTaxInvoiceFailed'));
           return false;
         }
       } catch (error) {
-        alert('세금계산서 생성 실패: ' + error);
+        alert(t('errors.createTaxInvoiceError') + error);
         return false;
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [createTaxInvoice]
   );
 
   // 발행방식 선택 핸들러
-  const handleIssueTypeSelect = (issueType: '청구' | '영수') => {
+  const handleIssueTypeSelect = (issueType: 'invoice' | 'receipt') => {
     setIsIssueTypeDropdownOpen(false);
     setSelectedIssueType(issueType);
 
@@ -291,7 +296,7 @@ const CreatTaxPanel = ({
   const createClientInfo = useCallback(
     async (clientFormData: ClientInfoFormDataModel) => {
       if (!factoryId)
-        return { success: false, error: '공장 ID가 설정되지 않았습니다.' };
+        return { success: false, error: t('errors.factoryIdNotSet') };
 
       const clientData: ClientModel = {
         factory_id: factoryId,
@@ -307,6 +312,7 @@ const CreatTaxPanel = ({
 
       return await createClient(clientData);
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [factoryId, createClient]
   );
 
@@ -314,7 +320,7 @@ const CreatTaxPanel = ({
   const updateClientInfo = useCallback(
     async (clientId: number, clientFormData: ClientInfoFormDataModel) => {
       if (!factoryId)
-        return { success: false, error: '공장 ID가 설정되지 않았습니다.' };
+        return { success: false, error: t('errors.factoryIdNotSet') };
 
       const clientData: ClientUpdateModel = {
         client_id: clientId,
@@ -330,6 +336,7 @@ const CreatTaxPanel = ({
 
       return await updateClient(clientData);
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [factoryId, updateClient]
   );
 
@@ -393,8 +400,8 @@ const CreatTaxPanel = ({
             setSelectedClientId(createResult.data.id);
           } else {
             alert(
-              '거래처 생성에 실패했습니다: ' +
-                (createResult.error || '알 수 없는 오류')
+              t('errors.createClientFailed') +
+                (createResult.error || t('errors.unknownError'))
             );
             setIsSaving(false);
           }
@@ -415,16 +422,16 @@ const CreatTaxPanel = ({
                 setSelectedClientId(createResult.data.id);
               } else {
                 alert(
-                  '거래처 생성에 실패했습니다: ' +
-                    (createResult.error || '알 수 없는 오류')
+                  t('errors.createClientFailed') +
+                    (createResult.error || t('errors.unknownError'))
                 );
                 setIsSaving(false);
                 return false;
               }
             } else {
               alert(
-                '거래처 정보 수정에 실패했습니다: ' +
-                  (updateResult.error || '알 수 없는 오류')
+                t('errors.updateClientFailed') +
+                  (updateResult.error || t('errors.unknownError'))
               );
               // 거래처 수정 실패해도 세금계산서는 생성 계속 진행
             }
@@ -501,7 +508,7 @@ const CreatTaxPanel = ({
         }
       }
     } catch (error) {
-      alert('저장 중 오류가 발생했습니다: ' + error);
+      alert(t('errors.saveError') + error);
       return false; // 에러 시 false 반환
     } finally {
       setIsSaving(false);
@@ -524,13 +531,13 @@ const CreatTaxPanel = ({
       const isReady = await checkBarobill();
 
       if (!isReady) {
-        setErrorText('세금계산서 사용자 확인에 실패했습니다.');
-        setErrorSubtext('다시 시도해 주세요.');
+        setErrorText(t('errors.barobillCheckFailed'));
+        setErrorSubtext(t('errors.tryAgain'));
         showToast();
         return;
       }
     } catch (error) {
-      let errorMsg = '다시 시도해 주세요.';
+      let errorMsg = t('errors.tryAgain');
 
       if (error instanceof Error) {
         // 에러 메시지에서 콜론 뒤의 부분만 추출
@@ -541,7 +548,7 @@ const CreatTaxPanel = ({
           errorMsg = message;
         }
       }
-      setErrorText('세금계산서 사용자 확인에 실패했습니다.');
+      setErrorText(t('errors.barobillCheckFailed'));
       setErrorSubtext(errorMsg);
       showToast();
       return;
@@ -569,7 +576,7 @@ const CreatTaxPanel = ({
   const headerButton = (
     <div className="flex gap-2">
       <MiniBtn
-        text="임시 저장"
+        text={tTax('publishStatus.temporary')}
         textColor="text-primary"
         bgColor="bg-primary-8"
         hoverColor="hover:bg-secondary-hover"
@@ -592,7 +599,7 @@ const CreatTaxPanel = ({
       />
       <div className="relative">
         <MiniBtn
-          text="발행 방식 선택하기"
+          text={t('buttons.selectIssueType')}
           textColor="text-wh"
           bgColor="bg-primary"
           hoverColor="hover:bg-primary-hover"
@@ -620,7 +627,7 @@ const CreatTaxPanel = ({
   return (
     <>
       <Panel
-        title="세금계산서"
+        title={t('title')}
         onClose={onClose}
         headerButton={headerButton}
         ref={panelRef}
@@ -641,9 +648,11 @@ const CreatTaxPanel = ({
 
         <div className="flex flex-col gap-3 mt-9">
           <div className="flex justify-between items-center w-full relative">
-            <h3 className="Heading-3 h-10 items-center flex">주문 제품 정보</h3>
+            <h3 className="Heading-3 h-10 items-center flex">
+              {tCommon('orderProductInfo')}
+            </h3>
             <MiniBtn
-              text="제품 추가하기"
+              text={`${tCommon('product')} ${tCommon('add')}`}
               textColor="text-dg"
               borderColor="border-lg"
               hoverColor="hover:bg-bg"
@@ -686,7 +695,7 @@ const CreatTaxPanel = ({
         <Toast
           icon={<WarningCircle size={20} className="text-red" />}
           text={errorText}
-          subtext={errorSubtext || '다시 시도해 주세요.'}
+          subtext={errorSubtext || t('errors.tryAgain')}
           type="red"
           isVisible={isVisible}
         />

@@ -5,6 +5,8 @@ import { useEffect, useMemo } from 'react';
 import { TaxInvoiceAccountModel } from '@/types/data-model';
 import useMemberStore from '@/store/member-store';
 import { useGetFactory } from '@/hooks';
+import { useTranslations, useLocale } from 'next-intl';
+import { getMonthDisplay } from '@/utils';
 
 interface EmailFormModel {
   recipient: string;
@@ -25,6 +27,9 @@ const SendEmailModal = ({
   onSendEmail,
   isLoading = false,
 }: SendEmailModalProps) => {
+  const t = useTranslations('tax.list.sendEmailModal');
+  const tCommon = useTranslations('common');
+  const locale = useLocale();
   const clientName = account?.client?.name || '';
   const clientEmail = account?.client?.email || '';
   const factoryId = useMemberStore((state) => state.factoryId);
@@ -43,6 +48,11 @@ const SendEmailModal = ({
     return new Date().getMonth() + 1;
   }, []);
 
+  // 영어일 때는 월 이름, 한국어일 때는 숫자
+  const monthDisplay = useMemo(() => {
+    return getMonthDisplay(currentMonth, locale);
+  }, [locale, currentMonth]);
+
   // 공장 이름 가져오기
   const factoryName = factory?.name || '';
 
@@ -59,19 +69,19 @@ const SendEmailModal = ({
 
   // 이메일 내용 템플릿 생성
   const emailContent = useMemo(() => {
-    return `안녕하세요. ${clientName} 담당자님.
+    return `${t('emailTemplate.greeting', { clientName })}
     
-${currentMonth}월 정산 금액 관련하여 입금 요청드립니다.
-해당 건의 세금계산서 발행은 완료되었으며, 정산 금액은 아래와 같습니다.
+${t('emailTemplate.body1', { month: currentMonth })}
+${t('emailTemplate.body2')}
 
-정산금액: ${formattedAmount}원
-입금기한: ${paymentDate}
+${t('emailTemplate.settlementAmount', { amount: formattedAmount })}
+${t('emailTemplate.paymentDeadline', { date: paymentDate })}
 
-기한 내 입금이 어려우시거나 금액 관련 문의가 있으시면
-편하게 연락 부탁드립니다.
+${t('emailTemplate.body3')}
+${t('emailTemplate.body4')}
 
-감사합니다.`;
-  }, [clientName, currentMonth, paymentDate, formattedAmount]);
+${t('emailTemplate.closing')}`;
+  }, [clientName, currentMonth, paymentDate, formattedAmount, t]);
 
   const {
     control,
@@ -82,8 +92,8 @@ ${currentMonth}월 정산 금액 관련하여 입금 요청드립니다.
     defaultValues: {
       recipient: clientEmail || '',
       subject: factoryName
-        ? `[${factoryName}] ${currentMonth}월 정산 금액 입금 요청드립니다`
-        : `${currentMonth}월 정산 금액 입금 요청드립니다`,
+        ? t('subjectTemplate.withFactory', { factoryName, month: monthDisplay })
+        : t('subjectTemplate.withoutFactory', { month: monthDisplay }),
       content: emailContent,
     },
     mode: 'onChange',
@@ -94,11 +104,11 @@ ${currentMonth}월 정산 금액 관련하여 입금 요청드립니다.
     reset({
       recipient: clientEmail || '',
       subject: factoryName
-        ? `[${factoryName}] ${currentMonth}월 정산 금액 입금 요청드립니다`
-        : `${currentMonth}월 정산 금액 입금 요청드립니다`,
+        ? t('subjectTemplate.withFactory', { factoryName, month: monthDisplay })
+        : t('subjectTemplate.withoutFactory', { month: monthDisplay }),
       content: emailContent,
     });
-  }, [clientEmail, currentMonth, emailContent, factoryName, reset]);
+  }, [clientEmail, monthDisplay, emailContent, factoryName, reset, t]);
 
   const onSubmit = (data: EmailFormModel) => {
     onSendEmail(data);
@@ -106,8 +116,8 @@ ${currentMonth}월 정산 금액 관련하여 입금 요청드립니다.
 
   return (
     <Modal
-      title="메일 보내기"
-      subtitle="담당자에게 청구 관련 안내 메일을 발송합니다."
+      title={t('title')}
+      subtitle={t('subtitle')}
       onClose={onClose}
       width="w-[600px]"
       scroll
@@ -120,10 +130,10 @@ ${currentMonth}월 정산 금액 관련하여 입금 요청드립니다.
                 name="recipient"
                 control={control}
                 rules={{
-                  required: '받는 사람을 입력해 주세요.',
+                  required: t('errors.recipientRequired'),
                   pattern: {
                     value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                    message: '올바른 이메일 형식을 입력해 주세요.',
+                    message: t('errors.recipientInvalid'),
                   },
                 }}
                 render={({ field }) => {
@@ -139,8 +149,8 @@ ${currentMonth}월 정산 금액 관련하여 입금 요청드립니다.
                   };
                   return (
                     <Input
-                      label="받는 사람"
-                      placeholder="이메일을 입력하세요."
+                      label={t('labels.recipient')}
+                      placeholder={t('placeholders.recipient')}
                       value={field.value}
                       onChange={handleRecipientChange}
                       onBlur={handleRecipientBlur}
@@ -155,7 +165,7 @@ ${currentMonth}월 정산 금액 관련하여 입금 요청드립니다.
                 name="subject"
                 control={control}
                 rules={{
-                  required: '제목을 입력해 주세요.',
+                  required: t('errors.subjectRequired'),
                 }}
                 render={({ field }) => {
                   const handleSubjectChange = (
@@ -170,8 +180,8 @@ ${currentMonth}월 정산 금액 관련하여 입금 요청드립니다.
                   };
                   return (
                     <Input
-                      label="제목"
-                      placeholder="제목을 입력하세요."
+                      label={t('labels.subject')}
+                      placeholder={t('placeholders.subject')}
                       value={field.value}
                       onChange={handleSubjectChange}
                       onBlur={handleSubjectBlur}
@@ -187,7 +197,7 @@ ${currentMonth}월 정산 금액 관련하여 입금 요청드립니다.
                 name="content"
                 control={control}
                 rules={{
-                  required: '내용을 입력해 주세요.',
+                  required: t('errors.contentRequired'),
                 }}
                 render={({ field }) => {
                   const handleContentChange = (
@@ -202,9 +212,9 @@ ${currentMonth}월 정산 금액 관련하여 입금 요청드립니다.
                   };
                   return (
                     <Input
-                      label="내용"
+                      label={t('labels.content')}
                       textarea={true}
-                      placeholder="내용을 입력하세요."
+                      placeholder={t('placeholders.content')}
                       minRows={12}
                       value={field.value}
                       onChange={handleContentChange}
@@ -221,14 +231,14 @@ ${currentMonth}월 정산 금액 관련하여 입금 요청드립니다.
           <div className="flex justify-end mt-5 gap-2.5 px-6 pb-6">
             <MiniBtn
               type="button"
-              text="취소"
+              text={tCommon('cancel')}
               variant="white"
               onClick={onClose}
               disabled={isLoading}
             />
             <MiniBtn
               type="submit"
-              text="메일 보내기"
+              text={t('sendButton')}
               variant="primary"
               disabled={isLoading}
             />

@@ -25,7 +25,6 @@ const CompanyInfo = () => {
   const tCompanyInfo = useTranslations(
     'setting.systemSetting.general.companyInfo'
   );
-  const tClientInfo = useTranslations('setting.masterData.client.clientInfo');
 
   const { getFactory, factory } = useGetFactory();
   const { updateFactory } = useUpdateFactory();
@@ -166,7 +165,7 @@ const CompanyInfo = () => {
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <div className="flex gap-2">
             <Input
-              placeholder={tClientInfo('placeholders.companyName')}
+              placeholder={`${tCommon('required')} ${tCommon('placeholders.companyName')}`}
               label={tCommon('companyName')}
               required
               {...register('name')}
@@ -175,9 +174,7 @@ const CompanyInfo = () => {
             />
             <Input
               label={tCommon('businessRegistrationNumber')}
-              placeholder={tClientInfo(
-                'placeholders.businessRegistrationNumber'
-              )}
+              placeholder={`${tCommon('required')} ${tCommon('placeholders.businessRegistrationNumber')}`}
               required
               showError={!!errors.business_registration_number}
               disabledSetting={!isAdmin || !hasSubscription()}
@@ -195,14 +192,14 @@ const CompanyInfo = () => {
           </div>
           <div className="flex gap-2">
             <Input
-              placeholder={tClientInfo('placeholders.representativeName')}
+              placeholder={`${tCommon('required')} ${tCommon('placeholders.representativeName')}`}
               label={tCommon('representativeName')}
               required
               disabledSetting={!isAdmin || !hasSubscription()}
               {...register('representative_name')}
             />
             <Input
-              placeholder={tClientInfo('placeholders.email')}
+              placeholder={`${tCommon('required')} ${tCommon('placeholders.email')}`}
               label={tCommon('email')}
               required
               showError={!!errors.manager_email}
@@ -217,7 +214,7 @@ const CompanyInfo = () => {
           </div>
           <div className="flex gap-2">
             <Input
-              placeholder={tClientInfo('placeholders.phone')}
+              placeholder={tCommon('placeholders.phone')}
               label={tCommon('phone')}
               showError={!!errors.manager_phone}
               disabledSetting={!isAdmin || !hasSubscription()}
@@ -233,7 +230,7 @@ const CompanyInfo = () => {
               })}
             />
             <Input
-              placeholder={tClientInfo('placeholders.fax')}
+              placeholder={tCommon('placeholders.fax')}
               label={tCommon('fax')}
               showError={!!errors.manager_fax}
               disabledSetting={!isAdmin || !hasSubscription()}
@@ -251,20 +248,20 @@ const CompanyInfo = () => {
           </div>
           <div className="flex gap-2">
             <Input
-              placeholder={tClientInfo('placeholders.businessType')}
+              placeholder={tCommon('placeholders.businessType')}
               label={tCommon('businessType')}
               disabledSetting={!isAdmin || !hasSubscription()}
               {...register('business_type')}
             />
             <Input
-              placeholder={tClientInfo('placeholders.businessCategory')}
+              placeholder={tCommon('placeholders.businessCategory')}
               label={tCommon('businessCategory')}
               disabledSetting={!isAdmin || !hasSubscription()}
               {...register('business_category')}
             />
           </div>
           <Input
-            placeholder={tClientInfo('placeholders.businessAddress')}
+            placeholder={tCommon('placeholders.businessAddress')}
             label={tCommon('businessAddress')}
             disabledSetting={!isAdmin || !hasSubscription()}
             {...register('business_address')}

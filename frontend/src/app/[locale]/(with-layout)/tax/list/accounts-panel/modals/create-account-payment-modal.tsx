@@ -18,6 +18,7 @@ import {
   useToast,
 } from '@/hooks';
 import { WarningCircle } from '@phosphor-icons/react';
+import { useTranslations } from 'next-intl';
 
 interface PaymentFormModel {
   expectedPaymentDate: string;
@@ -40,6 +41,8 @@ const CreateAccountPaymentModal = ({
   type = 'tax',
   paymentDetail = null,
 }: CreateAccountPaymentModalProps) => {
+  const t = useTranslations('tax.list.accountPayment');
+  const tCommon = useTranslations('common');
   const isEditMode = !!paymentDetail;
 
   // 매입 여부 확인
@@ -135,33 +138,33 @@ const CreateAccountPaymentModal = ({
     if (errors.paymentDate) {
       setErrorText(
         isPurchase
-          ? '올바른 지급일 형식을 입력해 주세요.'
-          : '올바른 입금일 형식을 입력해 주세요.'
+          ? t('errors.paymentDateInvalid')
+          : t('errors.depositDateInvalid')
       );
-      setErrorSubtext('YYYY-MM-DD 형식으로 입력해 주세요.');
+      setErrorSubtext(t('errors.dateFormat'));
       showToast();
     } else if (errors.expectedPaymentDate) {
       if (errors.expectedPaymentDate.type === 'required') {
         setErrorText(
           isPurchase
-            ? '약정 지급일을 입력해 주세요.'
-            : '약정 입금일을 입력해 주세요.'
+            ? t('errors.expectedPaymentDateRequired')
+            : t('errors.expectedDepositDateRequired')
         );
         setErrorSubtext('');
       } else {
         setErrorText(
           isPurchase
-            ? '올바른 약정 지급일 형식을 입력해 주세요.'
-            : '올바른 약정 입금일 형식을 입력해 주세요.'
+            ? t('errors.expectedPaymentDateInvalid')
+            : t('errors.expectedDepositDateInvalid')
         );
-        setErrorSubtext('YYYY-MM-DD 형식으로 입력해 주세요.');
+        setErrorSubtext(t('errors.dateFormat'));
       }
       showToast();
     } else if (errors.receivedAmount) {
       setErrorText(
         isPurchase
-          ? '지급 금액을 올바르게 입력해 주세요.'
-          : '받은 금액을 올바르게 입력해 주세요.'
+          ? t('errors.paymentAmountInvalid')
+          : t('errors.receivedAmountInvalid')
       );
       setErrorSubtext(errors.receivedAmount.message || '');
       showToast();
@@ -170,60 +173,59 @@ const CreateAccountPaymentModal = ({
 
   const onSubmit = async (data: PaymentFormModel) => {
     if (!account) {
-      setErrorText('계정 정보를 찾을 수 없습니다.');
+      setErrorText(t('errors.accountNotFound'));
       showToast();
       return;
     }
 
     // 날짜 형식 검증 (저장 버튼 클릭 시 토스트 표시 및 input 에러 표시)
+    const paymentDateErrorMsg = isPurchase
+      ? t('errors.paymentDateInvalid')
+      : t('errors.depositDateInvalid');
     if (!isValidDateString(data.paymentDate)) {
       setError('paymentDate', {
         type: 'manual',
-        message: paymentDateError,
+        message: paymentDateErrorMsg,
       });
-      setErrorText(
-        isPurchase
-          ? '올바른 지급일 형식을 입력해 주세요.'
-          : '올바른 입금일 형식을 입력해 주세요.'
-      );
-      setErrorSubtext('YYYY-MM-DD 형식으로 입력해 주세요.');
+      setErrorText(paymentDateErrorMsg);
+      setErrorSubtext(t('errors.dateFormat'));
       showToast();
       return;
     }
 
+    const expectedDateErrorMsg = isPurchase
+      ? t('errors.expectedPaymentDateInvalid')
+      : t('errors.expectedDepositDateInvalid');
     if (!isValidDateString(data.expectedPaymentDate)) {
       setError('expectedPaymentDate', {
         type: 'manual',
-        message: expectedDateError,
+        message: expectedDateErrorMsg,
       });
-      setErrorText(
-        isPurchase
-          ? '올바른 약정 지급일 형식을 입력해 주세요.'
-          : '올바른 약정 입금일 형식을 입력해 주세요.'
-      );
-      setErrorSubtext('YYYY-MM-DD 형식으로 입력해 주세요.');
+      setErrorText(expectedDateErrorMsg);
+      setErrorSubtext(t('errors.dateFormat'));
       showToast();
       return;
     }
 
     // 지급금액이 미수금액보다 큰지 검증
     if (outstandingBalance < 0) {
+      const maxAmountMsg = isPurchase
+        ? t('errors.paymentAmountMax', {
+            amount: account.outstanding_balance.toLocaleString(),
+          })
+        : t('errors.receivedAmountMax', {
+            amount: account.outstanding_balance.toLocaleString(),
+          });
       setError('receivedAmount', {
         type: 'manual',
-        message: `${
-          isPurchase ? '지급 금액' : '받은 금액'
-        }은 ${account.outstanding_balance.toLocaleString()}원 이하여야 합니다.`,
+        message: maxAmountMsg,
       });
       setErrorText(
         isPurchase
-          ? '지급 금액이 미지급액보다 큽니다.'
-          : '받은 금액이 미수금액보다 큽니다.'
+          ? t('errors.paymentAmountExceeds')
+          : t('errors.receivedAmountExceeds')
       );
-      setErrorSubtext(
-        `${
-          isPurchase ? '지급 금액' : '받은 금액'
-        }은 ${account.outstanding_balance.toLocaleString()}원 이하여야 합니다.`
-      );
+      setErrorSubtext(maxAmountMsg);
       showToast();
       return;
     }
@@ -260,49 +262,51 @@ const CreateAccountPaymentModal = ({
       setErrorText(
         isPurchase
           ? isEditMode
-            ? '지급 정보 수정에 실패했습니다.'
-            : '지급 정보 저장에 실패했습니다.'
+            ? t('errors.updatePaymentFailed')
+            : t('errors.createPaymentFailed')
           : isEditMode
-            ? '입금 정보 수정에 실패했습니다.'
-            : '입금 정보 저장에 실패했습니다.'
+            ? t('errors.updateDepositFailed')
+            : t('errors.createDepositFailed')
       );
-      setErrorSubtext(result.error || '알 수 없는 오류가 발생했습니다.');
+      setErrorSubtext(result.error || t('errors.unknownError'));
       showToast();
     }
   };
 
   const title = isPurchase
     ? isEditMode
-      ? '지급 정보 수정'
-      : '지급 정보 입력'
+      ? t('title.editPayment')
+      : t('title.createPayment')
     : isEditMode
-      ? '입금 정보 수정'
-      : '입금 정보 입력';
-  const expectedDateLabel = isPurchase ? '약정 지급일' : '약정 입금일';
-  const paymentDateLabel = isPurchase ? '지급일' : '입금일';
-  const amountLabel = isPurchase ? '지급 금액' : '받은 금액';
+      ? t('title.editDeposit')
+      : t('title.createDeposit');
+  const expectedDateLabel = isPurchase
+    ? t('labels.expectedPaymentDate')
+    : t('labels.expectedDepositDate');
+  const paymentDateLabel = isPurchase
+    ? t('labels.paymentDate')
+    : t('labels.depositDate');
+  const amountLabel = isPurchase
+    ? t('labels.paymentAmount')
+    : t('labels.receivedAmount');
   const amountPlaceholder = isPurchase
-    ? '지급 금액을 입력하세요.'
-    : '받은 금액을 입력하세요.';
-  const expectedDateError = isPurchase
-    ? '올바른 약정 지급일 형식을 입력해 주세요.'
-    : '올바른 약정 입금일 형식을 입력해 주세요.';
-  const paymentDateError = isPurchase
-    ? '올바른 지급일 형식을 입력해 주세요.'
-    : '올바른 입금일 형식을 입력해 주세요.';
+    ? t('placeholders.paymentAmount')
+    : t('placeholders.receivedAmount');
   const paymentDateRequired = isPurchase
-    ? '지급일을 입력해 주세요.'
-    : '입금일을 입력해 주세요.';
+    ? t('errors.paymentDateRequired')
+    : t('errors.depositDateRequired');
   const expectedDateRequired = isPurchase
-    ? '약정 지급일을 입력해 주세요.'
-    : '약정 입금일을 입력해 주세요.';
+    ? t('errors.expectedPaymentDateRequired')
+    : t('errors.expectedDepositDateRequired');
   const amountRequired = isPurchase
-    ? '지급 금액을 입력해 주세요.'
-    : '받은 금액을 입력해 주세요.';
+    ? t('errors.paymentAmountRequired')
+    : t('errors.receivedAmountRequired');
   const amountValidate = isPurchase
-    ? '지급 금액은 0보다 커야 합니다.'
-    : '받은 금액은 0보다 커야 합니다.';
-  const outstandingLabel = isPurchase ? '미지급액(잔액)' : '미수금액(잔액)';
+    ? t('errors.paymentAmountMin')
+    : t('errors.receivedAmountMin');
+  const outstandingLabel = isPurchase
+    ? t('labels.outstandingPayment')
+    : t('labels.outstandingDeposit');
 
   return (
     <>
@@ -315,7 +319,10 @@ const CreateAccountPaymentModal = ({
               rules={{
                 required: expectedDateRequired,
                 validate: (value) => {
-                  return isValidDateString(value) || expectedDateError;
+                  const errorMsg = isPurchase
+                    ? t('errors.expectedPaymentDateInvalid')
+                    : t('errors.expectedDepositDateInvalid');
+                  return isValidDateString(value) || errorMsg;
                 },
               }}
               render={({ field }) => (
@@ -340,7 +347,10 @@ const CreateAccountPaymentModal = ({
               rules={{
                 required: paymentDateRequired,
                 validate: (value) => {
-                  return isValidDateString(value) || paymentDateError;
+                  const errorMsg = isPurchase
+                    ? t('errors.paymentDateInvalid')
+                    : t('errors.depositDateInvalid');
+                  return isValidDateString(value) || errorMsg;
                 },
               }}
               render={({ field }) => (
@@ -398,13 +408,13 @@ const CreateAccountPaymentModal = ({
 
           <div className="flex justify-end gap-2 mt-5">
             <MiniBtn
-              text="취소"
+              text={tCommon('cancel')}
               onClick={onClose}
               variant="white"
               type="button"
             />
             <MiniBtn
-              text="저장"
+              text={tCommon('save')}
               variant="primary"
               disabled={isLoading}
               type="submit"

@@ -89,7 +89,7 @@ const InputSection = ({
               return (
                 <Input
                   label={tCommon('clientName')}
-                  placeholder={tInput('placeholders.clientName')}
+                  placeholder={`${tCommon('required')} ${tCommon('placeholders.clientName')}`}
                   required
                   showError={showErrors && !!errors.name}
                   value={field.value ?? ''}
@@ -145,7 +145,7 @@ const InputSection = ({
             render={({ field }) => (
               <Input
                 label={tCommon('businessRegistrationNumber')}
-                placeholder={tInput('placeholders.businessRegistrationNumber')}
+                placeholder={`${tCommon('required')} ${tCommon('placeholders.businessRegistrationNumber')}`}
                 required
                 showError={showErrors && !!errors.business_registration_number}
                 disabledReadOnly={isViewer || !hasSubscription()}
@@ -169,7 +169,7 @@ const InputSection = ({
           render={({ field }) => (
             <Input
               label={tCommon('representativeName')}
-              placeholder={tInput('placeholders.representativeName')}
+              placeholder={`${tCommon('required')} ${tCommon('placeholders.representativeName')}`}
               required
               showError={showErrors && !!errors.representative_name}
               disabledReadOnly={isViewer || !hasSubscription()}
@@ -190,7 +190,7 @@ const InputSection = ({
           render={({ field }) => (
             <Input
               label={tCommon('dueDate')}
-              placeholder={tInput('placeholders.dueDate')}
+              placeholder={`${tCommon('required')} ${tInput('placeholders.dueDate')}`}
               required
               showError={showErrors && !!errors.due_date}
               value={field.value ?? ''}
@@ -213,7 +213,7 @@ const InputSection = ({
           render={({ field }) => (
             <Input
               label={tCommon('businessType')}
-              placeholder={tInput('placeholders.businessType')}
+              placeholder={`${tCommon('required')} ${tCommon('placeholders.businessType')}`}
               showError={showErrors && !!errors.business_type}
               required
               disabledReadOnly={isViewer || !hasSubscription()}
@@ -229,7 +229,7 @@ const InputSection = ({
             <Input
               label={tCommon('businessCategory')}
               required
-              placeholder={tInput('placeholders.businessCategory')}
+              placeholder={`${tCommon('required')} ${tCommon('placeholders.businessCategory')}`}
               showError={showErrors && !!errors.business_category}
               disabledReadOnly={isViewer || !hasSubscription()}
               {...field}
@@ -245,7 +245,7 @@ const InputSection = ({
           render={({ field }) => (
             <Input
               label={tCommon('businessAddress')}
-              placeholder={tInput('placeholders.businessAddress')}
+              placeholder={`${tCommon('required')} ${tCommon('placeholders.businessAddress')}`}
               required
               showError={showErrors && !!errors.address}
               disabledReadOnly={isViewer || !hasSubscription()}
@@ -261,7 +261,7 @@ const InputSection = ({
           render={({ field }) => (
             <Input
               label={tCommon('managerName')}
-              placeholder={tInput('placeholders.managerName')}
+              placeholder={`${tCommon('required')} ${tInput('placeholders.managerName')}`}
               required
               showError={showErrors && !!errors.manager}
               disabledReadOnly={isViewer || !hasSubscription()}
@@ -281,7 +281,7 @@ const InputSection = ({
           render={({ field }) => (
             <Input
               label={tCommon('email')}
-              placeholder={tInput('placeholders.managerEmail')}
+              placeholder={`${tCommon('required')} ${tCommon('placeholders.email')}`}
               required
               showError={showErrors && !!errors.email}
               disabledReadOnly={isViewer || !hasSubscription()}
@@ -303,7 +303,7 @@ const InputSection = ({
           render={({ field }) => {
             return (
               <Input
-                placeholder={tInput('placeholders.phone')}
+                placeholder={tCommon('placeholders.phone')}
                 label={tCommon('phone')}
                 showError={showErrors && !!errors.phone}
                 value={field.value ?? ''}
@@ -331,7 +331,7 @@ const InputSection = ({
             return (
               <Input
                 label={tCommon('fax')}
-                placeholder={tInput('placeholders.fax')}
+                placeholder={tCommon('placeholders.fax')}
                 showError={showErrors && !!errors.fax}
                 value={field.value ?? ''}
                 onChange={(e) => {

@@ -39,7 +39,7 @@ export const ClientInfo = ({
               <InfoLabelValue
                 label={tCommon('companyName')}
                 isEditing={!isViewer && hasSubscription()}
-                placeholder={tClientInfo('placeholders.companyName')}
+                placeholder={`${tCommon('required')} ${tCommon('placeholders.companyName')}`}
                 required
                 {...field}
               />
@@ -56,9 +56,7 @@ export const ClientInfo = ({
               <InfoLabelValue
                 label={tCommon('businessRegistrationNumber')}
                 isEditing={!isViewer && hasSubscription()}
-                placeholder={tClientInfo(
-                  'placeholders.businessRegistrationNumber'
-                )}
+                placeholder={`${tCommon('required')} ${tCommon('placeholders.businessRegistrationNumber')}`}
                 required
                 value={field.value}
                 onChange={(e) => {
@@ -79,7 +77,7 @@ export const ClientInfo = ({
               <InfoLabelValue
                 label={tCommon('representativeName')}
                 isEditing={!isViewer && hasSubscription()}
-                placeholder={tClientInfo('placeholders.representativeName')}
+                placeholder={`${tCommon('required')} ${tCommon('placeholders.representativeName')}`}
                 required
                 {...field}
               />
@@ -95,7 +93,7 @@ export const ClientInfo = ({
               <InfoLabelValue
                 label={tCommon('email')}
                 isEditing={!isViewer && hasSubscription()}
-                placeholder={tClientInfo('placeholders.email')}
+                placeholder={tCommon('placeholders.email')}
                 {...field}
               />
             )}
@@ -112,7 +110,7 @@ export const ClientInfo = ({
               <InfoLabelValue
                 label={tCommon('phone')}
                 isEditing={!isViewer && hasSubscription()}
-                placeholder={tClientInfo('placeholders.phone')}
+                placeholder={tCommon('placeholders.phone')}
                 value={field.value}
                 onChange={(e) => {
                   const formatted = formatPhoneNumber(e.target.value);
@@ -130,7 +128,7 @@ export const ClientInfo = ({
               <InfoLabelValue
                 label={tCommon('fax')}
                 isEditing={!isViewer && hasSubscription()}
-                placeholder={tClientInfo('placeholders.fax')}
+                placeholder={tCommon('placeholders.fax')}
                 value={field.value}
                 onChange={(e) => {
                   const formatted = formatFaxNumber(e.target.value);
@@ -150,7 +148,7 @@ export const ClientInfo = ({
               <InfoLabelValue
                 label={tCommon('businessType')}
                 isEditing={!isViewer && hasSubscription()}
-                placeholder={tClientInfo('placeholders.businessType')}
+                placeholder={`${tCommon('required')} ${tCommon('placeholders.businessType')}`}
                 required
                 {...field}
               />
@@ -164,7 +162,7 @@ export const ClientInfo = ({
               <InfoLabelValue
                 label={tCommon('businessCategory')}
                 isEditing={!isViewer && hasSubscription()}
-                placeholder={tClientInfo('placeholders.businessCategory')}
+                placeholder={`${tCommon('required')} ${tCommon('placeholders.businessCategory')}`}
                 required
                 {...field}
               />
@@ -180,7 +178,7 @@ export const ClientInfo = ({
               <InfoLabelValue
                 label={tCommon('businessAddress')}
                 isEditing={!isViewer && hasSubscription()}
-                placeholder={tClientInfo('placeholders.businessAddress')}
+                placeholder={`${tCommon('required')} ${tCommon('placeholders.businessAddress')}`}
                 required
                 {...field}
               />
