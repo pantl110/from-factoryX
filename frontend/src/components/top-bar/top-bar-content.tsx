@@ -36,6 +36,7 @@ const TopBarContent = ({
 }: TopBarContentProps) => {
   const t = useTranslations('topBar');
   const tCommon = useTranslations('common');
+  const tProduction = useTranslations('production');
   const isProductionPlanValid = usePageStatusStore(
     (state) => state.isProductionPlanValid
   ); // 생산 계획 폼 유효성 검사 상태
@@ -96,8 +97,14 @@ const TopBarContent = ({
       }
     : {};
 
+  const productionPlanTab = tProduction('tabs.productionPlan');
+  const orderDocumentTab = tProduction('tabs.orderDocument');
+  const productionStatusTab = tProduction('tabs.productionStatus');
+  const productionHistoryTab = tProduction('tabs.productionHistory');
+  const deliveryTab = tProduction('tabs.delivery');
+
   const isProductionPlanSaveActive =
-    productionTab === '생산 계획' &&
+    productionTab === productionPlanTab &&
     pageStatus === 'pending' &&
     isProductionPlanValid;
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
@@ -124,7 +131,7 @@ const TopBarContent = ({
     );
   }
 
-  if (productionTab === '주문서') {
+  if (productionTab === orderDocumentTab) {
     return (
       <>
         <div className="relative" {...taxButtonMouseEvents}>
@@ -182,13 +189,13 @@ const TopBarContent = ({
     );
   }
 
-  if (productionTab === '생산 계획' && pageStatus === 'pending') {
+  if (productionTab === productionPlanTab && pageStatus === 'pending') {
     return (
       <>
         <div className="flex gap-2">
           <div className="relative" {...taxButtonMouseEvents}>
             <MiniBtn
-              text={taxId ? '세금계산서 보기' : '세금계산서 생성하기'}
+              text={taxId ? t('viewTaxInvoice') : t('createTaxInvoice')}
               variant="whiteOutline"
               onClick={() => {
                 if (
@@ -251,13 +258,13 @@ const TopBarContent = ({
     );
   }
 
-  if (productionTab === '생산 계획' && pageStatus === 'production') {
+  if (productionTab === productionPlanTab && pageStatus === 'production') {
     return (
       <>
         <div className="flex gap-2">
           <div className="relative" {...taxButtonMouseEvents}>
             <MiniBtn
-              text={taxId ? '세금계산서 보기' : '세금계산서 생성하기'}
+              text={taxId ? t('viewTaxInvoice') : t('createTaxInvoice')}
               variant="whiteOutline"
               onClick={() => {
                 if (
@@ -324,13 +331,13 @@ const TopBarContent = ({
     );
   }
 
-  if (productionTab === '생산 현황') {
+  if (productionTab === productionStatusTab) {
     return (
       <>
         <div className="flex gap-2">
           <div className="relative" {...taxButtonMouseEvents}>
             <MiniBtn
-              text={taxId ? '세금계산서 보기' : '세금계산서 생성하기'}
+              text={taxId ? t('viewTaxInvoice') : t('createTaxInvoice')}
               variant="whiteOutline"
               onClick={() => {
                 if (
@@ -394,13 +401,13 @@ const TopBarContent = ({
     );
   }
 
-  if (productionTab === '생산 내역') {
+  if (productionTab === productionHistoryTab) {
     return (
       <>
         <div className="flex gap-2">
           <div className="relative" {...taxButtonMouseEvents}>
             <MiniBtn
-              text={taxId ? '세금계산서 보기' : '세금계산서 생성하기'}
+              text={taxId ? t('viewTaxInvoice') : t('createTaxInvoice')}
               variant="whiteOutline"
               onClick={() => {
                 if (
@@ -491,13 +498,13 @@ const TopBarContent = ({
     );
   }
 
-  if (productionTab === '납품') {
+  if (productionTab === deliveryTab) {
     return (
       <>
         <div className="flex gap-2">
           <div className="relative" {...taxButtonMouseEvents}>
             <MiniBtn
-              text={taxId ? '세금계산서 보기' : '세금계산서 생성하기'}
+              text={taxId ? t('viewTaxInvoice') : t('createTaxInvoice')}
               variant="whiteOutline"
               onClick={() => {
                 if (
