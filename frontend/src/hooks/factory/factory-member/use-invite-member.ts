@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import useMemberStore from '@/store/member-store';
 import {
   InviteMemberModel,
@@ -13,14 +14,16 @@ interface InviteResponseModel {
 }
 
 const useInviteMember = () => {
+  const t = useTranslations('setting.systemSetting.permission.inviteModal.errors');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const factoryId = useMemberStore((state) => state.factoryId);
 
   const inviteMember = async (payload: InviteMemberModel) => {
     if (!factoryId) {
-      setError('공장 정보를 찾을 수 없습니다.');
-      return { success: false, error: '공장 정보를 찾을 수 없습니다.' };
+      const errorMsg = t('factoryNotFound');
+      setError(errorMsg);
+      return { success: false, error: errorMsg };
     }
 
     setIsLoading(true);
@@ -49,7 +52,7 @@ const useInviteMember = () => {
         return { success: false, error: errorMessage };
       }
     } catch {
-      const errorMessage = '서버 연결에 실패했습니다.';
+      const errorMessage = t('serverConnectionFailed');
       setError(errorMessage);
       return { success: false, error: errorMessage };
     } finally {

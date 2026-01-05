@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   LoginFormDataModel,
   LoginResponseModel,
@@ -27,6 +28,7 @@ interface UseLoginReturnModel {
 }
 
 export const useLogin = (): UseLoginReturnModel => {
+  const t = useTranslations('login.errors');
   const [isLoading, setIsLoading] = useState(false);
   const { setUserInfo, setAuthenticated } = useAuthStore();
   const { getFactoryList } = useGetFactoryList();
@@ -185,14 +187,14 @@ export const useLogin = (): UseLoginReturnModel => {
           } else {
             return {
               success: false,
-              error: '사용자 정보를 가져오는데 실패했습니다.',
+              error: t('userInfoFetchFailed'),
               field: 'email' as const,
             };
           }
         } catch {
           return {
             success: false,
-            error: '사용자 정보를 가져오는데 실패했습니다.',
+            error: t('userInfoFetchFailed'),
             field: 'email' as const,
           };
         }
@@ -213,14 +215,14 @@ export const useLogin = (): UseLoginReturnModel => {
             // 등록되지 않은 이메일
             return {
               success: false,
-              error: '입력하신 이메일로 가입된 계정이 존재하지 않습니다.',
+              error: t('accountNotFound'),
               field: 'email' as const,
             };
           } else if (errorData.detail.includes('탈퇴')) {
             // 탈퇴한 계정
             return {
               success: false,
-              error: '탈퇴한 계정입니다.',
+              error: t('accountWithdrawn'),
               field: 'email' as const,
             };
           } else {
@@ -233,7 +235,7 @@ export const useLogin = (): UseLoginReturnModel => {
         } else {
           return {
             success: false,
-            error: '로그인에 실패했습니다. 다시 시도해주세요.',
+            error: t('loginFailed'),
             field: 'email' as const,
           };
         }
@@ -241,7 +243,7 @@ export const useLogin = (): UseLoginReturnModel => {
     } catch {
       return {
         success: false,
-        error: '서버 연결에 실패했습니다. 다시 시도해주세요.',
+        error: t('errors.serverConnectionFailedRetry'),
         field: 'email' as const,
       };
     } finally {

@@ -1,6 +1,13 @@
 {
   "login": {
     "title": "Login",
+    "errors": {
+      "userInfoFetchFailed": "Failed to fetch user information.",
+      "loginFailed": "Login failed. Please try again.",
+      "accountNotFound": "No account found with the email you entered.",
+      "accountWithdrawn": "This account has been withdrawn.",
+      "serverConnectionFailedRetry": "Failed to connect to server. Please try again."
+    },
     "email": {
       "placeholder": "Please enter your email.",
       "required": "Please enter your email.",

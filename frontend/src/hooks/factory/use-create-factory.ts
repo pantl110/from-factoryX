@@ -1,4 +1,7 @@
+'use client';
+
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { FactoriesModel } from '@/types/data-model';
 import { useGetSubscriptionStatus } from '@/hooks';
 import useSubscriptionStore from '@/store/subscription-store';
@@ -8,6 +11,7 @@ interface CreateFactoryResponseModel {
 }
 
 const useCreateFactory = () => {
+  const t = useTranslations('common.errors');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { getSubscriptionStatus } = useGetSubscriptionStatus();
@@ -60,8 +64,9 @@ const useCreateFactory = () => {
         return { success: false, error: errorData.detail };
       }
     } catch {
-      setError('서버 연결에 실패했습니다.');
-      return { success: false, error: '서버 연결에 실패했습니다.' };
+      const errorMsg = t('serverConnectionFailed');
+      setError(errorMsg);
+      return { success: false, error: errorMsg };
     } finally {
       setIsLoading(false);
     }

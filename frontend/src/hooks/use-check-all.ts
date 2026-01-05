@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 
 /**
  * 테이블 전체 선택/해제 및 개별 선택을 관리하는 커스텀 훅
@@ -11,6 +12,7 @@ export function useCheckAll<T extends string | number>(
   itemIds: T[],
   getDeleteButtonText?: (checkedCount: number, isAllChecked: boolean) => string
 ) {
+  const t = useTranslations('common');
   const [checkedIds, setCheckedIds] = useState<T[]>([]);
 
   const isAllChecked =
@@ -27,9 +29,9 @@ export function useCheckAll<T extends string | number>(
       return getDeleteButtonText(checkedCount, isAllChecked);
     }
     // 기본값 (번역 함수가 없을 때)
-    if (checkedCount === 0) return '삭제';
-    if (isAllChecked) return '전체 삭제';
-    return `${checkedCount}개 항목 삭제`;
+    if (checkedCount === 0) return t('delete');
+    if (isAllChecked) return t('deleteAll');
+    return t('deleteItems', { count: checkedCount });
   };
 
   // 전체 토글

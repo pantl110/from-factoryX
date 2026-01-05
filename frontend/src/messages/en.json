@@ -14,6 +14,10 @@
     "loading": "Loading...",
     "error": "An error occurred",
     "success": "Completed successfully",
+    "errors": {
+      "serverConnectionFailed": "Failed to connect to server.",
+      "factoryIdNotSet": "Factory ID is not set."
+    },
     "clientName": "Client Name",
     "client": "Client",
     "productName": "Product Name",
@@ -1868,7 +1872,9 @@
             "cannotInviteSubtext": "They are an administrator or already belong to another factory.",
             "inviteFailed": "Invitation failed.",
             "inviteError": "An error occurred while processing the invitation.",
-            "tryAgain": "Please try again later."
+            "tryAgain": "Please try again later.",
+            "factoryNotFound": "Factory information not found.",
+            "serverConnectionFailed": "Failed to connect to server."
           }
         },
         "deleteTeamMemberModal": {

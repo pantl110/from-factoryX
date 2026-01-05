@@ -1,4 +1,7 @@
+'use client';
+
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface DeleteMemberResponseModel {
   message: string;
@@ -6,6 +9,7 @@ interface DeleteMemberResponseModel {
 }
 
 const useDeleteMember = () => {
+  const t = useTranslations('common.errors');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,7 +39,7 @@ const useDeleteMember = () => {
         return { success: false, error: errorMessage };
       }
     } catch {
-      const errorMessage = '서버 연결에 실패했습니다.';
+      const errorMessage = t('serverConnectionFailed');
       setError(errorMessage);
       return { success: false, error: errorMessage };
     } finally {
