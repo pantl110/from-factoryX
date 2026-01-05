@@ -14,12 +14,13 @@ import {
 } from '@phosphor-icons/react';
 import { useToast } from '@/hooks';
 import Toast from './toast';
+import Spinner from './spinner';
 
 interface DropzoneProps {
   variant?: 'default' | 'location';
   fileCount?: number;
   onClose?: () => void;
-  onComplete?: (files: File[]) => void;
+  onComplete?: (files: File[]) => void | Promise<void>;
   accept?: Record<string, string[]>;
   onFileUpload?: (hasFiles: boolean) => void;
 }
@@ -33,10 +34,12 @@ const DropzoneArea = ({
   onFileUpload,
 }: DropzoneProps) => {
   const t = useTranslations('dropzone');
+  const tCommon = useTranslations('common');
   const [files, setFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { isToastOpen, isVisible, showToast } = useToast();
   const [pendingFiles, setPendingFiles] = useState<File[] | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
@@ -56,13 +59,31 @@ const DropzoneArea = ({
 
       // variant가 'location'이고 onComplete가 있으면 업로드 처리
       if (variant === 'location' && onComplete && newFiles.length > 0) {
+        // 업로드 시작 - 파일 목록 숨기고 로딩 표시
+        setIsUploading(true);
+        setFiles([]);
+
         if (shouldShowToast) {
           // 토스트가 표시되는 경우 2000ms 후에 처리
           setPendingFiles(newFiles);
         } else {
           // 토스트가 없는 경우 바로 처리
-          onComplete(newFiles);
-          setFiles([]); // 파일 목록 초기화
+          const result = onComplete(newFiles);
+          // Promise인 경우 완료 후 로딩 해제
+          if (result instanceof Promise) {
+            result
+              .then(() => {
+                setIsUploading(false);
+              })
+              .catch(() => {
+                // 에러 발생 시 로딩 해제 및 파일 목록 복원
+                setIsUploading(false);
+                setFiles(newFiles);
+              });
+          } else {
+            // 동기 함수인 경우 바로 로딩 해제
+            setIsUploading(false);
+          }
         }
         return;
       }
@@ -98,13 +119,31 @@ const DropzoneArea = ({
 
     // variant가 'location'이고 onComplete가 있으면 업로드 처리
     if (variant === 'location' && onComplete && uniqueNewFiles.length > 0) {
+      // 업로드 시작 - 파일 목록 숨기고 로딩 표시
+      setIsUploading(true);
+      setFiles([]);
+
       if (shouldShowToast) {
         // 토스트가 표시되는 경우 2000ms 후에 처리
         setPendingFiles(uniqueNewFiles);
       } else {
         // 토스트가 없는 경우 바로 처리
-        onComplete(uniqueNewFiles);
-        setFiles([]); // 파일 목록 초기화
+        const result = onComplete(uniqueNewFiles);
+        // Promise인 경우 완료 후 로딩 해제
+        if (result instanceof Promise) {
+          result
+            .then(() => {
+              setIsUploading(false);
+            })
+            .catch(() => {
+              // 에러 발생 시 로딩 해제 및 파일 목록 복원
+              setIsUploading(false);
+              setFiles(uniqueNewFiles);
+            });
+        } else {
+          // 동기 함수인 경우 바로 로딩 해제
+          setIsUploading(false);
+        }
       }
       // input 초기화
       if (fileInputRef.current) {
@@ -127,9 +166,22 @@ const DropzoneArea = ({
   // pendingFiles가 설정되면 2000ms 후에 처리
   React.useEffect(() => {
     if (pendingFiles && onComplete && variant === 'location') {
-      const timer = setTimeout(() => {
-        onComplete(pendingFiles);
-        setFiles([]);
+      const timer = setTimeout(async () => {
+        const result = onComplete(pendingFiles);
+        // Promise인 경우 완료 후 로딩 해제
+        if (result instanceof Promise) {
+          try {
+            await result;
+            setIsUploading(false);
+          } catch {
+            // 에러 발생 시 로딩 해제 및 파일 목록 복원
+            setIsUploading(false);
+            setFiles(pendingFiles);
+          }
+        } else {
+          // 동기 함수인 경우 바로 로딩 해제
+          setIsUploading(false);
+        }
         setPendingFiles(null);
       }, 2000);
 
@@ -170,8 +222,15 @@ const DropzoneArea = ({
 
   return (
     <>
-      {/* 파일 목록이 없을 때만 드래그 영역 표시 */}
-      {files.length === 0 && (
+      {/* 업로드 중일 때 로딩 표시 */}
+      {isUploading && variant === 'location' && (
+        <div className="h-30 rounded-lg border-2 border-dashed border-lg flex flex-col gap-2 justify-center items-center">
+          <Spinner />
+        </div>
+      )}
+
+      {/* 파일 목록이 없고 업로드 중이 아닐 때만 드래그 영역 표시 */}
+      {files.length === 0 && !isUploading && (
         <div
           {...getRootProps()}
           className={`${variant === 'location' ? 'h-30' : 'h-60'} rounded-lg border-2 border-dashed ${variant === 'location' ? 'border-lg' : 'border-gr'} flex flex-col gap-2 justify-center items-center ${

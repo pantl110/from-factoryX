@@ -103,7 +103,7 @@ const StockLocationModal = ({
           id: id as number,
           location: data.location,
           detail_location: data.detail_location || undefined,
-          memo: data.memo || undefined,
+          memo: data.memo.trim() === '' ? '' : data.memo || undefined,
           images,
         });
 
@@ -123,7 +123,7 @@ const StockLocationModal = ({
           type,
           location: data.location,
           detail_location: data.detail_location || undefined,
-          memo: data.memo || undefined,
+          memo: data.memo.trim() === '' ? '' : data.memo || undefined,
           images,
         });
 
@@ -161,12 +161,20 @@ const StockLocationModal = ({
             result.object_url || ''
         );
 
+      if (uploadedUrls.length === 0) {
+        // 업로드 실패한 경우
+        console.error('파일 업로드에 실패했습니다.');
+        throw new Error('파일 업로드에 실패했습니다.');
+      }
+
       // 기존 이미지와 새로 업로드된 이미지 합치기
       const newImages = [...images, ...uploadedUrls];
       setImages(newImages);
       setValue('images', newImages);
-    } catch {
+    } catch (error) {
       // 에러 처리
+      console.error('파일 업로드 중 오류가 발생했습니다:', error);
+      throw error; // 에러를 다시 throw하여 DropzoneArea에서 처리할 수 있도록
     }
   };
 
