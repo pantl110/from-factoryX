@@ -7,7 +7,8 @@ export const getRoleText = (
 
   if (t) {
     const roleKey = role as 'admin' | 'manager' | 'prod_manager' | 'viewer';
-    return t(`setting.systemSetting.permission.roles.${roleKey}`) || '-';
+    // t는 이미 네임스페이스를 포함하고 있으므로 roles.${roleKey}만 전달
+    return t(`roles.${roleKey}`) || '-';
   }
 
   // fallback: 번역 함수가 없으면 한국어 반환
