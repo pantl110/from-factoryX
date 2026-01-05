@@ -213,8 +213,7 @@ const TopBarContent = ({
             {taxTooltip.isVisible && shouldShowTooltip && (
               <div className="absolute z-50 top-12 -right-[120px] w-[350px]">
                 <Tooltip
-                  text={`Partners 플랜으로 업그레이드하면 
-                  세무/회계 기능을 사용할 수 있어요.`}
+                  text={t('upgradeTooltip')}
                   color="white"
                   position="right"
                 />
@@ -282,8 +281,7 @@ const TopBarContent = ({
             {taxTooltip.isVisible && shouldShowTooltip && (
               <div className="absolute z-50 top-12 -right-[120px] w-[350px]">
                 <Tooltip
-                  text={`Partners 플랜으로 업그레이드하면 
-                  세무/회계 기능을 사용할 수 있어요.`}
+                  text={t('upgradeTooltip')}
                   color="white"
                   position="right"
                 />
@@ -355,8 +353,7 @@ const TopBarContent = ({
             {taxTooltip.isVisible && shouldShowTooltip && (
               <div className="absolute z-50 top-12 -right-[120px] w-[350px]">
                 <Tooltip
-                  text={`Partners 플랜으로 업그레이드하면 
-                  세무/회계 기능을 사용할 수 있어요.`}
+                  text={t('upgradeTooltip')}
                   color="white"
                   position="right"
                 />
@@ -425,8 +422,7 @@ const TopBarContent = ({
             {taxTooltip.isVisible && shouldShowTooltip && (
               <div className="absolute z-50 top-12 -right-[120px] w-[350px]">
                 <Tooltip
-                  text={`Partners 플랜으로 업그레이드하면 
-                  세무/회계 기능을 사용할 수 있어요.`}
+                  text={t('upgradeTooltip')}
                   color="white"
                   position="right"
                 />
@@ -436,7 +432,7 @@ const TopBarContent = ({
 
           {pageStatus === 'manufactured' && (
             <MiniBtn
-              text="다음"
+              text={tCommon('next')}
               variant="secondary"
               onClick={async () => {
                 // 먼저 생산 내역 저장
@@ -522,8 +518,7 @@ const TopBarContent = ({
             {taxTooltip.isVisible && shouldShowTooltip && (
               <div className="absolute z-50 top-12 -right-[120px] w-[350px]">
                 <Tooltip
-                  text={`Partners 플랜으로 업그레이드하면 
-                  세무/회계 기능을 사용할 수 있어요.`}
+                  text={t('upgradeTooltip')}
                   color="white"
                   position="right"
                 />
@@ -531,7 +526,7 @@ const TopBarContent = ({
             )}
           </div>
           <MiniBtn
-            text="반품 등록하기"
+            text={t('registerReturn')}
             variant="red"
             onClick={() => setAddReturnModalOpen(true)}
             disabled={isViewer || !hasSubscription()}
