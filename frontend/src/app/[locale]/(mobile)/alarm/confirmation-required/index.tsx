@@ -82,7 +82,7 @@ const ConfirmationRequired = ({
     <div className="flex flex-col gap-1 pt-4">
       <Title
         icon={<CalendarDots />}
-        title={t('needsProgress')}
+        title={t('confirmationRequired')}
         count={projects.length}
       />
 

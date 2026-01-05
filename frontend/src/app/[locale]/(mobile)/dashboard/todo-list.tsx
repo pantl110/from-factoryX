@@ -11,8 +11,8 @@ interface TodoListProps {
 }
 
 const TodoList = ({ data }: TodoListProps) => {
-  const t = useTranslations('mobile.dashboard.todoList');
-  const tCommon = useTranslations('common');
+  const t = useTranslations('mobile.alarm.tabs');
+  const tAlarm = useTranslations('mobile.alarm');
   const router = useRouter();
 
   return (
@@ -39,14 +39,14 @@ const TodoList = ({ data }: TodoListProps) => {
       {/* </div> */}
       {/* <div className="flex gap-2.5"> */}
       <TodoListItem
-        title={t('needsProgress')}
+        title={t('confirmationRequired')}
         count={data.stale_confirmed_projects}
         onClick={() => {
           router.push('/alarm?tab=confirmation-required');
         }}
       />
       <TodoListItem
-        title={tCommon('expirationDate')}
+        title={t('expiry')}
         count={data.expiry_risk_materials}
         onClick={() => {
           router.push('/alarm?tab=expiry');
@@ -56,7 +56,7 @@ const TodoList = ({ data }: TodoListProps) => {
 
       {/* 버튼 */}
       <MoBtn
-        text={t('viewMoreNotifications')}
+        text={tAlarm('viewMoreNotifications')}
         variant="outline"
         icon={<CaretRight />}
         width="w-full"

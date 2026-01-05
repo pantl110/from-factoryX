@@ -18,7 +18,7 @@ type MoChipVariantType = ComponentProps<typeof MoChip>['variant'];
 
 const MaterialInfo = ({ material, isLoading }: MaterialInfoProps) => {
   const t = useTranslations('common');
-  const tStock = useTranslations('stock.materialDetail');
+  const tStock = useTranslations('stock.material');
   const stockStatus = useMemo(() => {
     const status = getMaterialStockStatus({
       currentStock: material?.current_stock ?? null,
@@ -45,11 +45,20 @@ const MaterialInfo = ({ material, isLoading }: MaterialInfoProps) => {
             | 'orange'
             | 'purple') || 'outline';
 
+    // status를 번역 키로 변환 ('과재고' -> 'overstock', '충분' -> 'sufficient', '위험' -> 'risk', '부족' -> 'shortage')
+    const statusKeyMap: Record<string, string> = {
+      과재고: 'overstock',
+      충분: 'sufficient',
+      위험: 'risk',
+      부족: 'shortage',
+    };
+    const statusKey = statusKeyMap[status] || status;
+
     return {
-      text: status,
+      text: t(`inventoryStatus.${statusKey}`),
       variant,
     };
-  }, [material]);
+  }, [material, t]);
 
   const currentStock = useMemo(() => {
     if (typeof material?.current_stock === 'number') {
@@ -90,11 +99,25 @@ const MaterialInfo = ({ material, isLoading }: MaterialInfoProps) => {
     }
     const variant: MoChipVariantType =
       expiryStatus === 'warning' ? 'red-secondary' : 'secondary';
-    const text =
-      material?.expiry_status ??
-      (expiryStatus === 'warning'
-        ? tStock('expiryStatus.risk')
-        : tStock('expiryStatus.safe'));
+
+    // material?.expiry_status가 있으면 번역, 없으면 expiryStatus 기반으로 번역
+    let text: string;
+    if (material?.expiry_status) {
+      // '위험' -> 'risk', '양호' -> 'safe'로 매핑하여 번역
+      const expiryStatusKeyMap: Record<string, string> = {
+        위험: 'risk',
+        양호: 'safe',
+      };
+      const statusKey =
+        expiryStatusKeyMap[material.expiry_status] || material.expiry_status;
+      text = tStock(`expiryStatus.${statusKey}`);
+    } else {
+      text =
+        expiryStatus === 'warning'
+          ? tStock('expiryStatus.risk')
+          : tStock('expiryStatus.safe');
+    }
+
     return { text, variant };
   }, [expiryStatus, material?.expiry_status, tStock]);
 
@@ -149,7 +172,7 @@ const MaterialInfo = ({ material, isLoading }: MaterialInfoProps) => {
             }
           />
           <LabelInfo
-            label={tStock('expirationDateStatus')}
+            label={t('expiryStatus')}
             value={!expiryChip ? '-' : undefined}
             chip={
               expiryChip ? (

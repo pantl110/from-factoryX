@@ -104,6 +104,7 @@
     "warehouseLocation": "Location",
     "warehouseImage": "Warehouse Image",
     "expirationDate": "Exp. Date",
+    "expiryStatus": "Exp. Status",
     "days": " days",
     "inventoryStatus": {
       "overstock": "Overstock",
@@ -2081,12 +2082,6 @@
       "memo": "Memo",
       "salesStatus": {
         "todayTotal": "There are {count} items today"
-      },
-      "todoList": {
-        "deliveryStatus": "Delivery Status",
-        "rop": "ROP",
-        "needsProgress": "Needs Progress",
-        "viewMoreNotifications": "View More Notifications"
       }
     },
     "orderInfo": {
@@ -2129,7 +2124,7 @@
         "deliveryStatus": "Delivery Status",
         "rop": "ROP",
         "expiry": "Expiry",
-        "needsProgress": "Needs Progress"
+        "confirmationRequired": "Confirmation Required"
       },
       "noRopNotifications": "No ROP notifications.",
       "materialShortage": "Material shortage!",
@@ -2143,7 +2138,8 @@
       "noConfirmationNotifications": "No confirmation required notifications.",
       "checkConfirmationStatus": "Please check the confirmation status.",
       "orderConfirmedForDays": "Order has been confirmed for {days} days!",
-      "viewMore": "View More"
+      "viewMore": "View More",
+      "viewMoreNotifications": "View More Notifications"
     }
   }
 }

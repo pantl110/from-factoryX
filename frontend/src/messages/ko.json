@@ -104,6 +104,7 @@
     "warehouseLocation": "창고 위치",
     "warehouseImage": "창고 사진",
     "expirationDate": "유통기한",
+    "expiryStatus": "유통기한 상태",
     "days": "일",
     "inventoryStatus": {
       "overstock": "과재고",
@@ -2082,12 +2083,6 @@
       "memo": "메모",
       "salesStatus": {
         "todayTotal": "오늘 총 {count}건이 있어요"
-      },
-      "todoList": {
-        "deliveryStatus": "납품 현황",
-        "rop": "ROP",
-        "needsProgress": "진행 필요",
-        "viewMoreNotifications": "알림 더 보기"
       }
     },
     "orderInfo": {
@@ -2130,7 +2125,7 @@
         "deliveryStatus": "납품 현황",
         "rop": "ROP",
         "expiry": "유통기한",
-        "needsProgress": "진행 필요"
+        "confirmationRequired": "진행 필요"
       },
       "noRopNotifications": "ROP 알림이 없어요.",
       "materialShortage": "자재가 부족해요!",
@@ -2144,7 +2139,8 @@
       "noConfirmationNotifications": "진행 필요 알림이 없어요.",
       "checkConfirmationStatus": "확정 상태를 확인해 주세요.",
       "orderConfirmedForDays": "주문이 {days}일째 확정 상태예요!",
-      "viewMore": "더 보기"
+      "viewMore": "더 보기",
+      "viewMoreNotifications": "알림 더 보기"
     }
   }
 }
