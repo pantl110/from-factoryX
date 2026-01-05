@@ -62,7 +62,7 @@ const ProductItem = ({
         onClick={!onlyRead ? onClick : undefined}
       >
         <td
-          className={`flex-[1.2] px-3 flex items-center gap-1 relative ${onlyRead ? 'break-words' : 'truncate'}`}
+          className="flex-1 px-3 flex items-center gap-1 relative min-w-0"
           title={data?.product_name}
           onClick={
             !onlyRead
@@ -75,16 +75,14 @@ const ProductItem = ({
         >
           {data?.product_name ? (
             <>
-              <p className={`${onlyRead ? 'break-words' : 'truncate'}`}>
-                {data.product_name}
-              </p>
+              <p className="truncate min-w-0 flex-1">{data.product_name}</p>
               {!onlyRead && (
                 <div
                   onClick={(e) => {
                     e.stopPropagation();
                     onProductDetailClick?.(data?.productId || null);
                   }}
-                  className="opacity-0 group-hover:opacity-100 w-9 h-9 flex items-center justify-center rounded-[8px] hover:bg-bg cursor-pointer transition-all duration-200 ease-in-out"
+                  className="opacity-0 group-hover:opacity-100 w-9 h-9 flex items-center justify-center rounded-[8px] hover:bg-bg cursor-pointer transition-all duration-200 ease-in-out flex-shrink-0"
                 >
                   <ArrowLineUpRight size={16} />
                 </div>
@@ -94,7 +92,7 @@ const ProductItem = ({
             <input
               type="text"
               placeholder={tProductItem('searchProductName')}
-              className="w-full outline-none"
+              className="w-full outline-none min-w-0"
               value={searchTerm}
               onChange={(e) => {
                 handleSearchTermChange(e.target.value);
@@ -103,30 +101,27 @@ const ProductItem = ({
             />
           )}
         </td>
-        <td className="flex-[1.2] px-3">
+        <td className="flex-1 px-3 min-w-0">
           <p
-            className={`w-full ${onlyRead ? 'break-words' : 'truncate'}`}
+            className="w-full truncate min-w-0"
             title={data?.product_code || ''}
           >
             {data?.product_code || ''}
           </p>
         </td>
-        <td className="flex-1 px-3">
-          <p
-            className={`w-full ${onlyRead ? 'break-words' : 'truncate'}`}
-            title={data?.spec || ''}
-          >
+        <td className="flex-1 px-3 min-w-0">
+          <p className="w-full truncate min-w-0" title={data?.spec || ''}>
             {data?.spec || ''}
           </p>
         </td>
 
         <td
-          className="flex-1 px-3"
+          className="flex-1 px-3 min-w-0"
           onClick={!onlyRead ? (e) => e.stopPropagation() : undefined}
         >
           {onlyRead ? (
             <p
-              className="w-full break-words"
+              className="w-full truncate min-w-0"
               title={
                 data?.quantity === 0
                   ? ''
@@ -146,8 +141,7 @@ const ProductItem = ({
                   ? ''
                   : data?.quantity?.toLocaleString() || ''
               }
-              className="w-full outline-none min-w-0 max-w-full overflow-hidden text-ellipsis"
-              style={{ width: '100%', maxWidth: '100%' }}
+              className="w-full outline-none min-w-0"
               onChange={(e) => {
                 const { value } = e.target;
                 const numericValue = value.replace(/[^0-9]/g, '');
@@ -157,21 +151,18 @@ const ProductItem = ({
             />
           )}
         </td>
-        <td className="flex-1 px-3">
-          <p
-            className={`w-full ${onlyRead ? 'break-words' : 'truncate'}`}
-            title={data?.unit || ''}
-          >
+        <td className="flex-[0.8] px-3 min-w-0">
+          <p className="w-full truncate min-w-0" title={data?.unit || ''}>
             {data?.unit || ''}
           </p>
         </td>
         <td
-          className="flex-1 px-3"
+          className="flex-1 px-3 min-w-0"
           onClick={!onlyRead ? (e) => e.stopPropagation() : undefined}
         >
           {onlyRead ? (
             <p
-              className="w-full break-words"
+              className="w-full truncate min-w-0"
               title={
                 data?.unit_price === 0
                   ? ''
@@ -191,8 +182,7 @@ const ProductItem = ({
                   ? ''
                   : data?.unit_price?.toLocaleString() || ''
               }
-              className="w-full outline-none min-w-0 max-w-full overflow-hidden text-ellipsis"
-              style={{ width: '100%', maxWidth: '100%' }}
+              className="w-full outline-none min-w-0"
               onChange={(e) => {
                 const { value } = e.target;
                 const numericValue = value.replace(/[^0-9]/g, '');
@@ -204,7 +194,7 @@ const ProductItem = ({
         </td>
         <td className="flex-1 px-3 min-w-0">
           <p
-            className={`w-full min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap ${onlyRead ? 'break-words' : 'truncate'}`}
+            className="w-full truncate min-w-0"
             title={
               data?.quantity && data?.unit_price
                 ? (data.quantity * data.unit_price).toLocaleString()
