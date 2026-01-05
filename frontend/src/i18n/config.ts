@@ -5,8 +5,8 @@ import { getRequestConfig } from 'next-intl/server';
 export const locales = ['ko', 'en'] as const;
 export type LocaleType = (typeof locales)[number];
 
-// 기본 언어
-export const defaultLocale: LocaleType = 'ko';
+// 기본 언어 (브라우저 언어가 한국어가 아닐 때 사용)
+export const defaultLocale: LocaleType = 'en';
 
 // 라우팅 설정
 export const routing = {

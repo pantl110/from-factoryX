@@ -12,6 +12,7 @@ import FactoryXLogo from '@/ui/icons/factory-x-logo';
 import { LoginFormDataModel } from '@/types/data-model';
 import { useLogin } from '@/hooks/users/use-login';
 import useAuthStore from '@/store/auth-store';
+import Spinner from '@/ui/spinner';
 
 const LoginPage = () => {
   const t = useTranslations('login');
@@ -51,12 +52,14 @@ const LoginPage = () => {
     if (result.success) {
       // 사용자 언어 설정 확인 및 locale 변경
       if (result.userInfo?.language) {
-        // 백엔드 언어 형식을 locale로 변환 (korean -> ko, english -> en)
+        // 백엔드 언어 형식을 locale로 변환 ('korean'/'english' 또는 'ko'/'en' 모두 처리)
         const languageMap: Record<string, string> = {
           korean: 'ko',
           english: 'en',
+          ko: 'ko',
+          en: 'en',
         };
-        const userLocale = languageMap[result.userInfo.language] || 'ko';
+        const userLocale = languageMap[result.userInfo.language] || 'en';
 
         // 로그인 성공 후 이동할 경로 결정
         const targetPath =
@@ -94,6 +97,11 @@ const LoginPage = () => {
 
   return (
     <>
+      {isLoading && (
+        <div className="fixed inset-0 z-[50] bg-bl/30 flex items-center justify-center">
+          <Spinner />
+        </div>
+      )}
       <div className="flex min-h-screen">
         <div className="flex-[0.8] bg-primary flex flex-col items-center justify-center">
           <FactoryXLogo width={168.908} height={30.558} color="white" />

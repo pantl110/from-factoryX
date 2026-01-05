@@ -3,11 +3,13 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { routing } from './i18n/config';
 
-// 쿠키를 사용하지 않고 URL 기반으로만 locale 관리
+// 브라우저 언어 감지 활성화 (한국어일 때만 'ko', 그 외에는 'en')
 const intlMiddleware = createMiddleware({
   ...routing,
-  // localeDetection을 false로 설정하여 쿠키 사용 비활성화
-  localeDetection: false,
+  // 브라우저 언어 자동 감지 활성화
+  localeDetection: true,
+  // 기본값을 'en'으로 설정 (한국어가 아닐 때)
+  defaultLocale: 'en',
 });
 
 export default function middleware(request: NextRequest) {

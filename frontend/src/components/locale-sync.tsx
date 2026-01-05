@@ -39,7 +39,7 @@ const LocaleSync = () => {
       ko: 'ko',
       en: 'en',
     };
-    const userLocale = languageMap[userInfo.language] || 'ko';
+    const userLocale = languageMap[userInfo.language] || 'en';
 
     // userInfo.language가 실제로 변경되었을 때만 실행
     if (previousUserLanguage.current === userInfo.language) {
@@ -64,7 +64,7 @@ const LocaleSync = () => {
       return;
     }
 
-    // userInfo.language가 변경된 경우 (언어 설정에서 변경)
+    // userInfo.language가 변경된 경우 (언어 설정에서 변경 또는 로그인 후)
     previousUserLanguage.current = userInfo.language;
     hasSyncedAfterLogin.current = false;
     // currentLocale이 이미 userLocale과 같으면 변경하지 않음
