@@ -113,6 +113,7 @@ const FacilityDropdown = ({
             key={`${equipment.id}-${index}`}
             text={`${equipment.name}`}
             onClick={() => handleSelectEquipment(equipment)}
+            breakWords={true}
           />
         ))}
       </Dropdown>
