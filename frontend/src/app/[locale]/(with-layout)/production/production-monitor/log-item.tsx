@@ -1,6 +1,7 @@
 import { ProjectLogResponseModel } from '@/types/data-model';
 import { formatRelativeTime } from '@/hooks';
 import { CubeFocus, NoteBlankIcon, Swap } from '@phosphor-icons/react/dist/ssr';
+import { useTranslations } from 'next-intl';
 
 interface LogItemProps {
   onClick?: () => void;
@@ -9,6 +10,16 @@ interface LogItemProps {
 }
 
 const LogItem = ({ onClick, isSelected, log }: LogItemProps) => {
+  const tCommon = useTranslations('common');
+  const t = (key: string, values?: Record<string, unknown>) => {
+    // formatRelativeTime passes full path like 'common.relativeTime.justNow'
+    // Extract just the key part (e.g., 'justNow')
+    const keyPart = key.includes('.') ? key.split('.').pop() || key : key;
+    return tCommon(
+      `relativeTime.${keyPart}`,
+      values as Record<string, string | number | Date> | undefined
+    );
+  };
   // Korean and English type to icon key mapping
   const getIconKey = (type: string) => {
     switch (type) {
@@ -73,7 +84,7 @@ const LogItem = ({ onClick, isSelected, log }: LogItemProps) => {
             {log.content}
           </p>
           <p className="flex items-end Re_Body-1 text-sv flex-shrink-0">
-            {formatRelativeTime(log.updated_at || log.created_at || '')}
+            {formatRelativeTime(log.updated_at || log.created_at || '', t)}
           </p>
         </div>
       </div>
