@@ -1166,6 +1166,7 @@
       },
       "subMaterials": {
         "title": "대체 가능한 자재",
+        "connectButton": "자재 연결",
         "tableHeader": {
           "stockQuantity": "재고 수량",
           "stockStatus": "재고 상태"

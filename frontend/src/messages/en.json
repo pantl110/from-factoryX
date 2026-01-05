@@ -1165,6 +1165,7 @@
       },
       "subMaterials": {
         "title": "Substitute Materials",
+        "connectButton": "Link Material",
         "tableHeader": {
           "stockQuantity": "Stock Qty",
           "stockStatus": "Status"
@@ -1791,8 +1792,8 @@
       },
       "general": {
         "editPhoto": {
-          "changePhoto": "Change Profile Photo",
-          "deletePhoto": "Delete Profile Photo"
+          "changePhoto": "Change",
+          "deletePhoto": "Delete"
         },
         "deleteAccountModal": {
           "title": "Delete your account?",
