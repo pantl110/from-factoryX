@@ -6,7 +6,7 @@ import { CameraIcon, Pencil } from '@phosphor-icons/react';
 import { useState, useEffect, useRef } from 'react';
 // import PhotoUploadModal from './modals/photo-upload-modal';
 import ProfileImage from '@/ui/profile-image';
-import { formatPhoneNumber } from '@/utils';
+import { formatPhoneNumber, getRoleText } from '@/utils';
 import useToast from '@/hooks/use-toast';
 import Toast from '@/ui/toast';
 import { CheckCircle } from '@phosphor-icons/react';
@@ -25,10 +25,6 @@ const Profile = ({ userInfo }: ProfileProps) => {
   const tPermission = useTranslations('setting.systemSetting.permission');
   const role = useMemberStore((state) => state.role);
 
-  // 번역 키 목록
-  const roleKeys = ['admin', 'manager', 'prod_manager', 'viewer'] as const;
-  type RoleKeyType = (typeof roleKeys)[number];
-
   // 한국어 역할명 -> 번역 키 매핑
   const roleKeyMap: Record<string, string> = {
     '시스템 관리자': 'admin',
@@ -37,22 +33,13 @@ const Profile = ({ userInfo }: ProfileProps) => {
     조회자: 'viewer',
   };
 
-  // 타입 가드 함수
-  const isRoleKey = (role: string): role is RoleKeyType => {
-    return (roleKeys as readonly string[]).includes(role);
-  };
-
-  const getRoleText = (role: string | null | undefined) => {
+  const getTranslatedRoleText = (role: string | null | undefined) => {
     if (!role) return '-';
 
-    // 이미 번역 키인 경우 (admin, manager, prod_manager, viewer)
-    if (isRoleKey(role)) {
-      return tPermission(`roles.${role}`);
-    }
-
-    // 한국어 역할명인 경우 매핑
+    // 한국어 역할명인 경우 번역 키로 변환
     const key = roleKeyMap[role];
-    return key ? tPermission(`roles.${key}`) : role;
+    const roleKey = key || role;
+    return getRoleText(roleKey, tPermission);
   };
 
   const { isToastOpen, isVisible, showToast } = useToast();
@@ -215,7 +202,7 @@ const Profile = ({ userInfo }: ProfileProps) => {
               />
               <Input
                 label={tCommon('role')}
-                value={getRoleText(role)}
+                value={getTranslatedRoleText(role)}
                 disabledSetting={true}
                 required
               />

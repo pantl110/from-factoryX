@@ -2,6 +2,7 @@ import {
   QuotationProductDetailResponseModel,
   ClientModel,
 } from '@/types/data-model';
+import { useTranslations } from 'next-intl';
 import './pdf-styles.css';
 
 interface OrderDocumentPDFViewProps {
@@ -23,6 +24,8 @@ const OrderDocumentPDFView = ({
   supplyAmount,
   taxAmount,
 }: OrderDocumentPDFViewProps) => {
+  const t = useTranslations('common');
+
   return (
     <div className="pdf-container">
       {/* 문서 제목 */}
@@ -32,14 +35,14 @@ const OrderDocumentPDFView = ({
 
       {/* 거래처 정보 섹션 */}
       <div className="pdf-section">
-        <h3 className="pdf-section-title">거래처 정보</h3>
+        <h3 className="pdf-section-title">{t('clientInfo')}</h3>
 
         <div className="pdf-table">
           {/* 첫 번째 행 */}
           <div className="pdf-table-row">
             <div className="pdf-table-cell">
               <div className="label">
-                <div>거래처명</div>
+                <div>{t('clientName')}</div>
               </div>
               <div className="content">
                 <div>{clientData.name}</div>
@@ -47,7 +50,7 @@ const OrderDocumentPDFView = ({
             </div>
             <div className="pdf-table-cell">
               <div className="label">
-                <div>사업자등록번호</div>
+                <div>{t('businessRegistrationNumber')}</div>
               </div>
               <div className="content">
                 <div>{clientData.business_registration_number}</div>
@@ -59,7 +62,7 @@ const OrderDocumentPDFView = ({
           <div className="pdf-table-row">
             <div className="pdf-table-cell">
               <div className="label">
-                <div>대표자명</div>
+                <div>{t('representativeName')}</div>
               </div>
               <div className="content">
                 <div>{clientData.representative_name}</div>
@@ -67,7 +70,7 @@ const OrderDocumentPDFView = ({
             </div>
             <div className="pdf-table-cell">
               <div className="label">
-                <div>납기일자</div>
+                <div>{t('dueDate')}</div>
               </div>
               <div className="content">
                 <div>{dueDate}</div>
@@ -79,7 +82,7 @@ const OrderDocumentPDFView = ({
           <div className="pdf-table-row">
             <div className="pdf-table-cell">
               <div className="label">
-                <div>업태</div>
+                <div>{t('businessType')}</div>
               </div>
               <div className="content">
                 <div>{clientData.business_type}</div>
@@ -87,7 +90,7 @@ const OrderDocumentPDFView = ({
             </div>
             <div className="pdf-table-cell">
               <div className="label">
-                <div>종목</div>
+                <div>{t('businessCategory')}</div>
               </div>
               <div className="content">
                 <div>{clientData.business_category}</div>
@@ -99,7 +102,7 @@ const OrderDocumentPDFView = ({
           <div className="pdf-table-row">
             <div className="pdf-table-cell">
               <div className="label">
-                <div>이메일</div>
+                <div>{t('email')}</div>
               </div>
               <div className="content">
                 <div>{clientData.email}</div>
@@ -107,7 +110,7 @@ const OrderDocumentPDFView = ({
             </div>
             <div className="pdf-table-cell">
               <div className="label">
-                <div>연락처</div>
+                <div>{t('phone')}</div>
               </div>
               <div className="content">
                 <div>{clientData.phone}</div>
@@ -119,7 +122,7 @@ const OrderDocumentPDFView = ({
           <div className="pdf-table-row">
             <div className="pdf-table-cell">
               <div className="label">
-                <div>팩스 번호</div>
+                <div>{t('fax')}</div>
               </div>
               <div className="content">
                 <div>{clientData.fax || '-'}</div>
@@ -131,7 +134,7 @@ const OrderDocumentPDFView = ({
           <div className="pdf-table-row">
             <div className="pdf-table-cell">
               <div className="label">
-                <div>사업장 주소</div>
+                <div>{t('businessAddress')}</div>
               </div>
               <div className="content">
                 <div>{clientData.address}</div>
@@ -148,25 +151,25 @@ const OrderDocumentPDFView = ({
         <div className="pdf-product-table">
           <div className="pdf-product-table-header">
             <div style={{ flex: 1 }}>
-              <div>제품명</div>
+              <div>{t('productName')}</div>
             </div>
             <div style={{ flex: 1 }}>
-              <div>제품코드</div>
+              <div>{t('productCode')}</div>
             </div>
             <div style={{ flex: 1 }}>
-              <div>규격</div>
+              <div>{t('specification')}</div>
             </div>
             <div style={{ width: '80px' }}>
-              <div>단위</div>
+              <div>{t('unit')}</div>
             </div>
             <div style={{ flex: 1 }}>
-              <div>제작 수량</div>
+              <div>{t('manufacturingQuantity')}</div>
             </div>
             <div style={{ width: '100px' }}>
-              <div>단가</div>
+              <div>{t('unitPrice')}</div>
             </div>
             <div style={{ flex: 1 }}>
-              <div>금액</div>
+              <div>{t('amount')}</div>
             </div>
           </div>
           <div>
@@ -205,32 +208,32 @@ const OrderDocumentPDFView = ({
         {/* 총 금액 정보 */}
         <div className="pdf-summary">
           <div className="pdf-summary-row">
-            <div className="pdf-summary-label">공급가액</div>
+            <div className="pdf-summary-label">{t('supplyAmount')}</div>
             <div className="pdf-summary-value-wrapper">
               <div className="pdf-summary-value">
                 {supplyAmount?.toLocaleString() || 0}
               </div>
-              <div className="pdf-summary-unit">원</div>
+              <div className="pdf-summary-unit">{t('won')}</div>
             </div>
           </div>
 
           <div className="pdf-summary-row">
-            <div className="pdf-summary-label">세액(VAT 10%)</div>
+            <div className="pdf-summary-label">{t('taxAmountVAT')}</div>
             <div className="pdf-summary-value-wrapper">
               <div className="pdf-summary-value">
                 {taxAmount?.toLocaleString() || 0}
               </div>
-              <div className="pdf-summary-unit">원</div>
+              <div className="pdf-summary-unit">{t('won')}</div>
             </div>
           </div>
 
           <div className="pdf-summary-row">
-            <div className="pdf-summary-label">합계금액</div>
+            <div className="pdf-summary-label">{t('totalAmount')}</div>
             <div className="pdf-summary-value-wrapper">
               <div className="pdf-summary-value">
                 {(supplyAmount + taxAmount)?.toLocaleString() || 0}
               </div>
-              <div className="pdf-summary-unit">원</div>
+              <div className="pdf-summary-unit">{t('won')}</div>
             </div>
           </div>
         </div>

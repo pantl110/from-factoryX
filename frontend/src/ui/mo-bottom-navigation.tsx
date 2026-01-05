@@ -1,5 +1,6 @@
 import MoBtn from './mo-btn';
 import { useRouter } from 'next/navigation';
+import { useTranslations } from 'next-intl';
 
 interface MoBottomNavigationProps {
   type: 'income' | 'outcome' | 'delivery' | 'scan';
@@ -13,11 +14,28 @@ const MoBottomNavigation = ({
   onConfirm,
 }: MoBottomNavigationProps) => {
   const router = useRouter();
+  const t = useTranslations('common.moBottomNavigation');
+
+  const getButtonText = () => {
+    switch (type) {
+      case 'income':
+        return t('depositComplete');
+      case 'outcome':
+        return t('paymentComplete');
+      case 'delivery':
+        return t('deliveryComplete');
+      case 'scan':
+        return t('nextScan');
+      default:
+        return t('nextScan');
+    }
+  };
+
   return (
     <div className="fixed bottom-0 z-30 w-full bg-wh px-3 pt-5 pb-6 border-t border-bg shadow-[0px_1px_22px_0px_rgba(0,0,0,0.06)] flex flex-col gap-2">
       {type === 'scan' && (
         <MoBtn
-          text="확인"
+          text={t('confirm')}
           variant="outline"
           big
           width="w-full"
@@ -26,15 +44,7 @@ const MoBottomNavigation = ({
       )}
 
       <MoBtn
-        text={
-          type === 'income'
-            ? '입금 완료'
-            : type === 'outcome'
-              ? '지급 완료'
-              : type === 'delivery'
-                ? '납품 완료'
-                : '다음 스캔하기'
-        }
+        text={getButtonText()}
         variant="primary"
         big={true}
         width="w-full"

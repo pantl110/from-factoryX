@@ -28,7 +28,6 @@ export { default as Tooltip } from './tooltip';
 export { default as Dropdown } from './dropdown/dropdown';
 export { default as DropdownItem } from './dropdown/dropdown-item';
 export { ClientNameDropdown } from './dropdown/client-name-dropdown';
-export { default as DeleteDropdown } from './dropdown/delete-dropdown';
 export { MaterialNameDropdown } from './dropdown/material-name-dropdown';
 export { ProductNameDropdown } from './dropdown/product-name-dropdown';
 export { default as SelectPeriodDropdown } from './dropdown/select-period-dropdown/select-period-dropdown';

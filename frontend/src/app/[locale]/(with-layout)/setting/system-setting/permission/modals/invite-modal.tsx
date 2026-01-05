@@ -16,6 +16,7 @@ import useMemberStore from '@/store/member-store';
 import Toast from '@/ui/toast';
 import useToast from '@/hooks/use-toast';
 import { useTranslations } from 'next-intl';
+import { getRoleText } from '@/utils';
 
 interface InviteModalProps {
   onClose: () => void;
@@ -80,7 +81,7 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
     setMembers((prev) => prev.filter((member) => member.email !== email));
   };
 
-  // 역할 키 매핑 (한국어 -> 번역 키)
+  // 역할 키 매핑 (한국어 -> 번역 키) - 한국어 역할명이 들어올 경우를 대비
   const roleKeyMap: Record<string, string> = {
     '시스템 관리자': 'admin',
     운영자: 'manager',
@@ -88,9 +89,11 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
     조회자: 'viewer',
   };
 
-  const getRoleText = (role: string) => {
+  const getTranslatedRoleText = (role: string) => {
+    // 한국어 역할명인 경우 번역 키로 변환
     const key = roleKeyMap[role];
-    return key ? tPermission(`roles.${key}`) : role;
+    const roleKey = key || role;
+    return getRoleText(roleKey, tPermission);
   };
 
   const handleAuthSelect = (auth: string, memberEmail?: string) => {
@@ -282,7 +285,7 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
                       </div>
                       <div className="flex items-center gap-1 relative">
                         <Chip
-                          text={getRoleText(member.auth)}
+                          text={getTranslatedRoleText(member.auth)}
                           state={true}
                           bgColor={
                             PermissionRoleInfo[

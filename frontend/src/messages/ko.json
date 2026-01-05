@@ -109,7 +109,82 @@
       "risk": "위험",
       "shortage": "부족"
     },
-    "listFormat": "{first} 외 {count}개"
+    "listFormat": "{first} 외 {count}개",
+    "footer": {
+      "companyName": {
+        "title": "상호명",
+        "content": "앰플랩 주식회사"
+      },
+      "businessRegistrationNumber": {
+        "title": "사업자등록번호",
+        "content": "825-86-03341"
+      },
+      "representative": {
+        "title": "대표자",
+        "content": "김진영"
+      },
+      "privacyOfficer": {
+        "title": "개인정보관리책임자",
+        "content": "김진영"
+      },
+      "address": {
+        "title": "주소",
+        "content": "세종특별자치시 다정중앙로 20, 112호"
+      },
+      "phone": {
+        "title": "전화번호",
+        "content": "0502-6823-5354"
+      },
+      "email": {
+        "title": "이메일",
+        "content": "ceo@amplab.us"
+      },
+      "telecomSalesReportNumber": {
+        "title": "통신판매업 신고번호",
+        "content": "제2025-세종-0541호"
+      },
+      "copyright": "© 팩토리엑스 2024 All Rights Reserved.",
+      "termsOfService": "서비스 이용약관",
+      "privacyPolicy": "개인정보처리방침"
+    },
+    "deleteModal": {
+      "title": "삭제하시겠습니까?",
+      "subtitle": "이 작업은 되돌릴 수 없어요. 선택한 항목이 영구적으로 삭제돼요."
+    },
+    "moBottomNavigation": {
+      "confirm": "확인",
+      "depositComplete": "입금 완료",
+      "paymentComplete": "지급 완료",
+      "deliveryComplete": "납품 완료",
+      "nextScan": "다음 스캔하기"
+    },
+    "relativeTime": {
+      "justNow": "방금 전",
+      "minutesAgo": "{minutes}분 전",
+      "hoursAgo": "{hours}시간 전",
+      "daysAgo": "{days}일 전",
+      "yesterday": "어제",
+      "monthDay": "{month}월 {day}일"
+    },
+    "excelParser": {
+      "noData": "업로드할 데이터가 없습니다.",
+      "parseFailed": "엑셀 파일 파싱에 실패했습니다.",
+      "readFailed": "파일 읽기에 실패했습니다."
+    }
+  },
+  "profileModal": {
+    "manageProfile": "프로필 관리",
+    "logout": "로그아웃"
+  },
+  "topBar": {
+    "switchToProgress": "진행 상태로 전환하기",
+    "viewTaxInvoice": "세금계산서 보기",
+    "createTaxInvoice": "세금계산서 생성하기",
+    "upgradeTooltip": "Partners 플랜으로 업그레이드하면\n세무/회계 기능을 사용할 수 있어요.",
+    "registerReturn": "반품 등록하기",
+    "moveToStorage": "보관함으로 이동하기",
+    "aiAssistant": "AI 어시스턴트",
+    "moveToDeliveryFailed": "납품 단계로 이동하는데 실패했습니다."
   },
   "dropzone": {
     "dragAndDrop": "파일을 끌어다 놓거나,\n아래 버튼으로 업로드 할 수 있어요.",
@@ -582,6 +657,12 @@
     },
     "document": "문서함",
     "setting": "설정"
+  },
+  "notification": {
+    "title": "알림함",
+    "markAsRead": "읽음",
+    "markAllAsRead": "모두 읽음",
+    "noNotifications": "아직 알림이 없어요."
   },
   "dashboard": {
     "mainTitle": "팩토리엑스 현황판",

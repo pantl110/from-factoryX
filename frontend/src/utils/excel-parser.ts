@@ -4,7 +4,10 @@ export interface ExcelRowModel {
   [key: string]: unknown;
 }
 
-export const parseExcelFile = (file: File): Promise<ExcelRowModel[]> => {
+export const parseExcelFile = (
+  file: File,
+  t?: (key: string) => string
+): Promise<ExcelRowModel[]> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
 
@@ -24,7 +27,11 @@ export const parseExcelFile = (file: File): Promise<ExcelRowModel[]> => {
         });
 
         if (jsonData.length < 2) {
-          reject(new Error('업로드할 데이터가 없습니다.'));
+          reject(
+            new Error(
+              t ? t('common.excelParser.noData') : '업로드할 데이터가 없습니다.'
+            )
+          );
           return;
         }
 
@@ -45,12 +52,22 @@ export const parseExcelFile = (file: File): Promise<ExcelRowModel[]> => {
 
         resolve(result);
       } catch {
-        reject(new Error('엑셀 파일 파싱에 실패했습니다.'));
+        reject(
+          new Error(
+            t
+              ? t('common.excelParser.parseFailed')
+              : '엑셀 파일 파싱에 실패했습니다.'
+          )
+        );
       }
     };
 
     reader.onerror = () => {
-      reject(new Error('파일 읽기에 실패했습니다.'));
+      reject(
+        new Error(
+          t ? t('common.excelParser.readFailed') : '파일 읽기에 실패했습니다.'
+        )
+      );
     };
 
     reader.readAsArrayBuffer(file);

@@ -1,5 +1,6 @@
 import MiniBtn from '@/ui/mini-btn';
 import Modal from '@/ui/modal/modal';
+import { useTranslations } from 'next-intl';
 
 interface DeleteModalProps {
   onClose: () => void;
@@ -12,21 +13,24 @@ const DeleteModal = ({
   onDelete,
   isLoading = false,
 }: DeleteModalProps) => {
+  const t = useTranslations('common');
+  const tDeleteModal = useTranslations('common.deleteModal');
+
   return (
     <Modal
-      title="삭제하시겠습니까?"
-      subtitle="이 작업은 되돌릴 수 없어요. 선택한 항목이 영구적으로 삭제돼요."
+      title={tDeleteModal('title')}
+      subtitle={tDeleteModal('subtitle')}
       onClose={onClose}
     >
       <div className="flex gap-[5px] justify-end mt-4">
         <MiniBtn
-          text="취소"
+          text={t('cancel')}
           textColor="text-sv"
           onClick={onClose}
           hoverColor="hover:bg-bg"
         />
         <MiniBtn
-          text="삭제"
+          text={t('delete')}
           textColor="text-red"
           bgColor="bg-red-8"
           onClick={onDelete}

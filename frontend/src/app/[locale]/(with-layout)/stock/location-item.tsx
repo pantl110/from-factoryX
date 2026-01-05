@@ -46,8 +46,7 @@ const LocationItem = ({
   // role을 번역 키로 변환
   const getTranslatedRoleText = (role: string | null | undefined): string => {
     if (!role || role === '-') return '-';
-    const roleKey = role as 'admin' | 'manager' | 'prod_manager' | 'viewer';
-    return tPermission(`roles.${roleKey}`) || getRoleText(role);
+    return getRoleText(role, tPermission);
   };
 
   const roleText = getTranslatedRoleText(role);

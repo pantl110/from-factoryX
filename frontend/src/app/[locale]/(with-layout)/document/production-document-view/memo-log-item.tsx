@@ -19,7 +19,8 @@ interface MemoLogItemProps {
 
 const MemoLogItem = ({ memo, time, changedBy }: MemoLogItemProps) => {
   const t = useTranslations('document');
-  const roleText = getRoleText(changedBy?.role || null);
+  const tPermission = useTranslations('setting.systemSetting.permission');
+  const roleText = getRoleText(changedBy?.role || null, tPermission);
   const chipColor =
     changedBy?.role && changedBy.role in MemberRoleColorMap
       ? MemberRoleColorMap[changedBy.role as MemberRoleType]?.color || 'gray'

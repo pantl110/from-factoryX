@@ -6,13 +6,16 @@ import { useRouter } from 'next/navigation';
 import useAuthStore from '@/store/auth-store';
 import useMemberStore from '@/store/member-store';
 import { useLogout } from '@/hooks';
-import { getRoleText } from '@/utils/get-role-text';
+import { useTranslations } from 'next-intl';
+import { getRoleText } from '@/utils';
 
 interface ProfileModalProps {
   onClose: () => void;
 }
 
 const ProfileModal = ({ onClose }: ProfileModalProps) => {
+  const t = useTranslations('profileModal');
+  const tPermission = useTranslations('setting.systemSetting.permission');
   const profileModalRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const { userInfo } = useAuthStore();
@@ -62,7 +65,9 @@ const ProfileModal = ({ onClose }: ProfileModalProps) => {
           </div>
           <div className="flex flex-col gap-4">
             <div className="flex gap-2 items-center">
-              <p className="Me_Body-1 text-sv">{getRoleText(role)}</p>
+              <p className="Me_Body-1 text-sv">
+                {getRoleText(role, tPermission)}
+              </p>
               {userInfo?.username && (
                 <>
                   <div className="w-[1px] bg-gr h-[56%]"></div>
@@ -78,7 +83,7 @@ const ProfileModal = ({ onClose }: ProfileModalProps) => {
       <div className="flex gap-2.5">
         <div className="flex-1">
           <MiniBtn
-            text="프로필 관리"
+            text={t('manageProfile')}
             borderColor="border-lg"
             textColor="text-dg"
             hoverColor="hover:bg-bg"
@@ -91,7 +96,7 @@ const ProfileModal = ({ onClose }: ProfileModalProps) => {
         </div>
         <div className="flex-1">
           <MiniBtn
-            text="로그아웃"
+            text={t('logout')}
             borderColor="border-lg"
             textColor="text-dg"
             hoverColor="hover:bg-bg"

@@ -13,7 +13,7 @@ interface SearchInputProps {
 
 const SearchInput = ({
   width = 'w-[420px]',
-  placeholder = '검색어를 입력하세요.',
+  placeholder = '',
   value,
   onChange,
   onFocus,

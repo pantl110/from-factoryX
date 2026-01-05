@@ -13,6 +13,7 @@ import ProfileModal from './modals/profile-modal';
 import TaxDetailPanel from '@/app/[locale]/(with-layout)/tax/tax-detail-panel';
 import Tooltip from '@/ui/tooltip';
 import { useTooltip, useManufacturedToDelivery } from '@/hooks';
+import { useTranslations } from 'next-intl';
 
 interface TopBarContentProps {
   productionTab: ProductionTabType | null;
@@ -33,6 +34,8 @@ const TopBarContent = ({
   onNotificationClick,
   onNoraClick,
 }: TopBarContentProps) => {
+  const t = useTranslations('topBar');
+  const tCommon = useTranslations('common');
   const isProductionPlanValid = usePageStatusStore(
     (state) => state.isProductionPlanValid
   ); // 생산 계획 폼 유효성 검사 상태
@@ -108,7 +111,7 @@ const TopBarContent = ({
     return (
       <div className="flex gap-2">
         <MiniBtn
-          text="진행 상태로 전환하기"
+          text={t('switchToProgress')}
           variant="whiteOutline"
           onClick={() => {
             if (handleChangeStatus) {
@@ -126,7 +129,7 @@ const TopBarContent = ({
       <>
         <div className="relative" {...taxButtonMouseEvents}>
           <MiniBtn
-            text={taxId ? '세금계산서 보기' : '세금계산서 생성하기'}
+            text={taxId ? t('viewTaxInvoice') : t('createTaxInvoice')}
             variant="whiteOutline"
             onClick={() => {
               if (
@@ -144,8 +147,7 @@ const TopBarContent = ({
           {taxTooltip.isVisible && shouldShowTooltip && (
             <div className="absolute z-50 top-12 -right-[120px] w-[350px]">
               <Tooltip
-                text={`Partners 플랜으로 업그레이드하면 
-                  세무/회계 기능을 사용할 수 있어요.`}
+                text={t('upgradeTooltip')}
                 color="white"
                 position="right"
               />
@@ -213,7 +215,7 @@ const TopBarContent = ({
             )}
           </div>
           <MiniBtn
-            text="다음"
+            text={tCommon('next')}
             variant="secondary"
             onClick={onProductionPlanSaveClick}
             disabled={
@@ -282,7 +284,7 @@ const TopBarContent = ({
             )}
           </div>
           <MiniBtn
-            text="다음"
+            text={tCommon('next')}
             variant="secondary"
             onClick={() => {
               if (handleChangeStatus) {
@@ -357,7 +359,7 @@ const TopBarContent = ({
 
           {isRefund && (
             <MiniBtn
-              text="반품 등록하기"
+              text={t('registerReturn')}
               variant="red"
               onClick={() => setAddReturnModalOpen(true)}
               disabled={isViewer || !hasSubscription()}
@@ -447,7 +449,7 @@ const TopBarContent = ({
                       'manufactured-to-delivery 실패:',
                       result.error
                     );
-                    alert('납품 단계로 이동하는데 실패했습니다.');
+                    alert(t('moveToDeliveryFailed'));
                   }
                 }
               }}
@@ -529,7 +531,7 @@ const TopBarContent = ({
           />
           {pageStatus === 'delivery' && (
             <MiniBtn
-              text="보관함으로 이동하기"
+              text={t('moveToStorage')}
               variant="secondary"
               onClick={onMoveToStorageClick}
               disabled={
@@ -584,7 +586,7 @@ const TopBarContent = ({
         <div
           className="flex items-center justify-center w-11 h-11 cursor-pointer hover:bg-bg rounded-lg"
           onClick={onNoraClick}
-          title="AI 어시스턴트"
+          title={t('aiAssistant')}
         >
           <ChatCircle size={20} className="text-dg" />
         </div>

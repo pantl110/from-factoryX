@@ -4,6 +4,7 @@ import { NotificationCaseType } from '@/types/status-type';
 import { Siren, CheckCircle, WarningCircle } from '@phosphor-icons/react';
 import { useGetNotificationDetail } from '@/hooks';
 import { formatISODate } from '@/utils';
+import { useTranslations } from 'next-intl';
 
 interface NotificationItemProps {
   item: NotificationResponseModel;
@@ -16,6 +17,7 @@ const NotificationItem = ({
   onRead,
   isMarkAllLoading,
 }: NotificationItemProps) => {
+  const t = useTranslations('notification');
   const { getNotificationDetail, isLoading: isDetailLoading } =
     useGetNotificationDetail();
 
@@ -86,7 +88,7 @@ const NotificationItem = ({
       {!item.is_read && (
         <div className="shrink-0 ml-2">
           <MiniBtn
-            text="읽음"
+            text={t('markAsRead')}
             textColor="text-dg"
             borderColor="border-lg"
             hoverColor="hover:bg-bg"

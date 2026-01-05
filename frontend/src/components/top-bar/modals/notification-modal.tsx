@@ -4,6 +4,7 @@ import { NotificationResponseModel } from '@/types/data-model';
 import { useMarkAllNotificationsRead, useInfiniteScroll } from '@/hooks';
 import NotificationItem from './notification-item';
 import { useRef } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface NotificationModalProps {
   onClose: () => void;
@@ -28,6 +29,7 @@ const NotificationModal = ({
   onLoadMore,
   onResetPagination,
 }: NotificationModalProps) => {
+  const t = useTranslations('notification');
   const { markAllAsRead, isLoading: isMarkAllLoading } =
     useMarkAllNotificationsRead();
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -72,13 +74,13 @@ const NotificationModal = ({
       onClose={onClose}
       width="w-[463px]"
       height="h-[548px]"
-      title="알림함"
+      title={t('title')}
       scroll={true}
       button={
         unreadCount === 0 ? null : (
           <MiniBtn
             height="h-8"
-            text="모두 읽음"
+            text={t('markAllAsRead')}
             textColor="text-dg"
             borderColor="border-lg"
             hoverColor="hover:bg-bg"
@@ -94,7 +96,7 @@ const NotificationModal = ({
       >
         {notifications.length === 0 && !isLoadingMore ? (
           <div className="flex flex-col items-center justify-center h-full">
-            <p className="Re_Body-1 text-gr">아직 알림이 없어요.</p>
+            <p className="Re_Body-1 text-gr">{t('noNotifications')}</p>
           </div>
         ) : (
           <>
