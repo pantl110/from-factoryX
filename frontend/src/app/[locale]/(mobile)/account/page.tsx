@@ -3,6 +3,7 @@
 import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import { useRouter } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import Topbar from '../topbar';
 import ClientInfo from '../client-info';
 import AccountInfo from './account-info';
@@ -10,6 +11,7 @@ import MoBottomNavigation from '@/ui/mo-bottom-navigation';
 import SupplierInfo from './supplie-info';
 
 const AccountPageContent = () => {
+  const t = useTranslations('mobile.topbar');
   const searchParams = useSearchParams();
   const router = useRouter();
   const type = searchParams.get('type') as 'income' | 'outcome' | null;
@@ -23,7 +25,7 @@ const AccountPageContent = () => {
   return (
     <>
       <div className="pb-23">
-        <Topbar title="정산 현황" />
+        <Topbar title={t('accountStatus')} />
         {type === 'income' && <ClientInfo />}
         {type === 'outcome' && <SupplierInfo />}
         <div className="h-2 bg-bg" />
@@ -35,8 +37,9 @@ const AccountPageContent = () => {
 };
 
 const AccountPage = () => {
+  const tCommon = useTranslations('common');
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div>{tCommon('loading')}</div>}>
       <AccountPageContent />
     </Suspense>
   );

@@ -3,6 +3,7 @@
 import { useMemo, useState } from 'react';
 import { CaretRight, Package } from '@phosphor-icons/react';
 import { useRouter } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import Title from '../title';
 import AlarmItem from '../alarm-item';
 import NoHistoryBox from '@/ui/no-history-box';
@@ -22,10 +23,11 @@ const normalizeDate = (date: Date) =>
   new Date(date.getFullYear(), date.getMonth(), date.getDate());
 
 const getChipInfo = (
-  deliveryDate: string | null
+  deliveryDate: string | null,
+  t: (key: string, values?: Record<string, string | number>) => string
 ): { text: string; variant: ChipVariantType } => {
   if (!deliveryDate) {
-    return { text: '납기일 미지정', variant: 'outline' };
+    return { text: t('dueDateNotSpecified'), variant: 'outline' };
   }
 
   const today = normalizeDate(new Date());
@@ -33,23 +35,26 @@ const getChipInfo = (
   const diff = (target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24);
 
   if (Number.isNaN(diff)) {
-    return { text: '납기일 미지정', variant: 'outline' };
+    return { text: t('dueDateNotSpecified'), variant: 'outline' };
   }
 
   if (diff < 0) {
     const daysPast = Math.abs(Math.round(diff));
     return {
-      text: `납기일이 ${daysPast.toLocaleString()}일 지났어요!`,
+      text: t('dueDatePast', { days: daysPast.toLocaleString() }),
       variant: 'red-secondary',
     };
   }
 
   if (diff === 0) {
-    return { text: '오늘이 납품일이에요!', variant: 'secondary' };
+    return { text: t('todayIsDeliveryDate'), variant: 'secondary' };
   }
 
   const daysRemaining = Math.round(diff);
-  return { text: `D-${daysRemaining.toLocaleString()}`, variant: 'outline' };
+  return {
+    text: t('daysRemaining', { days: daysRemaining.toLocaleString() }),
+    variant: 'outline',
+  };
 };
 
 const formatSubText = (
@@ -75,29 +80,35 @@ interface DueDateProps {
   limit?: number;
 }
 
-// 필터 한글명을 API 값으로 매핑
+// 필터 번역값을 API 값으로 매핑
 const filterToApiValue = (
-  filter: string
+  filter: string,
+  tFilter: (key: string) => string
 ): 'today' | 'delayed' | 'scheduled' => {
-  switch (filter) {
-    case '오늘':
-      return 'today';
-    case '지연':
-      return 'delayed';
-    case '예정':
-      return 'scheduled';
-    default:
-      return 'today';
+  if (filter === tFilter('today')) {
+    return 'today';
   }
+  if (filter === tFilter('delayed')) {
+    return 'delayed';
+  }
+  if (filter === tFilter('scheduled')) {
+    return 'scheduled';
+  }
+  return 'today';
 };
 
 const DueDate = ({ hideWhenEmpty = false, limit }: DueDateProps) => {
+  const t = useTranslations('mobile.alarm.tabs');
+  const tFilter = useTranslations('mobile.alarm.filter');
+  const tAlarm = useTranslations('mobile.alarm');
   const router = useRouter();
   const factoryId = useMemberStore((state) => state.factoryId);
   const baseDate = getTodayDateString();
-  const [selectedFilter, setSelectedFilter] = useState<string>('오늘');
+  const [selectedFilter, setSelectedFilter] = useState<string>(
+    tFilter('today')
+  );
   // 전체 탭(limit이 있을 때)에서는 항상 "오늘"로 고정
-  const dueFilter = limit ? 'today' : filterToApiValue(selectedFilter);
+  const dueFilter = limit ? 'today' : filterToApiValue(selectedFilter, tFilter);
 
   const {
     data,
@@ -182,7 +193,7 @@ const DueDate = ({ hideWhenEmpty = false, limit }: DueDateProps) => {
 
   const alarmItems = useMemo(() => {
     const mapped = items.map((item, index) => {
-      const { text, variant } = getChipInfo(item.delivery_date);
+      const { text, variant } = getChipInfo(item.delivery_date, tAlarm);
       return {
         key: index,
         chipText: text,
@@ -202,7 +213,7 @@ const DueDate = ({ hideWhenEmpty = false, limit }: DueDateProps) => {
       return mapped.slice(0, limit);
     }
     return mapped;
-  }, [items, limit]);
+  }, [items, limit, tAlarm]);
 
   const shouldHideSection =
     hideWhenEmpty && !isInitialLoading && alarmItems.length === 0;
@@ -218,7 +229,7 @@ const DueDate = ({ hideWhenEmpty = false, limit }: DueDateProps) => {
     if (alarmItems.length === 0 || errorMessage) {
       return (
         <div className="px-6 pt-4">
-          <NoHistoryBox text="납품 현황 알림이 없어요." />
+          <NoHistoryBox text={tAlarm('noDeliveryNotifications')} />
         </div>
       );
     }
@@ -245,7 +256,7 @@ const DueDate = ({ hideWhenEmpty = false, limit }: DueDateProps) => {
         {limit && items.length > limit && (
           <div className="px-4 py-2">
             <MoBtn
-              text="더 보기"
+              text={tAlarm('viewMore')}
               variant="outline"
               icon={<CaretRight />}
               width="w-full"
@@ -271,7 +282,7 @@ const DueDate = ({ hideWhenEmpty = false, limit }: DueDateProps) => {
       <div className="flex flex-col gap-1 pt-4">
         <Title
           icon={<Package />}
-          title="납품 현황"
+          title={t('deliveryStatus')}
           count={totalCount}
           delivery={!limit}
           selectedFilter={selectedFilter}

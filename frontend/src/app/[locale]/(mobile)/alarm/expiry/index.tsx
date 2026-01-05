@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { CalendarDots, CaretRight } from '@phosphor-icons/react';
 import { useRouter } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import Title from '../title';
 import AlarmItem from '../alarm-item';
 import { MoBtn, NoHistoryBox } from '@/ui';
@@ -24,6 +25,8 @@ const formatStockValue = (value?: number) =>
 const expiryPageSize = 10;
 
 const Expiry = ({ hideWhenEmpty = false, limit }: ExpiryProps) => {
+  const t = useTranslations('mobile.alarm.tabs');
+  const tAlarm = useTranslations('mobile.alarm');
   const router = useRouter();
   const factoryId = useMemberStore((state) => state.factoryId);
   const {
@@ -130,7 +133,7 @@ const Expiry = ({ hideWhenEmpty = false, limit }: ExpiryProps) => {
     ) {
       return (
         <div className="px-6 pt-4">
-          <NoHistoryBox text="유통기한 위험 알림이 없어요." />
+          <NoHistoryBox text={tAlarm('noExpiryNotifications')} />
         </div>
       );
     }
@@ -150,7 +153,7 @@ const Expiry = ({ hideWhenEmpty = false, limit }: ExpiryProps) => {
           return (
             <AlarmItem
               key={material.id}
-              chipText="유통기한이 얼마 남지 않았어요!"
+              chipText={tAlarm('expiryRisk')}
               chipVariant="red-secondary"
               name={material.name}
               subText={subText}
@@ -164,7 +167,7 @@ const Expiry = ({ hideWhenEmpty = false, limit }: ExpiryProps) => {
         {showMoreButton && (
           <div className="px-4 py-2">
             <MoBtn
-              text="더 보기"
+              text={tAlarm('viewMore')}
               variant="outline"
               icon={<CaretRight />}
               width="w-full"
@@ -184,7 +187,7 @@ const Expiry = ({ hideWhenEmpty = false, limit }: ExpiryProps) => {
   return (
     <>
       <div className="flex flex-col gap-1 pt-4">
-        <Title icon={<CalendarDots />} title="유통기한" count={totalCount} />
+        <Title icon={<CalendarDots />} title={t('expiry')} count={totalCount} />
         {content}
       </div>
     </>

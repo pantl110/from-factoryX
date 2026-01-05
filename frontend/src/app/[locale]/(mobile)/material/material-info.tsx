@@ -7,6 +7,7 @@ import InfoDetail from '../info-detail';
 import { getMaterialStockStatus } from '@/utils';
 import { InventoryStatusColorMap } from '@/types/status-type';
 import { mapExpiryStatus } from '@/app/[locale]/(with-layout)/stock/material/material-detail/utils';
+import { useTranslations } from 'next-intl';
 
 interface MaterialInfoProps {
   material: MaterialResponseModel | null;
@@ -16,6 +17,8 @@ interface MaterialInfoProps {
 type MoChipVariantType = ComponentProps<typeof MoChip>['variant'];
 
 const MaterialInfo = ({ material, isLoading }: MaterialInfoProps) => {
+  const t = useTranslations('common');
+  const tStock = useTranslations('stock.materialDetail');
   const stockStatus = useMemo(() => {
     const status = getMaterialStockStatus({
       currentStock: material?.current_stock ?? null,
@@ -88,24 +91,29 @@ const MaterialInfo = ({ material, isLoading }: MaterialInfoProps) => {
     const variant: MoChipVariantType =
       expiryStatus === 'warning' ? 'red-secondary' : 'secondary';
     const text =
-      material?.expiry_status ?? (expiryStatus === 'warning' ? '위험' : '양호');
+      material?.expiry_status ??
+      (expiryStatus === 'warning'
+        ? tStock('expiryStatus.risk')
+        : tStock('expiryStatus.safe'));
     return { text, variant };
-  }, [expiryStatus, material?.expiry_status]);
+  }, [expiryStatus, material?.expiry_status, tStock]);
 
   return (
     <div className="px-7 py-8 flex flex-col gap-8">
-      <h3 className="m-Heading-3-semibold">자재 정보</h3>
+      <h3 className="m-Heading-3-semibold">
+        {tStock('detail.materialInfoTitle')}
+      </h3>
       {isLoading ? (
         <></>
       ) : (
         <div className="flex flex-col gap-5">
-          <LabelInfo label="자재명" value={material?.name ?? '-'} />
-          <LabelInfo label="자재코드" value={material?.code ?? '-'} />
-          <LabelInfo label="규격" value={material?.spec ?? '-'} />
-          <LabelInfo label="단위" value={material?.unit ?? '-'} />
+          <LabelInfo label={t('materialName')} value={material?.name ?? '-'} />
+          <LabelInfo label={t('materialCode')} value={material?.code ?? '-'} />
+          <LabelInfo label={t('specification')} value={material?.spec ?? '-'} />
+          <LabelInfo label={t('unit')} value={material?.unit ?? '-'} />
           <div className="flex flex-col gap-4">
             <LabelInfo
-              label="재고 상태"
+              label={tStock('detail.info.labels.stockStatus')}
               value={!stockStatus ? '-' : undefined}
               chip={
                 stockStatus ? (
@@ -117,18 +125,31 @@ const MaterialInfo = ({ material, isLoading }: MaterialInfoProps) => {
               }
             />
             <div className="flex flex-col gap-3">
-              <InfoDetail label="현재 재고" value={currentStock} />
-              <InfoDetail label="안전 재고" value={standardStock} />
-              <InfoDetail label="ROP" value={rop} />
-              <InfoDetail label="적정 재고" value={maxStock} />
+              <InfoDetail label={t('currentStock')} value={currentStock} />
+              <InfoDetail
+                label={tStock('detail.info.labels.standardStock')}
+                value={standardStock}
+              />
+              <InfoDetail
+                label={tStock('detail.info.labels.rop')}
+                value={rop}
+              />
+              <InfoDetail
+                label={tStock('detail.info.labels.maxStock')}
+                value={maxStock}
+              />
             </div>
           </div>
           <LabelInfo
-            label="유통기한"
-            value={material?.expiry_days ? `${material.expiry_days}일` : '-'}
+            label={t('expirationDate')}
+            value={
+              material?.expiry_days
+                ? `${material.expiry_days}${t('days')}`
+                : '-'
+            }
           />
           <LabelInfo
-            label="유통기한 상태"
+            label={tStock('expirationDateStatus')}
             value={!expiryChip ? '-' : undefined}
             chip={
               expiryChip ? (

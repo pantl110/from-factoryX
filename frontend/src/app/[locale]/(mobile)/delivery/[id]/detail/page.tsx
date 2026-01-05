@@ -6,8 +6,12 @@ import { MoBottomNavigation } from '@/ui';
 import { useSearchParams, useParams } from 'next/navigation';
 import { useRouter } from '@/i18n/navigation';
 import { useEffect, useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 const DeliveryDetailPage = () => {
+  const t = useTranslations('mobile.delivery.detail');
+  const tCommon = useTranslations('common');
+  const tTopbar = useTranslations('mobile.topbar');
   const params = useParams<{ id: string }>();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -31,14 +35,14 @@ const DeliveryDetailPage = () => {
 
   // LOT 번호에 스캔된 바코드 표시
   const lotNumber = scannedCode
-    ? `LOT-2025-00123 (스캔: ${scannedCode})`
+    ? `LOT-2025-00123 (${t('scannedPrefix')}${scannedCode})`
     : 'LOT-2025-00123';
 
   // 다음 스캔하기 버튼 클릭 핸들러
   const handleNextScan = () => {
     const callbackUrl = `/delivery/${deliveryId}/detail`;
     router.push(
-      `/barcode-scanner?callback=${encodeURIComponent(callbackUrl)}&title=${encodeURIComponent('바코드 스캔')}`
+      `/barcode-scanner?callback=${encodeURIComponent(callbackUrl)}&title=${encodeURIComponent(tTopbar('barcodeScan'))}`
     );
   };
 
@@ -49,16 +53,16 @@ const DeliveryDetailPage = () => {
 
   return (
     <div className="pb-6">
-      <Topbar title="스캔 결과" />
+      <Topbar title={tTopbar('scanResult')} />
       <div className="px-7 py-8 flex flex-col gap-8">
-        <h3 className="m-Heading-3-semibold">스캔된 LOT 정보</h3>
+        <h3 className="m-Heading-3-semibold">{t('title')}</h3>
         <div className="flex flex-col gap-5">
-          <LabelInfo label="제품명" value="플라스틱 1" />
-          <LabelInfo label="제품코드" value="12345678" />
-          <LabelInfo label="규격" value="200ml" />
-          <LabelInfo label="생산 일자" value="2025-12-04" />
-          <LabelInfo label="LOT 번호" value={lotNumber} />
-          <LabelInfo label="포장 수량" value="1 Box (100EA)" />
+          <LabelInfo label={tCommon('productName')} value="플라스틱 1" />
+          <LabelInfo label={tCommon('productCode')} value="12345678" />
+          <LabelInfo label={tCommon('specification')} value="200ml" />
+          <LabelInfo label={tCommon('productionDate')} value="2025-12-04" />
+          <LabelInfo label={tCommon('lotNumber')} value={lotNumber} />
+          <LabelInfo label={t('packagingQuantity')} value="1 Box (100EA)" />
         </div>
       </div>
       <MoBottomNavigation

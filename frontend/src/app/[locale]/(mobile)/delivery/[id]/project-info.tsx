@@ -1,6 +1,7 @@
 import { LabelInfo } from '../../label-info';
 import { ProjectStatusResponseModel } from '@/types/data-model';
 import InfoDetail from '../../info-detail';
+import { useTranslations } from 'next-intl';
 
 interface ProjectInfoProps {
   projectStatus: ProjectStatusResponseModel | null;
@@ -8,6 +9,8 @@ interface ProjectInfoProps {
 }
 
 const ProjectInfo = ({ projectStatus, orderQuantity }: ProjectInfoProps) => {
+  const t = useTranslations('mobile.delivery.projectInfo');
+
   if (!projectStatus) {
     return null;
   }
@@ -16,21 +19,21 @@ const ProjectInfo = ({ projectStatus, orderQuantity }: ProjectInfoProps) => {
 
   return (
     <div className="px-7 py-8 flex flex-col gap-8">
-      <h3 className="m-Heading-3-semibold">프로젝트 정보</h3>
+      <h3 className="m-Heading-3-semibold">{t('title')}</h3>
       <div className="flex flex-col gap-5">
-        <LabelInfo
-          label="프로젝트명(거래처명)"
-          value={clientInfo?.name || '-'}
-        />
-        <LabelInfo label="수량" />
+        <LabelInfo label={t('projectName')} value={clientInfo?.name || '-'} />
+        <LabelInfo label={t('quantity')} />
         <div className="flex flex-col gap-2">
           <InfoDetail
-            label="주문 수량"
+            label={t('orderQuantity')}
             value={orderQuantity > 0 ? orderQuantity.toLocaleString() : '-'}
           />
-          <InfoDetail label="스캔된 수량" value="구현필요300" />
+          <InfoDetail label={t('scannedQuantity')} value="구현필요300" />
         </div>
-        <LabelInfo label="납기일" value={projectStatus?.due_date || '-'} />
+        <LabelInfo
+          label={t('dueDate')}
+          value={projectStatus?.due_date || '-'}
+        />
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 'use client';
 
 import { Dropdown, DropdownItem } from '@/ui';
+import { useTranslations } from 'next-intl';
 
 interface FilterDropdownProps {
   onSelect: (filter: string) => void;
@@ -8,26 +9,28 @@ interface FilterDropdownProps {
 }
 
 const FilterDropdown = ({ onSelect, onClose }: FilterDropdownProps) => {
+  const t = useTranslations('mobile.alarm.filter');
+
   return (
     <Dropdown onClose={onClose} width="w-30">
       <DropdownItem
-        text="오늘"
+        text={t('today')}
         onClick={() => {
-          onSelect('오늘');
+          onSelect(t('today'));
           onClose();
         }}
       />
       <DropdownItem
-        text="지연"
+        text={t('delayed')}
         onClick={() => {
-          onSelect('지연');
+          onSelect(t('delayed'));
           onClose();
         }}
       />
       <DropdownItem
-        text="예정"
+        text={t('scheduled')}
         onClick={() => {
-          onSelect('예정');
+          onSelect(t('scheduled'));
           onClose();
         }}
       />

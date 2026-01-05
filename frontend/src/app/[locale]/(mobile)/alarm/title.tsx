@@ -4,6 +4,7 @@ import { useState } from 'react';
 import MoBtn from '@/ui/mo-btn';
 import { CaretDown } from '@phosphor-icons/react';
 import React from 'react';
+import { useTranslations } from 'next-intl';
 import FilterDropdown from './filter-dropdown';
 
 interface TitleProps {
@@ -20,9 +21,11 @@ const Title = ({
   title,
   count,
   delivery = false,
-  selectedFilter = '오늘',
+  selectedFilter,
   onFilterChange,
 }: TitleProps) => {
+  const t = useTranslations('mobile.alarm.filter');
+  const defaultFilter = selectedFilter || t('today');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   return (
@@ -43,7 +46,7 @@ const Title = ({
       {delivery && (
         <div className="relative">
           <MoBtn
-            text={selectedFilter}
+            text={defaultFilter}
             variant="outline"
             width="w-30"
             icon={<CaretDown weight="fill" />}

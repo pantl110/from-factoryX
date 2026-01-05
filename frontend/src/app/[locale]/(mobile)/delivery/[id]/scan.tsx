@@ -10,8 +10,10 @@ import {
   DecodeHintType,
   BarcodeFormat,
 } from '@zxing/library';
+import { useTranslations } from 'next-intl';
 
 const Scan = () => {
+  const t = useTranslations('mobile.delivery.scan');
   const router = useRouter();
   const params = useParams<{ id: string }>();
   const deliveryId = params?.id;
@@ -110,10 +112,10 @@ const Scan = () => {
           `/delivery/${deliveryId}/detail?scanned_code=${scannedText}`
         );
       } else {
-        alert('바코드를 인식할 수 없습니다. 다시 시도해주세요.');
+        alert(t('barcodeRecognitionFailed'));
       }
     } catch {
-      alert('바코드를 인식할 수 없습니다. 다시 시도해주세요.');
+      alert(t('barcodeRecognitionFailed'));
     }
 
     // input 초기화
@@ -140,17 +142,17 @@ const Scan = () => {
       // 데스크톱: 바코드 스캔 페이지로 이동
       const callbackUrl = `/delivery/${deliveryId}/detail`;
       router.push(
-        `/barcode-scanner?callback=${encodeURIComponent(callbackUrl)}&title=${encodeURIComponent('바코드 스캔')}`
+        `/barcode-scanner?callback=${encodeURIComponent(callbackUrl)}&title=${encodeURIComponent(t('barcodeScanTitle'))}`
       );
     }
   };
 
   return (
     <div className="px-7 py-8 flex flex-col gap-8">
-      <h3 className="m-Heading-3-semibold">스캔하기</h3>
+      <h3 className="m-Heading-3-semibold">{t('title')}</h3>
       <div className="flex flex-col gap-7">
         <MoBtn
-          text="스캔하기"
+          text={t('button')}
           variant="secondary"
           width="w-full"
           big

@@ -1,6 +1,7 @@
 import { MoBtn, MoInput } from '@/ui';
 import { LabelInfo } from './label-info';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface DeliveryInfoProps {
   isOrderPage?: boolean;
@@ -13,64 +14,75 @@ const DeliveryInfo = ({
   address,
   dueDate,
 }: DeliveryInfoProps) => {
+  const t = useTranslations('mobile.deliveryInfo');
+  const tCommon = useTranslations('common');
   const [deliveryType, setDeliveryType] = useState<string>('');
+
   const handleDeliveryType = (type: string) => {
     setDeliveryType(type);
   };
 
+  const parcelText = t('parcel');
+  const cargoText = t('cargo');
+  const directText = t('direct');
+
   return (
     <div className="px-7 py-8 flex flex-col gap-8">
-      <h3 className="m-Heading-3-semibold">납품 정보</h3>
+      <h3 className="m-Heading-3-semibold">{t('title')}</h3>
       <div className="flex flex-col gap-5">
-        <LabelInfo label="사업장 주소" value={address || '-'} direction="col" />
+        <LabelInfo
+          label={tCommon('businessAddress')}
+          value={address || '-'}
+          direction="col"
+        />
         {isOrderPage || (
           <div className="flex flex-col gap-5">
             <div className="flex flex-col gap-2">
-              <LabelInfo label="배송 방식" />
+              <LabelInfo label={t('deliveryMethod')} />
               <div className="flex gap-2.5">
                 <MoBtn
-                  text="택배"
+                  text={parcelText}
                   variant={
-                    deliveryType === '택배' ? 'outline-primary' : 'outline'
+                    deliveryType === parcelText ? 'outline-primary' : 'outline'
                   }
                   width="flex-1"
-                  onClick={() => handleDeliveryType('택배')}
+                  onClick={() => handleDeliveryType(parcelText)}
                 />
                 <MoBtn
-                  text="화물"
+                  text={cargoText}
                   variant={
-                    deliveryType === '화물' ? 'outline-primary' : 'outline'
+                    deliveryType === cargoText ? 'outline-primary' : 'outline'
                   }
                   width="flex-1"
-                  onClick={() => handleDeliveryType('화물')}
+                  onClick={() => handleDeliveryType(cargoText)}
                 />
                 <MoBtn
-                  text="직접"
+                  text={directText}
                   variant={
-                    deliveryType === '직접' ? 'outline-primary' : 'outline'
+                    deliveryType === directText ? 'outline-primary' : 'outline'
                   }
                   width="flex-1"
-                  onClick={() => handleDeliveryType('직접')}
+                  onClick={() => handleDeliveryType(directText)}
                 />
               </div>
             </div>
-            {deliveryType === '택배' && (
+            {deliveryType === parcelText && (
               <MoInput
-                label="송장 번호"
-                placeholder="송장 번호를 입력하세요."
+                label={t('trackingNumber')}
+                placeholder={t('trackingNumberPlaceholder')}
               />
             )}
-            {deliveryType === '화물' && (
+            {deliveryType === cargoText && (
               <MoInput
-                label="차량 번호"
-                placeholder="차량 번호를 입력하세요."
+                label={t('vehicleNumber')}
+                placeholder={t('vehicleNumberPlaceholder')}
               />
             )}
           </div>
         )}
         <div className="h-[1px] bg-bg" />
 
-        <LabelInfo label="납기일" value={dueDate || '-'} />
+        <LabelInfo label={tCommon('dueDate')} value={dueDate || '-'} />
       </div>
 
       {/* {isOrderPage || (

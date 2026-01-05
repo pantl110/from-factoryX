@@ -1,6 +1,7 @@
 import { LocationModel } from '@/types/data-model';
 import NoHistoryBox from '@/ui/no-history-box';
 import StockInfoItem from './stock-info-item';
+import { useTranslations } from 'next-intl';
 
 interface StockInfoProps {
   locations?: LocationModel[];
@@ -8,11 +9,13 @@ interface StockInfoProps {
 }
 
 const StockInfo = ({ locations = [], isLoading }: StockInfoProps) => {
+  const t = useTranslations('mobile.stockInfo');
+  const tStock = useTranslations('stock.stockLocation.empty');
   const hasLocations = locations.length > 0;
 
   return (
     <div className="pt-8 flex flex-col">
-      <h3 className="px-7 m-Heading-3-semibold">재고 정보</h3>
+      <h3 className="px-7 m-Heading-3-semibold">{t('title')}</h3>
 
       {isLoading ? (
         <></>
@@ -24,7 +27,7 @@ const StockInfo = ({ locations = [], isLoading }: StockInfoProps) => {
         </>
       ) : (
         <div className="px-7 pt-8">
-          <NoHistoryBox text="등록된 창고 위치가 아직 없어요." />
+          <NoHistoryBox text={tStock('title')} />
         </div>
       )}
     </div>

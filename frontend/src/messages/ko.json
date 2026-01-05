@@ -28,6 +28,7 @@
     "expectedCompletionDate": "마감 예정일자",
     "deliveryDate": "납품일자",
     "dueDate": "납기일자",
+    "lotNumber": "LOT 번호",
     "status": "상태",
     "more": "더보기",
     "businessRegistrationNumber": "사업자등록번호",
@@ -101,6 +102,7 @@
     "material": "자재",
     "all": "전체",
     "warehouseLocation": "창고 위치",
+    "warehouseImage": "창고 사진",
     "expirationDate": "유통기한",
     "days": "일",
     "inventoryStatus": {
@@ -2025,6 +2027,124 @@
           }
         }
       }
+    }
+  },
+  "mobile": {
+    "topbar": {
+      "accountStatus": "정산 현황",
+      "scanResult": "스캔 결과",
+      "orderConfirmationRequired": "확정 필요 주문",
+      "deliveryDetail": "납기 상세 조회",
+      "notification": "알림",
+      "barcodeScan": "바코드 스캔"
+    },
+    "deliveryInfo": {
+      "title": "납품 정보",
+      "deliveryMethod": "배송 방식",
+      "parcel": "택배",
+      "cargo": "화물",
+      "direct": "직접",
+      "trackingNumber": "송장 번호",
+      "trackingNumberPlaceholder": "송장 번호를 입력하세요.",
+      "vehicleNumber": "차량 번호",
+      "vehicleNumberPlaceholder": "차량 번호를 입력하세요."
+    },
+    "delivery": {
+      "scan": {
+        "title": "스캔하기",
+        "button": "스캔하기",
+        "barcodeScanTitle": "바코드 스캔",
+        "barcodeRecognitionFailed": "바코드를 인식할 수 없습니다. 다시 시도해주세요.",
+        "productLotNumber": "제품의 lot번호",
+        "viewDetail": "상세보기"
+      },
+      "projectInfo": {
+        "title": "프로젝트 정보",
+        "projectName": "프로젝트명(거래처명)",
+        "quantity": "수량",
+        "orderQuantity": "주문 수량",
+        "scannedQuantity": "스캔된 수량",
+        "dueDate": "납기일"
+      },
+      "detail": {
+        "title": "스캔된 LOT 정보",
+        "scannedPrefix": "스캔: ",
+        "packagingQuantity": "포장 수량"
+      }
+    },
+    "dashboard": {
+      "todayTasks": "오늘의 할일",
+      "workList": {
+        "title": "작업목록",
+        "honorific": "님",
+        "possessive": "의"
+      },
+      "memo": "메모",
+      "salesStatus": {
+        "todayTotal": "오늘 총 {count}건이 있어요"
+      },
+      "todoList": {
+        "deliveryStatus": "납품 현황",
+        "rop": "ROP",
+        "needsProgress": "진행 필요",
+        "viewMoreNotifications": "알림 더 보기"
+      }
+    },
+    "orderInfo": {
+      "totalTotalAmount": "총 합계금액",
+      "productDetailInfo": "제품에 대한 자세한 정보는 PC에서 확인하실 수 있습니다."
+    },
+    "orderConfirmModal": {
+      "title": "주문 내역 확정",
+      "description1": "PC에서 이메일 발송과 계산서 발행이 가능해요.",
+      "description2": "또한, 주문확정서로 고객이 내용을 확인할 수 있어 주문 내역을 더욱 명확하게 전달 할 수 있어요!",
+      "confirm": "확정하기",
+      "confirmOrder": "주문 확정하기"
+    },
+    "stockInfo": {
+      "title": "재고 정보"
+    },
+    "barcodeScanner": {
+      "defaultTitle": "바코드 스캔",
+      "barcodeNotFound": "바코드를 찾을 수 없습니다.",
+      "barcodeRecognitionFailed": "바코드를 인식할 수 없습니다.\n다시 촬영해주세요.\n\n• 바코드가 선명하게 보이는지 확인해주세요\n• 바코드가 사진 중앙에 있는지 확인해주세요\n• 조명이 충분한지 확인해주세요",
+      "cameraPermissionRequired": "카메라 권한이 필요합니다.\n설정에서 카메라 권한을 허용해주세요.",
+      "cameraNotFound": "카메라를 찾을 수 없습니다.\n카메라가 연결되어 있는지 확인해주세요.",
+      "scanError": "바코드 스캔 중 오류가 발생했습니다.\n{error}",
+      "unknownError": "알 수 없는 오류",
+      "videoFormatNotSupported": "비디오 형식을 지원하지 않습니다.",
+      "retry": "다시 시도",
+      "alignBarcode": "바코드를 카메라 중앙에 맞춰주세요.",
+      "autoRecognition": "자동으로 인식됩니다.",
+      "processing": "인식 중...",
+      "takePhotoWithCamera": "카메라 앱으로 촬영"
+    },
+    "alarm": {
+      "filter": {
+        "today": "오늘",
+        "delayed": "지연",
+        "scheduled": "예정"
+      },
+      "tabs": {
+        "all": "전체",
+        "deliveryStatus": "납품 현황",
+        "rop": "ROP",
+        "expiry": "유통기한",
+        "needsProgress": "진행 필요"
+      },
+      "noRopNotifications": "ROP 알림이 없어요.",
+      "materialShortage": "자재가 부족해요!",
+      "noExpiryNotifications": "유통기한 위험 알림이 없어요.",
+      "expiryRisk": "유통기한이 얼마 남지 않았어요!",
+      "noDeliveryNotifications": "납품 현황 알림이 없어요.",
+      "dueDateNotSpecified": "납기일 미지정",
+      "dueDatePast": "납기일이 {days}일 지났어요!",
+      "todayIsDeliveryDate": "오늘이 납품일이에요!",
+      "daysRemaining": "D-{days}",
+      "noConfirmationNotifications": "진행 필요 알림이 없어요.",
+      "checkConfirmationStatus": "확정 상태를 확인해 주세요.",
+      "orderConfirmedForDays": "주문이 {days}일째 확정 상태예요!",
+      "viewMore": "더 보기"
     }
   }
 }

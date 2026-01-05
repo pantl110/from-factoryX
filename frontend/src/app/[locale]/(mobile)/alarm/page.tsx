@@ -4,6 +4,7 @@ import Topbar from '../topbar';
 import Tabbar from './tabbar';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import { Suspense } from 'react';
 import DueDate from './due-date';
 // import PaymentDue from './payment-due';
@@ -12,6 +13,7 @@ import ConfirmationRequired from './confirmation-required';
 import Rop from './rop';
 
 const AlarmContent = () => {
+  const t = useTranslations('mobile.topbar');
   const searchParams = useSearchParams();
   const currentTab = searchParams.get('tab') || 'all';
   const router = useRouter();
@@ -64,7 +66,10 @@ const AlarmContent = () => {
 
   return (
     <>
-      <Topbar title="알림" onBackClick={() => router.push('/dashboard')} />
+      <Topbar
+        title={t('notification')}
+        onBackClick={() => router.push('/dashboard')}
+      />
       <Tabbar />
       {renderContent()}
     </>
@@ -72,8 +77,9 @@ const AlarmContent = () => {
 };
 
 const AlarmPage = () => {
+  const tCommon = useTranslations('common');
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div>{tCommon('loading')}</div>}>
       <AlarmContent />
     </Suspense>
   );

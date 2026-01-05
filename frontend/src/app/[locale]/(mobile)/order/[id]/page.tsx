@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 import { useRouter } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 
 import MoBtn from '@/ui/mo-btn';
 import { useGetProjectStatus, useStartProduction } from '@/hooks';
@@ -22,6 +23,8 @@ import OrderConfirmModal, {
 } from '../order-confirm-modal';
 
 const OrderPage = () => {
+  const t = useTranslations('mobile.topbar');
+  const tOrderConfirm = useTranslations('mobile.orderConfirmModal');
   const params = useParams<{ id: string }>();
   const projectId = Number(params.id);
 
@@ -150,7 +153,7 @@ const OrderPage = () => {
   return (
     <>
       <div className="pb-6">
-        <Topbar title="확정 필요 주문" />
+        <Topbar title={t('orderConfirmationRequired')} />
         {isProjectStatusLoading ? null : (
           <>
             <ClientInfo clientInfo={quotationData?.client_info} />
@@ -165,7 +168,7 @@ const OrderPage = () => {
             <div className="h-2 bg-bg" />
             <div className="px-7 py-8">
               <MoBtn
-                text="주문 확정하기"
+                text={tOrderConfirm('confirmOrder')}
                 variant="primary"
                 width="w-full"
                 big

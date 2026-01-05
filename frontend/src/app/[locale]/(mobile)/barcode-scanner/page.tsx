@@ -4,6 +4,7 @@ import { useZxing } from 'react-zxing';
 import { useEffect, useState, Suspense, useMemo, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import { WarningCircle, Camera } from '@phosphor-icons/react';
 import Spinner from '@/ui/spinner';
 import Topbar from '@/app/[locale]/(mobile)/topbar';
@@ -25,10 +26,11 @@ type ExtendedMediaTrackConstraintSetType = MediaTrackConstraintSet & {
 };
 
 const BarcodeScannerContent = () => {
+  const t = useTranslations('mobile.barcodeScanner');
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get('callback') || '/dashboard';
-  const title = searchParams.get('title') || '바코드 스캔';
+  const title = searchParams.get('title') || t('defaultTitle');
 
   const [error, setError] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
@@ -202,13 +204,11 @@ const BarcodeScannerContent = () => {
         url.searchParams.set('scanned_code', scannedText);
         router.push(url.pathname + url.search);
       } else {
-        throw lastError || new Error('바코드를 찾을 수 없습니다.');
+        throw lastError || new Error(t('barcodeNotFound'));
       }
     } catch {
       // 바코드 인식 실패
-      setBarcodeError(
-        '바코드를 인식할 수 없습니다.\n다시 촬영해주세요.\n\n• 바코드가 선명하게 보이는지 확인해주세요\n• 바코드가 사진 중앙에 있는지 확인해주세요\n• 조명이 충분한지 확인해주세요'
-      );
+      setBarcodeError(t('barcodeRecognitionFailed'));
       setIsProcessing(false);
     }
   };
@@ -342,16 +342,14 @@ const BarcodeScannerContent = () => {
       }
 
       if (error.name === 'NotAllowedError') {
-        setError(
-          '카메라 권한이 필요합니다.\n설정에서 카메라 권한을 허용해주세요.'
-        );
+        setError(t('cameraPermissionRequired'));
       } else if (error.name === 'NotFoundError') {
-        setError(
-          '카메라를 찾을 수 없습니다.\n카메라가 연결되어 있는지 확인해주세요.'
-        );
+        setError(t('cameraNotFound'));
       } else {
         setError(
-          `바코드 스캔 중 오류가 발생했습니다.\n${error.message || error.name || '알 수 없는 오류'}`
+          t('scanError', {
+            error: error.message || error.name || t('unknownError'),
+          })
         );
       }
       setIsScanning(false);
@@ -579,7 +577,7 @@ const BarcodeScannerContent = () => {
               }}
               className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-8 transition-colors m-Body-1"
             >
-              다시 시도
+              {t('retry')}
             </button>
           </div>
         ) : (
@@ -595,7 +593,7 @@ const BarcodeScannerContent = () => {
               onError={(e) => {
                 const { error } = e.currentTarget;
                 if (error && error.code === 4) {
-                  setError('비디오 형식을 지원하지 않습니다.');
+                  setError(t('videoFormatNotSupported'));
                 }
               }}
               onCanPlay={() => {
@@ -644,11 +642,9 @@ const BarcodeScannerContent = () => {
         {/* 실시간 스캔 안내 */}
         {!barcodeError && (
           <>
-            <p className="text-dg m-Body-2 text-center">
-              바코드를 카메라 중앙에 맞춰주세요.
-            </p>
+            <p className="text-dg m-Body-2 text-center">{t('alignBarcode')}</p>
             <p className="text-sv m-Caption text-center">
-              자동으로 인식됩니다.
+              {t('autoRecognition')}
             </p>
           </>
         )}
@@ -656,7 +652,7 @@ const BarcodeScannerContent = () => {
         {/* 카메라 앱으로 촬영 버튼 - 모바일에서만 표시 */}
         {isMobile && (
           <MoBtn
-            text={isProcessing ? '인식 중...' : '카메라 앱으로 촬영'}
+            text={isProcessing ? t('processing') : t('takePhotoWithCamera')}
             icon={<Camera />}
             iconPosition="left"
             variant="primary"

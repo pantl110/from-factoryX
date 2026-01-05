@@ -1,11 +1,14 @@
 import InfoDetail from '../info-detail';
 import { ProjectQuotationProductsModel } from '@/types/data-model';
+import { useTranslations } from 'next-intl';
 
 interface OrderInfoProps {
   products?: ProjectQuotationProductsModel[] | null;
 }
 
 const OrderInfo = ({ products }: OrderInfoProps) => {
+  const t = useTranslations('common');
+  const tOrderInfo = useTranslations('mobile.orderInfo');
   const productsData = Array.isArray(products) ? products : [];
 
   const totalAmount = productsData.reduce((acc, product) => {
@@ -16,7 +19,7 @@ const OrderInfo = ({ products }: OrderInfoProps) => {
 
   return (
     <div className="px-7 py-8 flex flex-col gap-8">
-      <h3 className="m-Heading-3-semibold">주문 제품 정보</h3>
+      <h3 className="m-Heading-3-semibold">{t('orderProductInfo')}</h3>
       <div className="flex flex-col gap-5">
         <div className="flex flex-col gap-3">
           {productsData.map((product, index) => (
@@ -32,19 +35,20 @@ const OrderInfo = ({ products }: OrderInfoProps) => {
 
       <div className="flex flex-col gap-5">
         <div className="flex justify-between">
-          <h4 className="m-Heading-4b">총 합계금액</h4>
+          <h4 className="m-Heading-4b">{tOrderInfo('totalTotalAmount')}</h4>
           <span className="m-Heading-3-semibold text-primary">
-            {totalAmount.toLocaleString()}원
+            {totalAmount.toLocaleString()}
+            {t('won')}
           </span>
         </div>
         <div className="flex flex-col gap-3">
           <InfoDetail
-            label="공급가액"
-            value={`${totalSupplyAmount.toLocaleString()}원`}
+            label={t('supplyAmount')}
+            value={`${totalSupplyAmount.toLocaleString()}${t('won')}`}
           />
           <InfoDetail
-            label="세액"
-            value={`${totalTaxAmount.toLocaleString()}원`}
+            label={t('taxAmount')}
+            value={`${totalTaxAmount.toLocaleString()}${t('won')}`}
           />
         </div>
       </div>
@@ -55,7 +59,7 @@ const OrderInfo = ({ products }: OrderInfoProps) => {
         <div className="flex gap-2 items-center">
           <div className="w-1.5 h-1.5 bg-lg rounded-full" />
           <h3 className="m-Body-4 text-primary">
-            제품에 대한 자세한 정보는 PC에서 확인하실 수 있습니다.
+            {tOrderInfo('productDetailInfo')}
           </h3>
         </div>
       </div>

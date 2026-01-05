@@ -29,6 +29,7 @@
     "expectedCompletionDate": "End Date",
     "deliveryDate": "Delivery Date",
     "dueDate": "Due Date",
+    "lotNumber": "LOT No.",
     "status": "Status",
     "more": "More",
     "businessRegistrationNumber": "Registration No.",
@@ -101,6 +102,7 @@
     "material": "Material",
     "all": "All",
     "warehouseLocation": "Location",
+    "warehouseImage": "Warehouse Image",
     "expirationDate": "Exp. Date",
     "days": " days",
     "inventoryStatus": {
@@ -2024,6 +2026,124 @@
           }
         }
       }
+    }
+  },
+  "mobile": {
+    "topbar": {
+      "accountStatus": "Account Status",
+      "scanResult": "Scan Result",
+      "orderConfirmationRequired": "Order Confirmation Required",
+      "deliveryDetail": "Delivery Detail",
+      "notification": "Notifications",
+      "barcodeScan": "Barcode Scan"
+    },
+    "deliveryInfo": {
+      "title": "Delivery Information",
+      "deliveryMethod": "Delivery Method",
+      "parcel": "Parcel",
+      "cargo": "Cargo",
+      "direct": "Direct",
+      "trackingNumber": "Tracking Number",
+      "trackingNumberPlaceholder": "Enter tracking number.",
+      "vehicleNumber": "Vehicle Number",
+      "vehicleNumberPlaceholder": "Enter vehicle number."
+    },
+    "delivery": {
+      "scan": {
+        "title": "Scan",
+        "button": "Scan",
+        "barcodeScanTitle": "Barcode Scan",
+        "barcodeRecognitionFailed": "Unable to recognize barcode. Please try again.",
+        "productLotNumber": "Product Lot No.",
+        "viewDetail": "View Detail"
+      },
+      "projectInfo": {
+        "title": "Project Information",
+        "projectName": "Project Name (Client Name)",
+        "quantity": "Quantity",
+        "orderQuantity": "Order Qty",
+        "scannedQuantity": "Scanned Qty",
+        "dueDate": "Due Date"
+      },
+      "detail": {
+        "title": "Scanned LOT Info",
+        "scannedPrefix": "Scanned: ",
+        "packagingQuantity": "Packaging Quantity"
+      }
+    },
+    "dashboard": {
+      "todayTasks": "Today's Tasks",
+      "workList": {
+        "title": "Work List",
+        "honorific": "",
+        "possessive": "'s"
+      },
+      "memo": "Memo",
+      "salesStatus": {
+        "todayTotal": "There are {count} items today"
+      },
+      "todoList": {
+        "deliveryStatus": "Delivery Status",
+        "rop": "ROP",
+        "needsProgress": "Needs Progress",
+        "viewMoreNotifications": "View More Notifications"
+      }
+    },
+    "orderInfo": {
+      "totalTotalAmount": "Total Amount",
+      "productDetailInfo": "You can view detailed product information on PC."
+    },
+    "orderConfirmModal": {
+      "title": "Confirm Order",
+      "description1": "You can send emails and issue invoices from PC.",
+      "description2": "Also, customers can check the details through the order confirmation, making it easier to communicate order details clearly!",
+      "confirm": "Confirm",
+      "confirmOrder": "Confirm Order"
+    },
+    "stockInfo": {
+      "title": "Stock Info"
+    },
+    "barcodeScanner": {
+      "defaultTitle": "Barcode Scan",
+      "barcodeNotFound": "Barcode not found.",
+      "barcodeRecognitionFailed": "Unable to recognize barcode.\nPlease take another photo.\n\n• Make sure the barcode is clearly visible\n• Make sure the barcode is centered in the photo\n• Make sure there is sufficient lighting",
+      "cameraPermissionRequired": "Camera permission is required.\nPlease allow camera access in settings.",
+      "cameraNotFound": "Camera not found.\nPlease check if the camera is connected.",
+      "scanError": "An error occurred while scanning barcode.\n{error}",
+      "unknownError": "Unknown error",
+      "videoFormatNotSupported": "Video format is not supported.",
+      "retry": "Retry",
+      "alignBarcode": "Align the barcode in the center of the camera.",
+      "autoRecognition": "It will be recognized automatically.",
+      "processing": "Recognizing...",
+      "takePhotoWithCamera": "Take Photo with Camera"
+    },
+    "alarm": {
+      "filter": {
+        "today": "Today",
+        "delayed": "Delayed",
+        "scheduled": "Scheduled"
+      },
+      "tabs": {
+        "all": "All",
+        "deliveryStatus": "Delivery Status",
+        "rop": "ROP",
+        "expiry": "Expiry",
+        "needsProgress": "Needs Progress"
+      },
+      "noRopNotifications": "No ROP notifications.",
+      "materialShortage": "Material shortage!",
+      "noExpiryNotifications": "No expiry risk notifications.",
+      "expiryRisk": "Expiry date is approaching!",
+      "noDeliveryNotifications": "No delivery status notifications.",
+      "dueDateNotSpecified": "Due date not specified",
+      "dueDatePast": "Due date passed {days} days ago!",
+      "todayIsDeliveryDate": "Today is the delivery date!",
+      "daysRemaining": "D-{days}",
+      "noConfirmationNotifications": "No confirmation required notifications.",
+      "checkConfirmationStatus": "Please check the confirmation status.",
+      "orderConfirmedForDays": "Order has been confirmed for {days} days!",
+      "viewMore": "View More"
     }
   }
 }

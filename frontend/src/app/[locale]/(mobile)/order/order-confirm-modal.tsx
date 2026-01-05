@@ -2,6 +2,7 @@ import React, { forwardRef, useImperativeHandle, useRef } from 'react';
 import MoModal, { MoModalHandleModel } from '@/ui/modal/mo-modal';
 import Image from 'next/image';
 import MoBtn from '@/ui/mo-btn';
+import { useTranslations } from 'next-intl';
 
 interface OrderConfirmModalProps {
   onClose: () => void;
@@ -17,6 +18,8 @@ const OrderConfirmModal = forwardRef<
   OrderConfirmModalHandleModel,
   OrderConfirmModalProps
 >(({ onClose, onConfirm, isConfirming = false }, ref) => {
+  const t = useTranslations('mobile.orderConfirmModal');
+  const tCommon = useTranslations('common');
   const modalRef = useRef<MoModalHandleModel>(null);
 
   const handleClose = () => {
@@ -28,28 +31,23 @@ const OrderConfirmModal = forwardRef<
   }));
 
   return (
-    <MoModal ref={modalRef} title="주문 내역 확정" onClose={onClose}>
+    <MoModal ref={modalRef} title={t('title')} onClose={onClose}>
       <div className="flex flex-col gap-3 mb-4 ">
         <div className="flex justify-center mb-3">
           <Image
             src="/order-confirm.png"
-            alt="주문 내역 확정"
+            alt={t('title')}
             width={80}
             height={80}
           />
         </div>
-        <p className="m-Body-3 text-sv">
-          PC에서 이메일 발송과 계산서 발행이 가능해요.
-        </p>
-        <p className="m-Body-3 text-sv">
-          또한, 주문확정서로 고객이 내용을 확인할 수 있어 주문 내역을 더욱
-          명확하게 전달 할 수 있어요!
-        </p>
+        <p className="m-Body-3 text-sv">{t('description1')}</p>
+        <p className="m-Body-3 text-sv">{t('description2')}</p>
       </div>
 
       <div className="flex flex-col gap-2.5">
         <MoBtn
-          text="확정하기"
+          text={t('confirm')}
           variant="primary"
           width="w-full"
           big={true}
@@ -57,7 +55,7 @@ const OrderConfirmModal = forwardRef<
           onClick={onConfirm}
         />
         <MoBtn
-          text="닫기"
+          text={tCommon('close')}
           variant="outline"
           width="w-full"
           big={true}

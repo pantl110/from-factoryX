@@ -5,6 +5,7 @@ import { useMemo } from 'react';
 import { useGetMobileDashboardCounts } from '@/hooks';
 import { MobileDashboardCountsResponseModel } from '@/types/data-model';
 import { getToday } from '@/utils';
+import { useTranslations } from 'next-intl';
 import TopBar from './topbar';
 import WorkList from './work-list';
 import TodoList from './todo-list';
@@ -18,6 +19,7 @@ const EMPTY_COUNTS: MobileDashboardCountsResponseModel = {
 };
 
 const MobileDashboardPage = () => {
+  const t = useTranslations('mobile.dashboard');
   // 오늘 날짜 사용 (UTC가 아닌 로컬 시간)
   const baseDate = useMemo(() => getToday(), []);
   const { data } = useGetMobileDashboardCounts({ baseDate });
@@ -40,7 +42,7 @@ const MobileDashboardPage = () => {
             <div className="w-8 h-8 flex items-center justify-center bg-primary-8 rounded-full ">
               <Calendar size={20} className="text-primary" />
             </div>
-            <h4 className="m-Heading-4b">오늘의 할일</h4>
+            <h4 className="m-Heading-4b">{t('todayTasks')}</h4>
           </div>
           <TodoList data={dashboardCounts} />
         </div>
@@ -51,7 +53,7 @@ const MobileDashboardPage = () => {
             <div className="w-8 h-8 flex items-center justify-center bg-primary-8 rounded-full ">
               <Note size={20} className="text-primary" />
             </div>
-            <h4 className="m-Heading-4b">메모</h4>
+            <h4 className="m-Heading-4b">{t('memo')}</h4>
           </div>
           <Memo />
         </div> */}

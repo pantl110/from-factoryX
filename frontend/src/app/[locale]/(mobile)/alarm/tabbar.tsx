@@ -4,21 +4,23 @@ import TabItem from './tab-item';
 import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useRouter } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 
 const Tabbar = () => {
+  const t = useTranslations('mobile.alarm.tabs');
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const tabs = useMemo(
     () => [
-      { name: '전체', param: 'all' },
-      { name: '납품 현황', param: 'due-date' },
+      { name: t('all'), param: 'all' },
+      { name: t('deliveryStatus'), param: 'due-date' },
       // { name: '정산 현황', param: 'payment-due' },
-      { name: 'ROP', param: 'rop' },
-      { name: '유통기한', param: 'expiry' },
-      { name: '진행 필요', param: 'confirmation-required' },
+      { name: t('rop'), param: 'rop' },
+      { name: t('expiry'), param: 'expiry' },
+      { name: t('needsProgress'), param: 'confirmation-required' },
     ],
-    []
+    [t]
   );
 
   const [selectedTab, setSelectedTab] = useState(

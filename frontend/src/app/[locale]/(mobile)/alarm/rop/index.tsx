@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { CaretRight, MoneyWavy } from '@phosphor-icons/react';
 import { useRouter } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import Title from '../title';
 import AlarmItem from '../alarm-item';
@@ -20,6 +21,8 @@ const formatStockValue = (value?: number) =>
 const shortagePageSize = 10;
 
 const Rop = ({ hideWhenEmpty = false, limit }: RopProps) => {
+  const t = useTranslations('mobile.alarm.tabs');
+  const tAlarm = useTranslations('mobile.alarm');
   const router = useRouter();
   const { getMaterialList } = useGetMaterial();
 
@@ -109,7 +112,7 @@ const Rop = ({ hideWhenEmpty = false, limit }: RopProps) => {
     if (displayMaterials.length === 0) {
       return (
         <div className="px-6 pt-4">
-          <NoHistoryBox text="ROP 알림이 없어요." />
+          <NoHistoryBox text={tAlarm('noRopNotifications')} />
         </div>
       );
     }
@@ -126,7 +129,7 @@ const Rop = ({ hideWhenEmpty = false, limit }: RopProps) => {
           return (
             <AlarmItem
               key={material.id}
-              chipText="자재가 부족해요!"
+              chipText={tAlarm('materialShortage')}
               chipVariant="red-secondary"
               name={material.name}
               subText={`${formatValueWithUnit(material.current_stock)} / ${formatValueWithUnit(material.standard_stock)}`}
@@ -139,7 +142,7 @@ const Rop = ({ hideWhenEmpty = false, limit }: RopProps) => {
         {showMoreButton && (
           <div className="px-4 py-2">
             <MoBtn
-              text="더 보기"
+              text={tAlarm('viewMore')}
               variant="outline"
               icon={<CaretRight />}
               width="w-full"
@@ -159,7 +162,7 @@ const Rop = ({ hideWhenEmpty = false, limit }: RopProps) => {
   return (
     <>
       <div className="flex flex-col gap-1 pt-4">
-        <Title icon={<MoneyWavy />} title="ROP" count={totalCount} />
+        <Title icon={<MoneyWavy />} title={t('rop')} count={totalCount} />
         {content}
       </div>
     </>

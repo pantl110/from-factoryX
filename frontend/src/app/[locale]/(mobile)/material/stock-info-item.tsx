@@ -3,12 +3,14 @@ import Image from 'next/image';
 import { LocationModel } from '@/types/data-model';
 import MoChip from '@/ui/mo-chip';
 import { formatDate } from '@/utils';
+import { useTranslations } from 'next-intl';
 
 interface StockInfoItemProps {
   location: LocationModel;
 }
 
 const StockInfoItem = ({ location }: StockInfoItemProps) => {
+  const t = useTranslations('common');
   const images = Array.isArray(location.images) ? location.images : [];
 
   return (
@@ -21,7 +23,12 @@ const StockInfoItem = ({ location }: StockInfoItemProps) => {
               key={idx}
               className="w-20 h-20 rounded-[8px] bg-bg shrink-0 overflow-hidden relative"
             >
-              <Image src={src} alt="창고 사진" fill className="object-cover" />
+              <Image
+                src={src}
+                alt={t('warehouseImage')}
+                fill
+                className="object-cover"
+              />
             </div>
           ))}
         </div>

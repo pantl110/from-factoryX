@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, useSearchParams } from 'next/navigation';
 import { useRouter } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import DeliveryInfo from '../../delivery-info';
 import Topbar from '../../topbar';
 import ProjectInfo from './project-info';
@@ -12,6 +13,7 @@ import Scan from './scan';
 import { MoBottomNavigation } from '@/ui';
 
 const DeliveryPage = () => {
+  const t = useTranslations('mobile.topbar');
   const params = useParams<{ id: string }>();
   const searchParams = useSearchParams();
   const quotationProductId = params?.id ? Number(params.id) : 0;
@@ -70,7 +72,7 @@ const DeliveryPage = () => {
 
   return (
     <div className="pb-30 ">
-      <Topbar title="납기 상세 조회" />
+      <Topbar title={t('deliveryDetail')} />
       {error || (isLoading && !projectStatus) ? (
         <></>
       ) : (

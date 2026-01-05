@@ -3,6 +3,7 @@ import { CaretRight } from '@phosphor-icons/react';
 import TodoListItem from './todo-list-item';
 import MoBtn from '@/ui/mo-btn';
 import { useRouter } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import { MobileDashboardCountsResponseModel } from '@/types/data-model';
 
 interface TodoListProps {
@@ -10,6 +11,8 @@ interface TodoListProps {
 }
 
 const TodoList = ({ data }: TodoListProps) => {
+  const t = useTranslations('mobile.dashboard.todoList');
+  const tCommon = useTranslations('common');
   const router = useRouter();
 
   return (
@@ -20,14 +23,14 @@ const TodoList = ({ data }: TodoListProps) => {
       {/* 할일 리스트 */}
       {/* <div className="flex gap-2.5"> */}
       <TodoListItem
-        title="납품 현황"
+        title={t('deliveryStatus')}
         count={data.undelivered_quotation_products}
         onClick={() => {
           router.push('/alarm?tab=due-date');
         }}
       />
       <TodoListItem
-        title="ROP"
+        title={t('rop')}
         count={data.shortage_materials}
         onClick={() => {
           router.push('/alarm?tab=rop');
@@ -36,14 +39,14 @@ const TodoList = ({ data }: TodoListProps) => {
       {/* </div> */}
       {/* <div className="flex gap-2.5"> */}
       <TodoListItem
-        title="진행 필요"
+        title={t('needsProgress')}
         count={data.stale_confirmed_projects}
         onClick={() => {
           router.push('/alarm?tab=confirmation-required');
         }}
       />
       <TodoListItem
-        title="유통기한"
+        title={tCommon('expirationDate')}
         count={data.expiry_risk_materials}
         onClick={() => {
           router.push('/alarm?tab=expiry');
@@ -53,7 +56,7 @@ const TodoList = ({ data }: TodoListProps) => {
 
       {/* 버튼 */}
       <MoBtn
-        text="알림 더 보기"
+        text={t('viewMoreNotifications')}
         variant="outline"
         icon={<CaretRight />}
         width="w-full"
