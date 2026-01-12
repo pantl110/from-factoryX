@@ -424,10 +424,11 @@ const MaterialDetailPanel = ({
         payload.max_stock =
           values.maxStock === '' ? null : Number(values.maxStock);
       }
-      if (values.expiryDays !== undefined) {
-        payload.expiry_days =
-          values.expiryDays === '' ? null : values.expiryDays;
-      }
+      // expiryDays는 항상 포함 (빈값이면 null)
+      payload.expiry_days =
+        values.expiryDays === undefined || values.expiryDays === ''
+          ? null
+          : Number(values.expiryDays);
       if (values.memo !== undefined) {
         payload.memo = values.memo === '' ? null : values.memo;
       }

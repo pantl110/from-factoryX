@@ -63,9 +63,14 @@ export const MaterialStockInDetailModal = ({
   // 데이터가 로드되면 폼에 값 설정
   useEffect(() => {
     if (historyDetail) {
+      // null이거나 값이 없으면 "-"로 표시, 아니면 그대로 표시
+      const expirationDateValue = !historyDetail.expiration_date
+        ? '-'
+        : historyDetail.expiration_date;
+
       reset({
         warehouse_location: historyDetail.warehouse_location || null,
-        expiration_date: historyDetail.expiration_date || null,
+        expiration_date: expirationDateValue,
       });
     }
   }, [historyDetail, reset]);
@@ -85,9 +90,16 @@ export const MaterialStockInDetailModal = ({
       return;
     }
 
+    // 빈 값이거나 "-"이면 null로 전송, 아니면 그대로 전송
+    const trimmedValue = data.expiration_date?.trim();
+    const expirationDateValue =
+      !data.expiration_date || trimmedValue === '' || trimmedValue === '-'
+        ? null
+        : data.expiration_date;
+
     const result = await updateMaterialHistory(historyId, {
       warehouse_location: data.warehouse_location || null,
-      expiration_date: data.expiration_date || null,
+      expiration_date: expirationDateValue,
     });
 
     if (result.success && result.data) {
@@ -173,12 +185,18 @@ export const MaterialStockInDetailModal = ({
             render={({ field }) => (
               <InfoLabelValue
                 label={tCommon('expirationDate')}
-                value={field.value || ''}
+                value={field.value || '-'}
                 placeholder="YYYY-MM-DD"
                 isEditing={true}
                 onChange={(e) => {
-                  const formattedValue = formatDate(e.target.value);
-                  field.onChange(formattedValue || null);
+                  const inputValue = e.target.value.trim();
+                  // "-"를 입력하면 그대로 유지, 아니면 날짜 형식으로 변환
+                  if (inputValue === '-') {
+                    field.onChange('-');
+                  } else {
+                    const formattedValue = formatDate(e.target.value);
+                    field.onChange(formattedValue || null);
+                  }
                 }}
               />
             )}

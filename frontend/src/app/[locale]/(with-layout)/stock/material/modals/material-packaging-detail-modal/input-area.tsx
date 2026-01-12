@@ -85,12 +85,17 @@ export const InputArea = ({
   // repackaging 데이터가 로드되면 form에 채우기 (update 모드)
   useEffect(() => {
     if (mode === 'update' && repackaging) {
+      // null이거나 값이 없으면 "-"로 표시, 아니면 날짜 형식으로 표시
+      const expirationDateValue = !repackaging.expiration_date
+        ? '-'
+        : repackaging.expiration_date
+          ? formatISODate(repackaging.expiration_date) || ''
+          : '';
+
       reset({
         quantity: removeTrailingZeros(repackaging.quantity),
         location: repackaging.warehouse_location || '',
-        expirationDate: repackaging.expiration_date
-          ? formatISODate(repackaging.expiration_date) || ''
-          : '',
+        expirationDate: expirationDateValue,
       });
     }
   }, [mode, repackaging, reset]);
@@ -98,12 +103,17 @@ export const InputArea = ({
   // 부모 히스토리 데이터가 로드되면 form에 기본값 채우기 (create 모드)
   useEffect(() => {
     if (mode === 'create' && parentHistory) {
+      // null이거나 값이 없으면 "-"로 표시, 아니면 날짜 형식으로 표시
+      const expirationDateValue = !parentHistory.expiration_date
+        ? '-'
+        : parentHistory.expiration_date
+          ? formatISODate(parentHistory.expiration_date) || ''
+          : '';
+
       reset({
         quantity: '',
         location: parentHistory.warehouse_location || '',
-        expirationDate: parentHistory.expiration_date
-          ? formatISODate(parentHistory.expiration_date) || ''
-          : '',
+        expirationDate: expirationDateValue,
       });
     }
   }, [mode, parentHistory, reset]);
@@ -114,10 +124,11 @@ export const InputArea = ({
     onQuantityChange?.(Boolean(quantityValue?.toString().trim()));
   }, [quantityValue, onQuantityChange]);
 
-  // 날짜를 API 형식으로 변환 (빈 문자열이면 null, 아니면 그대로 사용)
+  // 날짜를 API 형식으로 변환 (빈 문자열이거나 "-"이면 null, 아니면 그대로 사용)
   const formatDateForAPI = (dateString: string): string | null => {
-    const trimmed = dateString?.trim();
-    return trimmed === '' ? null : trimmed || null;
+    if (!dateString) return null;
+    const trimmed = dateString.trim();
+    return trimmed === '' || trimmed === '-' ? null : trimmed;
   };
 
   // 수량을 숫자로 변환 (콤마 제거)
@@ -133,7 +144,12 @@ export const InputArea = ({
   const onSubmit = async (data: MaterialPackagingFormModel) => {
     const trimmedExpiration = data.expirationDate?.trim();
 
-    if (trimmedExpiration && !isValidDateString(trimmedExpiration)) {
+    // "-"는 유효한 날짜가 아니지만 null로 변환될 예정이므로 체크 제외
+    if (
+      trimmedExpiration &&
+      trimmedExpiration !== '-' &&
+      !isValidDateString(trimmedExpiration)
+    ) {
       onError?.({
         text: tPackaging('errors.invalidExpirationDate.text'),
         subtext: tPackaging('errors.invalidExpirationDate.subtext'),
@@ -222,8 +238,14 @@ export const InputArea = ({
     field: ControllerRenderProps<MaterialPackagingFormModel, 'expirationDate'>,
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    const formatted = formatDate(e.target.value);
-    field.onChange(formatted);
+    const inputValue = e.target.value.trim();
+    // "-"를 입력하면 그대로 유지, 아니면 날짜 형식으로 변환
+    if (inputValue === '-') {
+      field.onChange('-');
+    } else {
+      const formatted = formatDate(e.target.value);
+      field.onChange(formatted);
+    }
   };
 
   const handleQuantityChange = (
@@ -346,7 +368,7 @@ export const InputArea = ({
         render={({ field }) => (
           <InfoLabelValue
             label={tCommon('expirationDate')}
-            value={field.value}
+            value={field.value || '-'}
             placeholder={tPackaging('placeholders.expirationDate')}
             isEditing={true}
             onChange={(e) => handleDateChange(field, e)}

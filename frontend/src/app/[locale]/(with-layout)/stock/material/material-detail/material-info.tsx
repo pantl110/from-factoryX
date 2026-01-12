@@ -635,16 +635,17 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
               const handleChangeExpiryDays = (
                 e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
               ) => {
-                // '일' 제거하고 숫자만 추출
-                const numericValue = e.target.value.replace(/[^0-9]/g, '');
-                // 숫자만 저장
+                const inputValue = e.target.value;
+                // 숫자만 추출
+                const numericValue = inputValue.replace(/[^0-9]/g, '');
+                // 빈 문자열이면 빈 문자열로 저장, 숫자가 있으면 숫자로 저장
                 if (numericValue === '') {
                   field.onChange('');
-                  return;
-                }
-                const num = parseInt(numericValue, 10);
-                if (!isNaN(num)) {
-                  field.onChange(num.toString());
+                } else {
+                  const num = parseInt(numericValue, 10);
+                  if (!isNaN(num)) {
+                    field.onChange(num.toString());
+                  }
                 }
               };
 
@@ -656,10 +657,12 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
               };
 
               const displayValue = isExpiryDaysEditing
-                ? formatNumber(field.value ?? '')
-                : field.value && field.value !== '-'
+                ? field.value
+                  ? formatNumber(field.value)
+                  : ''
+                : field.value && field.value !== '' && field.value !== '-'
                   ? `${formatNumber(field.value)}${tCommon('days')}`
-                  : (field.value ?? '-');
+                  : '-';
 
               // 읽기 모드이고 수정되지 않았을 때만 chip 표시
               const shouldShowChip =
