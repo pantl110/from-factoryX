@@ -19,7 +19,6 @@ import NoHistoryBox from '@/ui/no-history-box';
 
 const CompletedProjectPage = () => {
   const t = useTranslations('project.completed');
-  const tFilters = useTranslations('project.completed.filters');
   const { getProjects, isLoading: isProjectsLoading } = useGetProjects();
   const { deleteProject, isLoading: isDeleteLoading } = useDeleteProject();
 
@@ -39,17 +38,18 @@ const CompletedProjectPage = () => {
     if (!getProjects) return;
 
     const loadArchivedProjects = async () => {
-      let status;
+      let status: 'completed' | 'suspended' | undefined;
 
-      // 개별 상태 선택 시
-      if (selectedStatus === tFilters('completed')) {
+      // selectedStatus는 항상 '전체', '완료', '중단' 중 하나
+      if (selectedStatus === '완료') {
         status = 'completed';
-      } else if (selectedStatus === tFilters('suspended')) {
+      } else if (selectedStatus === '중단') {
         status = 'suspended';
       }
+      // '전체'일 때는 status를 설정하지 않고 status_exclude 사용
 
       const result = await getProjects({
-        ...(selectedStatus === tFilters('all')
+        ...(selectedStatus === '전체'
           ? {
               status_exclude:
                 'quotation,confirmed,pending,production,manufactured,delivery',
@@ -81,7 +81,6 @@ const CompletedProjectPage = () => {
     sortKey,
     sortOrder,
     currentPage,
-    tFilters,
   ]);
 
   const currentIds = projectData?.data.map((project) => project.id) || [];
@@ -168,17 +167,21 @@ const CompletedProjectPage = () => {
       setIsDeleteModalOpen(false);
 
       // 프로젝트 목록 새로고침
+      let refreshStatus: 'completed' | 'suspended' | undefined;
+      if (selectedStatus === '완료') {
+        refreshStatus = 'completed';
+      } else if (selectedStatus === '중단') {
+        refreshStatus = 'suspended';
+      }
+
       const result = await getProjects({
-        ...(selectedStatus === tFilters('all')
+        ...(selectedStatus === '전체'
           ? {
               status_exclude:
                 'quotation,confirmed,pending,production,manufactured,delivery',
             }
           : {
-              status:
-                selectedStatus === tFilters('completed')
-                  ? 'completed'
-                  : ('suspended' as ProjectStatusType),
+              status: refreshStatus as ProjectStatusType,
             }),
         search: searchKeyword,
         order_by:
