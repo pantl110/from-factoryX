@@ -142,7 +142,7 @@ class TestMaterialAPI(TestCase):
         self.assertEqual(material.unit, "EA")
         self.assertEqual(material.current_stock, 0)  # 모델 기본값 사용
         self.assertIsNone(material.standard_stock)  # null=True로 변경됨
-        self.assertEqual(material.expiry_days, 7)  # 기본값 7일
+        self.assertIsNone(material.expiry_days)  # 기본값 None
 
     async def test_create_materials_unauthorized(self):
         """인증되지 않은 사용자 요청 실패 테스트"""

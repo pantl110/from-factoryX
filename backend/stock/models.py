@@ -55,7 +55,7 @@ class Material(BaseModel):
         help_text="적정 재고(최대 재고)",
     )
     expiry_days = models.IntegerField(
-        default=7,
+        default=None,
         null=True,
         blank=True,
         help_text="유통기한 (일)",

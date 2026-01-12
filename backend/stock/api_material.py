@@ -79,9 +79,9 @@ async def create_materials(request, payload: List[SingleMaterialCreateIn]):
         # 기본값 설정
         if "unit" not in data or data["unit"] is None:
             data["unit"] = "EA"
-        # expiry_days가 없거나 None이면 기본값 7 설정
-        if "expiry_days" not in data or data.get("expiry_days") is None:
-            data["expiry_days"] = 7
+        # expiry_days가 None이면 제거 (모델의 기본값 사용)
+        if data.get("expiry_days") is None:
+            data.pop("expiry_days", None)
         # current_stock과 standard_stock, rop, max_stock, memo는 None이면 제거 (모델의 기본값 사용)
         if data.get("current_stock") is None:
             data.pop("current_stock", None)
@@ -263,8 +263,9 @@ async def get_materials_by_factory(
         )
         
         # 유통기한 상태 계산
-        expiry_days = material.expiry_days or 7  # 기본값 7일
-        expiry_status = await sync_to_async(get_expiry_status)(material.id, expiry_days)
+        expiry_status = None
+        if material.expiry_days is not None:
+            expiry_status = await sync_to_async(get_expiry_status)(material.id, material.expiry_days)
         
         material_list.append(
             {
@@ -310,8 +311,9 @@ async def get_expiry_risk_materials(request, q: str = None):
         
         for material in materials:
             # 유통기한 상태 계산
-            expiry_days = material.expiry_days or 7  # 기본값 7일
-            expiry_status = get_expiry_status(material.id, expiry_days)
+            expiry_status = None
+            if material.expiry_days is not None:
+                expiry_status = get_expiry_status(material.id, material.expiry_days)
             
             # 위험 상태인 것만 필터링
             if expiry_status == "위험":
@@ -400,8 +402,9 @@ async def get_material_detail(request, material_id: int):
         raise HttpError(404, "원자재 정보를 찾을 수 없습니다.")
 
     # 유통기한 상태 계산
-    expiry_days = material.expiry_days or 7  # 기본값 7일
-    expiry_status = await sync_to_async(get_expiry_status)(material.id, expiry_days)
+    expiry_status = None
+    if material.expiry_days is not None:
+        expiry_status = await sync_to_async(get_expiry_status)(material.id, material.expiry_days)
     
     # MaterialDetailModelOut으로 변환하면서 expiry_status 추가
     material_detail = MaterialDetailModelOut.model_validate(material)
@@ -432,9 +435,9 @@ async def update_material(request, material_id: int, payload: MaterialUpdateIn):
 
     update_data = payload.dict(exclude_unset=True)
 
-    # expiry_days가 None이면 7로 설정
+    # expiry_days가 None이면 제거 (모델의 기본값 사용)
     if "expiry_days" in update_data and update_data.get("expiry_days") is None:
-        update_data["expiry_days"] = 7
+        update_data.pop("expiry_days", None)
     
     # current_stock이 None이면 0으로 설정
     if "current_stock" in update_data and update_data.get("current_stock") is None:

@@ -69,10 +69,10 @@ async def get_mobile_dashboard_counts(
             # 3. 유통기한 위험 원자재 수
             expiry_risk_count = 0
             for material in Material.objects.filter(factory_id=int(factory_id)):
-                expiry_days = material.expiry_days or 7
-                status = get_expiry_status(material.id, expiry_days)
-                if status == "위험":
-                    expiry_risk_count += 1
+                if material.expiry_days is not None:
+                    status = get_expiry_status(material.id, material.expiry_days)
+                    if status == "위험":
+                        expiry_risk_count += 1
 
             # 4. 7일 이상 확정 상태 유지 중인 프로젝트 수
             today = date.today()

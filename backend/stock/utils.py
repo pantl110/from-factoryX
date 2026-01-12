@@ -222,17 +222,21 @@ def get_material_status(
     return None
 
 
-def get_expiry_status(material_id: int, expiry_days: int) -> str | None:
+def get_expiry_status(material_id: int, expiry_days: int | None) -> str | None:
     """
     원자재의 유통기한 상태를 판단합니다.
     
     Args:
         material_id: 원자재 ID
-        expiry_days: 유통기한 기준 일수
+        expiry_days: 유통기한 기준 일수 (None인 경우 None 반환)
     
     Returns:
-        str | None: '양호', '위험', None (해당 항목이 없을 경우)
+        str | None: '양호', '위험', None (해당 항목이 없거나 expiry_days가 None인 경우)
     """
+    # expiry_days가 None이면 판단 불가
+    if expiry_days is None:
+        return None
+    
     # 오늘 날짜
     today = date.today()
     
