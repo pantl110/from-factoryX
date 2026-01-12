@@ -1,4 +1,6 @@
 from django.contrib import admin
+from django.contrib.auth.hashers import make_password
+from django.forms import PasswordInput
 from user.models import User, Jwt, EmailVerification
 
 # Register your models here.
@@ -33,6 +35,10 @@ class UserAdmin(admin.ModelAdmin):
         ('기본 정보', {
             'fields': ('email', 'name', 'phone_number', 'profile_image')
         }),
+        ('비밀번호', {
+            'fields': ('password',),
+            'description': '비밀번호를 변경하려면 새 비밀번호를 입력하세요. 비밀번호는 자동으로 해시화됩니다. 기존 사용자 편집 시 비밀번호 필드를 비워두면 변경되지 않습니다.'
+        }),
         ('상태 정보', {
             'fields': ('status', 'is_active', 'is_staff', 'is_superuser')
         }),
@@ -54,6 +60,42 @@ class UserAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+    
+    def formfield_for_dbfield(self, db_field, request, **kwargs):
+        """비밀번호 필드를 PasswordInput 위젯으로 표시"""
+        if db_field.name == 'password':
+            kwargs['widget'] = PasswordInput(attrs={'placeholder': '비밀번호를 입력하세요'})
+            kwargs['required'] = False
+        return super().formfield_for_dbfield(db_field, request, **kwargs)
+    
+    def get_form(self, request, obj=None, **kwargs):
+        """기존 사용자 편집 시 비밀번호 필드를 빈 값으로 초기화"""
+        form = super().get_form(request, obj, **kwargs)
+        if obj:  # 기존 사용자 편집 시
+            form.base_fields['password'].initial = ''
+        return form
+    
+    def save_model(self, request, obj, form, change):
+        """비밀번호가 변경되었을 때 해시화하여 저장"""
+        password = form.cleaned_data.get('password', '')
+        
+        if change:
+            # 기존 사용자 편집 시
+            if password:
+                # 비밀번호가 입력된 경우 해시화하여 저장
+                obj.password = make_password(password)
+            else:
+                # 비밀번호가 입력되지 않았으면 기존 비밀번호 유지
+                obj.password = User.objects.get(pk=obj.pk).password
+        else:
+            # 새 사용자 생성 시
+            if password:
+                obj.password = make_password(password)
+            else:
+                # 기본 비밀번호 설정
+                obj.password = make_password('changeme123!')
+        
+        super().save_model(request, obj, form, change)
     
     def factory_roles(self, obj):
         """사용자의 공장별 권한 정보 표시"""
