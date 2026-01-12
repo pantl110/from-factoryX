@@ -434,10 +434,6 @@ async def update_material(request, material_id: int, payload: MaterialUpdateIn):
         raise HttpError(404, "원자재 정보를 찾을 수 없습니다.")
 
     update_data = payload.dict(exclude_unset=True)
-
-    # expiry_days가 None이면 제거 (모델의 기본값 사용)
-    if "expiry_days" in update_data and update_data.get("expiry_days") is None:
-        update_data.pop("expiry_days", None)
     
     # current_stock이 None이면 0으로 설정
     if "current_stock" in update_data and update_data.get("current_stock") is None:
