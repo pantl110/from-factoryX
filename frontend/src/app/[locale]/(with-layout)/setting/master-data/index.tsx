@@ -411,7 +411,7 @@ const MasterData = () => {
       (settingChip === 'client' && isClientLoading)
     ) {
       return (
-        <div className="flex justify-center items-center py-20">
+        <div className="flex justify-center items-center h-100">
           <Spinner />
         </div>
       );

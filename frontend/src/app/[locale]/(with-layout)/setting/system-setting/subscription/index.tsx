@@ -23,6 +23,7 @@ import { formatISODate } from '@/utils';
 import RefundPolicyModal from './modals/refund-policy-modal';
 import NoHistoryBox from '@/ui/no-history-box';
 import RegisterCard from './register-card';
+import Spinner from '@/ui/spinner';
 import {
   PaymentResponseModel,
   SubscriptionHistoryResponseModel,
@@ -34,8 +35,11 @@ const Subscription = () => {
   const { factoryId, role } = useMemberStore();
   const { setSubscription } = useSubscriptionStore();
   const { getFactory, factory } = useGetFactory();
-  const { getSubscriptionStatus, subscriptionStatus } =
-    useGetSubscriptionStatus();
+  const {
+    getSubscriptionStatus,
+    subscriptionStatus,
+    isLoading: isSubscriptionStatusLoading,
+  } = useGetSubscriptionStatus();
   const { getPaymentHistory, paymentHistory } = useGetPaymentHistory();
   const { deleteBillingKey } = useDeleteBillingKey();
   const { getPaymentAuth, paymentAuth } = useGetPaymentAuth();
@@ -251,6 +255,15 @@ const Subscription = () => {
       ) ?? false
     );
   };
+
+  // 구독 상태 데이터가 로딩 중이면 스피너 표시
+  if (isSubscriptionStatusLoading || !subscriptionStatus) {
+    return (
+      <div className="flex justify-center items-center h-100">
+        <Spinner />
+      </div>
+    );
+  }
 
   return (
     <div className="px-10 pb-10 flex flex-col gap-8">

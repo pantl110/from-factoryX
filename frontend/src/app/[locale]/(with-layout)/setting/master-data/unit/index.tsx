@@ -128,7 +128,7 @@ const Unit = ({
           deleteButtonText={getDeleteButtonText()}
         />
         {isLoading ? (
-          <div className="flex justify-center items-center py-20">
+          <div className="flex justify-center items-center h-100">
             <Spinner />
           </div>
         ) : unitList.length === 0 && currentCategory === defaultCategory ? (
