@@ -14,7 +14,9 @@ interface InviteResponseModel {
 }
 
 const useInviteMember = () => {
-  const t = useTranslations('setting.systemSetting.permission.inviteModal.errors');
+  const t = useTranslations(
+    'setting.systemSetting.permission.inviteModal.errors'
+  );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const factoryId = useMemberStore((state) => state.factoryId);

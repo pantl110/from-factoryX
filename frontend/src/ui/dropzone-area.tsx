@@ -34,7 +34,6 @@ const DropzoneArea = ({
   onFileUpload,
 }: DropzoneProps) => {
   const t = useTranslations('dropzone');
-  const tCommon = useTranslations('common');
   const [files, setFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { isToastOpen, isVisible, showToast } = useToast();
