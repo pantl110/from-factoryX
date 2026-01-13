@@ -6,7 +6,6 @@ import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import Title from '../title';
 import AlarmItem from '../alarm-item';
-import NoHistoryBox from '@/ui/no-history-box';
 import {
   UndeliveredProductListResponseModel,
   UndeliveredProductModel,
@@ -15,7 +14,7 @@ import { useInfiniteScroll } from '@/hooks';
 import useMemberStore from '@/store/member-store';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import axios from 'axios';
-import MoBtn from '@/ui/mo-btn';
+import { Spinner, MoBtn, NoHistoryBox } from '@/ui';
 
 type ChipVariantType = 'secondary' | 'red-secondary' | 'outline';
 
@@ -215,6 +214,15 @@ const DueDate = ({ hideWhenEmpty = false, limit }: DueDateProps) => {
     return mapped;
   }, [items, limit, tAlarm]);
 
+  // 로딩 중이고 데이터가 없을 때는 Title 포함 전체 숨김
+  if (isInitialLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner />
+      </div>
+    );
+  }
+
   const shouldHideSection =
     hideWhenEmpty && !isInitialLoading && alarmItems.length === 0;
   if (shouldHideSection) {
@@ -222,10 +230,6 @@ const DueDate = ({ hideWhenEmpty = false, limit }: DueDateProps) => {
   }
 
   const renderContent = () => {
-    if (isInitialLoading) {
-      return <></>;
-    }
-
     if (alarmItems.length === 0 || errorMessage) {
       return (
         <div className="px-6 pt-4">

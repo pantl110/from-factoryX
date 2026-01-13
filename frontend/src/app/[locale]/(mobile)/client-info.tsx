@@ -4,14 +4,15 @@ import { useTranslations } from 'next-intl';
 
 interface ClientInfoProps {
   clientInfo?: TaxClientInfoModel | null;
+  title?: string;
 }
 
-const ClientInfo = ({ clientInfo }: ClientInfoProps) => {
+const ClientInfo = ({ clientInfo, title }: ClientInfoProps) => {
   const t = useTranslations('common');
 
   return (
     <div className="px-7 py-8 flex flex-col gap-8">
-      <h3 className="m-Heading-3-semibold">{t('clientInfo')}</h3>
+      <h3 className="m-Heading-3-semibold">{title || t('clientInfo')}</h3>
       <div className="flex flex-col gap-5">
         <LabelInfo label={t('clientName')} value={clientInfo?.name || '-'} />
         <LabelInfo

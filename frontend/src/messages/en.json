@@ -177,7 +177,10 @@
       "noData": "No data to upload.",
       "parseFailed": "Failed to parse Excel file.",
       "readFailed": "Failed to read file."
-    }
+    },
+    "sales": "Sales",
+    "purchase": "Purchase",
+    "viewDetails": "View Details"
   },
   "profileModal": {
     "manageProfile": "Profile",
@@ -309,7 +312,9 @@
     "detailPanel": {
       "buttons": {
         "cancelPublish": "Cancel Publish"
-      }
+      },
+      "salesTaxInvoiceTitle": "Sales Tax Invoice",
+      "purchaseTaxInvoiceTitle": "Purchase Tax Invoice"
     },
     "notAllowed": {
       "title": "Tax/Accounting features are locked.",
@@ -2038,7 +2043,7 @@
   },
   "mobile": {
     "topbar": {
-      "accountStatus": "Account Status",
+      "accountStatus": "Account",
       "scanResult": "Scan Result",
       "orderConfirmationRequired": "Order Confirmation Required",
       "deliveryDetail": "Delivery Detail",
@@ -2128,7 +2133,8 @@
       },
       "tabs": {
         "all": "All",
-        "deliveryStatus": "Delivery Status",
+        "deliveryStatus": "Delivery",
+        "accountStatus": "Account",
         "rop": "ROP",
         "expiry": "Expiry",
         "confirmationRequired": "Confirmation Required"

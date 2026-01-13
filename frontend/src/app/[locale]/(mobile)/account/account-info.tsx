@@ -2,17 +2,59 @@ import InfoDetail from '../info-detail';
 import { LabelInfo } from '../label-info';
 import MoBtn from '@/ui/mo-btn';
 import { CaretRight } from '@phosphor-icons/react';
+import { useTranslations } from 'next-intl';
+import { TaxInvoiceAccountModel } from '@/types/data-model';
+import {
+  AccountsStatusColorMap,
+  AccountsStatusType,
+} from '@/types/status-type';
+import MoChip from '@/ui/mo-chip';
 
 interface AccountInfoProps {
   type: string;
+  account?: TaxInvoiceAccountModel | null;
 }
 
-const AccountInfo = ({ type }: AccountInfoProps) => {
+const AccountInfo = ({ type, account }: AccountInfoProps) => {
+  const tTax = useTranslations('tax.list.info');
+  const tList = useTranslations('tax.list');
+
+  const accountStatus = account?.status as AccountsStatusType | undefined;
+  const statusColorMap = accountStatus
+    ? AccountsStatusColorMap[accountStatus]
+    : null;
+
+  const statusChip =
+    accountStatus && statusColorMap ? (
+      <MoChip
+        text={tList(`status.${accountStatus}`)}
+        variant={
+          statusColorMap.color === 'red'
+            ? 'red-secondary'
+            : statusColorMap.color === 'orange'
+              ? 'orange'
+              : statusColorMap.color === 'secondary'
+                ? 'secondary'
+                : 'outline'
+        }
+        small
+      />
+    ) : null;
+
   return (
     <div className="px-7 py-8 flex flex-col gap-8">
-      <h3 className="m-Heading-3-semibold">약정 정보</h3>
+      <h3 className="m-Heading-3-semibold">
+        {type === 'income' ? tTax('title.sales') : tTax('title.purchase')}
+      </h3>
       <div className="flex flex-col gap-5">
-        <LabelInfo label="진행상태" value="" />
+        <LabelInfo
+          label={
+            type === 'income'
+              ? tTax('statusLabel.sales')
+              : tTax('statusLabel.purchase')
+          }
+          chip={statusChip}
+        />
         <LabelInfo
           label={type === 'income' ? '약정입금일' : '약정지급일'}
           value="2025-10-03"

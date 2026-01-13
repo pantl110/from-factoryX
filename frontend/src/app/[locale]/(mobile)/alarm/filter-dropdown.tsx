@@ -12,7 +12,7 @@ const FilterDropdown = ({ onSelect, onClose }: FilterDropdownProps) => {
   const t = useTranslations('mobile.alarm.filter');
 
   return (
-    <Dropdown onClose={onClose} width="w-30">
+    <Dropdown onClose={onClose} width="w-fit min-w-30">
       <DropdownItem
         text={t('today')}
         onClick={() => {

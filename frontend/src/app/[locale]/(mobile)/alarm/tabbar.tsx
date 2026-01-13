@@ -15,7 +15,7 @@ const Tabbar = () => {
     () => [
       { name: t('all'), param: 'all' },
       { name: t('deliveryStatus'), param: 'due-date' },
-      // { name: '정산 현황', param: 'payment-due' },
+      { name: t('accountStatus'), param: 'payment-due' },
       { name: t('rop'), param: 'rop' },
       { name: t('expiry'), param: 'expiry' },
       { name: t('confirmationRequired'), param: 'confirmation-required' },

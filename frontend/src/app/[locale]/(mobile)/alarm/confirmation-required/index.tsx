@@ -3,9 +3,9 @@ import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import Title from '../title';
 import AlarmItem from '../alarm-item';
-import NoHistoryBox from '@/ui/no-history-box';
 import useGetStaleConfirmedProjects from '@/hooks/project/use-get-stale-confirmed-projects';
 import { getProductNamesDisplay } from '@/utils/get-product-names-display';
+import { Spinner, NoHistoryBox } from '@/ui';
 
 const formatChipText = (
   daysSinceConfirmed: number | null,
@@ -44,15 +44,20 @@ const ConfirmationRequired = ({
   const shouldHideSection =
     hideWhenEmpty && !isLoading && limitedProjects.length === 0;
 
+  // 로딩 중이고 프로젝트가 없을 때는 Title 포함 전체 숨김
+  if (isLoading && !hasProjects) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner />
+      </div>
+    );
+  }
+
   if (shouldHideSection) {
     return null;
   }
 
   const renderContent = () => {
-    if (isLoading && !hasProjects) {
-      return <></>;
-    }
-
     if (!hasProjects || error) {
       return (
         <div className="px-6 pt-4">

@@ -189,7 +189,6 @@ const Info = React.forwardRef<InfoHandleModel, InfoProps>(
               }
             />
           </div>
-
           <div className="flex">
             <InfoLabelValue
               label={statusLabel}
@@ -218,7 +217,6 @@ const Info = React.forwardRef<InfoHandleModel, InfoProps>(
               />
             )}
           </div>
-
           <div className="flex">
             <InfoLabelValue
               label={t('labels.totalBilledAmount')}
@@ -229,7 +227,6 @@ const Info = React.forwardRef<InfoHandleModel, InfoProps>(
               value={`${outstandingBalance.toLocaleString()}원`}
             />
           </div>
-
           <form>
             <div className="flex">
               <div className="relative flex-1 min-w-0">
@@ -399,20 +396,22 @@ const Info = React.forwardRef<InfoHandleModel, InfoProps>(
               </div>
             </div>
 
-            <Controller
-              name="notes"
-              control={control}
-              render={({ field }) => (
-                <InfoLabelValue
-                  label={tCommon('note')}
-                  placeholder={tCommon('note') + '을 입력하세요.'}
-                  value={field.value || ''}
-                  isEditing
-                  textarea
-                  onChange={(e) => field.onChange(e.target.value || null)}
-                />
-              )}
-            />
+            <div className="border-b border-lg">
+              <Controller
+                name="notes"
+                control={control}
+                render={({ field }) => (
+                  <InfoLabelValue
+                    label={tCommon('note')}
+                    placeholder={tCommon('note') + '을 입력하세요.'}
+                    value={field.value || ''}
+                    isEditing
+                    textarea
+                    onChange={(e) => field.onChange(e.target.value || null)}
+                  />
+                )}
+              />
+            </div>
           </form>
         </div>
       </div>

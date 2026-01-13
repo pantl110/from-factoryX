@@ -1,6 +1,6 @@
 // Date & Time utilities
 export { formatRelativeTime } from './format-relative-time';
-export { getToday } from './get-today';
+export { getToday, getDaysDiff } from './get-today';
 export { getStartDate } from './get-start-date';
 export { default as getLastDeliveryDate } from './get-last-delivery-date';
 export { getMonthDisplay } from './get-month-display';

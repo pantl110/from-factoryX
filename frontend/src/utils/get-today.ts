@@ -53,3 +53,29 @@ export const addDays = (dateString: string, days: number): string => {
   const dd = String(date.getDate()).padStart(2, '0');
   return `${yyyy}-${mm}-${dd}`;
 };
+
+/**
+ * 두 날짜 사이의 일수 차이를 계산하는 함수
+ * @param dateString1 - 비교할 첫 번째 날짜 (ISO 문자열 또는 Date 객체)
+ * @param dateString2 - 비교할 두 번째 날짜 (ISO 문자열 또는 Date 객체, 기본값: 오늘)
+ * @returns 일수 차이 (dateString1 - dateString2, 음수 가능)
+ *
+ * @example
+ * getDaysDiff('2025-01-20', '2025-01-15') // 5
+ * getDaysDiff('2025-01-15', '2025-01-20') // -5
+ * getDaysDiff('2025-01-20') // 오늘부터의 일수 차이
+ */
+export const getDaysDiff = (
+  dateString1: string | Date,
+  dateString2?: string | Date
+): number => {
+  const date1 = new Date(dateString1);
+  const date2 = dateString2 ? new Date(dateString2) : new Date();
+
+  if (isNaN(date1.getTime()) || isNaN(date2.getTime())) {
+    return 0;
+  }
+
+  const diffTime = date1.getTime() - date2.getTime();
+  return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+};

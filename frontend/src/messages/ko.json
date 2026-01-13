@@ -177,7 +177,10 @@
       "noData": "업로드할 데이터가 없습니다.",
       "parseFailed": "엑셀 파일 파싱에 실패했습니다.",
       "readFailed": "파일 읽기에 실패했습니다."
-    }
+    },
+    "sales": "매출",
+    "purchase": "매입",
+    "viewDetails": "자세히 보기"
   },
   "profileModal": {
     "manageProfile": "프로필 관리",

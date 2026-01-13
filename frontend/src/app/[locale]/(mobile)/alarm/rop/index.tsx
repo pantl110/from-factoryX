@@ -6,9 +6,8 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import Title from '../title';
 import AlarmItem from '../alarm-item';
 import { MaterialResponseModel } from '@/types/data-model';
-import NoHistoryBox from '@/ui/no-history-box';
 import { useInfiniteScroll, useGetMaterial } from '@/hooks';
-import MoBtn from '@/ui/mo-btn';
+import { Spinner, MoBtn, NoHistoryBox } from '@/ui';
 
 interface RopProps {
   hideWhenEmpty?: boolean;
@@ -98,6 +97,15 @@ const Rop = ({ hideWhenEmpty = false, limit }: RopProps) => {
     },
   });
 
+  // 로딩 중이고 데이터가 없을 때는 Title 포함 전체 숨김
+  if (isInitialLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner />
+      </div>
+    );
+  }
+
   const shouldHideSection =
     hideWhenEmpty && !isInitialLoading && materials.length === 0;
   if (shouldHideSection) {
@@ -105,10 +113,6 @@ const Rop = ({ hideWhenEmpty = false, limit }: RopProps) => {
   }
 
   const renderContent = () => {
-    if (isInitialLoading) {
-      return <></>;
-    }
-
     if (displayMaterials.length === 0) {
       return (
         <div className="px-6 pt-4">

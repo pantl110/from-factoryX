@@ -4,7 +4,7 @@ import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import Title from '../title';
 import AlarmItem from '../alarm-item';
-import { MoBtn, NoHistoryBox } from '@/ui';
+import { MoBtn, NoHistoryBox, Spinner } from '@/ui';
 import { useInfiniteScroll } from '@/hooks';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import useMemberStore from '@/store/member-store';
@@ -115,6 +115,15 @@ const Expiry = ({ hideWhenEmpty = false, limit }: ExpiryProps) => {
     },
   });
 
+  // 로딩 중이고 데이터가 없을 때는 Title 포함 전체 숨김
+  if (isInitialLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner />
+      </div>
+    );
+  }
+
   const shouldHideSection =
     hideWhenEmpty && !isInitialLoading && materials.length === 0;
   if (shouldHideSection) {
@@ -122,10 +131,6 @@ const Expiry = ({ hideWhenEmpty = false, limit }: ExpiryProps) => {
   }
 
   const renderContent = () => {
-    if (isInitialLoading) {
-      return <></>;
-    }
-
     if (
       errorMessage ||
       !Array.isArray(displayMaterials) ||
