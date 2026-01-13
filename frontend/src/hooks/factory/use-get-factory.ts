@@ -1,95 +1,144 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useCallback, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { FactoriesResponseModel } from '@/types/data-model';
+
+const FACTORY_LIST_QUERY_KEY = ['factory-list'];
+
+const fetchFactoryList = async (): Promise<FactoriesResponseModel[]> => {
+  const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/factory`;
+
+  const response = await fetch(url, {
+    method: 'GET',
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
+    const errorMessage =
+      errorData?.detail || '공장 목록을 불러오지 못했습니다.';
+    throw new Error(errorMessage);
+  }
+
+  const result: FactoriesResponseModel[] = await response.json();
+  return result;
+};
 
 // 본인의 공장 목록 조회 (사용자가 멤버로 등록된 공장 목록)
 export const useGetFactoryList = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [factoryList, setFactoryList] = useState<
-    FactoriesResponseModel[] | null
-  >(null);
-  const [error, setError] = useState<string | null>(null);
+  const queryClient = useQueryClient();
+
+  const factoryListQuery = useQuery<FactoriesResponseModel[], Error>({
+    queryKey: FACTORY_LIST_QUERY_KEY,
+    queryFn: fetchFactoryList,
+    staleTime: 1000 * 60 * 5, // 5분
+    gcTime: 1000 * 60 * 10, // 10분
+    retry: 1,
+  });
 
   const getFactoryList = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
     try {
-      const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/factory`;
-
-      const response = await fetch(url, {
-        method: 'GET',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+      const data = await queryClient.fetchQuery({
+        queryKey: FACTORY_LIST_QUERY_KEY,
+        queryFn: fetchFactoryList,
+        staleTime: 0,
       });
 
-      if (response.ok) {
-        const result: FactoriesResponseModel[] = await response.json();
-        setFactoryList(result);
-        return { success: true, data: result };
-      } else {
-        const errorData = await response.json();
-        const errorMessage =
-          errorData.detail || '공장 목록을 불러오지 못했습니다.';
-        setError(errorMessage);
-        return { success: false, error: errorMessage };
-      }
+      return { success: true, data };
     } catch (err) {
-      console.error('Factory list fetch error:', err);
-      const errorMessage = '서버 연결에 실패했습니다.';
-      setError(errorMessage);
+      const errorMessage =
+        err instanceof Error ? err.message : '공장 목록을 불러오지 못했습니다.';
       return { success: false, error: errorMessage };
-    } finally {
-      setIsLoading(false);
     }
-  }, []);
+  }, [queryClient]);
 
-  return { getFactoryList, factoryList, isLoading, error };
+  return {
+    getFactoryList,
+    factoryList: factoryListQuery.data || null,
+    isLoading: factoryListQuery.isLoading,
+    error: factoryListQuery.error?.message || null,
+  };
+};
+
+const FACTORY_DETAIL_QUERY_KEY = (factoryId: number) => [
+  'factory-detail',
+  factoryId,
+];
+
+const fetchFactoryDetail = async (
+  factoryId: number
+): Promise<FactoriesResponseModel> => {
+  const response = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/detail?factory_id=${factoryId}`,
+    {
+      method: 'GET',
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => null);
+    const errorMessage =
+      errorData?.detail || '공장 정보를 불러오지 못했습니다.';
+    throw new Error(errorMessage);
+  }
+
+  const result: FactoriesResponseModel = await response.json();
+  return result;
 };
 
 // 공장 상세 조회
 export const useGetFactory = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [factory, setFactory] = useState<FactoriesResponseModel | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [currentFactoryId, setCurrentFactoryId] = useState<number | null>(null);
 
-  const getFactory = useCallback(async (factoryId: number) => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/v1/factory/detail?factory_id=${factoryId}`,
-        {
-          method: 'GET',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-
-      if (response.ok) {
-        const result: FactoriesResponseModel = await response.json();
-        setFactory(result);
-        return { success: true, data: result };
-      } else {
-        const errorData = await response.json();
-        const errorMessage =
-          errorData.detail || '공장 정보를 불러오지 못했습니다.';
-        setError(errorMessage);
-        return { success: false, error: errorMessage };
+  const factoryQuery = useQuery<FactoriesResponseModel, Error>({
+    queryKey:
+      currentFactoryId !== null
+        ? FACTORY_DETAIL_QUERY_KEY(currentFactoryId)
+        : ['factory-detail', null],
+    queryFn: () => {
+      if (currentFactoryId === null) {
+        throw new Error('Factory ID is required');
       }
-    } catch (err) {
-      console.error('Factory fetch error:', err);
-      const errorMessage = '서버 연결에 실패했습니다.';
-      setError(errorMessage);
-      return { success: false, error: errorMessage };
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+      return fetchFactoryDetail(currentFactoryId);
+    },
+    enabled: currentFactoryId !== null,
+    staleTime: 1000 * 60 * 5, // 5분
+    gcTime: 1000 * 60 * 10, // 10분
+    retry: 1,
+  });
 
-  return { getFactory, factory, isLoading, error };
+  const getFactory = useCallback(
+    async (factoryId: number) => {
+      // factoryId가 변경되면 useQuery가 자동으로 새로운 데이터를 가져옵니다
+      if (currentFactoryId !== factoryId) {
+        setCurrentFactoryId(factoryId);
+        // factoryId가 변경되면 useQuery가 자동으로 실행되므로
+        // refetch를 기다릴 필요는 없지만, 호환성을 위해 Promise를 반환합니다
+        return { success: true, data: null };
+      } else {
+        // 같은 factoryId면 refetch만 실행
+        const result = await factoryQuery.refetch();
+        if (result.data) {
+          return { success: true, data: result.data };
+        }
+        return { success: false, error: '공장 정보를 불러오지 못했습니다.' };
+      }
+    },
+    [currentFactoryId, factoryQuery]
+  );
+
+  return {
+    getFactory,
+    factory: factoryQuery.data || null,
+    isLoading: factoryQuery.isLoading,
+    error: factoryQuery.error?.message || null,
+  };
 };

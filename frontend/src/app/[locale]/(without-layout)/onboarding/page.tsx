@@ -8,12 +8,50 @@ import SecondStep from './second-step';
 import ThirdStep from './third-step';
 import { useRouter } from '@/i18n/navigation';
 import ChoosingRole from './choosing-role';
+import { useGetFactoryList } from '@/hooks';
+import useAuthStore from '@/store/auth-store';
+import Spinner from '@/ui/spinner';
 
 const OnboardingPage = () => {
   const [currentStep, setCurrentStep] =
     useState<OnboardingStepType>('choosing-role');
+  const [isCheckingFactory, setIsCheckingFactory] = useState(true);
 
   const router = useRouter();
+  const { getFactoryList } = useGetFactoryList();
+  const { isAuthenticated } = useAuthStore();
+
+  // 공장이 있으면 리다이렉트 체크
+  useEffect(() => {
+    const checkFactoryAndRedirect = async () => {
+      try {
+        const factoryResult = await getFactoryList();
+
+        if (
+          factoryResult.success &&
+          factoryResult.data &&
+          factoryResult.data.length > 0
+        ) {
+          // 공장이 있으면 리다이렉트
+          if (isAuthenticated) {
+            // 로그인되어 있으면 홈(대시보드)으로
+            router.push('/dashboard');
+          } else {
+            // 로그인되어 있지 않으면 로그인 페이지로
+            router.push('/login');
+          }
+        } else {
+          // 공장이 없으면 온보딩 진행
+          setIsCheckingFactory(false);
+        }
+      } catch {
+        // 에러 발생 시 온보딩 진행
+        setIsCheckingFactory(false);
+      }
+    };
+
+    checkFactoryAndRedirect();
+  }, [getFactoryList, isAuthenticated, router]);
 
   // Leave-onboarding cleanup: clear only when exiting this page
   useEffect(() => {
@@ -76,6 +114,17 @@ const OnboardingPage = () => {
         return <ChoosingRole onNextStep={handleNextStep} />;
     }
   };
+
+  // 공장 체크 중이면 로딩 스피너 표시
+  if (isCheckingFactory) {
+    return (
+      <div className="bg-wh w-full h-screen">
+        <div className="w-full h-screen bg-bl/80 flex justify-center items-center">
+          <Spinner />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-wh w-full h-screen">
