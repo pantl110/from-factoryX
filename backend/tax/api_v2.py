@@ -139,7 +139,6 @@ async def list_published_documents(
                         account=account,
                         tax_invoice_type=invoice.tax_invoice_type,
                         project_id=project_id,
-                        cash_receipt_type=None,
                         item_name=None,
                     )
                 )
@@ -206,7 +205,6 @@ async def list_published_documents(
                         account=account,
                         tax_invoice_type=None,
                         project_id=None,
-                        cash_receipt_type=receipt.cash_receipt_type,
                         item_name=receipt.item_name,
                     )
                 )
