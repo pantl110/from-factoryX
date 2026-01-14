@@ -184,3 +184,8 @@ local-cdn
 # poetry
 pyproject.toml
 poetry.lock
+
+# Migration scripts (not tracked in git)
+migrations/
+*.migration_log.txt
+migration_log.txt

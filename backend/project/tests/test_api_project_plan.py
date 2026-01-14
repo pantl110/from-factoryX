@@ -3,13 +3,19 @@ from django.contrib.auth import get_user_model
 from factory.models import Factory, FactoryClient, FactoryEquipment, FactoryMember
 from project.models import Project, ProjectPlan, ProjectLog
 from document.models import Quotation, QuotationProduct
-from stock.models import Product, Material, MaterialHistory, MaterialProduct
+from stock.models import Product, Material, MaterialProduct
+from tax.models import (
+    NationalTaxService,
+    TaxInvoiceAccount,
+    AccountStatus,
+    TaxInvoiceType,
+    CashReceipt,
+    CashReceiptType,
+)
 import json
 import jwt
 from django.conf import settings
 from datetime import timedelta, date, datetime
-from django.utils import timezone
-from decimal import Decimal
 from dateutil.relativedelta import relativedelta
 
 User = get_user_model()
@@ -716,183 +722,7 @@ class ProjectPlanAPITestCase(TestCase):
         self.assertIn(plan.start_date.date(), [date(2024, 4, 1), date(2024, 3, 31)])
         self.assertIn(plan.end_date.date(), [date(2024, 4, 30), date(2024, 4, 29)])
 
-    # 추가로 project plan 생성 안함
-    # def test_create_or_update_project_plan_quantity_less_than_quotation(self):
-    #     """생산수량을 주문수량보다 작게 수정하는 테스트 (다른 설비로 계획 생성)"""
-    #     # 두 번째 설비 생성
-    #     equipment2 = FactoryEquipment.objects.create(
-    #         factory=self.factory, name="테스트 설비 2", priority=2
-    #     )
-
-    #     # 먼저 프로젝트 계획 생성 (주문수량: 100)
-    #     plan = ProjectPlan.objects.create(
-    #         project=self.project,
-    #         product=self.quotation_product,  # quantity: 100
-    #         equipment=self.equipment,
-    #         status="가동 대기",
-    #         quantity=100,
-    #         start_date=date(2024, 1, 1),
-    #         end_date=date(2024, 1, 31),
-    #         avg_production_time=3600,
-    #     )
-
-    #     url = "/v1/project-plan/create-or-update"
-
-    #     payload = {
-    #         "plan_id": plan.id,
-    #         "project_id": self.project.id,
-    #         "quotation_product_id": self.quotation_product.id,
-    #         "equipment_id": self.equipment.id,
-    #         "quantity": 60,  # 주문수량(100)보다 작음
-    #         "start_date": "2024-01-01T00:00:00Z",
-    #         "end_date": "2024-01-31T00:00:00Z",
-    #         "avg_production_time": 3600,
-    #         "total_amount": 100,
-    #         "total_quantity": 100,
-    #     }
-
-    #     response = self.client.post(
-    #         f"{url}?factory_id={self.factory.id}",
-    #         data=json.dumps(payload),
-    #         content_type="application/json",
-    #         HTTP_AUTHORIZATION=f"Bearer {self.token}",
-    #     )
-
-    #     self.assertEqual(response.status_code, 200)
-
-    #     # 데이터베이스 확인
-    #     plan.refresh_from_db()
-    #     self.assertEqual(plan.quantity, 60)  # 첫 번째 계획은 수정된 수량
-
-    #     # 두 번째 계획이 생성되었는지 확인 (다른 설비로)
-    #     additional_plans = ProjectPlan.objects.filter(
-    #         project=self.project, product=self.quotation_product, id__gt=plan.id
-    #     )
-    #     self.assertEqual(additional_plans.count(), 1)
-
-    #     additional_plan = additional_plans.first()
-    #     self.assertEqual(additional_plan.equipment.id, equipment2.id)  # 다른 설비 사용
-    #     self.assertEqual(
-    #         additional_plan.quantity, 44
-    #     )  # (100-60) * 1.1 = 44 (buffer rate 적용)
-
-    # 추가로 project plan 생성 안함
-    # def test_create_or_update_project_plan_quantity_less_than_quotation_no_alternative_equipment(
-    #     self,
-    # ):
-    #     """대체 설비가 없을 때 생산수량을 주문수량보다 작게 수정하는 테스트"""
-    #     # 먼저 프로젝트 계획 생성 (주문수량: 100)
-    #     plan = ProjectPlan.objects.create(
-    #         project=self.project,
-    #         product=self.quotation_product,  # quantity: 100
-    #         equipment=self.equipment,
-    #         status="가동 대기",
-    #         quantity=100,
-    #         start_date=date(2024, 1, 1),
-    #         end_date=date(2024, 1, 31),
-    #         avg_production_time=3600,
-    #     )
-
-    #     url = "/v1/project-plan/create-or-update"
-
-    #     payload = {
-    #         "plan_id": plan.id,
-    #         "project_id": self.project.id,
-    #         "quotation_product_id": self.quotation_product.id,
-    #         "equipment_id": self.equipment.id,
-    #         "quantity": 60,  # 주문수량(100)보다 작음
-    #         "start_date": "2024-01-01T00:00:00Z",
-    #         "end_date": "2024-01-31T00:00:00Z",
-    #         "avg_production_time": 3600,
-    #         "total_amount": 100,
-    #         "total_quantity": 100,
-    #     }
-
-    #     response = self.client.post(
-    #         f"{url}?factory_id={self.factory.id}",
-    #         data=json.dumps(payload),
-    #         content_type="application/json",
-    #         HTTP_AUTHORIZATION=f"Bearer {self.token}",
-    #     )
-
-    #     self.assertEqual(response.status_code, 200)
-
-    #     # 데이터베이스 확인
-    #     plan.refresh_from_db()
-    #     self.assertEqual(plan.quantity, 60)  # 첫 번째 계획은 수정된 수량
-
-    #     # 두 번째 계획이 생성되었는지 확인 (같은 설비로)
-    #     additional_plans = ProjectPlan.objects.filter(
-    #         project=self.project, product=self.quotation_product, id__gt=plan.id
-    #     )
-    #     self.assertEqual(additional_plans.count(), 1)
-
-    #     additional_plan = additional_plans.first()
-    #     self.assertEqual(
-    #         additional_plan.equipment.id, self.equipment.id
-    #     )  # 같은 설비 사용
-    #     self.assertEqual(
-    #         additional_plan.quantity, 44
-    #     )  # (100-60) * 1.1 = 44 (buffer rate 적용)
-
-    # def test_create_or_update_project_plan_quantity_less_than_quotation_refund(self):
-    #     """반품인 경우 생산수량을 주문수량보다 작게 수정하는 테스트 (buffer rate 적용)"""
-    #     # 두 번째 설비 생성
-    #     equipment2 = FactoryEquipment.objects.create(
-    #         factory=self.factory, name="테스트 설비 2", priority=2
-    #     )
-
-    #     # 반품인 프로젝트 계획 생성 (주문수량: 100)
-    #     plan = ProjectPlan.objects.create(
-    #         project=self.project,
-    #         product=self.quotation_product,  # quantity: 100
-    #         equipment=self.equipment,
-    #         status=ProjectPlan.ProductionStatus.pending,
-    #         quantity=100,
-    #         start_date=date(2024, 1, 1),
-    #         end_date=date(2024, 1, 31),
-    #         avg_production_time=3600,
-    #     )
-
-    #     url = "/v1/project-plan/create-or-update"
-
-    #     payload = {
-    #         "plan_id": plan.id,
-    #         "project_id": self.project.id,
-    #         "quotation_product_id": self.quotation_product.id,
-    #         "equipment_id": self.equipment.id,
-    #         "quantity": 60,  # 주문수량(100)보다 작음
-    #         "start_date": "2024-01-01T00:00:00Z",
-    #         "end_date": "2024-01-31T00:00:00Z",
-    #         "avg_production_time": 3600,
-    #         "total_amount": 100,
-    #         "total_quantity": 100,
-    #     }
-
-    #     response = self.client.post(
-    #         f"{url}?factory_id={self.factory.id}",
-    #         data=json.dumps(payload),
-    #         content_type="application/json",
-    #         HTTP_AUTHORIZATION=f"Bearer {self.token}",
-    #     )
-
-    #     self.assertEqual(response.status_code, 200)
-
-    #     # 데이터베이스 확인
-    #     plan.refresh_from_db()
-    #     self.assertEqual(plan.quantity, 60)  # 첫 번째 계획은 수정된 수량
-
-    #     # 두 번째 계획이 생성되었는지 확인 (다른 설비로)
-    #     additional_plans = ProjectPlan.objects.filter(
-    #         project=self.project, product=self.quotation_product, id__gt=plan.id
-    #     )
-    #     self.assertEqual(additional_plans.count(), 1)
-
-    #     additional_plan = additional_plans.first()
-    #     self.assertEqual(additional_plan.equipment.id, equipment2.id)  # 다른 설비 사용
-    #     self.assertEqual(
-    #         additional_plan.quantity, 44
-    #     )  # (100-60) * 1.1 = 44 (buffer rate 적용)
+    
 
     def test_list_today_production_plans_success(self):
         """오늘 생산 시작인 프로젝트 계획 조회 성공 테스트"""
@@ -1206,7 +1036,12 @@ class MobileDashboardCountTestCase(TestCase):
         url = "/v2/project-plan/dashboard-mobile"
         today = date.today()
         response = self.client.get(
-            url, {"factory_id": self.factory.id, "base_date": today.strftime("%Y-%m-%d")}, **self._auth_headers()
+            url,
+            {
+                "factory_id": self.factory.id,
+                "base_date": today.strftime("%Y-%m-%d"),
+            },
+            **self._auth_headers(),
         )
 
         self.assertEqual(response.status_code, 200)
@@ -1217,10 +1052,122 @@ class MobileDashboardCountTestCase(TestCase):
             "shortage_materials",
             "expiry_risk_materials",
             "stale_confirmed_projects",
+            "overdue_sales_accounts",
+            "overdue_purchase_accounts",
         ]
         for key in expected_keys:
             self.assertIn(key, data)
             self.assertEqual(data[key], 0)
+
+    def test_get_mobile_dashboard_counts_with_overdue_accounts(self):
+        """매출/매입 연체 채권/채무 개수 계산 검증 (세금계산서 + 현금영수증)"""
+        url = "/v2/project-plan/dashboard-mobile"
+        today = date.today()
+
+        # 거래처 생성
+        client_company = FactoryClient.objects.create(
+            factory=self.factory,
+            name="채권채무 테스트 거래처",
+            business_registration_number="987-65-43210",
+        )
+
+        # 1. 연체된 매출채권 (세금계산서 기반)
+        sales_invoice = NationalTaxService.objects.create(
+            factory=self.factory,
+            client=client_company,
+            tax_invoice_type=TaxInvoiceType.sales,
+            transaction_amount=100000,
+            tax_amount=10000,
+        )
+        TaxInvoiceAccount.objects.create(
+            tax_invoice=sales_invoice,
+            status=AccountStatus.overdue,
+            invoice_sent_count=1,
+            total_billed_amount=110000,
+            outstanding_balance=110000,
+        )
+
+        # 2. 연체된 매입채무 (세금계산서 기반)
+        purchase_invoice = NationalTaxService.objects.create(
+            factory=self.factory,
+            client=client_company,
+            tax_invoice_type=TaxInvoiceType.purchase,
+            transaction_amount=200000,
+            tax_amount=20000,
+        )
+        TaxInvoiceAccount.objects.create(
+            tax_invoice=purchase_invoice,
+            status=AccountStatus.overdue,
+            invoice_sent_count=1,
+            total_billed_amount=220000,
+            outstanding_balance=220000,
+        )
+
+        # 3. 연체된 매입채무 (현금영수증 기반)
+        purchase_receipt = CashReceipt.objects.create(
+            factory=self.factory,
+            client=client_company,
+            cash_receipt_type=CashReceiptType.purchase,
+            transaction_date=today,
+            transaction_amount=50000,
+            tax_amount=5000,
+        )
+        TaxInvoiceAccount.objects.create(
+            cash_receipt=purchase_receipt,
+            status=AccountStatus.overdue,
+            invoice_sent_count=0,
+            total_billed_amount=55000,
+            outstanding_balance=55000,
+        )
+
+        # 4. 연체가 아닌 계정들 (카운트에 포함되면 안 됨)
+        non_overdue_sales_invoice = NationalTaxService.objects.create(
+            factory=self.factory,
+            client=client_company,
+            tax_invoice_type=TaxInvoiceType.sales,
+            transaction_amount=300000,
+            tax_amount=30000,
+        )
+        TaxInvoiceAccount.objects.create(
+            tax_invoice=non_overdue_sales_invoice,
+            status=AccountStatus.completed,
+            invoice_sent_count=1,
+            total_billed_amount=330000,
+            outstanding_balance=0,
+        )
+
+        non_overdue_purchase_receipt = CashReceipt.objects.create(
+            factory=self.factory,
+            client=client_company,
+            cash_receipt_type=CashReceiptType.purchase,
+            transaction_date=today,
+            transaction_amount=60000,
+            tax_amount=6000,
+        )
+        TaxInvoiceAccount.objects.create(
+            cash_receipt=non_overdue_purchase_receipt,
+            status=AccountStatus.partial,
+            invoice_sent_count=0,
+            total_billed_amount=66000,
+            outstanding_balance=1000,
+        )
+
+        response = self.client.get(
+            url,
+            {
+                "factory_id": self.factory.id,
+                "base_date": today.strftime("%Y-%m-%d"),
+            },
+            **self._auth_headers(),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+
+        # 매출 연체 채권: 세금계산서 1건만 포함
+        self.assertEqual(data["overdue_sales_accounts"], 1)
+        # 매입 연체 채무: 세금계산서 1건 + 현금영수증 1건 = 2건
+        self.assertEqual(data["overdue_purchase_accounts"], 2)
 
     def test_get_mobile_dashboard_counts_missing_factory_id(self):
         """factory_id 누락 시 400 반환"""

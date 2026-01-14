@@ -361,6 +361,8 @@ class MobileDashboardCountOut(Schema):
     shortage_materials: int
     expiry_risk_materials: int
     stale_confirmed_projects: int
+    overdue_sales_accounts: int  # 연체된 매출채권 개수
+    overdue_purchase_accounts: int  # 연체된 매입채무 개수
 
 
 # (POST) Project Plan Create or Update Response

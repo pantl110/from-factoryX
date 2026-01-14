@@ -11,6 +11,7 @@ from document.models import QuotationProduct
 from stock.models import Material
 from stock.utils import get_expiry_status
 from factory.utils import is_factory_member
+from tax.models import TaxInvoiceAccount, AccountStatus
 
 router = Router(tags=["ProjectPlan V2"], auth=jwt_auth)
 
@@ -88,11 +89,34 @@ async def get_mobile_dashboard_counts(
                 .count()
             )
 
+            # 5. 연체된 매출채권 개수 (매출 세금계산서 중 연체 상태)
+            overdue_sales_count = TaxInvoiceAccount.objects.filter(
+                tax_invoice__factory_id=int(factory_id),
+                tax_invoice__tax_invoice_type="sales",
+                status=AccountStatus.overdue,
+            ).count()
+
+            # 6. 연체된 매입채무 개수 (매입 세금계산서 + 매입 현금영수증 중 연체 상태)
+            from django.db.models import Q
+            overdue_purchase_count = TaxInvoiceAccount.objects.filter(
+                Q(
+                    tax_invoice__factory_id=int(factory_id),
+                    tax_invoice__tax_invoice_type="purchase",
+                )
+                | Q(
+                    cash_receipt__factory_id=int(factory_id),
+                    cash_receipt__cash_receipt_type="purchase",
+                ),
+                status=AccountStatus.overdue,
+            ).count()
+
             return {
                 "undelivered_quotation_products": undelivered_count,
                 "shortage_materials": shortage_count,
                 "expiry_risk_materials": expiry_risk_count,
                 "stale_confirmed_projects": stale_confirmed_count,
+                "overdue_sales_accounts": overdue_sales_count,
+                "overdue_purchase_accounts": overdue_purchase_count,
             }
 
         counts = await calculate_counts()
