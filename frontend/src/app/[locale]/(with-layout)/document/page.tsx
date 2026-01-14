@@ -11,7 +11,7 @@ import { Spinner, SearchInput } from '@/ui';
 import {
   useGetPublishedTaxInvoices,
   useGetWorkInstructions,
-  useGetCashReceipts,
+  useGetPublishedDocuments,
 } from '@/hooks';
 import {
   ProjectResponseModel,
@@ -98,20 +98,21 @@ const DocumentPageContent = () => {
     });
 
   // 현금영수증 쿼리 파라미터 구성
-  const cashReceiptQueryParams = useMemo((): {
-    page: number;
-    page_size: number;
-    q?: string;
-    order: 'asc' | 'desc';
-  } | null => {
+  const cashReceiptQueryParams = useMemo(() => {
     if (selectedType !== '현금영수증') {
       return null;
     }
     return {
+      filters: {
+        document_type: 'cash-receipt' as const,
+        q: debouncedSearchQuery || undefined,
+      },
+      ordering:
+        cashReceiptSortDirection === 'asc'
+          ? 'transaction_date'
+          : '-transaction_date',
       page: currentPage,
       page_size: 10,
-      q: debouncedSearchQuery || undefined,
-      order: cashReceiptSortDirection,
     };
   }, [
     selectedType,
@@ -122,9 +123,16 @@ const DocumentPageContent = () => {
 
   // 현금영수증 데이터 조회
   const { data: cashReceiptData, isLoading: isCashReceiptLoading } =
-    useGetCashReceipts(cashReceiptQueryParams || {}, {
-      enabled: cashReceiptQueryParams !== null && !!factoryId,
-    });
+    useGetPublishedDocuments(
+      cashReceiptQueryParams || {
+        filters: {},
+        page: 1,
+        page_size: 10,
+      },
+      {
+        enabled: cashReceiptQueryParams !== null && !!factoryId,
+      }
+    );
 
   // 주문서 데이터 상태
   const [orderDocuments, setOrderDocuments] = useState<ProjectResponseModel[]>(

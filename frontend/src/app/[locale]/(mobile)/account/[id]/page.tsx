@@ -1,10 +1,9 @@
 'use client';
 
 import { useSearchParams, useParams } from 'next/navigation';
-import { Suspense } from 'react';
-import { useRouter } from '@/i18n/navigation';
+import { Suspense, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { TaxInvoiceAccountModel } from '@/types/data-model';
 import { getTaxInvoiceAccountQueryFn } from '@/hooks';
 import Topbar from '../../topbar';
@@ -12,6 +11,7 @@ import ClientInfo from '../../client-info';
 import AccountInfo from '../account-info';
 import MoBottomNavigation from '@/ui/mo-bottom-navigation';
 import SupplierInfo from '../supplie-info';
+import CreatePaymentModal from '../create-payment-modal';
 import { Spinner } from '@/ui';
 
 const AccountPageContent = () => {
@@ -19,9 +19,11 @@ const AccountPageContent = () => {
   const tTax = useTranslations('tax');
   const searchParams = useSearchParams();
   const params = useParams();
-  const router = useRouter();
   const type = searchParams.get('type') as 'income' | 'outcome' | null;
   const accountId = params?.id ? Number(params.id) : null;
+  const [isCreatePaymentModalOpen, setIsCreatePaymentModalOpen] =
+    useState(false);
+  const queryClient = useQueryClient();
 
   const {
     data: account,
@@ -44,9 +46,21 @@ const AccountPageContent = () => {
     null;
 
   const handleComplete = () => {
-    // 입금 완료 또는 지급 완료 처리
-    // TODO: 실제 API 호출 또는 상태 업데이트 로직 추가 필요
-    router.back();
+    // 입금/지급 정보 입력 모달 열기 (매출/매입 모두)
+    setIsCreatePaymentModalOpen(true);
+  };
+
+  const handlePaymentSuccess = () => {
+    // 지급 정보 입력 성공 후 account 정보 다시 불러오기
+    if (accountId) {
+      queryClient.invalidateQueries({
+        queryKey: ['tax-invoice-account', accountId, 'tax'],
+      });
+      // payment-details 쿼리도 무효화
+      queryClient.invalidateQueries({
+        queryKey: ['payment-details'],
+      });
+    }
   };
 
   if (isLoading || error || !account) {
@@ -68,7 +82,23 @@ const AccountPageContent = () => {
         <div className="h-2 bg-bg" />
         <AccountInfo type={type || 'income'} account={account} />
       </div>
-      <MoBottomNavigation type={type || 'income'} onClick={handleComplete} />
+
+      {/* 하단 바 버튼 */}
+      <MoBottomNavigation
+        type={type || 'income'}
+        onClick={handleComplete}
+        onConfirm={handleComplete}
+      />
+
+      {/* 지급 정보 입력 모달 */}
+      {isCreatePaymentModalOpen && (
+        <CreatePaymentModal
+          onClose={() => setIsCreatePaymentModalOpen(false)}
+          account={account}
+          type="tax"
+          onSuccess={handlePaymentSuccess}
+        />
+      )}
     </>
   );
 };

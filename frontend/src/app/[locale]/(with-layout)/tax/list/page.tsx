@@ -16,11 +16,14 @@ import MiniBtn from '@/ui/mini-btn';
 import Pagination from '@/components/pagination';
 import EmptySpace from '@/ui/empty-space';
 import {
-  useGetPublishedTaxInvoices,
+  useGetPublishedDocuments,
   useCheckAll,
   useUpdateTaxInvoice,
 } from '@/hooks';
-import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
+import {
+  PublishedTaxInvoiceResponseModel,
+  TaxInvoiceAccountModel,
+} from '@/types/data-model';
 import NotAllowed from '../not-allowed';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
@@ -81,18 +84,22 @@ const TaxPageContent = () => {
   // useQuery 파라미터 구성
   const queryParams = useMemo(() => {
     if (selectedTaxType === null) {
-      return {}; // 현금영수증 탭일 때는 빈 객체 반환
+      return null; // 현금영수증 탭일 때는 null 반환
     }
 
     return {
+      filters: {
+        document_type: (selectedTaxType === 'sales'
+          ? 'sales-tax'
+          : 'purchase-tax') as 'sales-tax' | 'purchase-tax',
+        q: debouncedSearchQuery || undefined,
+        is_hidden: showHidden,
+        account_status: accountStatus,
+      },
       ordering:
         sortDirection === 'desc' ? '-transaction_date' : 'transaction_date',
       page: currentPage,
       page_size: itemsPerPage,
-      q: debouncedSearchQuery || undefined,
-      tax_invoice_type: selectedTaxType,
-      is_hidden: showHidden,
-      account_status: accountStatus,
     };
   }, [
     selectedTaxType,
@@ -106,15 +113,22 @@ const TaxPageContent = () => {
   // 세금계산서 데이터 조회 (useQuery 사용)
   const isTaxQueryEnabled = selectedTaxType !== null;
   const {
-    data: taxInvoiceData,
+    data: documentData,
     isLoading,
     isFetching,
-  } = useGetPublishedTaxInvoices(queryParams, {
-    enabled: isTaxQueryEnabled,
-  });
+  } = useGetPublishedDocuments(
+    queryParams || {
+      filters: {},
+      page: 1,
+      page_size: itemsPerPage,
+    },
+    {
+      enabled: isTaxQueryEnabled,
+    }
+  );
 
   // 숨김 데이터 존재 여부 확인용 쿼리 (일반 목록에 데이터가 없을 때만 호출됨)
-  const taxDataLength = taxInvoiceData?.data.length ?? 0;
+  const taxDataLength = documentData?.data.length ?? 0;
   const shouldCheckHidden = useMemo(
     () =>
       selectedTaxType !== null &&
@@ -127,31 +141,68 @@ const TaxPageContent = () => {
 
   const hiddenCheckParams = useMemo(() => {
     if (!shouldCheckHidden || !selectedTaxType) {
-      return {}; // 빈 객체 반환 (enabled가 false이므로 실행되지 않음)
+      return null;
     }
     return {
+      filters: {
+        document_type: (selectedTaxType === 'sales'
+          ? 'sales-tax'
+          : 'purchase-tax') as 'sales-tax' | 'purchase-tax',
+        is_hidden: true,
+      },
       ordering:
         sortDirection === 'desc' ? '-transaction_date' : 'transaction_date',
       page: 1,
       page_size: 1,
-      tax_invoice_type: selectedTaxType,
-      is_hidden: true,
     };
   }, [shouldCheckHidden, selectedTaxType, sortDirection]);
 
-  const { data: hiddenCheckData } = useGetPublishedTaxInvoices(
-    hiddenCheckParams,
+  const { data: hiddenCheckData } = useGetPublishedDocuments(
+    hiddenCheckParams || {
+      filters: {},
+      page: 1,
+      page_size: 1,
+    },
     { enabled: shouldCheckHidden }
   );
 
   // taxData와 totalPages 추출
-  const taxData = useMemo(
-    () => taxInvoiceData?.data || [],
-    [taxInvoiceData?.data]
-  );
+  // PublishedDocumentOutModel을 PublishedTaxInvoiceResponseModel로 변환
+  const taxData = useMemo(() => {
+    const documents = documentData?.data || [];
+    // 세금계산서만 필터링 (document_type === 'tax')
+    return documents
+      .filter((doc) => doc.document_type === 'tax')
+      .map((doc) => {
+        // PublishedDocumentOutModel을 PublishedTaxInvoiceResponseModel 형태로 변환
+        // 필요한 필드만 매핑 (TableItem에서 사용하는 필드들)
+        return {
+          id: doc.id,
+          transaction_date: doc.transaction_date,
+          tax_invoice_type: doc.tax_invoice_type || 'purchase',
+          client_info: {
+            name: doc.client_name,
+          },
+          line_items: [], // PublishedDocumentOutModel에는 없지만 TableItem에서 사용
+          transaction_amount: doc.transaction_amount,
+          tax_amount: doc.tax_amount,
+          is_hidden: doc.is_hidden,
+          account:
+            doc.account ||
+            ({
+              status: 'waiting' as const,
+              total_billed_amount: doc.total_amount,
+              outstanding_balance: doc.total_amount,
+              invoice_sent_count: 0,
+            } as TaxInvoiceAccountModel),
+          project_id: doc.project_id,
+        } as unknown as PublishedTaxInvoiceResponseModel;
+      });
+  }, [documentData?.data]);
+
   const totalPages = useMemo(
-    () => taxInvoiceData?.pageCnt || 0,
-    [taxInvoiceData?.pageCnt]
+    () => documentData?.pageCnt || 0,
+    [documentData?.pageCnt]
   );
 
   // useCheckAll의 itemIds를 메모이제이션하여 불필요한 재생성 방지
@@ -303,7 +354,7 @@ const TaxPageContent = () => {
   const handleLinkProjectSuccess = () => {
     // 프로젝트 연결 성공 후 목록 새로고침
     queryClient.invalidateQueries({
-      queryKey: ['published-tax-invoices'],
+      queryKey: ['published-documents'],
     });
     handleCloseLinkProjectModal();
   };
@@ -360,7 +411,7 @@ const TaxPageContent = () => {
       if (successCount > 0) {
         // 성공적으로 업데이트된 경우 데이터 새로고침
         queryClient.invalidateQueries({
-          queryKey: ['published-tax-invoices'],
+          queryKey: ['published-documents'],
         });
         setAllChecked(false); // 체크박스 상태 리셋
         setSearchQuery(''); // 검색어 초기화

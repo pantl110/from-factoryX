@@ -31,6 +31,7 @@ const Rop = ({ hideWhenEmpty = false, limit }: RopProps) => {
     hasNextPage = false,
     isLoading,
     isFetchingNextPage,
+    error,
   } = useInfiniteQuery<{
     items: MaterialResponseModel[];
     totalCount: number;
@@ -84,6 +85,8 @@ const Rop = ({ hideWhenEmpty = false, limit }: RopProps) => {
   const totalCount = data?.pages[0]?.totalCount ?? materials.length ?? 0;
   const isInitialLoading = isLoading && materials.length === 0;
   const showMoreButton = Boolean(limit && materials.length > limit);
+  const errorMessage =
+    error instanceof Error ? error.message : error ? String(error) : null;
 
   const loadMoreRef = useInfiniteScroll<HTMLDivElement>({
     enabled: true,
@@ -113,6 +116,12 @@ const Rop = ({ hideWhenEmpty = false, limit }: RopProps) => {
   }
 
   const renderContent = () => {
+    // 로딩 중일 때는 아무것도 표시하지 않음 (이미 위에서 Spinner 처리됨)
+    if (isLoading || errorMessage) {
+      return null;
+    }
+
+    // 데이터가 없을 때만 NoHistoryBox 표시
     if (displayMaterials.length === 0) {
       return (
         <div className="px-6 pt-4">

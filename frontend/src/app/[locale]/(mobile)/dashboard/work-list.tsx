@@ -57,6 +57,15 @@ const WorkList = ({ data }: WorkListProps) => {
 
   // const recentDates = getRecentDates();
 
+  // 전체 작업 수: 견적/자재/유통기한/확인지연 + 연체 채권/채무
+  const totalWorkCount =
+    data.undelivered_quotation_products +
+    data.shortage_materials +
+    data.expiry_risk_materials +
+    data.stale_confirmed_projects +
+    data.overdue_sales_accounts +
+    data.overdue_purchase_accounts;
+
   return (
     <div className="relative flex flex-col gap-3">
       <Image
@@ -111,10 +120,7 @@ const WorkList = ({ data }: WorkListProps) => {
         <span className="m-Heading-3-semibold text-dg">{t('title')}</span>
         <div className="flex gap-0.5 items-center">
           <span className="m-Heading-1b text-primary">
-            {data.undelivered_quotation_products +
-              data.shortage_materials +
-              data.expiry_risk_materials +
-              data.stale_confirmed_projects}
+            {totalWorkCount.toLocaleString()}
           </span>
           <span className="m-Heading-3-semibold text-dg">
             {tCommon('count')}

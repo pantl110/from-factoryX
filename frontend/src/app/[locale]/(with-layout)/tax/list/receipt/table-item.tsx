@@ -1,4 +1,4 @@
-import { CashReceiptResponseModel } from '@/types/data-model';
+import { PublishedDocumentOutModel } from '@/types/data-model';
 import { getProductNamesDisplay } from '@/utils/get-product-names-display';
 import { AccountsStatusMap, AccountsStatusColorMap } from '@/types/status-type';
 import { RoundChip, MiniBtn, IconBtn } from '@/ui';
@@ -8,7 +8,7 @@ import Checkbox from '@/ui/checkbox';
 import { useTranslations } from 'next-intl';
 
 interface TableItemProps {
-  item: CashReceiptResponseModel;
+  item: PublishedDocumentOutModel;
   onClick?: () => void;
   onToggle?: () => void;
   isChecked?: boolean;
@@ -63,9 +63,17 @@ const TableItem = ({
       </p>
       <p
         className="flex-[1.5] px-3 text-dg truncate"
-        title={getProductNamesDisplay(item.product_names)}
+        title={getProductNamesDisplay(
+          item.item_name
+            ? item.item_name.split(',').map((s: string) => s.trim())
+            : []
+        )}
       >
-        {getProductNamesDisplay(item.product_names)}
+        {getProductNamesDisplay(
+          item.item_name
+            ? item.item_name.split(',').map((s: string) => s.trim())
+            : []
+        )}
       </p>
       <p
         className="flex-[1.5] px-3 text-dg truncate"

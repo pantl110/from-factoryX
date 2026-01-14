@@ -441,7 +441,8 @@
           "createPaymentFailed": "Failed to save payment info.",
           "updateDepositFailed": "Failed to update deposit info.",
           "createDepositFailed": "Failed to save deposit info.",
-          "unknownError": "An unknown error occurred."
+          "unknownError": "An unknown error occurred.",
+          "documentIdNotFound": "Tax invoice or cash receipt ID not found."
         }
       },
       "sendEmailModal": {
@@ -537,8 +538,8 @@
       },
       "info": {
         "title": {
-          "purchase": "Accounts Payable Info",
-          "sales": "Accounts Receivable Info"
+          "purchase": "Payable Info",
+          "sales": "Receivable Info"
         },
         "statusLabel": {
           "purchase": "Status",
@@ -2104,7 +2105,7 @@
       },
       "memo": "Memo",
       "salesStatus": {
-        "todayTotal": "There are {count} items today"
+        "todayTotal": "{count} items are overdue in total"
       }
     },
     "orderInfo": {
@@ -2112,7 +2113,7 @@
       "productDetailInfo": "You can view detailed product information on PC."
     },
     "account": {
-      "sendPaymentRequest": "Send Payment Request"
+      "sendPaymentRequest": "Send Request"
     },
     "orderConfirmModal": {
       "title": "Confirm Order",
@@ -2166,7 +2167,19 @@
       "checkConfirmationStatus": "Please check the confirmation status.",
       "orderConfirmedForDays": "Order has been confirmed for {days} days!",
       "viewMore": "View More",
-      "viewMoreNotifications": "View More Notifications"
+      "viewMoreNotifications": "View More Notifications",
+      "paymentDue": {
+        "empty": {
+          "noAlerts": "No account alerts."
+        },
+        "chip": {
+          "clientPaymentDelayed": "Client payment has been delayed for {days} days!",
+          "ourPaymentOverdue": "Our payment has been overdue for {days} days!"
+        },
+        "errors": {
+          "fetchFailed": "Failed to fetch published documents."
+        }
+      }
     }
   }
 }

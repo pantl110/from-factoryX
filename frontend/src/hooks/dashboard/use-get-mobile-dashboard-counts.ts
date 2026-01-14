@@ -11,6 +11,8 @@ const INITIAL_COUNTS: MobileDashboardCountsResponseModel = {
   shortage_materials: 0,
   expiry_risk_materials: 0,
   stale_confirmed_projects: 0,
+  overdue_sales_accounts: 0,
+  overdue_purchase_accounts: 0,
 };
 
 interface UseMobileDashboardCountsModel {

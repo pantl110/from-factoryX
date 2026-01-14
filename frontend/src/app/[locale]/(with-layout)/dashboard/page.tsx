@@ -20,7 +20,7 @@ import {
   useToast,
   useGetProjects,
   useGetTodayProductionPlans,
-  useGetPublishedTaxInvoices,
+  useGetPublishedDocuments,
   useGetDashboard,
 } from '@/hooks';
 import {
@@ -44,8 +44,11 @@ const DashboardPageContent = () => {
   const { factoryId, initializeFactoryId } = useMemberStore();
 
   const { data: taxInvoicesQueryData, isLoading: isTaxInvoicesLoading } =
-    useGetPublishedTaxInvoices(
+    useGetPublishedDocuments(
       {
+        filters: {
+          document_type: 'tax', // 세금계산서만 조회
+        },
         page: 1,
         page_size: 5,
         ordering: '-transaction_date',
@@ -69,7 +72,19 @@ const DashboardPageContent = () => {
     TodayProductionPlanModel[]
   >([]);
 
-  const taxInvoicesData = taxInvoicesQueryData?.data || [];
+  // PublishedDocumentOutModel에서 세금계산서만 필터링하고 변환
+  const taxInvoicesData = (taxInvoicesQueryData?.data || [])
+    .filter((doc) => doc.document_type === 'tax' && doc.tax_invoice_type)
+    .map((doc) => {
+      if (!doc.tax_invoice_type) return null;
+      return {
+        id: doc.id,
+        tax_invoice_type: doc.tax_invoice_type,
+        client_info: { name: doc.client_name },
+        transaction_date: doc.transaction_date,
+      };
+    })
+    .filter((item): item is NonNullable<typeof item> => item !== null);
 
   // 모든 데이터 로딩 상태를 통합
   const isLoading =

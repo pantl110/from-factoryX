@@ -3,17 +3,19 @@
 import { useMemo } from 'react';
 import { MoneyWavy } from '@phosphor-icons/react';
 import { useRouter } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import Title from '../title';
 import AlarmItem from '../alarm-item';
 import {
-  PublishedTaxInvoiceResponseModel,
-  PublishedTaxInvoiceListResponseModel,
+  PublishedDocumentOutModel,
+  PublishedDocumentListResponseModel,
 } from '@/types/data-model';
 import { getDaysDiff, formatISODate } from '@/utils';
 import { Spinner, NoHistoryBox } from '@/ui';
-import { useInfiniteScroll, useTaxApi } from '@/hooks';
+import { useInfiniteScroll } from '@/hooks';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import useMemberStore from '@/store/member-store';
+import axios from 'axios';
 
 const paymentDuePageSize = 10;
 
@@ -21,29 +23,13 @@ const formatAmount = (amount: number) => {
   return amount.toLocaleString();
 };
 
-const getChipInfo = (
-  agreedPaymentDate: string,
-  taxInvoiceType: 'sales' | 'purchase'
-): { text: string; variant: 'secondary' | 'red-secondary' | 'outline' } => {
-  const diffDays = getDaysDiff(new Date(), agreedPaymentDate);
-
-  if (taxInvoiceType === 'sales') {
-    return {
-      text: `거래처의 입금이 ${diffDays}일째 지연되고 있어요!`,
-      variant: 'red-secondary',
-    };
-  }
-
-  return {
-    text: `우리 지급이 ${diffDays}일째 연체되고 있어요!`,
-    variant: 'secondary',
-  };
-};
-
 const PaymentDue = () => {
   const router = useRouter();
   const factoryId = useMemberStore((state) => state.factoryId);
-  const { callTaxApi } = useTaxApi();
+  const t = useTranslations('mobile.alarm.paymentDue');
+  const tTabs = useTranslations('mobile.alarm.tabs');
+  const tTax = useTranslations('tax');
+  const tCommon = useTranslations('common');
 
   const {
     data,
@@ -53,11 +39,11 @@ const PaymentDue = () => {
     isFetchingNextPage,
     error,
   } = useInfiniteQuery<{
-    items: PublishedTaxInvoiceResponseModel[];
+    items: PublishedDocumentOutModel[];
     totalCount: number;
     nextPage: number | null;
   }>({
-    queryKey: ['payment-due-tax-invoices', factoryId],
+    queryKey: ['payment-due-documents', factoryId],
     enabled: !!factoryId,
     initialPageParam: 1,
     getNextPageParam: (lastPage) => lastPage.nextPage,
@@ -69,52 +55,59 @@ const PaymentDue = () => {
         return { items: [], totalCount: 0, nextPage: null };
       }
 
-      const result = await callTaxApi<PublishedTaxInvoiceListResponseModel>(
-        'published',
-        {
-          queryParams: {
-            is_hidden: false,
-            ordering: '-transaction_date',
-            account_status: 'overdue',
-            page: pageNumber,
-            page_size: paymentDuePageSize,
-          },
-        }
-      );
-
-      if (!result.success || !result.data) {
-        throw new Error(
-          result.error || 'Failed to fetch payment due tax invoices'
+      try {
+        const response = await axios.get<PublishedDocumentListResponseModel>(
+          `${process.env.NEXT_PUBLIC_API_URL}/v2/tax/published`,
+          {
+            params: {
+              factory_id: factoryId,
+              is_hidden: false,
+              ordering: 'agreed_payment_date', // 과거가 앞에 오도록 오름차순
+              account_status: 'overdue',
+              page: pageNumber,
+              page_size: paymentDuePageSize,
+            },
+            withCredentials: true,
+          }
         );
+
+        const items: PublishedDocumentOutModel[] = response.data.data || [];
+        const totalCount =
+          response.data.totalCnt ?? response.data.count ?? items.length ?? 0;
+        const currentPage = response.data.curPage ?? pageNumber;
+        const totalPages =
+          response.data.pageCnt ??
+          Math.max(1, Math.ceil(totalCount / paymentDuePageSize));
+        const nextPage =
+          response.data.nextPage ??
+          (currentPage < totalPages ? currentPage + 1 : null);
+
+        return {
+          items,
+          totalCount,
+          nextPage,
+        };
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          const message =
+            error.response?.data?.detail ||
+            error.response?.data?.message ||
+            t('errors.fetchFailed');
+          throw new Error(message);
+        }
+        throw error;
       }
-
-      const items: PublishedTaxInvoiceResponseModel[] = result.data.data || [];
-      const totalCount =
-        result.data.totalCnt ?? result.data.count ?? items.length ?? 0;
-      const currentPage = result.data.curPage ?? pageNumber;
-      const totalPages =
-        result.data.pageCnt ??
-        Math.max(1, Math.ceil(totalCount / paymentDuePageSize));
-      const nextPage =
-        result.data.nextPage ??
-        (currentPage < totalPages ? currentPage + 1 : null);
-
-      return {
-        items,
-        totalCount,
-        nextPage,
-      };
     },
   });
 
-  const taxInvoices = useMemo(
+  const documents = useMemo(
     () => data?.pages.flatMap((page) => page.items) ?? [],
     [data]
   );
 
-  const totalCount = data?.pages[0]?.totalCount ?? taxInvoices.length ?? 0;
-  const hasTaxInvoices = taxInvoices.length > 0;
-  const isInitialLoading = isLoading && !hasTaxInvoices;
+  const totalCount = data?.pages[0]?.totalCount ?? documents.length ?? 0;
+  const hasDocuments = documents.length > 0;
+  const isInitialLoading = isLoading && !hasDocuments;
   const errorMessage =
     error instanceof Error ? error.message : error ? String(error) : null;
 
@@ -140,51 +133,80 @@ const PaymentDue = () => {
   }
 
   const renderContent = () => {
-    if (errorMessage || !hasTaxInvoices) {
+    // 로딩 중이거나 에러가 있을 때는 아무것도 표시하지 않음 (이미 위에서 Spinner 처리됨)
+    if (isLoading || errorMessage) {
+      return null;
+    }
+
+    // 데이터가 없을 때만 NoHistoryBox 표시
+    if (!hasDocuments) {
       return (
         <div className="px-6 pt-4">
-          <NoHistoryBox text="정산 현황 알림이 없어요." />
+          <NoHistoryBox text={t('empty.noAlerts')} />
         </div>
       );
     }
 
     return (
       <>
-        {taxInvoices.map((taxInvoice) => {
-          const { account } = taxInvoice;
+        {documents.map((document) => {
+          const { account } = document;
           const agreedPaymentDate = account?.agreed_payment_date;
           if (!agreedPaymentDate) {
             return null;
           }
-          const { text: chipText, variant: chipVariant } = getChipInfo(
-            agreedPaymentDate,
-            taxInvoice.tax_invoice_type
-          );
 
-          const clientName = taxInvoice.client_info?.name || '-';
+          // 문서 유형에 따라 타입 결정
+          // 세금계산서: tax_invoice_type 사용, 현금영수증: 항상 'purchase' (현금영수증은 매입만 있음)
+          const invoiceType =
+            document.document_type === 'tax'
+              ? document.tax_invoice_type
+              : 'purchase';
+
+          if (!invoiceType) {
+            return null;
+          }
+
+          const diffDays = getDaysDiff(new Date(), agreedPaymentDate);
+          const chipText =
+            document.document_type === 'tax' && invoiceType === 'sales'
+              ? t('chip.clientPaymentDelayed', { days: diffDays })
+              : t('chip.ourPaymentOverdue', { days: diffDays });
+          const chipVariant =
+            document.document_type === 'tax' && invoiceType === 'sales'
+              ? 'red-secondary'
+              : 'secondary';
+
+          const clientName = document.client_name || '-';
           const agreedDate =
             formatISODate(account?.agreed_payment_date || null) || '-';
           const amount = formatAmount(
-            account?.outstanding_balance || taxInvoice.transaction_amount || 0
+            account?.outstanding_balance || document.total_amount || 0
           );
-          const subText = `${agreedDate} · ${amount}원`;
-          const subChipText =
-            taxInvoice.tax_invoice_type === 'sales' ? '매출' : '매입';
+          const subText = `${agreedDate} · ${amount}${tCommon('won')}`;
+
+          // 서브 칩 텍스트 결정
+          let subChipText = '';
+          if (document.document_type === 'tax') {
+            subChipText =
+              invoiceType === 'sales' ? tTax('sales') : tTax('purchase');
+          } else {
+            subChipText = tTax('purchase');
+          }
+
+          // 라우팅 타입 결정
+          const type = invoiceType === 'sales' ? 'income' : 'outcome';
 
           return (
             <AlarmItem
-              key={taxInvoice.id}
+              key={`${document.document_type}-${document.id}`}
               chipText={chipText}
               chipVariant={chipVariant}
               name={clientName}
               subText={subText}
               subChipText={subChipText}
               onClick={() => {
-                const type =
-                  taxInvoice.tax_invoice_type === 'sales'
-                    ? 'income'
-                    : 'outcome';
-                router.push(`/account/${taxInvoice.id}?type=${type}`);
+                router.push(`/account/${document.id}?type=${type}`);
               }}
             />
           );
@@ -198,7 +220,11 @@ const PaymentDue = () => {
 
   return (
     <div className="flex flex-col gap-1 pt-4">
-      <Title icon={<MoneyWavy />} title="정산 현황" count={totalCount} />
+      <Title
+        icon={<MoneyWavy />}
+        title={tTabs('accountStatus')}
+        count={totalCount}
+      />
       {renderContent()}
     </div>
   );

@@ -1255,6 +1255,8 @@ export interface MobileDashboardCountsResponseModel {
   shortage_materials: number;
   expiry_risk_materials: number;
   stale_confirmed_projects: number;
+  overdue_sales_accounts: number;
+  overdue_purchase_accounts: number;
 }
 
 //////////////////////
@@ -1523,32 +1525,32 @@ export interface TaxInvoiceByMaterialResponseModel {
 //////////////////////
 // 현금영수증 관련 api
 // 현금영수증 목록 조회
-export interface CashReceiptListParamsModel {
-  factory_id: number;
-  q?: string;
-  start_date?: string;
-  end_date?: string;
-  order?: 'desc' | 'asc';
-  page?: number;
-  page_size?: number;
-}
+// export interface CashReceiptListParamsModel {
+//   factory_id: number;
+//   q?: string;
+//   start_date?: string;
+//   end_date?: string;
+//   order?: 'desc' | 'asc';
+//   page?: number;
+//   page_size?: number;
+// }
 
-export interface CashReceiptResponseModel {
-  id: number; // 영수증 id
-  transaction_date: string;
-  client_name: string;
-  product_names: string[];
-  item_name: string;
-  transaction_amount: number;
-  tax_amount: number;
-  total_amount: number;
-  account: TaxInvoiceAccountModel;
-  is_hidden: boolean;
-}
+// export interface CashReceiptResponseModel {
+//   id: number; // 영수증 id
+//   transaction_date: string;
+//   client_name: string;
+//   product_names: string[];
+//   item_name: string;
+//   transaction_amount: number;
+//   tax_amount: number;
+//   total_amount: number;
+//   account: TaxInvoiceAccountModel;
+//   is_hidden: boolean;
+// }
 
-export interface CashReceiptListResponseModel extends PaginationModel {
-  data: CashReceiptResponseModel[];
-}
+// export interface CashReceiptListResponseModel extends PaginationModel {
+//   data: CashReceiptResponseModel[];
+// }
 
 export interface CashReceiptDetailResponseModel {
   id: number;
@@ -1650,6 +1652,51 @@ export interface PaymentDetailResponseModel {
 
 export interface PaymentDetailListResponseModel extends PaginationModel {
   data: PaymentDetailResponseModel[];
+}
+
+//////////////////////
+// Published Document API (Tax V2)
+export interface PublishedDocumentFilterModel {
+  /**
+   * 문서 유형:
+   * - undefined: 세금계산서 + 현금영수증 모두 조회
+   * - 'tax': 세금계산서만 조회 (매출/매입 모두)
+   * - 'cash-receipt': 현금영수증만 조회 (매입만)
+   * - 'purchase': 매입 세금계산서 + 매입 현금영수증 함께 조회
+   * - 'purchase-tax': 매입 세금계산서만 조회
+   * - 'sales-tax': 매출 세금계산서만 조회
+   */
+  document_type?:
+    | 'tax'
+    | 'cash-receipt'
+    | 'purchase'
+    | 'purchase-tax'
+    | 'sales-tax';
+  q?: string; // 검색어
+  start_date?: string; // 시작일 (YYYY-MM-DD)
+  end_date?: string; // 종료일 (YYYY-MM-DD)
+  is_hidden?: boolean; // 숨김 여부
+  account_status?: string; // 채권/채무 상태 (waiting-대기, overdue-연체, partial-일부, completed-완료)
+}
+
+export interface PublishedDocumentOutModel {
+  document_type: 'tax' | 'cash-receipt'; // 문서 유형
+  id: number; // 문서 ID
+  transaction_date: string; // 거래일자
+  client_name: string; // 거래처명
+  transaction_amount: number; // 공급가액
+  tax_amount: number; // 세액
+  total_amount: number; // 합계금액
+  is_hidden: boolean; // 숨김 여부
+  account: TaxInvoiceAccountModel | null; // 계정 정보
+  tax_invoice_type: 'sales' | 'purchase' | null; // 세금계산서 유형 (세금계산서인 경우)
+  project_id: number | null; // 프로젝트 ID (세금계산서인 경우)
+  cash_receipt_type: 'sales' | 'purchase' | null; // 현금영수증 유형 (현금영수증인 경우)
+  item_name: string | null; // 품목명 (현금영수증인 경우)
+}
+
+export interface PublishedDocumentListResponseModel extends PaginationModel {
+  data: PublishedDocumentOutModel[];
 }
 
 //////////////////////

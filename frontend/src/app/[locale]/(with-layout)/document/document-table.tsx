@@ -7,7 +7,7 @@ import {
   PublishedTaxInvoiceResponseModel,
   ProjectResponseModel,
   WorkInstructionsResponseModel,
-  CashReceiptResponseModel,
+  PublishedDocumentOutModel,
 } from '@/types/data-model';
 import NoHistoryBox from '@/ui/no-history-box';
 
@@ -16,7 +16,7 @@ interface DocumentTableProps {
     | PublishedTaxInvoiceResponseModel[]
     | ProjectResponseModel[]
     | WorkInstructionsResponseModel[]
-    | CashReceiptResponseModel[];
+    | PublishedDocumentOutModel[];
   selectedType: string;
   onTaxSortChange?: (
     field: 'transaction_date' | 'created_at',
@@ -76,7 +76,7 @@ const DocumentTable = ({
   const taxData = data as PublishedTaxInvoiceResponseModel[];
   const projectData = data as ProjectResponseModel[];
   const workInstructionData = data as WorkInstructionsResponseModel[];
-  const cashReceiptData = data as CashReceiptResponseModel[];
+  const publishedDocumentData = data as PublishedDocumentOutModel[];
 
   return (
     <>
@@ -184,13 +184,15 @@ const DocumentTable = ({
             ))}
 
           {selectedType === '현금영수증' &&
-            cashReceiptData.map((item) => (
-              <DocumentTableItem
-                key={item.id}
-                data={item}
-                documentType={selectedType}
-              />
-            ))}
+            publishedDocumentData
+              .filter((item) => item.document_type === 'cash-receipt')
+              .map((item) => (
+                <DocumentTableItem
+                  key={item.id}
+                  data={item}
+                  documentType={selectedType}
+                />
+              ))}
         </>
       )}
     </>

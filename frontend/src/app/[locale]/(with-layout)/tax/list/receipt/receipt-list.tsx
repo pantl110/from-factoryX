@@ -6,8 +6,12 @@ import { createPortal } from 'react-dom';
 import { SearchInput, Spinner, EmptySpace, MiniBtn } from '@/ui';
 import TableItem from './table-item';
 import Pagination from '@/components/pagination';
-import { useGetCashReceipts, useCheckAll, useUpdateCashReceipt } from '@/hooks';
-import { CashReceiptResponseModel } from '@/types/data-model';
+import {
+  useGetPublishedDocuments,
+  useCheckAll,
+  useUpdateCashReceipt,
+} from '@/hooks';
+import { PublishedDocumentOutModel } from '@/types/data-model';
 import useMemberStore from '@/store/member-store';
 import AccountsPanel from '../accounts-panel';
 import TableHeader from '../table-header';
@@ -23,7 +27,7 @@ const ReceiptList = ({ className = '' }: ReceiptListProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedItem, setSelectedItem] =
-    useState<CashReceiptResponseModel | null>(null);
+    useState<PublishedDocumentOutModel | null>(null);
   const [isPanelOpen, setIsPanelOpen] = useState(false); // 패널 열기/닫기 상태 관리
   const [showHidden, setShowHidden] = useState(false);
   const [isHideRestoreLoading, setIsHideRestoreLoading] = useState(false);
@@ -53,11 +57,14 @@ const ReceiptList = ({ className = '' }: ReceiptListProps) => {
   // useQuery 파라미터 구성
   const queryParams = useMemo(
     () => ({
-      q: debouncedSearchQuery || undefined,
+      filters: {
+        document_type: 'cash-receipt' as const,
+        q: debouncedSearchQuery || undefined,
+        is_hidden: showHidden,
+        account_status: accountStatus,
+      },
       page: currentPage,
       page_size: itemsPerPage,
-      is_hidden: showHidden,
-      account_status: accountStatus,
     }),
     [debouncedSearchQuery, currentPage, itemsPerPage, showHidden, accountStatus]
   );
@@ -67,7 +74,7 @@ const ReceiptList = ({ className = '' }: ReceiptListProps) => {
     data: cashReceiptData,
     isLoading,
     isFetching,
-  } = useGetCashReceipts(queryParams, {
+  } = useGetPublishedDocuments(queryParams, {
     enabled: !!factoryId,
   });
 
@@ -133,7 +140,7 @@ const ReceiptList = ({ className = '' }: ReceiptListProps) => {
   };
 
   // 테이블 아이템 클릭 핸들러
-  const handleItemClick = (item: CashReceiptResponseModel) => {
+  const handleItemClick = (item: PublishedDocumentOutModel) => {
     setSelectedItem(item);
     setIsPanelOpen(true);
   };
@@ -288,15 +295,17 @@ const ReceiptList = ({ className = '' }: ReceiptListProps) => {
                       </p>
                     </div>
                   ) : (
-                    cashReceipts.map((item: CashReceiptResponseModel) => (
-                      <TableItem
-                        key={item.id}
-                        item={item}
-                        onClick={() => handleItemClick(item)}
-                        onToggle={() => toggleOne(item.id)}
-                        isChecked={isChecked(item.id)}
-                      />
-                    ))
+                    cashReceipts
+                      .filter((item) => item.document_type === 'cash-receipt')
+                      .map((item: PublishedDocumentOutModel) => (
+                        <TableItem
+                          key={item.id}
+                          item={item}
+                          onClick={() => handleItemClick(item)}
+                          onToggle={() => toggleOne(item.id)}
+                          isChecked={isChecked(item.id)}
+                        />
+                      ))
                   )}
                 </div>
                 {totalPages > 1 && (

@@ -18,41 +18,39 @@ const TodoList = ({ data }: TodoListProps) => {
   return (
     <div className="flex flex-col gap-2.5">
       {/* 정산 현황 */}
-      <SalesStatus />
+      <SalesStatus data={data} />
 
       {/* 할일 리스트 */}
-      {/* <div className="flex gap-2.5"> */}
-      <TodoListItem
-        title={t('deliveryStatus')}
-        count={data.undelivered_quotation_products}
-        onClick={() => {
-          router.push('/alarm?tab=due-date');
-        }}
-      />
-      <TodoListItem
-        title={t('rop')}
-        count={data.shortage_materials}
-        onClick={() => {
-          router.push('/alarm?tab=rop');
-        }}
-      />
-      {/* </div> */}
-      {/* <div className="flex gap-2.5"> */}
-      <TodoListItem
-        title={t('confirmationRequired')}
-        count={data.stale_confirmed_projects}
-        onClick={() => {
-          router.push('/alarm?tab=confirmation-required');
-        }}
-      />
-      <TodoListItem
-        title={t('expiry')}
-        count={data.expiry_risk_materials}
-        onClick={() => {
-          router.push('/alarm?tab=expiry');
-        }}
-      />
-      {/* </div> */}
+      <div className="gap-2.5 grid grid-cols-2">
+        <TodoListItem
+          title={t('deliveryStatus')}
+          count={data.undelivered_quotation_products}
+          onClick={() => {
+            router.push('/alarm?tab=due-date');
+          }}
+        />
+        <TodoListItem
+          title={t('rop')}
+          count={data.shortage_materials}
+          onClick={() => {
+            router.push('/alarm?tab=rop');
+          }}
+        />
+        <TodoListItem
+          title={t('confirmationRequired')}
+          count={data.stale_confirmed_projects}
+          onClick={() => {
+            router.push('/alarm?tab=confirmation-required');
+          }}
+        />
+        <TodoListItem
+          title={t('expiry')}
+          count={data.expiry_risk_materials}
+          onClick={() => {
+            router.push('/alarm?tab=expiry');
+          }}
+        />
+      </div>
 
       {/* 버튼 */}
       <MoBtn

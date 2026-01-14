@@ -5,12 +5,19 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/navigation';
 import MiniBtn from '@/ui/mini-btn';
 import TaxDetailPanel from '@/app/[locale]/(with-layout)/tax/tax-detail-panel';
-import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
+import { TaxDocumentType } from '@/types/status-type';
 import NoHistoryBox from '@/ui/no-history-box';
 import TaxItem from './tax-item';
 
+interface TaxInvoiceItemModel {
+  id: number;
+  tax_invoice_type: TaxDocumentType;
+  client_info?: { name?: string };
+  transaction_date: string;
+}
+
 interface TaxProps {
-  taxInvoicesData: PublishedTaxInvoiceResponseModel[];
+  taxInvoicesData: TaxInvoiceItemModel[];
   isLoading: boolean;
 }
 
@@ -18,10 +25,11 @@ const Tax = ({ taxInvoicesData, isLoading }: TaxProps) => {
   const t = useTranslations('dashboard.tax');
   const tCommon = useTranslations('common');
   const router = useRouter();
-  const [selectedTax, setSelectedTax] =
-    useState<PublishedTaxInvoiceResponseModel | null>(null);
+  const [selectedTax, setSelectedTax] = useState<TaxInvoiceItemModel | null>(
+    null
+  );
 
-  const handleTaxClick = (tax: PublishedTaxInvoiceResponseModel) => {
+  const handleTaxClick = (tax: TaxInvoiceItemModel) => {
     setSelectedTax(tax);
   };
 
@@ -55,7 +63,7 @@ const Tax = ({ taxInvoicesData, isLoading }: TaxProps) => {
               <TaxItem
                 key={tax.id}
                 taxType={tax.tax_invoice_type}
-                company={tax.client_info?.name}
+                company={tax.client_info?.name || '-'}
                 date={tax.transaction_date}
                 onClick={() => handleTaxClick(tax)}
               />

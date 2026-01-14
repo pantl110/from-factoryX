@@ -131,11 +131,13 @@ const Expiry = ({ hideWhenEmpty = false, limit }: ExpiryProps) => {
   }
 
   const renderContent = () => {
-    if (
-      errorMessage ||
-      !Array.isArray(displayMaterials) ||
-      displayMaterials.length === 0
-    ) {
+    // 로딩 중일 때는 아무것도 표시하지 않음 (이미 위에서 Spinner 처리됨)
+    if (isLoading || errorMessage) {
+      return null;
+    }
+
+    // 데이터가 없을 때만 NoHistoryBox 표시
+    if (!Array.isArray(displayMaterials) || displayMaterials.length === 0) {
       return (
         <div className="px-6 pt-4">
           <NoHistoryBox text={tAlarm('noExpiryNotifications')} />

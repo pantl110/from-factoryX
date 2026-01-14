@@ -24,10 +24,10 @@ const AlarmItem = ({
       onClick={onClick}
     >
       <div className="flex flex-col gap-1.5 justify-start">
-        <MoChip text={chipText} variant={chipVariant} info={true} />
+        <MoChip text={chipText} variant={chipVariant} info />
         <h4 className="m-Heading-5c text-dg text-start">{name}</h4>
         <h6 className="m-Info text-sv text-start">{subText}</h6>
-        {subChipText && <MoChip text={subChipText} variant="outline" />}
+        {subChipText && <MoChip text={subChipText} variant="outline" info />}
       </div>
       <CaretRight size={18} className="text-gr" />
     </button>

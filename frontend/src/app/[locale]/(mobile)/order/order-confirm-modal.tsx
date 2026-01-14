@@ -55,7 +55,7 @@ const OrderConfirmModal = forwardRef<
           onClick={onConfirm}
         />
         <MoBtn
-          text={tCommon('close')}
+          text={tCommon('cancel')}
           variant="outline"
           width="w-full"
           big={true}

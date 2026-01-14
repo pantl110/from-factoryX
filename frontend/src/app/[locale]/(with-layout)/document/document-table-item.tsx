@@ -5,7 +5,7 @@ import {
   PublishedTaxInvoiceResponseModel,
   ProjectResponseModel,
   WorkInstructionsResponseModel,
-  CashReceiptResponseModel,
+  PublishedDocumentOutModel,
 } from '@/types/data-model';
 import { DocumentType, DocumentTypeColorMap } from './types';
 import { useState } from 'react';
@@ -32,7 +32,7 @@ interface DocumentTableItemProps {
     | ProjectResponseModel
     | PublishedTaxInvoiceResponseModel
     | WorkInstructionsResponseModel
-    | CashReceiptResponseModel;
+    | PublishedDocumentOutModel;
   documentType: DocumentType;
 }
 
@@ -84,7 +84,7 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
   const taxData = data as PublishedTaxInvoiceResponseModel;
   const projectData = data as ProjectResponseModel;
   const workInstructionData = data as WorkInstructionsResponseModel;
-  const cashReceiptData = data as CashReceiptResponseModel;
+  const publishedDocumentData = data as PublishedDocumentOutModel;
 
   // 항목 클릭 시
   const handleItemClick = () => {
@@ -173,23 +173,23 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
             </div>
             <p
               className="px-3 flex-[1.5] truncate"
-              title={cashReceiptData.client_name || '-'}
+              title={publishedDocumentData.client_name || '-'}
             >
-              {cashReceiptData.client_name || '-'}
+              {publishedDocumentData.client_name || '-'}
             </p>
             <p
               className="px-3 flex-[1.5] truncate"
               title={getProductNamesDisplay(
-                cashReceiptData.item_name
-                  ? cashReceiptData.item_name
+                publishedDocumentData.item_name
+                  ? publishedDocumentData.item_name
                       .split(',')
                       .map((s: string) => s.trim())
                   : []
               )}
             >
               {getProductNamesDisplay(
-                cashReceiptData.item_name
-                  ? cashReceiptData.item_name
+                publishedDocumentData.item_name
+                  ? publishedDocumentData.item_name
                       .split(',')
                       .map((s: string) => s.trim())
                   : []
@@ -197,12 +197,14 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
             </p>
             <p
               className="px-3 flex-[1.3] truncate"
-              title={cashReceiptData.total_amount?.toLocaleString() || '-'}
+              title={
+                publishedDocumentData.total_amount?.toLocaleString() || '-'
+              }
             >
-              {cashReceiptData.total_amount?.toLocaleString() || '-'}
+              {publishedDocumentData.total_amount?.toLocaleString() || '-'}
             </p>
             <p className="px-3 flex-[1.3]">
-              {formatISODate(cashReceiptData.transaction_date) || '-'}
+              {formatISODate(publishedDocumentData.transaction_date) || '-'}
             </p>
           </>
         ) : documentType === '생산지시서' ? (
@@ -500,7 +502,7 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
       {/* 현금영수증 디테일 판넬 */}
       {isCashReceiptPanelOpen && (
         <ReceiptDetailPanel
-          itemId={cashReceiptData.id}
+          itemId={publishedDocumentData.id}
           onClose={() => setIsCashReceiptPanelOpen(false)}
         />
       )}
