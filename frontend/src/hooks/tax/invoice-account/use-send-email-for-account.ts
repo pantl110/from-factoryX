@@ -80,8 +80,16 @@ const useSendEmailForAccount = (): UseSendEmailForAccountReturnModel => {
         const data: SendEmailResponseModel = await response.json();
 
         // React Query 캐시 무효화하여 account 정보 다시 불러오기
+        // 'tax-invoice-account'로 시작하는 모든 관련 쿼리 무효화 (타입 포함)
         queryClient.invalidateQueries({
-          queryKey: ['tax-invoice-account', id],
+          predicate: (query) => {
+            const key = query.queryKey;
+            return (
+              Array.isArray(key) &&
+              key[0] === 'tax-invoice-account' &&
+              key[1] === id
+            );
+          },
         });
 
         return {

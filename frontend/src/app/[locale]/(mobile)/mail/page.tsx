@@ -1,11 +1,17 @@
+'use client';
+
 import React, { useEffect, useMemo } from 'react';
-import { Input, MiniBtn, Toast } from '@/ui';
-import Modal from '@/ui/modal/modal';
-import { useForm, Controller } from 'react-hook-form';
-import { TaxInvoiceAccountModel } from '@/types/data-model';
-import useMemberStore from '@/store/member-store';
-import { useGetFactory, useSendEmailForAccount, useToast } from '@/hooks';
+import { useSearchParams, useRouter } from 'next/navigation';
+import Topbar from '../topbar';
+import { MoBottomNavigation, MoInput, MoToast, Spinner } from '@/ui';
 import { useTranslations, useLocale } from 'next-intl';
+import { useForm, Controller } from 'react-hook-form';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { TaxInvoiceAccountModel } from '@/types/data-model';
+import { getTaxInvoiceAccountQueryFn } from '@/hooks';
+import { useSendEmailForAccount, useToast } from '@/hooks';
+import useMemberStore from '@/store/member-store';
+import { useGetFactory } from '@/hooks';
 import { getMonthDisplay } from '@/utils';
 import { WarningCircle, CheckCircle } from '@phosphor-icons/react';
 
@@ -15,41 +21,30 @@ interface EmailFormModel {
   content: string;
 }
 
-interface SendEmailModalProps {
-  onClose: () => void;
-  account: TaxInvoiceAccountModel | null;
-  onSendEmail?: (data: EmailFormModel) => void;
-  isLoading?: boolean;
-}
-
-const SendEmailModal = ({
-  onClose,
-  account,
-  onSendEmail,
-  isLoading: externalIsLoading = false,
-}: SendEmailModalProps) => {
+const MailPage = () => {
   const t = useTranslations('tax.list.sendEmailModal');
   const tList = useTranslations('tax.list');
-  const tCommon = useTranslations('common');
   const locale = useLocale();
-  const clientName = account?.client?.name || '';
-  const clientEmail = account?.client?.email || '';
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const taxId = searchParams.get('taxId')
+    ? Number(searchParams.get('taxId'))
+    : null;
+
   const factoryId = useMemberStore((state) => state.factoryId);
   const { getFactory, factory } = useGetFactory();
-  const { sendEmailForAccount, isLoading: isSendingEmail } =
-    useSendEmailForAccount();
+  const { sendEmailForAccount } = useSendEmailForAccount();
   const { showToast, isToastOpen, isVisible } = useToast();
   const {
     showToast: showSuccessToast,
     isToastOpen: isSuccessToastOpen,
     isVisible: isSuccessToastVisible,
   } = useToast();
+  const queryClient = useQueryClient();
   const [errorText, setErrorText] = React.useState('');
   const [errorSubtext, setErrorSubtext] = React.useState('');
   const [successText, setSuccessText] = React.useState('');
   const [successSubtext, setSuccessSubtext] = React.useState('');
-
-  const isLoading = externalIsLoading || isSendingEmail;
 
   // 공장 정보 가져오기
   useEffect(() => {
@@ -58,6 +53,26 @@ const SendEmailModal = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [factoryId]);
+
+  // Account 정보 가져오기
+  const {
+    data: account,
+    isLoading: isLoadingAccount,
+    error: accountError,
+  } = useQuery<TaxInvoiceAccountModel>({
+    queryKey: ['tax-invoice-account', taxId, 'tax'],
+    enabled: !!taxId,
+    queryFn: () => {
+      if (!taxId) {
+        throw new Error('Tax ID is required');
+      }
+      return getTaxInvoiceAccountQueryFn(taxId, 'tax');
+    },
+  });
+
+  const clientName = account?.client?.name || '';
+  const clientEmail = account?.client?.email || '';
+  const factoryName = factory?.name || '';
 
   // 현재 달 가져오기
   const currentMonth = useMemo(() => {
@@ -68,9 +83,6 @@ const SendEmailModal = ({
   const monthDisplay = useMemo(() => {
     return getMonthDisplay(currentMonth, locale);
   }, [locale, currentMonth]);
-
-  // 공장 이름 가져오기
-  const factoryName = factory?.name || '';
 
   // 약정입금일 그대로 사용
   const paymentDate = useMemo(() => {
@@ -99,16 +111,14 @@ ${t('emailTemplate.body4')}
 ${t('emailTemplate.closing')}`;
   }, [clientName, currentMonth, paymentDate, formattedAmount, t]);
 
-  const {
-    control,
-    handleSubmit,
-    reset,
-    formState: { errors },
-  } = useForm<EmailFormModel>({
+  const { control, handleSubmit, reset } = useForm<EmailFormModel>({
     defaultValues: {
       recipient: clientEmail || '',
       subject: factoryName
-        ? t('subjectTemplate.withFactory', { factoryName, month: monthDisplay })
+        ? t('subjectTemplate.withFactory', {
+            factoryName,
+            month: monthDisplay,
+          })
         : t('subjectTemplate.withoutFactory', { month: monthDisplay }),
       content: emailContent,
     },
@@ -120,34 +130,39 @@ ${t('emailTemplate.closing')}`;
     reset({
       recipient: clientEmail || '',
       subject: factoryName
-        ? t('subjectTemplate.withFactory', { factoryName, month: monthDisplay })
+        ? t('subjectTemplate.withFactory', {
+            factoryName,
+            month: monthDisplay,
+          })
         : t('subjectTemplate.withoutFactory', { month: monthDisplay }),
       content: emailContent,
     });
   }, [clientEmail, monthDisplay, emailContent, factoryName, reset, t]);
 
   const onSubmit = async (data: EmailFormModel) => {
-    // onSendEmail이 제공되면 부모에서 처리
-    if (onSendEmail) {
-      onSendEmail(data);
-      return;
-    }
+    if (!taxId) return;
 
-    // 모달 내부에서 직접 처리
-    if (!account?.id) return;
-
-    const taxInvoiceId = account?.tax_invoice?.id || account?.cash_receipt?.id;
-    if (!taxInvoiceId) return;
-
-    const result = await sendEmailForAccount(taxInvoiceId, data);
+    const result = await sendEmailForAccount(taxId, data);
 
     if (result.success && result.data) {
+      // account 페이지로 돌아가기 전에 관련 쿼리 무효화하여 최신 데이터 불러오기
+      queryClient.invalidateQueries({
+        predicate: (query) => {
+          const key = query.queryKey;
+          return (
+            Array.isArray(key) &&
+            key[0] === 'tax-invoice-account' &&
+            key[1] === taxId
+          );
+        },
+      });
+      // 성공 토스트 표시
       setSuccessText(tList('errors.emailSendSuccess'));
       setSuccessSubtext(tList('errors.emailSendSuccessSubtext') || '');
       showSuccessToast();
-      // 성공 후 모달 닫기
+      // 성공 토스트 표시 후 일정 시간 후에 뒤로 가기
       setTimeout(() => {
-        onClose();
+        router.back();
       }, 1500);
     } else if (result.error) {
       setErrorText(tList('errors.emailSendFailed'));
@@ -158,17 +173,32 @@ ${t('emailTemplate.closing')}`;
     }
   };
 
+  if (isLoadingAccount) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Spinner />
+      </div>
+    );
+  }
+
+  if (accountError || !account) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="m-Body-2 text-sv">
+          {tList('accountPayment.errors.accountNotFound')}
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <Modal
-      title={t('title')}
-      subtitle={t('subtitle')}
-      onClose={onClose}
-      width="w-[600px]"
-      scroll
-    >
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <div className="flex flex-col max-h-[calc(85vh-109px)] overflow-y-auto scrollbar-hide">
-          <div className="mt-4 px-6">
+    <>
+      <div className="pb-23">
+        <Topbar title={t('title')} />
+
+        <div className="px-7 py-8 flex flex-col gap-7">
+          <p className="m-Body-2 text-gr">{t('subtitle')}</p>
+          <form id="email-form" onSubmit={handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-5">
               <Controller
                 name="recipient"
@@ -192,15 +222,16 @@ ${t('emailTemplate.closing')}`;
                     field.onBlur();
                   };
                   return (
-                    <Input
-                      label={t('labels.recipient')}
-                      placeholder={t('placeholders.recipient')}
-                      value={field.value}
-                      onChange={handleRecipientChange}
-                      onBlur={handleRecipientBlur}
-                      showError={!!errors.recipient}
-                      required
-                    />
+                    <div className="flex flex-col gap-2">
+                      <MoInput
+                        label={t('labels.recipient')}
+                        placeholder={t('placeholders.recipient')}
+                        value={field.value}
+                        onChange={handleRecipientChange}
+                        onBlur={handleRecipientBlur}
+                        required
+                      />
+                    </div>
                   );
                 }}
               />
@@ -222,15 +253,16 @@ ${t('emailTemplate.closing')}`;
                     field.onBlur();
                   };
                   return (
-                    <Input
-                      label={t('labels.subject')}
-                      placeholder={t('placeholders.subject')}
-                      value={field.value}
-                      onChange={handleSubjectChange}
-                      onBlur={handleSubjectBlur}
-                      showError={!!errors.subject}
-                      required
-                    />
+                    <div className="flex flex-col gap-2">
+                      <MoInput
+                        label={t('labels.subject')}
+                        placeholder={t('placeholders.subject')}
+                        value={field.value}
+                        onChange={handleSubjectChange}
+                        onBlur={handleSubjectBlur}
+                        required
+                      />
+                    </div>
                   );
                 }}
               />
@@ -253,42 +285,37 @@ ${t('emailTemplate.closing')}`;
                     field.onBlur();
                   };
                   return (
-                    <Input
-                      label={t('labels.content')}
-                      textarea={true}
-                      placeholder={t('placeholders.content')}
-                      minRows={12}
-                      value={field.value}
-                      onChange={handleContentChange}
-                      onBlur={handleContentBlur}
-                      showError={!!errors.content}
-                      required
-                    />
+                    <div className="flex flex-col gap-2">
+                      <MoInput
+                        label={t('labels.content')}
+                        placeholder={t('placeholders.content')}
+                        value={field.value}
+                        onChange={handleContentChange}
+                        onBlur={handleContentBlur}
+                        required
+                        textarea
+                        minRows={12}
+                      />
+                    </div>
                   );
                 }}
               />
             </div>
-          </div>
-          <div className="flex justify-end mt-5 gap-2.5 px-6 pb-6">
-            <MiniBtn
-              type="button"
-              text={tCommon('cancel')}
-              variant="white"
-              onClick={onClose}
-              disabled={isLoading}
-            />
-            <MiniBtn
-              type="submit"
-              text={t('sendButton')}
-              variant="primary"
-              disabled={isLoading}
-            />
-          </div>
+          </form>
         </div>
-      </form>
+      </div>
+      <MoBottomNavigation
+        type="mail"
+        onClick={() => {
+          const form = document.getElementById('email-form') as HTMLFormElement;
+          if (form) {
+            form.requestSubmit();
+          }
+        }}
+      />
       {/* 에러 토스트 */}
       {isToastOpen && (
-        <Toast
+        <MoToast
           icon={<WarningCircle size={20} className="text-red" />}
           text={errorText}
           subtext={errorSubtext}
@@ -298,7 +325,7 @@ ${t('emailTemplate.closing')}`;
       )}
       {/* 성공 토스트 */}
       {isSuccessToastOpen && (
-        <Toast
+        <MoToast
           icon={<CheckCircle size={20} className="text-primary" />}
           text={successText}
           subtext={successSubtext}
@@ -306,8 +333,8 @@ ${t('emailTemplate.closing')}`;
           isVisible={isSuccessToastVisible}
         />
       )}
-    </Modal>
+    </>
   );
 };
 
-export default SendEmailModal;
+export default MailPage;

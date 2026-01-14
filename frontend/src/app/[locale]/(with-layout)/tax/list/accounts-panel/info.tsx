@@ -5,11 +5,12 @@ import { ArrowLineUpRight, CaretDown } from '@phosphor-icons/react';
 import TermDropdown from './term-dropdown';
 import { TaxInvoiceAccountModel } from '@/types/data-model';
 import { useForm, Controller } from 'react-hook-form';
-import { formatISODate, formatDate } from '@/utils';
 import {
-  getAgreedPaymentDateByCollectionTerm,
+  formatISODate,
+  formatDate,
   getDaysUntilPayment,
-} from './utils';
+  getAgreedPaymentDateByCollectionTerm,
+} from '@/utils';
 import { useTranslations } from 'next-intl';
 
 interface AccountFormModel {
@@ -28,6 +29,7 @@ interface InfoProps {
   account: TaxInvoiceAccountModel | null;
   onOpenClientDetailPanel: () => void;
   onIsDirtyChange?: (isDirty: boolean) => void;
+  onOpenSendEmailModal?: () => void;
   type?: 'tax' | 'cash-receipt';
 }
 
@@ -46,6 +48,7 @@ const Info = React.forwardRef<InfoHandleModel, InfoProps>(
       account,
       onOpenClientDetailPanel,
       onIsDirtyChange,
+      onOpenSendEmailModal,
       type = 'tax',
     },
     ref
@@ -54,6 +57,7 @@ const Info = React.forwardRef<InfoHandleModel, InfoProps>(
     const tCommon = useTranslations('common');
     const tAccountPayment = useTranslations('tax.list.accountPayment.labels');
     const tLinkProject = useTranslations('tax.list.linkProjectModal');
+    const tTableArea = useTranslations('tax.list.tableArea');
     const accountsStatus: AccountsStatusType = account?.status ?? 'waiting';
 
     const [isTermOpen, setIsTermOpen] = useState(false);
@@ -198,21 +202,31 @@ const Info = React.forwardRef<InfoHandleModel, InfoProps>(
               <InfoLabelValue
                 label={t('labels.invoiceSent')}
                 value={
-                  <RoundChip
-                    text={
-                      (account?.invoice_sent_count ?? 0) === 0
-                        ? t('invoiceSent.notSent')
-                        : t('invoiceSent.sentCount', {
-                            count: account?.invoice_sent_count ?? 0,
-                          })
-                    }
-                    variant="sm"
-                    color={
-                      (account?.invoice_sent_count ?? 0) === 0
-                        ? 'gray'
-                        : 'secondary'
-                    }
-                  />
+                  <div className="flex w-full justify-between items-center">
+                    <RoundChip
+                      text={
+                        (account?.invoice_sent_count ?? 0) === 0
+                          ? t('invoiceSent.notSent')
+                          : t('invoiceSent.sentCount', {
+                              count: account?.invoice_sent_count ?? 0,
+                            })
+                      }
+                      variant="sm"
+                      color={
+                        (account?.invoice_sent_count ?? 0) === 0
+                          ? 'gray'
+                          : 'secondary'
+                      }
+                    />
+                    {onOpenSendEmailModal && (
+                      <MiniBtn
+                        text={tTableArea('buttons.sendEmail')}
+                        variant="whiteOutline"
+                        onClick={onOpenSendEmailModal}
+                        disabled={account?.status === 'completed'}
+                      />
+                    )}
+                  </div>
                 }
               />
             )}

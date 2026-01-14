@@ -1,3 +1,5 @@
+'use client';
+
 import { X } from '@phosphor-icons/react/dist/ssr';
 import { useEffect, useRef } from 'react';
 import IconBtn from '../icon-btn';

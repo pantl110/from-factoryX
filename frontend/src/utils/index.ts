@@ -4,6 +4,8 @@ export { getToday, getDaysDiff } from './get-today';
 export { getStartDate } from './get-start-date';
 export { default as getLastDeliveryDate } from './get-last-delivery-date';
 export { getMonthDisplay } from './get-month-display';
+export { getDaysUntilPayment } from './get-days-until-payment';
+export { getAgreedPaymentDateByCollectionTerm } from './get-agreed-payment-date-by-collection-term';
 
 // Format utilities
 export {

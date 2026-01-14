@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { DeleteModal, IconBtn, MiniBtn, OverlayView, Panel, Toast } from '@/ui';
 import TableArea from './table-area';
-import { WarningCircle, X } from '@phosphor-icons/react';
+import { WarningCircle, X, CheckCircle } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
 import {
   useGetTaxInvoiceAccount,
@@ -60,10 +60,19 @@ const AccountsPanel = ({
   // 데이터 상태
   const [account, setAccount] = useState<TaxInvoiceAccountModel | null>(null);
 
-  // 토스트 상태
+  // 에러 토스트 상태
   const { showToast, isToastOpen, isVisible } = useToast();
   const [errorText, setErrorText] = useState('');
   const [errorSubtext, setErrorSubtext] = useState('');
+
+  // 성공 토스트 상태
+  const {
+    showToast: showSuccessToast,
+    isToastOpen: isSuccessToastOpen,
+    isVisible: isSuccessToastVisible,
+  } = useToast();
+  const [successText, setSuccessText] = useState('');
+  const [successSubtext, setSuccessSubtext] = useState('');
 
   // 폼 상태
   const [isFormDirty, setIsFormDirty] = useState(false);
@@ -183,6 +192,10 @@ const AccountsPanel = ({
         setAccount(accountResult.data);
       }
       handleCloseSendEmailModal();
+      // 성공 토스트 표시
+      setSuccessText(t('errors.emailSendSuccess'));
+      setSuccessSubtext(t('errors.emailSendSuccessSubtext'));
+      showSuccessToast();
     } else if (result.error) {
       setErrorText(t('errors.emailSendFailed'));
       setErrorSubtext(result.error || t('accountPayment.errors.unknownError'));
@@ -302,6 +315,7 @@ const AccountsPanel = ({
               account={account}
               onOpenClientDetailPanel={handleOpenClientDetailPanel}
               onIsDirtyChange={setIsFormDirty}
+              onOpenSendEmailModal={handleOpenSendEmailModal}
               type={type}
             />
 
@@ -331,7 +345,6 @@ const AccountsPanel = ({
               onOpenCreateAccountPaymentModal={
                 handleOpenCreateAccountPaymentModal
               }
-              onOpenSendEmailModal={handleOpenSendEmailModal}
               onOpenDeleteAccountPaymentModal={
                 handleOpenDeleteAccountPaymentModal
               }
@@ -429,7 +442,7 @@ const AccountsPanel = ({
           isLoading={isDeletingPayment}
         />
       )}
-      {/* 토스트 */}
+      {/* 에러 토스트 */}
       {isToastOpen && (
         <Toast
           icon={<WarningCircle size={20} className="text-red" />}
@@ -437,6 +450,16 @@ const AccountsPanel = ({
           subtext={errorSubtext}
           type="red"
           isVisible={isVisible}
+        />
+      )}
+      {/* 성공 토스트 */}
+      {isSuccessToastOpen && (
+        <Toast
+          icon={<CheckCircle size={20} className="text-primary" />}
+          text={successText}
+          subtext={successSubtext}
+          type="primary"
+          isVisible={isSuccessToastVisible}
         />
       )}
     </>

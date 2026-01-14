@@ -151,9 +151,13 @@ const PaymentDue = () => {
     return (
       <>
         {taxInvoices.map((taxInvoice) => {
-          const account = taxInvoice.account;
+          const { account } = taxInvoice;
+          const agreedPaymentDate = account?.agreed_payment_date;
+          if (!agreedPaymentDate) {
+            return null;
+          }
           const { text: chipText, variant: chipVariant } = getChipInfo(
-            account?.agreed_payment_date!,
+            agreedPaymentDate,
             taxInvoice.tax_invoice_type
           );
 

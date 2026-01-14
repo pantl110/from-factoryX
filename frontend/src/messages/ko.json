@@ -270,6 +270,7 @@
     "sales": "매출",
     "purchase": "매입",
     "invoiceInfo": "세금계산서 정보",
+    "invoiceInfoNotFound": "세금계산서 정보가 없습니다.",
     "invoiceType": "세금계산서 구분",
     "type": "구분",
     "receipt": "영수",
@@ -312,7 +313,9 @@
     "detailPanel": {
       "buttons": {
         "cancelPublish": "발행 취소"
-      }
+      },
+      "salesTaxInvoiceTitle": "매출 세금계산서",
+      "purchaseTaxInvoiceTitle": "매입 세금계산서"
     },
     "notAllowed": {
       "title": "세무/회계 기능이 잠겨있어요.",
@@ -443,8 +446,8 @@
         }
       },
       "sendEmailModal": {
-        "title": "메일 보내기",
-        "subtitle": "담당자에게 청구 관련 안내 메일을 발송합니다.",
+        "title": "입금 요청서 메일로 보내기",
+        "subtitle": "담당자에게 입금 요청 관련 안내 메일을 전송합니다.",
         "labels": {
           "recipient": "받는 사람",
           "subject": "제목",
@@ -475,7 +478,7 @@
           "withFactory": "[{factoryName}] {month}월 정산 금액 입금 요청드립니다",
           "withoutFactory": "{month}월 정산 금액 입금 요청드립니다"
         },
-        "sendButton": "메일 보내기"
+        "sendButton": "이메일 전송하기"
       },
       "linkProjectModal": {
         "title": "세금계산서에 연결할 프로젝트를 선택해주세요.",
@@ -491,6 +494,8 @@
         "hideRestoreFailed": "세금계산서 숨김/복구에 실패했습니다.",
         "hideRestoreError": "세금계산서 숨김/복구 중 오류 발생: {error}",
         "emailSendFailed": "이메일 발송에 실패했습니다.",
+        "emailSendSuccess": "이메일이 성공적으로 발송되었습니다.",
+        "emailSendSuccessSubtext": "",
         "deletePaymentDetailFailed": "회수/지급 상세내역 삭제에 실패했습니다.",
         "invalidDueDate": "유효한 납기일자를 입력해 주세요.",
         "saveAccountFailed": "세금계산서 채권/채무 정보 저장에 실패했습니다."
@@ -546,7 +551,7 @@
           "goToProject": "프로젝트 바로가기"
         },
         "labels": {
-          "invoiceSent": "청구서 발송",
+          "invoiceSent": "입금 요청서 전송",
           "totalBilledAmount": "청구금액(합계)",
           "amountPayable": "미지급액(잔액)",
           "amountReceivable": "미수금액(잔액)",
@@ -567,8 +572,8 @@
           }
         },
         "invoiceSent": {
-          "notSent": "미발송",
-          "sentCount": "{count}회 발송"
+          "notSent": "미전송",
+          "sentCount": "{count}회 전송"
         },
         "terms": {
           "invoice30": "세금계산서 발행 후 30일 이내 입금",
@@ -582,7 +587,7 @@
           "deposit": "회수 상세 내역"
         },
         "buttons": {
-          "sendEmail": "메일 보내기",
+          "sendEmail": "이메일 전송하기",
           "enterPayment": "지급 정보 입력하기",
           "enterDeposit": "입금 정보 입력하기"
         },
@@ -596,7 +601,15 @@
           },
           "empty": {
             "payment": "지급 내역이 없습니다.",
-            "deposit": "입금 내역이 없습니다."
+            "deposit": "입금 내역이 없습니다.",
+            "loadFailed": {
+              "payment": "지급 내역을 불러올 수 없습니다.",
+              "deposit": "입금 내역을 불러올 수 없습니다."
+            }
+          },
+          "recentDate": {
+            "payment": "최근지급일",
+            "deposit": "최근입금일"
           }
         }
       }
@@ -2099,6 +2112,9 @@
       "totalTotalAmount": "총 합계금액",
       "productDetailInfo": "제품에 대한 자세한 정보는 PC에서 확인하실 수 있습니다."
     },
+    "account": {
+      "sendPaymentRequest": "입금 요청서 전송하기"
+    },
     "orderConfirmModal": {
       "title": "주문 내역 확정",
       "description1": "PC에서 이메일 발송과 계산서 발행이 가능해요.",
@@ -2133,6 +2149,7 @@
       "tabs": {
         "all": "전체",
         "deliveryStatus": "납품 현황",
+        "accountStatus": "정산 현황",
         "rop": "ROP",
         "expiry": "유통기한",
         "confirmationRequired": "진행 필요"

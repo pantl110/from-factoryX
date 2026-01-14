@@ -9,7 +9,6 @@ interface TableAreaProps {
   taxId: number;
   account: TaxInvoiceAccountModel | null;
   onOpenCreateAccountPaymentModal: () => void;
-  onOpenSendEmailModal: () => void;
   onOpenDeleteAccountPaymentModal: (paymentId: number) => void;
   onOpenEditAccountPaymentModal: (
     paymentDetail: PaymentDetailResponseModel
@@ -22,7 +21,6 @@ const TableArea = ({
   taxId,
   account,
   onOpenCreateAccountPaymentModal,
-  onOpenSendEmailModal,
   onOpenDeleteAccountPaymentModal,
   onOpenEditAccountPaymentModal,
   type = 'tax',
@@ -42,22 +40,12 @@ const TableArea = ({
         <h3 className="Heading-3 h-10 flex items-center">{title}</h3>
 
         {/* 버튼 */}
-        <div className="flex gap-2">
-          {!isPurchase && (
-            <MiniBtn
-              text={t('buttons.sendEmail')}
-              variant="whiteOutline"
-              onClick={onOpenSendEmailModal}
-              disabled={isCompleted}
-            />
-          )}
-          <MiniBtn
-            text={inputButtonText}
-            variant="whiteOutline"
-            onClick={onOpenCreateAccountPaymentModal}
-            disabled={isCompleted}
-          />
-        </div>
+        <MiniBtn
+          text={inputButtonText}
+          variant="whiteOutline"
+          onClick={onOpenCreateAccountPaymentModal}
+          disabled={isCompleted}
+        />
       </div>
 
       {/* 표 */}

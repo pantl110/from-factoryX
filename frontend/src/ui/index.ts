@@ -13,6 +13,7 @@ export { default as MoBottomNavigation } from './mo-bottom-navigation';
 export { default as MoBtn } from './mo-btn';
 export { default as MoChip } from './mo-chip';
 export { default as MoInput } from './mo-input';
+export { default as MoToast } from './mo-toast';
 export { default as NoHistoryBox } from './no-history-box';
 export { default as OverlayView } from './ovelay-view';
 export { default as Panel, type PanelRefModel } from './panel';

@@ -270,6 +270,7 @@
     "sales": "Sales",
     "purchase": "Purchase",
     "invoiceInfo": "Tax Invoice Info",
+    "invoiceInfoNotFound": "Tax invoice information not found.",
     "invoiceType": "Type",
     "type": "Type",
     "receipt": "Receipt",
@@ -444,8 +445,8 @@
         }
       },
       "sendEmailModal": {
-        "title": "Send Email",
-        "subtitle": "Send a billing notification email to the manager.",
+        "title": "Send Payment Request by Email",
+        "subtitle": "Send a payment request notification email to the manager.",
         "labels": {
           "recipient": "Recipient",
           "subject": "Subject",
@@ -492,6 +493,8 @@
         "hideRestoreFailed": "Failed to hide/restore tax invoice.",
         "hideRestoreError": "Error occurred while hiding/restoring tax invoice: {error}",
         "emailSendFailed": "Failed to send email.",
+        "emailSendSuccess": "Email sent successfully.",
+        "emailSendSuccessSubtext": "",
         "deletePaymentDetailFailed": "Failed to delete payment/deposit detail.",
         "invalidDueDate": "Please enter a valid due date.",
         "saveAccountFailed": "Failed to save tax invoice account information."
@@ -547,7 +550,7 @@
           "goToProject": "Go to Project"
         },
         "labels": {
-          "invoiceSent": "Invoice Sent",
+          "invoiceSent": "Payment Request Sent",
           "totalBilledAmount": "Total Billed Amount",
           "amountPayable": "Amount Payable",
           "amountReceivable": "Amount Receivable",
@@ -597,7 +600,15 @@
           },
           "empty": {
             "payment": "No payment details.",
-            "deposit": "No deposit details."
+            "deposit": "No deposit details.",
+            "loadFailed": {
+              "payment": "Failed to load payment details.",
+              "deposit": "Failed to load deposit details."
+            }
+          },
+          "recentDate": {
+            "payment": "Recent Payment Date",
+            "deposit": "Recent Deposit Date"
           }
         }
       }
@@ -2099,6 +2110,9 @@
     "orderInfo": {
       "totalTotalAmount": "Total Amount",
       "productDetailInfo": "You can view detailed product information on PC."
+    },
+    "account": {
+      "sendPaymentRequest": "Send Payment Request"
     },
     "orderConfirmModal": {
       "title": "Confirm Order",
