@@ -176,3 +176,30 @@ class SendEmailIn(Schema):
     recipient: str = Field(..., description="수신자 이메일 주소")
     subject: str = Field(..., description="이메일 제목")
     content: str = Field(..., description="이메일 내용")
+
+# ver2 api 사용
+class PublishedDocumentFilter(FilterSchema):
+    """발행된 세금계산서 및 현금영수증 통합 필터"""
+    document_type: Optional[str] = Field(
+        None, 
+        description="문서 유형: None(모두), tax(세금계산서만), cash-receipt(현금영수증만), purchase(매입 세금계산서+매입 현금영수증), purchase-tax(매입 세금계산서만), sales-tax(매출 세금계산서만)"
+    )
+    q: Optional[str] = Field(
+        None,
+        q=["client__name__icontains", "line_items__icontains", "item_name__icontains"],
+        description="거래처명 또는 품목명 통합 검색어",
+        expression_connector="OR",
+    )
+    start_date: Optional[date] = Field(
+        None, q="transaction_date__gte", description="거래일자 범위 시작일"
+    )
+    end_date: Optional[date] = Field(
+        None, q="transaction_date__lte", description="거래일자 범위 종료일"
+    )
+    is_hidden: Optional[bool] = Field(None, q="is_hidden", description="숨김 여부")
+    account_status: Optional[str] = Field(
+        None, 
+        q=["tax_invoice_account__status", "cash_receipt_account__status"],
+        description="채권/채무 상태 (waiting-대기, overdue-연체, partial-일부, completed-완료)",
+        expression_connector="OR",
+    )

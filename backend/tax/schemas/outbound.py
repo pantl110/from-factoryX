@@ -201,3 +201,25 @@ class TaxInvoiceAccountOut(ModelSchema):
         if obj.cash_receipt and obj.cash_receipt.client:
             return obj.cash_receipt.client
         return None
+
+
+# ver2 api 사용
+class PublishedDocumentOut(Schema):
+    """발행된 세금계산서 및 현금영수증 통합 응답 스키마"""
+    document_type: str = Field(..., description="문서 유형: tax(세금계산서) 또는 cash-receipt(현금영수증)")
+    id: int
+    transaction_date: date
+    client_name: str
+    transaction_amount: int
+    tax_amount: int
+    total_amount: int
+    is_hidden: bool = Field(default=False, description="숨김 여부")
+    account: Optional[TaxInvoiceAccountSimpleOut] = Field(default=None, description="채권/채무 정보")
+    
+    # 세금계산서 전용 필드
+    tax_invoice_type: Optional[str] = Field(None, description="세금계산서 유형 (sales/purchase)")
+    project_id: Optional[int] = Field(None, description="연결된 프로젝트 ID")
+    
+    # 현금영수증 전용 필드
+    cash_receipt_type: Optional[str] = Field(None, description="현금영수증 유형 (sales/purchase)")
+    item_name: Optional[str] = Field(None, description="품목명")
