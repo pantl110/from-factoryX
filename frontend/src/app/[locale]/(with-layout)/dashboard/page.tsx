@@ -2,6 +2,9 @@
 
 import { useEffect, Suspense, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import ReactGridLayout, { useContainerWidth } from 'react-grid-layout';
+import 'react-grid-layout/css/styles.css';
+import 'react-resizable/css/styles.css';
 import MainTitleSec from './main-title-sec';
 import DailyProductionQuantity from './summary-KPI/daily-production-quantity';
 import ShortageCount from './summary-KPI/shortage-count';
@@ -32,6 +35,7 @@ import { TodayProductionPlanModel } from './type';
 import NoHistoryBox from '@/ui/no-history-box';
 import Footer from '@/components/footer';
 import MobileDashboardPage from '@/app/[locale]/(mobile)/dashboard';
+import { gridLayout } from './utils';
 
 const DashboardPageContent = () => {
   const t = useTranslations('dashboard');
@@ -71,6 +75,10 @@ const DashboardPageContent = () => {
   const [todayProductionPlans, setTodayProductionPlans] = useState<
     TodayProductionPlanModel[]
   >([]);
+  const { width: gridWidth, containerRef } = useContainerWidth({
+    initialWidth: 1200,
+  });
+  const effectiveGridWidth = gridWidth || 1200;
 
   // PublishedDocumentOutModel에서 세금계산서만 필터링하고 변환
   const taxInvoicesData = (taxInvoicesQueryData?.data || [])
@@ -107,7 +115,7 @@ const DashboardPageContent = () => {
     }
   }, [factoryId, initializeFactoryId]);
 
-  // 견적서 주문서 프로젝트 데이터 3개 가져오기
+  // 견적서 주문서 프로젝트 데이터 12개 가져오기
   useEffect(() => {
     if (factoryId) {
       // 첫 번째 요청: 견적서 주문서 프로젝트 데이터 3개 가져오기
@@ -115,7 +123,7 @@ const DashboardPageContent = () => {
         status_exclude:
           'pending,production,manufactured,delivery,completed,suspended',
         page: 1,
-        page_size: 3,
+        page_size: 12,
         order_by: '-created_at',
       })
         .then((quotationResult) => {
@@ -132,11 +140,11 @@ const DashboardPageContent = () => {
             setQuotationProjectsData([]);
           }
 
-          // 첫 번째 요청 완료 후 두 번째 요청 실행 // 생산중 프로젝트 데이터 4개 가져오기
+          // 첫 번째 요청 완료 후 두 번째 요청 실행 // 생산중 프로젝트 데이터 12개 가져오기
           return getProjects({
             status_exclude: 'quotation,confirmed,completed,suspended',
             page: 1,
-            page_size: 4,
+            page_size: 12,
             order_by: '-start_date',
           });
         })
@@ -212,80 +220,133 @@ const DashboardPageContent = () => {
         ) : (
           <>
             <div className="flex flex-col gap-11 p-10">
-              <div className="flex  gap-5">
-                {/* Summary KPI */}
-                <div className="flex flex-col">
-                  <h3 className="Heading-3">{t('summaryKPITitle')}</h3>
-                  {factoryId && dashboardData ? (
-                    <div className="flex flex-col gap-3 w-[280px] min-w-[248px] mt-3">
-                      <DailyProductionQuantity
-                        currentMonthProjects={
-                          dashboardData.current_month_projects
-                        }
-                        previousMonthProjects={
-                          dashboardData.previous_month_projects
-                        }
-                      />
-                      <ShortageCount
-                        shortageMaterialsCount={
-                          dashboardData.shortage_materials_count
-                        }
-                      />
-                      <ProductionYield
+              <div ref={containerRef}>
+                {effectiveGridWidth > 0 && (
+                  <ReactGridLayout
+                    className="layout"
+                    layout={gridLayout}
+                    width={effectiveGridWidth}
+                    gridConfig={{
+                      cols: 4,
+                      rowHeight: 80,
+                      margin: [24, 32],
+                      containerPadding: [0, 0],
+                    }}
+                    resizeConfig={{
+                      enabled: true,
+                      handles: ['se', 'e', 's'],
+                    }}
+                    dragConfig={{ enabled: true }}
+                  >
+                    {/* Summary KPI */}
+                    <div
+                      key="summaryKpi"
+                      className="flex flex-col h-full min-h-0"
+                    >
+                      <h3 className="Heading-3">{t('summaryKPITitle')}</h3>
+                      {factoryId && dashboardData ? (
+                        <div className="flex flex-col gap-3 mt-3 h-full min-h-0 overflow-visible">
+                          <DailyProductionQuantity
+                            currentMonthProjects={
+                              dashboardData.current_month_projects
+                            }
+                            previousMonthProjects={
+                              dashboardData.previous_month_projects
+                            }
+                          />
+                          <ShortageCount
+                            shortageMaterialsCount={
+                              dashboardData.shortage_materials_count
+                            }
+                          />
+                          <ProductionYield
+                            monthlyProfits={dashboardData.monthly_profits}
+                          />
+                        </div>
+                      ) : (
+                        <div className="mt-3 h-full min-h-0 overflow-auto">
+                          <NoHistoryBox
+                            title={t('noSummaryData')}
+                            text={t('noSummaryDataDescription')}
+                            height="h-full"
+                          />
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 생산 이익 그래프 */}
+                    <div
+                      key="profitGraph"
+                      className="flex flex-col h-full min-h-0"
+                    >
+                      <ProfitGraph
                         monthlyProfits={dashboardData.monthly_profits}
+                        lastYearMonthlyProfits={
+                          dashboardData.last_year_monthly_profits
+                        }
                       />
                     </div>
-                  ) : (
-                    <div className="w-100 mt-3">
-                      <NoHistoryBox
-                        title={t('noSummaryData')}
-                        text={t('noSummaryDataDescription')}
+
+                    {/* 견적 및 주문 현황 */}
+                    <div
+                      key="pendingQuote"
+                      className="flex flex-col h-full min-h-0"
+                    >
+                      <PendingQuote
+                        projects={quotationProjectsData}
+                        isLoading={isProjectsLoading}
                       />
                     </div>
-                  )}
-                </div>
 
-                {/* 생산 이익 그래프 */}
-                <ProfitGraph
-                  monthlyProfits={dashboardData.monthly_profits}
-                  lastYearMonthlyProfits={
-                    dashboardData.last_year_monthly_profits
-                  }
-                />
-              </div>
+                    {/* 생산 프로젝트 */}
+                    <div
+                      key="processProject"
+                      className="flex flex-col h-full min-h-0"
+                    >
+                      <ProcessProject
+                        projects={productionProjectsData}
+                        isLoading={isProjectsLoading}
+                      />
+                    </div>
 
-              {/* 견적 및 주문 현황 */}
-              <PendingQuote
-                projects={quotationProjectsData}
-                isLoading={isProjectsLoading}
-              />
+                    {/* 오늘의 생산 일정 */}
+                    <div
+                      key="todaySchedule"
+                      className="flex flex-col h-full min-h-0"
+                    >
+                      <TodayProductionSchedule
+                        todayProductionPlans={todayProductionPlans}
+                        isLoading={isTodayPlansLoading}
+                      />
+                    </div>
 
-              {/* 생산 프로젝트 */}
-              <ProcessProject
-                projects={productionProjectsData}
-                isLoading={isProjectsLoading}
-              />
+                    {/* 납품 예정 현황 */}
+                    <div
+                      key="deliverySchedule"
+                      className="flex flex-col h-full min-h-0"
+                    >
+                      <div className="h-10 flex items-center">
+                        <h3 className="Heading-3">
+                          {t('deliveryScheduleTitle')}
+                        </h3>
+                      </div>
+                      <div className="flex-1 min-h-0 overflow-auto h-full">
+                        <DeliveryTable />
+                      </div>
+                    </div>
 
-              {/* 오늘의 생산 일정 */}
-              <TodayProductionSchedule
-                todayProductionPlans={todayProductionPlans}
-                isLoading={isTodayPlansLoading}
-              />
-
-              {/* 납품 예정 현황 */}
-              <div className="flex gap-5">
-                <div className="flex flex-col flex-1 min-w-0 gap-3">
-                  <div className="h-10 flex items-center">
-                    <h3 className="Heading-3">{t('deliveryScheduleTitle')}</h3>
-                  </div>
-                  <DeliveryTable />
-                </div>
-
-                {/* 세금계산서 현황 */}
-                <Tax
-                  taxInvoicesData={taxInvoicesData}
-                  isLoading={isTaxInvoicesLoading}
-                />
+                    {/* 세금계산서 현황 */}
+                    <div
+                      key="taxStatus"
+                      className="flex flex-col h-full min-h-0"
+                    >
+                      <Tax
+                        taxInvoicesData={taxInvoicesData}
+                        isLoading={isTaxInvoicesLoading}
+                      />
+                    </div>
+                  </ReactGridLayout>
+                )}
               </div>
             </div>
 

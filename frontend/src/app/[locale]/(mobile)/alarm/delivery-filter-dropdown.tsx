@@ -3,12 +3,15 @@
 import { Dropdown, DropdownItem } from '@/ui';
 import { useTranslations } from 'next-intl';
 
-interface FilterDropdownProps {
+interface DeliveryFilterDropdownProps {
   onSelect: (filter: string) => void;
   onClose: () => void;
 }
 
-const FilterDropdown = ({ onSelect, onClose }: FilterDropdownProps) => {
+const DeliveryFilterDropdown = ({
+  onSelect,
+  onClose,
+}: DeliveryFilterDropdownProps) => {
   const t = useTranslations('mobile.alarm.filter');
 
   return (
@@ -38,4 +41,4 @@ const FilterDropdown = ({ onSelect, onClose }: FilterDropdownProps) => {
   );
 };
 
-export default FilterDropdown;
+export default DeliveryFilterDropdown;

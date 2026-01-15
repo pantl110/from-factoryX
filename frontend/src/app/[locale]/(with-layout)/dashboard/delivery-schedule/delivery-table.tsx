@@ -42,7 +42,11 @@ const DeliveryTable = () => {
 
   if (!factoryId || isLoading || isError || resolvedData.data.length === 0) {
     return (
-      <NoHistoryBox title={t('noSchedule')} text={t('noScheduleDescription')} />
+      <NoHistoryBox
+        title={t('noSchedule')}
+        text={t('noScheduleDescription')}
+        height="h-full"
+      />
     );
   }
 

@@ -6,6 +6,7 @@ import { useRouter } from '@/i18n/navigation';
 import PendingQuoteItem from './pending-quote-item';
 import { ProjectResponseModel } from '@/types/data-model';
 import NoHistoryBox from '@/ui/no-history-box';
+import useVisibleItemCount from '../use-visible-item-count';
 
 interface PendingQuoteProps {
   projects: ProjectResponseModel[];
@@ -16,9 +17,10 @@ const PendingQuote = ({ projects, isLoading }: PendingQuoteProps) => {
   const t = useTranslations('dashboard.pendingQuote');
   const tCommon = useTranslations('common');
   const router = useRouter();
+  const { containerRef, visibleCount } = useVisibleItemCount();
 
   return (
-    <div>
+    <>
       <div className="flex justify-between items-center">
         <h3 className="Heading-3">{t('title')}</h3>
         <MiniBtn
@@ -32,12 +34,19 @@ const PendingQuote = ({ projects, isLoading }: PendingQuoteProps) => {
         />
       </div>
 
-      <div className="mt-3 flex gap-2 w-full">
+      <div
+        ref={containerRef}
+        className="mt-3 grid gap-2 w-full h-full overflow-hidden items-stretch [grid-template-columns:repeat(auto-fit,minmax(240px,1fr))] [grid-auto-rows:minmax(0,1fr)]"
+      >
         {isLoading || projects.length === 0 ? (
-          <NoHistoryBox title={t('noQuote')} text={t('noQuoteDescription')} />
+          <NoHistoryBox
+            title={t('noQuote')}
+            text={t('noQuoteDescription')}
+            height="h-full"
+          />
         ) : (
           <>
-            {projects.map((project) => (
+            {projects.slice(0, visibleCount).map((project) => (
               <PendingQuoteItem
                 project={project}
                 key={project.id}
@@ -51,7 +60,7 @@ const PendingQuote = ({ projects, isLoading }: PendingQuoteProps) => {
           </>
         )}
       </div>
-    </div>
+    </>
   );
 };
 

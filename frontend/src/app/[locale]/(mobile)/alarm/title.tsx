@@ -5,13 +5,15 @@ import MoBtn from '@/ui/mo-btn';
 import { CaretDown } from '@phosphor-icons/react';
 import React from 'react';
 import { useTranslations } from 'next-intl';
-import FilterDropdown from './filter-dropdown';
+import DeliveryFilterDropdown from './delivery-filter-dropdown';
+import AccountFilterDropdown from './account-filter-dropdown';
 
 interface TitleProps {
   icon: React.ReactNode;
   title: string;
   count: number;
   delivery?: boolean;
+  account?: boolean;
   selectedFilter?: string;
   onFilterChange?: (filter: string) => void;
 }
@@ -21,15 +23,18 @@ const Title = ({
   title,
   count,
   delivery = false,
+  account = false,
   selectedFilter,
   onFilterChange,
 }: TitleProps) => {
   const t = useTranslations('mobile.alarm.filter');
-  const defaultFilter = selectedFilter || t('today');
+  const tList = useTranslations('tax.list');
+  const deliveryFilterLabel = selectedFilter || t('today');
+  const accountFilterLabel = selectedFilter || tList('status.overdue');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   return (
-    <div className="flex items-center justify-between pr-7">
+    <div className="flex items-center justify-between pr-7 h-10">
       <div className="flex items-center gap-1.5 px-7">
         {React.cloneElement(
           icon as React.ReactElement<{ size: number; className?: string }>,
@@ -46,7 +51,7 @@ const Title = ({
       {delivery && (
         <div className="relative">
           <MoBtn
-            text={defaultFilter}
+            text={deliveryFilterLabel}
             variant="outline"
             width="w-30"
             icon={<CaretDown weight="fill" />}
@@ -55,7 +60,30 @@ const Title = ({
           />
           {isDropdownOpen && (
             <div className="absolute top-full right-0 mt-2 z-10">
-              <FilterDropdown
+              <DeliveryFilterDropdown
+                onSelect={(filter: string) => {
+                  onFilterChange?.(filter);
+                  setIsDropdownOpen(false);
+                }}
+                onClose={() => setIsDropdownOpen(false)}
+              />
+            </div>
+          )}
+        </div>
+      )}
+      {account && (
+        <div className="relative">
+          <MoBtn
+            text={accountFilterLabel}
+            variant="outline"
+            width="w-30"
+            icon={<CaretDown weight="fill" />}
+            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+            align="justify-between"
+          />
+          {isDropdownOpen && (
+            <div className="absolute top-full right-0 mt-2 z-10">
+              <AccountFilterDropdown
                 onSelect={(filter: string) => {
                   onFilterChange?.(filter);
                   setIsDropdownOpen(false);

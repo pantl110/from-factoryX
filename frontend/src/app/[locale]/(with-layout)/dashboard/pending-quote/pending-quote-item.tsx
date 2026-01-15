@@ -29,15 +29,17 @@ const PendingQuoteItem = ({ project, onClick }: PendingQuoteItemProps) => {
 
   return (
     <div
-      className="flex flex-col gap-2 p-4 border rounded-lg border-lg cursor-pointer min-w-0"
-      style={{ width: '33.333%' }}
+      className="flex flex-col gap-2 justify-between p-4 border rounded-lg border-lg cursor-pointer min-w-[240px] min-h-[128px] self-stretch h-full"
       onClick={onClick}
     >
       <div className="flex flex-col gap-2.5">
         <h4 className="Heading-4">{project.client_name || '-'}</h4>
-        <div className="Me_Body-1 text-sv">
-          <span>{tCommon('productName')}</span>
-          <span className="text-gr"> | </span>
+        <div
+          className="Me_Body-1 text-sv truncate"
+          title={getProductDisplayText()}
+        >
+          {/* <span>{tCommon('productName')}</span> */}
+          {/* <span className="text-gr"> | </span> */}
           <span>{getProductDisplayText()}</span>
         </div>
       </div>

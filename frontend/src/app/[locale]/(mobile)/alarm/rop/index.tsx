@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { CaretRight, MoneyWavy } from '@phosphor-icons/react';
+import { CaretRight, ShoppingCart } from '@phosphor-icons/react';
 import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import { useInfiniteQuery } from '@tanstack/react-query';
@@ -175,7 +175,7 @@ const Rop = ({ hideWhenEmpty = false, limit }: RopProps) => {
   return (
     <>
       <div className="flex flex-col gap-1 pt-4">
-        <Title icon={<MoneyWavy />} title={t('rop')} count={totalCount} />
+        <Title icon={<ShoppingCart />} title={t('rop')} count={totalCount} />
         {content}
       </div>
     </>

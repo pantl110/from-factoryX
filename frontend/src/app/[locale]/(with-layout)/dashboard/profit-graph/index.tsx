@@ -19,12 +19,12 @@ const ProfitGraph = ({
   const factoryId = useMemberStore((state) => state.factoryId);
 
   return (
-    <div className="flex flex-col flex-1 gap-3 min-w-[652px]">
+    <div className="flex flex-col h-full min-h-0 gap-3">
       <h3 className="Heading-3">{t('title')}</h3>
 
       {factoryId && monthlyProfits && lastYearMonthlyProfits ? (
-        <div className="border border-lg rounded-lg flex justify-center items-center px-10 py-5 shadow-[2px_2px_22px_rgba(0,0,0,0.1)] h-[447px]">
-          <div className="h-full w-full">
+        <div className="border border-lg rounded-lg flex justify-center items-center px-10 py-5 shadow-[2px_2px_22px_rgba(0,0,0,0.1)] h-full min-h-[320px]">
+          <div className="h-full w-full flex flex-col min-h-0">
             <div className="flex items-center gap-4 mb-2 mt-2 justify-end">
               <div className="flex items-center gap-2">
                 <span className="inline-block w-8 h-4 bg-[#016fee]" />
@@ -39,14 +39,20 @@ const ProfitGraph = ({
                 </span>
               </div>
             </div>
-            <Chart
-              monthlyProfits={monthlyProfits}
-              lastYearMonthlyProfits={lastYearMonthlyProfits}
-            />
+            <div className="flex-1 min-h-[240px]">
+              <Chart
+                monthlyProfits={monthlyProfits}
+                lastYearMonthlyProfits={lastYearMonthlyProfits}
+              />
+            </div>
           </div>
         </div>
       ) : (
-        <NoHistoryBox title={t('noData')} text={t('noDataDescription')} />
+        <NoHistoryBox
+          title={t('noData')}
+          text={t('noDataDescription')}
+          height="h-full"
+        />
       )}
     </div>
   );

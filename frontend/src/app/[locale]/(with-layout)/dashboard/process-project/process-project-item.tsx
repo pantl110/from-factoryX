@@ -21,8 +21,7 @@ const ProcessProjectItem = ({ project, onClick }: ProcessProjectItemProps) => {
 
   return (
     <div
-      className="flex flex-col gap-4 p-4 border border-lg rounded-lg cursor-pointer min-w-0"
-      style={{ width: '25%' }}
+      className="flex flex-col gap-4 p-4 border border-lg rounded-lg cursor-pointer min-w-[240px] min-h-[128px] self-stretch h-full justify-between"
       onClick={onClick}
     >
       <div className="flex flex-col gap-1">

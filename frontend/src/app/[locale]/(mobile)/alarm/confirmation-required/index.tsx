@@ -1,4 +1,4 @@
-import { CalendarDots } from '@phosphor-icons/react';
+import { ListChecks } from '@phosphor-icons/react';
 import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
 import Title from '../title';
@@ -92,7 +92,7 @@ const ConfirmationRequired = ({
   return (
     <div className="flex flex-col gap-1 pt-4">
       <Title
-        icon={<CalendarDots />}
+        icon={<ListChecks />}
         title={t('confirmationRequired')}
         count={projects.length}
       />

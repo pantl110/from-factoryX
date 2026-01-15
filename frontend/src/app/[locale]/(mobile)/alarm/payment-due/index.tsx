@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { MoneyWavy } from '@phosphor-icons/react';
 import { useRouter } from '@/i18n/navigation';
 import { useTranslations } from 'next-intl';
@@ -29,7 +29,29 @@ const PaymentDue = () => {
   const t = useTranslations('mobile.alarm.paymentDue');
   const tTabs = useTranslations('mobile.alarm.tabs');
   const tTax = useTranslations('tax');
+  const tList = useTranslations('tax.list');
   const tCommon = useTranslations('common');
+  const [accountFilter, setAccountFilter] = useState(() =>
+    tList('status.overdue')
+  );
+  const accountStatusParam = useMemo(() => {
+    if (accountFilter === tCommon('all')) {
+      return undefined;
+    }
+    if (accountFilter === tList('status.overdue')) {
+      return 'overdue';
+    }
+    if (accountFilter === tList('status.partial')) {
+      return 'partial';
+    }
+    if (accountFilter === tList('status.waiting')) {
+      return 'waiting';
+    }
+    if (accountFilter === tList('status.completed')) {
+      return 'completed';
+    }
+    return undefined;
+  }, [accountFilter, tCommon, tList]);
 
   const {
     data,
@@ -43,7 +65,7 @@ const PaymentDue = () => {
     totalCount: number;
     nextPage: number | null;
   }>({
-    queryKey: ['payment-due-documents', factoryId],
+    queryKey: ['payment-due-documents', factoryId, accountStatusParam],
     enabled: !!factoryId,
     initialPageParam: 1,
     getNextPageParam: (lastPage) => lastPage.nextPage,
@@ -63,7 +85,7 @@ const PaymentDue = () => {
               factory_id: factoryId,
               is_hidden: false,
               ordering: 'agreed_payment_date', // 과거가 앞에 오도록 오름차순
-              account_status: 'overdue',
+              account_status: accountStatusParam,
               page: pageNumber,
               page_size: paymentDuePageSize,
             },
@@ -211,6 +233,7 @@ const PaymentDue = () => {
             />
           );
         })}
+
         {hasNextPage && (
           <div ref={loadMoreRef} className="w-full h-1" aria-hidden="true" />
         )}
@@ -224,6 +247,9 @@ const PaymentDue = () => {
         icon={<MoneyWavy />}
         title={tTabs('accountStatus')}
         count={totalCount}
+        account
+        selectedFilter={accountFilter}
+        onFilterChange={setAccountFilter}
       />
       {renderContent()}
     </div>

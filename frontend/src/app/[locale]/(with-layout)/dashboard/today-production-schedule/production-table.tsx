@@ -28,8 +28,12 @@ const ProductionTable = ({
 
   if (isLoading || todayProductionPlans.length === 0) {
     return (
-      <div className="mt-3">
-        <NoHistoryBox title={t('noHistory')} text={t('noHistoryDescription')} />
+      <div className="mt-3 h-full">
+        <NoHistoryBox
+          title={t('noHistory')}
+          text={t('noHistoryDescription')}
+          height="h-full"
+        />
       </div>
     );
   }
