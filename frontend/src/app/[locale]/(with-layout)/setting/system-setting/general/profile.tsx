@@ -155,7 +155,7 @@ const Profile = ({ userInfo }: ProfileProps) => {
   return (
     <>
       <form
-        className="flex flex-col gap-3.5 border-b pb-8 border-b-[#eeeeee]"
+        className="flex flex-col gap-3.5 border-b pb-8 border-b-lg"
         onSubmit={handleSubmit(onSubmit)}
       >
         <h3 className="Heading-3">{t('title')}</h3>

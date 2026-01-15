@@ -6,7 +6,7 @@ const ProductionTableHeader = () => {
   const t = useTranslations('common');
 
   return (
-    <div className="flex min-w-[1421px] h-12 items-center Me_Body-1 text-sv border-t border-b border-[#eeeeee]">
+    <div className="flex min-w-[1421px] h-12 items-center Me_Body-1 text-sv border-t border-b border-lg">
       <div className="py-1 px-3 flex-2">
         <p>{t('clientName')}</p>
       </div>

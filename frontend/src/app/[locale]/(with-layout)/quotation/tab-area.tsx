@@ -20,7 +20,7 @@ const TabArea = ({
   const tTabArea = useTranslations('quotation.tabArea');
 
   return (
-    <div className="flex gap-4 items-center Heading-3 pb-1 pr-10 border-b border-[#eeeeee]">
+    <div className="flex gap-4 items-center Heading-3 pb-1 pr-10 border-b border-lg">
       {(ocrData || hasUploadedFile) && (
         <button
           className={`${

@@ -18,7 +18,7 @@ const DeliveryTableItem = ({
   return (
     <div
       onClick={onClick}
-      className="group flex w-full h-15 items-center Me_Body-1 text-dg border-b border-[#eeeeee] cursor-pointer hover:bg-bg transition-colors ease-in-out duration-200"
+      className="group flex w-full h-15 items-center Me_Body-1 text-dg border-b border-lg cursor-pointer hover:bg-bg transition-colors ease-in-out duration-200"
     >
       <p className="px-3 w-[150px] truncate" title={projectName}>
         {projectName}

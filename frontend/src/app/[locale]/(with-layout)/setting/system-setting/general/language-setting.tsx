@@ -93,7 +93,7 @@ const LanguageSetting = () => {
   };
 
   return (
-    <div className="flex flex-col py-8 gap-4 border-b border-b-[#eeeeee]">
+    <div className="flex flex-col py-8 gap-4 border-b border-b-lg">
       <h3 className="Heading-3">{tLanguageSetting('title')}</h3>
       <div className="flex flex-col gap-2">
         <p className="Me_Body-1 text-sv">

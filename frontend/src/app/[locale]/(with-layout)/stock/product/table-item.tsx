@@ -20,7 +20,7 @@ const TableItem = ({ product, onClick, checked, onToggle }: TableItemProps) => {
 
   return (
     <div
-      className="flex items-center h-14 border-b border-[#eeeeee] Me_Body-1 cursor-pointer hover:bg-bg transition-colors duration-200"
+      className="flex items-center h-14 border-b border-lg Me_Body-1 cursor-pointer hover:bg-bg transition-colors duration-200"
       onClick={onClick}
     >
       {!isViewer && hasSubscription() && (

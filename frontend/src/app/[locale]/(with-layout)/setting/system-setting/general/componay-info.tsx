@@ -160,7 +160,7 @@ const CompanyInfo = () => {
 
   return (
     <>
-      <div className="flex flex-col py-8 gap-4 border-b border-b-[#eeeeee]">
+      <div className="flex flex-col py-8 gap-4 border-b border-b-lg">
         <h3 className="Heading-3">{tCompanyInfo('title')}</h3>
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
           <div className="flex gap-2">

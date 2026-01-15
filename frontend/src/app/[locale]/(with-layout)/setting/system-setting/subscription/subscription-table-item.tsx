@@ -12,7 +12,7 @@ const SubscriptionTableItem = ({
   plan,
 }: SubscriptionTableItemProps) => {
   return (
-    <div className="flex items-center justify-between w-full h-14 text-dg Me_Body-1 border-b border-[#eeeeee]">
+    <div className="flex items-center justify-between w-full h-14 text-dg Me_Body-1 border-b border-lg">
       <p className="flex-1">{date}</p>
       <p className="flex-[2]">{card}</p>
       <p className="flex-1">{amount}</p>
