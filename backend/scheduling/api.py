@@ -7,7 +7,7 @@ from datetime import timedelta, date, datetime
 from websocket.utils import send_notification_to_factory
 from notification.models import Notification
 from document.models import Quotation
-from tax.models import NationalTaxService, PublishStatus
+from tax.models import NationalTaxService, PublishStatus, TaxInvoiceAccount, AccountStatus
 from tax.barobill_utils import get_state_barobill_tax_invoice
 from barobill.barobill_state import (
     barobill_tax_service_states,
@@ -15,19 +15,27 @@ from barobill.barobill_state import (
 )
 from stock.models import MaterialProduct, Material
 from factory.models import FactoryEquipment
+from subscription.models import SubscriptionHistory
+from subscription.services import SubscriptionBillingService
+from subscription.exceptions import PaymentError, BillingKeyError
+from subscription.barobill_utils import handle_barobill_scrap_for_subscription
+import asyncio
 from django.db.models import F, OuterRef, Exists, Q
 from itertools import groupby
 from operator import attrgetter
 from django.db import transaction
 from document.models import WorkInstruction
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 router = Router(tags=["Scheduling"])
 
 
-@router.get(
+@router.post(
     "/project/deadline",
-    summary="[S] 프로젝트 납기일이 3일 남았을 때 알림",
+    summary="[S] 프로젝트 납기일이 3일 남았을 때 알림(한국시간 기준 오후 2시마다)",
     description="프로젝트 납기일이 3일 남았을 때 알림을 보냅니다.",
 )
 @scheduling_only
@@ -68,7 +76,7 @@ async def project_deadline_notification(request):
     return {"quotations": len(quotations)}
 
 
-@router.get(
+@router.post(
     "/project-plan/start",
     summary="[S] 프로젝트 생산 계획 시작 상태변경(매분 실행)",
     description="프로젝트 생산 계획의 시작 예정일이 지난 경우 상태를 '가동 중'으로 변경합니다.",
@@ -139,9 +147,9 @@ async def project_plan_start_status_change(request):
     return {"plans": updated}
 
 
-@router.get(
+@router.post(
     "/project-plan/end",
-    summary="[S] 프로젝트 생산 계획 마감 알림",
+    summary="[S] 프로젝트 생산 계획 마감 알림(매분 실행)",
     description="프로젝트 생산 계획의 마감 예정일이 지난 경우 알림을 보냅니다.",
 )
 @scheduling_only
@@ -174,10 +182,10 @@ async def project_plan_end_notification(request):
     return {"plans": len(plans)}
 
 
-@router.get(
+@router.post(
     "/tax/state",
-    summary="[S] 세금계산서 상태 조회",
-    description="세금계산서의 상태를 조회합니다.",
+    summary="[S] 세금계산서 상태 조회 및 업데이트(매시간 실행)",
+    description="세금계산서의 상태를 조회하고 업데이트합니다.",
 )
 @scheduling_only
 async def tax_invoice_state_check(request):
@@ -252,7 +260,7 @@ async def tax_invoice_state_check(request):
 
 @router.post(
     "/work-instruction",
-    summary="[S] 작업 지시서 생성",
+    summary="[S] 작업 지시서 생성(매일 자정)",
     description="매일 자정에 작업 지시서를 생성합니다.",
 )
 @scheduling_only
@@ -345,6 +353,176 @@ async def create_work_instruction(request):
 
     result = await get_today_project_plans()
     return result
+
+
+@router.post(
+    "/account/overdue",
+    summary="[S] 약정지급일이 지난 채권/채무 상태를 연체로 업데이트",
+    description="매일 자정에 약정지급일이 지났고 잔액이 있는 채권/채무의 상태를 연체(overdue)로 업데이트합니다.",
+)
+@scheduling_only
+async def update_overdue_accounts(request):
+    @sync_to_async
+    def update_accounts():
+        today = date.today()
+        
+        # 약정지급일이 지났고 잔액이 있지만 아직 overdue가 아닌 항목들 조회
+        accounts_to_update = TaxInvoiceAccount.objects.filter(
+            agreed_payment_date__lt=today,
+            outstanding_balance__gt=0
+        ).exclude(
+            status=AccountStatus.overdue
+        )
+        
+        updated_count = 0
+        
+        for account in accounts_to_update:
+            account.status = AccountStatus.overdue
+            account.save(update_fields=["status"])
+            updated_count += 1
+        
+        return updated_count
+    
+    updated_count = await update_accounts()
+    return {"updated": updated_count}
+
+
+@router.post(
+    "/subscription/renew",
+    summary="[S] 구독 자동 갱신(매일 오전 6시)",
+    description="만료 예정인 구독들을 자동으로 갱신합니다. days 파라미터로 며칠 후 만료되는 구독을 대상으로 할지 지정합니다.",
+)
+@scheduling_only
+async def renew_subscriptions(
+    request,
+    days: int = 1,
+):
+    """
+    구독 자동 갱신 작업
+    
+    Args:
+        days: 며칠 후 만료되는 구독을 대상으로 할지 지정 (기본값: 1일)
+    """
+    
+    @sync_to_async
+    def get_expiring_subscriptions():
+        target_date = date.today() + timedelta(days=days)
+        
+        # 구독 자동 갱신 대상: 만료 예정이고 빌링키가 있으며 취소되지 않은 구독
+        expiring_subscriptions = SubscriptionHistory.objects.filter(
+            end_date=target_date,
+            billing_key__isnull=False,
+            is_canceled=False,
+        ).select_related("subscription", "factory")
+        
+        # 취소된 구독 중 만료되는 것들 (스크랩 정지 대상)
+        canceled_expiring_subscriptions = SubscriptionHistory.objects.filter(
+            end_date=target_date,
+            is_canceled=True,
+        ).select_related("subscription", "factory")
+        
+        return list(expiring_subscriptions), list(canceled_expiring_subscriptions)
+    
+    async def process_subscription_renewal(subscription):
+        """구독 갱신 처리 (async 함수)"""
+        @sync_to_async
+        def get_next_subscription():
+            return SubscriptionHistory.objects.filter(
+                factory=subscription.factory,
+                start_date=subscription.end_date + timedelta(days=1),
+                is_canceled=False,
+            ).first()
+        
+        @sync_to_async
+        def process_payment(target_subscription):
+            billing_service = SubscriptionBillingService()
+            return billing_service.process_subscription_payment(target_subscription)
+        
+        # 다음 구독이 있는지 확인 (플랜이 변경된 경우 확인)
+        next_subscription = await get_next_subscription()
+        
+        if next_subscription:
+            # 다음 달 구독이 있으면 해당 구독으로 갱신
+            payment = await process_payment(next_subscription)
+            target_subscription = next_subscription
+        else:
+            # 다음 달 구독이 없으면 기존 구독으로 갱신
+            payment = await process_payment(subscription)
+            target_subscription = subscription
+        
+        # basic, partners 구독 갱신 시 바로빌 홈택스 스크랩 등록
+        try:
+            await handle_barobill_scrap_for_subscription(
+                target_subscription.factory,
+                target_subscription.subscription.type,
+                "renew",
+            )
+        except Exception as e:
+            logger.warning(
+                f"바로빌 홈택스 스크랩 갱신 등록 실패: factory_id={target_subscription.factory.id}, error={str(e)}"
+            )
+        
+        return payment
+    
+    async def stop_barobill_scrap(subscription):
+        """취소된 구독의 스크랩 정지 처리 (async 함수)"""
+        await handle_barobill_scrap_for_subscription(
+            subscription.factory,
+            subscription.subscription.type,
+            "deactivate",
+        )
+    
+    expiring_subscriptions, canceled_subscriptions = await get_expiring_subscriptions()
+    
+    total_count = len(expiring_subscriptions)
+    canceled_count = len(canceled_subscriptions)
+    
+    if total_count == 0 and canceled_count == 0:
+        return {
+            "renewed": 0,
+            "failed": 0,
+            "canceled_stopped": 0,
+            "message": f"{days}일 후 만료되는 구독이 없습니다."
+        }
+    
+    # 취소된 구독의 스크랩 정지 처리
+    stopped_count = 0
+    for subscription in canceled_subscriptions:
+        try:
+            await stop_barobill_scrap(subscription)
+            stopped_count += 1
+        except Exception as e:
+            logger.error(
+                f"취소된 구독 스크랩 정지 실패: factory_id={subscription.factory.id}, error={str(e)}"
+            )
+    
+    # 실제 갱신 처리
+    success_count = 0
+    failed_count = 0
+    
+    for subscription in expiring_subscriptions:
+        try:
+            await process_subscription_renewal(subscription)
+            success_count += 1
+        except (PaymentError, BillingKeyError) as e:
+            failed_count += 1
+            logger.error(
+                f"구독 갱신 실패: subscription_id={subscription.id}, error={str(e)}"
+            )
+        except Exception as e:
+            failed_count += 1
+            logger.error(
+                f"구독 갱신 예기치 못한 오류: subscription_id={subscription.id}, error={str(e)}"
+            )
+    
+    return {
+        "renewed": success_count,
+        "failed": failed_count,
+        "canceled_stopped": stopped_count,
+        "total": total_count,
+        "message": f"구독 갱신 완료: 성공 {success_count}건, 실패 {failed_count}건"
+    }
+
 
 def update_work_instruction_for_factory(factory_id, target_date=None):
     """특정 factory의 WorkInstruction을 실시간으로 갱신"""

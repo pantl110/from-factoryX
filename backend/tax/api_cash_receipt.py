@@ -256,62 +256,62 @@ async def sync_cash_receipts(request, factory_id: int):
     }
 
 
-@router.get(
-    "",
-    summary="[C] 현금영수증 검색/조회",
-    description="공장, 거래처명(q), 기간, 정렬로 현금영수증 검색",
-    response={200: list[AllCashReceiptOut], 400: dict, 500: dict},
-)
-@paginate
-async def list_cash_receipts(
-    request,
-    factory_id: int = Query(..., description="공장 ID"),
-    filters: CashReceiptFilter = Query(..., description="검색 필터"),
-    order: str = Query(
-        "desc", description="작성일자 정렬: desc(최신순), asc(오래된순)"
-    ),
-):
-    try:
+# @router.get(
+#     "",
+#     summary="[C] 현금영수증 검색/조회",
+#     description="공장, 거래처명(q), 기간, 정렬로 현금영수증 검색",
+#     response={200: list[AllCashReceiptOut], 400: dict, 500: dict},
+# )
+# @paginate
+# async def list_cash_receipts(
+#     request,
+#     factory_id: int = Query(..., description="공장 ID"),
+#     filters: CashReceiptFilter = Query(..., description="검색 필터"),
+#     order: str = Query(
+#         "desc", description="작성일자 정렬: desc(최신순), asc(오래된순)"
+#     ),
+# ):
+#     try:
 
-        @sync_to_async
-        def get_filtered_receipts():
-            qs = CashReceipt.objects.filter(
-                client__factory_id=factory_id
-            ).select_related("client", "cash_receipt_account")
+#         @sync_to_async
+#         def get_filtered_receipts():
+#             qs = CashReceipt.objects.filter(
+#                 client__factory_id=factory_id
+#             ).select_related("client", "cash_receipt_account")
             
-            # FilterSchema를 사용하여 필터링
-            qs = filters.filter(qs)
+#             # FilterSchema를 사용하여 필터링
+#             qs = filters.filter(qs)
             
-            if order == "asc":
-                qs = qs.order_by("transaction_date")
-            else:
-                qs = qs.order_by("-transaction_date")
+#             if order == "asc":
+#                 qs = qs.order_by("transaction_date")
+#             else:
+#                 qs = qs.order_by("-transaction_date")
             
-            receipts = list(qs.distinct())
-            result = []
-            for receipt in receipts:
-                total_amount = receipt.transaction_amount + receipt.tax_amount
-                # select_related로 로드된 account (없으면 None)
-                account = getattr(receipt, 'cash_receipt_account', None)
-                result.append(
-                    AllCashReceiptOut(
-                        id=receipt.id,
-                        transaction_date=receipt.transaction_date,
-                        client_name=receipt.client.name,
-                        transaction_amount=receipt.transaction_amount,
-                        tax_amount=receipt.tax_amount,
-                        total_amount=total_amount,
-                        item_name=receipt.item_name,
-                        is_hidden=receipt.is_hidden,
-                        account=account,
-                    )
-                )
-            return result
+#             receipts = list(qs.distinct())
+#             result = []
+#             for receipt in receipts:
+#                 total_amount = receipt.transaction_amount + receipt.tax_amount
+#                 # select_related로 로드된 account (없으면 None)
+#                 account = getattr(receipt, 'cash_receipt_account', None)
+#                 result.append(
+#                     AllCashReceiptOut(
+#                         id=receipt.id,
+#                         transaction_date=receipt.transaction_date,
+#                         client_name=receipt.client.name,
+#                         transaction_amount=receipt.transaction_amount,
+#                         tax_amount=receipt.tax_amount,
+#                         total_amount=total_amount,
+#                         item_name=receipt.item_name,
+#                         is_hidden=receipt.is_hidden,
+#                         account=account,
+#                     )
+#                 )
+#             return result
 
-        result = await get_filtered_receipts()
-        return result
-    except Exception as e:
-        raise HttpError(500, f"현금영수증 검색 중 오류: {e}")
+#         result = await get_filtered_receipts()
+#         return result
+#     except Exception as e:
+#         raise HttpError(500, f"현금영수증 검색 중 오류: {e}")
 
 
 @router.get(

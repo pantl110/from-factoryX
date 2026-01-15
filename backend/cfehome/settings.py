@@ -335,24 +335,52 @@ else:
     BAROBILL_CASHBILL_CLIENT = None
 
 # Django Crontab Settings
+# ⚠️ 주의: django-crontab은 로컬 개발 환경에서만 작동합니다.
+# Railway 등 PaaS 환경에서는 cron을 직접 실행할 수 없으므로 이 설정은 무시됩니다.
+# 
+# 프로덕션 스케줄링:
+# - QStash 등 외부 스케줄러를 통해 /v1/scheduling/* API를 호출하는 방식으로 처리됩니다.
+# - 모든 스케줄링 작업은 scheduling API로 마이그레이션되었습니다.
+# 
+# 로컬에서 테스트하려면:
+#   python manage.py crontab add
+#   python manage.py crontab show
+#
+# 프로덕션에서는 QStash에서 다음 API들을 호출하도록 설정하세요:
+# 
+# 구독 자동 갱신 (2개의 스케줄 필요):
+# 1. 매일 오전 6시: POST /v1/scheduling/subscription/renew?days=1
+# 2. 매일 오전 6시 30분: POST /v1/scheduling/subscription/renew?days=0
+# 
+# 기타 스케줄링:
+# - 매일 오전 12시(자정): POST /v1/scheduling/account/overdue
+# - 매분 실행: POST /v1/scheduling/project-plan/start
+# - 매분 실행: POST /v1/scheduling/project-plan/end
+# - 매일 자정: POST /v1/scheduling/work-instruction
+# - 한국시간 기준 오후 2시마다: POST /v1/scheduling/project/deadline
+# - 세금계산서 상태 조회: POST /v1/scheduling/tax/state
+#
 CRONJOBS = [
-    # 매일 오전 9시에 프로덕션 상태 업데이트 실행
-    (
-        "0 9 * * *",
-        "project.management.commands.update_production_status.Command.handle",
-    ),
-    # 매일 오전 6시에 구독 자동 갱신 실행 (1일 후 만료되는 구독)
-    (
-        "0 6 * * *",
-        "subscription.management.commands.renew_subscriptions.Command.handle",
-        "--days=1",
-    ),
-    # 매일 오전 6시 30분에 구독 자동 갱신 실행 (당일 만료되는 구독 - 마지막 기회)
-    (
-        "30 6 * * *",
-        "subscription.management.commands.renew_subscriptions.Command.handle",
-        "--days=0",
-    ),
+    # 모든 작업이 scheduling API로 마이그레이션되었으므로 주석 처리합니다.
+    # 로컬 테스트가 필요한 경우 아래 주석을 해제하세요.
+    #
+    # # 매일 오전 6시에 구독 자동 갱신 실행 (1일 후 만료되는 구독)
+    # (
+    #     "0 6 * * *",
+    #     "subscription.management.commands.renew_subscriptions.Command.handle",
+    #     "--days=1",
+    # ),
+    # # 매일 오전 6시 30분에 구독 자동 갱신 실행 (당일 만료되는 구독 - 마지막 기회)
+    # (
+    #     "30 6 * * *",
+    #     "subscription.management.commands.renew_subscriptions.Command.handle",
+    #     "--days=0",
+    # ),
+    # # 매일 오전 12시(자정)에 약정지급일이 지난 채권/채무 상태를 연체로 업데이트
+    # (
+    #     "0 0 * * *",
+    #     "tax.management.commands.update_overdue_accounts.Command.handle",
+    # ),
 ]
 
 # Toss Payments Settings
