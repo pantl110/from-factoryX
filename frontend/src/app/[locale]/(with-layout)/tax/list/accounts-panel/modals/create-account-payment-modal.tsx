@@ -182,7 +182,7 @@ const CreateAccountPaymentModal = ({
     const paymentDateErrorMsg = isPurchase
       ? t('errors.paymentDateInvalid')
       : t('errors.depositDateInvalid');
-    if (!isValidDateString(data.paymentDate)) {
+    if (!data.paymentDate || !isValidDateString(data.paymentDate.trim())) {
       setError('paymentDate', {
         type: 'manual',
         message: paymentDateErrorMsg,
@@ -196,7 +196,11 @@ const CreateAccountPaymentModal = ({
     const expectedDateErrorMsg = isPurchase
       ? t('errors.expectedPaymentDateInvalid')
       : t('errors.expectedDepositDateInvalid');
-    if (!isValidDateString(data.expectedPaymentDate)) {
+    // Scheduled Deposit Date 날짜 형식 검증 (YYYY-MM-DD 형식이 아니면 오류 반환)
+    if (
+      !data.expectedPaymentDate ||
+      !isValidDateString(data.expectedPaymentDate.trim())
+    ) {
       setError('expectedPaymentDate', {
         type: 'manual',
         message: expectedDateErrorMsg,
@@ -232,13 +236,17 @@ const CreateAccountPaymentModal = ({
 
     const amountReceived = parseInt(data.receivedAmount.replace(/,/g, '')) || 0;
 
+    // 날짜 데이터 정리 (앞뒤 공백 제거)
+    const cleanedPaymentDate = data.paymentDate.trim();
+    const cleanedExpectedPaymentDate = data.expectedPaymentDate.trim();
+
     let result;
     if (isEditMode && paymentDetail) {
       // 수정 모드
       result = await updatePaymentDetail(paymentDetail.id, {
-        payment_date: data.paymentDate,
+        payment_date: cleanedPaymentDate,
         amount_received: amountReceived,
-        expected_payment_date: data.expectedPaymentDate,
+        expected_payment_date: cleanedExpectedPaymentDate,
       });
     } else {
       // 생성 모드
@@ -249,9 +257,9 @@ const CreateAccountPaymentModal = ({
       if (!taxId) return;
 
       result = await createPaymentDetail(taxId, type, {
-        payment_date: data.paymentDate,
+        payment_date: cleanedPaymentDate,
         amount_received: amountReceived,
-        expected_payment_date: data.expectedPaymentDate,
+        expected_payment_date: cleanedExpectedPaymentDate,
       });
     }
 
@@ -319,10 +327,13 @@ const CreateAccountPaymentModal = ({
               rules={{
                 required: expectedDateRequired,
                 validate: (value) => {
+                  if (!value || !value.trim()) {
+                    return expectedDateRequired;
+                  }
                   const errorMsg = isPurchase
                     ? t('errors.expectedPaymentDateInvalid')
                     : t('errors.expectedDepositDateInvalid');
-                  return isValidDateString(value) || errorMsg;
+                  return isValidDateString(value.trim()) || errorMsg;
                 },
               }}
               render={({ field }) => (
@@ -347,10 +358,13 @@ const CreateAccountPaymentModal = ({
               rules={{
                 required: paymentDateRequired,
                 validate: (value) => {
+                  if (!value || !value.trim()) {
+                    return paymentDateRequired;
+                  }
                   const errorMsg = isPurchase
                     ? t('errors.paymentDateInvalid')
                     : t('errors.depositDateInvalid');
-                  return isValidDateString(value) || errorMsg;
+                  return isValidDateString(value.trim()) || errorMsg;
                 },
               }}
               render={({ field }) => (

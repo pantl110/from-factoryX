@@ -143,7 +143,7 @@ const CreatePaymentModal = ({
     const paymentDateErrorMsg = isPurchase
       ? t('errors.paymentDateInvalid')
       : t('errors.depositDateInvalid');
-    if (!isValidDateString(data.paymentDate)) {
+    if (!data.paymentDate || !isValidDateString(data.paymentDate.trim())) {
       setError('paymentDate', {
         type: 'manual',
         message: paymentDateErrorMsg,
@@ -154,10 +154,14 @@ const CreatePaymentModal = ({
       return;
     }
 
+    // Scheduled Deposit Date 날짜 형식 검증 (YYYY-MM-DD 형식이 아니면 오류 반환)
     const expectedDateErrorMsg = isPurchase
       ? t('errors.expectedPaymentDateInvalid')
       : t('errors.expectedDepositDateInvalid');
-    if (!isValidDateString(data.expectedPaymentDate)) {
+    if (
+      !data.expectedPaymentDate ||
+      !isValidDateString(data.expectedPaymentDate.trim())
+    ) {
       setError('expectedPaymentDate', {
         type: 'manual',
         message: expectedDateErrorMsg,
@@ -193,6 +197,10 @@ const CreatePaymentModal = ({
 
     const amountReceived = parseInt(data.receivedAmount.replace(/,/g, '')) || 0;
 
+    // 날짜 데이터 정리 (앞뒤 공백 제거)
+    const cleanedPaymentDate = data.paymentDate.trim();
+    const cleanedExpectedPaymentDate = data.expectedPaymentDate.trim();
+
     // 생성 모드
     const taxId =
       type === 'cash-receipt'
@@ -206,9 +214,9 @@ const CreatePaymentModal = ({
     }
 
     const result = await createPaymentDetail(taxId, type, {
-      payment_date: data.paymentDate,
+      payment_date: cleanedPaymentDate,
       amount_received: amountReceived,
-      expected_payment_date: data.expectedPaymentDate,
+      expected_payment_date: cleanedExpectedPaymentDate,
     });
 
     if (result.success) {
@@ -267,10 +275,13 @@ const CreatePaymentModal = ({
               rules={{
                 required: expectedDateRequired,
                 validate: (value) => {
+                  if (!value || !value.trim()) {
+                    return expectedDateRequired;
+                  }
                   const errorMsg = isPurchase
                     ? t('errors.expectedPaymentDateInvalid')
                     : t('errors.expectedDepositDateInvalid');
-                  return isValidDateString(value) || errorMsg;
+                  return isValidDateString(value.trim()) || errorMsg;
                 },
               }}
               render={({ field }) => (
@@ -294,10 +305,13 @@ const CreatePaymentModal = ({
               rules={{
                 required: paymentDateRequired,
                 validate: (value) => {
+                  if (!value || !value.trim()) {
+                    return paymentDateRequired;
+                  }
                   const errorMsg = isPurchase
                     ? t('errors.paymentDateInvalid')
                     : t('errors.depositDateInvalid');
-                  return isValidDateString(value) || errorMsg;
+                  return isValidDateString(value.trim()) || errorMsg;
                 },
               }}
               render={({ field }) => (
