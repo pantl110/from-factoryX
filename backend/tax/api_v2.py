@@ -143,18 +143,15 @@ async def list_published_documents(
                     )
                 )
         
-        # 현금영수증 조회
+        # 현금영수증 조회 (현금영수증은 항상 매입만 있으므로 cash_receipt_type 필터링 불필요)
         if should_fetch_cash:
             cash_queryset = CashReceipt.objects.filter(
                 client__factory_id=factory_id
             ).select_related("client").prefetch_related("cash_receipt_account")
             
-            # 현금영수증 전용 필터 생성 (tax_invoice_type 제외)
+            # 현금영수증 전용 필터 생성
             from tax.schemas.inbound import CashReceiptFilter
             cash_filter_dict = {}
-            # document_type이 purchase인 경우 매입으로 필터링 (현금영수증은 매입만 있음)
-            if document_type == "purchase":
-                cash_filter_dict['cash_receipt_type'] = "purchase"
             if hasattr(filters, 'q') and filters.q:
                 cash_filter_dict['q'] = filters.q
             if hasattr(filters, 'start_date') and filters.start_date:

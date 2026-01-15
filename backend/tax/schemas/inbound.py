@@ -130,9 +130,6 @@ class CashReceiptFilter(FilterSchema):
         None, q="transaction_date__lte", description="거래일자 범위 종료일"
     )
     is_hidden: Optional[bool] = Field(None, q="is_hidden", description="숨김 여부")
-    cash_receipt_type: Optional[str] = Field(
-        None, q="cash_receipt_type", description="현금영수증 유형 (sales-매출, purchase-매입)"
-    )
     account_status: Optional[str] = Field(
         None, q="cash_receipt_account__status", description="채권/채무 상태 (waiting-대기, overdue-연체, partial-일부, completed-완료)"
     )

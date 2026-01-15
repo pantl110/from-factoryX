@@ -221,5 +221,4 @@ class PublishedDocumentOut(Schema):
     project_id: Optional[int] = Field(None, description="연결된 프로젝트 ID")
     
     # 현금영수증 전용 필드
-    cash_receipt_type: Optional[str] = Field(None, description="현금영수증 유형 (sales/purchase)")
     item_name: Optional[str] = Field(None, description="품목명")
