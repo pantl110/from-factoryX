@@ -36,6 +36,7 @@ import NoHistoryBox from '@/ui/no-history-box';
 import Footer from '@/components/footer';
 import MobileDashboardPage from '@/app/[locale]/(mobile)/dashboard';
 import { gridLayout } from './utils';
+import { Account } from './account';
 
 const DashboardPageContent = () => {
   const t = useTranslations('dashboard');
@@ -323,7 +324,7 @@ const DashboardPageContent = () => {
                     {/* 납품 예정 현황 */}
                     <div
                       key="deliverySchedule"
-                      className="flex flex-col h-full min-h-0"
+                      className="flex flex-col h-full min-h-0 gap-3"
                     >
                       <div className="h-10 flex items-center">
                         <h3 className="Heading-3">
@@ -344,6 +345,11 @@ const DashboardPageContent = () => {
                         taxInvoicesData={taxInvoicesData}
                         isLoading={isTaxInvoicesLoading}
                       />
+                    </div>
+
+                    {/* 채권채무 현황 */}
+                    <div key="account" className="flex flex-col h-full min-h-0">
+                      <Account />
                     </div>
                   </ReactGridLayout>
                 )}

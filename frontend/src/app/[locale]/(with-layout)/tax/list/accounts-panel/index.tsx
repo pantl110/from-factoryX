@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { DeleteModal, IconBtn, MiniBtn, OverlayView, Panel, Toast } from '@/ui';
 import TableArea from './table-area';
 import { WarningCircle, X, CheckCircle } from '@phosphor-icons/react';
@@ -36,6 +37,10 @@ const AccountsPanel = ({
   itemId,
   type = 'tax',
 }: AccountsPanelProps) => {
+  const portalTarget = useMemo(
+    () => (typeof document !== 'undefined' ? document.body : null),
+    []
+  );
   const t = useTranslations('tax.list');
   const tCommon = useTranslations('common');
   const tNav = useTranslations('navigation');
@@ -282,7 +287,9 @@ const AccountsPanel = ({
     }
   };
 
-  return (
+  if (!portalTarget) return null;
+
+  return createPortal(
     <>
       <Panel
         title={tNav('taxDropdown.list')}
@@ -462,7 +469,8 @@ const AccountsPanel = ({
           isVisible={isSuccessToastVisible}
         />
       )}
-    </>
+    </>,
+    portalTarget
   );
 };
 

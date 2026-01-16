@@ -736,7 +736,7 @@
       "noInvoiceDescription": "발행된 세금계산서는 최신순으로 보여져요.",
       "issued": "발행",
       "received": "수신",
-      "invoiceText": "{company} 세금계산서 {action}",
+      "invoiceText": "[{company}] 세금계산서 {action}",
       "publishStatus": {
         "temporary": "임시 저장",
         "pending": "전송 대기",
@@ -744,6 +744,21 @@
         "published": "발행 완료",
         "cancled": "발행 취소",
         "failed": "발행 실패"
+      }
+    },
+    "account": {
+      "title": "채권채무 현황",
+      "chips": {
+        "receivable": "채권",
+        "payable": "채무"
+      },
+      "empty": {
+        "title": "미완료 채권/채무 내역이 없어요",
+        "description": "채권/채무 내역이 가장 가까운 날짜부터 보여져요."
+      },
+      "labels": {
+        "receivable": "미수금액",
+        "payable": "미지급액"
       }
     },
     "todayProductionSchedule": {

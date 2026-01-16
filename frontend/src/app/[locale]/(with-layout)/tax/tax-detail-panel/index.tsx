@@ -7,7 +7,8 @@ import Panel from '@/ui/panel';
 import TaxDocumentView from '@/app/[locale]/(with-layout)/document/tax-document-view';
 import MiniBtn from '@/ui/mini-btn';
 import { useGetTaxInvoiceDetail, useCancelTaxInvoice } from '@/hooks';
-import { useState, useEffect } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import LinkTaxModal from '../../project/process/modals/link-tax-modal/link-tax-modal';
 import CreateTaxPanel from '../list/create-tax-panel';
 import { useTranslations } from 'next-intl';
@@ -41,6 +42,10 @@ const TaxDetailPanel = ({
   initialProducts,
   onTaxCreated,
 }: TaxDetailPanelProps) => {
+  const portalTarget = useMemo(
+    () => (typeof document !== 'undefined' ? document.body : null),
+    []
+  );
   // 모달
   const [isLinkModalOpen, setIsLinkModalOpen] = useState(false);
   // 정보
@@ -104,7 +109,9 @@ const TaxDetailPanel = ({
   // 세금계산서 상태 확인 (전송 대기 상태 확인)
   const isPendingTransmission = item?.publish_status === 'pending';
 
-  return (
+  if (!portalTarget) return null;
+
+  return createPortal(
     <>
       {isEditingMode || !itemId ? (
         <CreateTaxPanel
@@ -190,7 +197,8 @@ const TaxDetailPanel = ({
           }}
         />
       )}
-    </>
+    </>,
+    portalTarget
   );
 };
 

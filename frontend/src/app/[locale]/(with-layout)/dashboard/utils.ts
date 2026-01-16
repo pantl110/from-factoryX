@@ -13,8 +13,9 @@ export const gridLayout = [
   },
   { i: 'processProject', x: 0, y: 7, w: 4, h: 2, minW: 2, minH: 2, maxH: 6 },
   { i: 'todaySchedule', x: 0, y: 9, w: 4, h: 3, minW: 2, minH: 3 },
-  { i: 'deliverySchedule', x: 0, y: 10, w: 2, h: 4, minW: 2, minH: 3 },
-  { i: 'taxStatus', x: 2, y: 10, w: 2, h: 4, minW: 2, minH: 3 },
+  { i: 'deliverySchedule', x: 0, y: 10, w: 4, h: 4, minW: 2, minH: 3 },
+  { i: 'taxStatus', x: 0, y: 10, w: 2, h: 4, minW: 2, minH: 3 },
+  { i: 'account', x: 2, y: 10, w: 2, h: 4, minW: 2, minH: 3 },
 ];
 
 export const getVisibleItemCount = (

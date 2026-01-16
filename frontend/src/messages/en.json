@@ -735,7 +735,7 @@
       "noInvoiceDescription": "Issued tax invoices are shown in order from the most recent.",
       "issued": "Issued",
       "received": "Received",
-      "invoiceText": "{company} Tax Invoice {action}",
+      "invoiceText": "[{company}] Tax Invoice {action}",
       "publishStatus": {
         "temporary": "Draft",
         "pending": "Pending",
@@ -743,6 +743,21 @@
         "published": "Published",
         "cancled": "Cancelled",
         "failed": "Failed"
+      }
+    },
+    "account": {
+      "title": "Receivables & Payables",
+      "chips": {
+        "receivable": "Receivable",
+        "payable": "Payable"
+      },
+      "empty": {
+        "title": "No outstanding receivables/payables",
+        "description": "Items are shown in order of the nearest scheduled date."
+      },
+      "labels": {
+        "receivable": "Receivable",
+        "payable": "Payable"
       }
     },
     "todayProductionSchedule": {
