@@ -3,8 +3,9 @@ from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
 from typing import List
 from datetime import date
+from django.db.models import Q
 from api.security import jwt_auth
-from tax.models import NationalTaxService, CashReceipt
+from tax.models import NationalTaxService, CashReceipt, AccountStatus
 from factory.utils import get_factory_by_id, is_factory_member
 from tax.schemas.inbound import PublishedDocumentFilter
 from tax.schemas.outbound import PublishedDocumentOut
@@ -31,6 +32,11 @@ router = Router(tags=["Tax V2"], auth=jwt_auth)
     - `transaction_date`: 거래일자 오래된순
     - `-agreed_payment_date`: 약정입금일 최신순
     - `agreed_payment_date`: 약정입금일 오래된순
+    
+    **account_status 필터:**
+    - 단일 값: `account_status=overdue` (연체만)
+    - 여러 값: `account_status=overdue,partial` (연체와 일부 함께 조회)
+    - 가능한 값: `waiting`(대기), `overdue`(연체), `partial`(일부), `completed`(완료)
     """,
     response=List[PublishedDocumentOut],
 )
@@ -77,29 +83,46 @@ async def list_published_documents(
                 factory_id=factory_id, publish_status="published"
             ).prefetch_related("client", "tax_invoice_account")
             
-            # 세금계산서 전용 필터 생성 (cash_receipt_type 제외)
-            from tax.schemas.inbound import TaxInvoiceFilter
-            tax_filter_dict = {}
             # document_type이 purchase, purchase-tax, sales-tax인 경우 해당 유형으로 필터링
             if document_type == "purchase" or document_type == "purchase-tax":
-                tax_filter_dict['tax_invoice_type'] = "purchase"
+                tax_queryset = tax_queryset.filter(tax_invoice_type="purchase")
             elif document_type == "sales-tax":
-                tax_filter_dict['tax_invoice_type'] = "sales"
-            if hasattr(filters, 'q') and filters.q:
-                tax_filter_dict['q'] = filters.q
-            if hasattr(filters, 'start_date') and filters.start_date:
-                tax_filter_dict['start_date'] = filters.start_date
-            if hasattr(filters, 'end_date') and filters.end_date:
-                tax_filter_dict['end_date'] = filters.end_date
-            if hasattr(filters, 'is_hidden') and filters.is_hidden is not None:
-                tax_filter_dict['is_hidden'] = filters.is_hidden
-            if hasattr(filters, 'account_status') and filters.account_status:
-                tax_filter_dict['account_status'] = filters.account_status
+                tax_queryset = tax_queryset.filter(tax_invoice_type="sales")
             
-            # TaxInvoiceFilter로 필터링
-            if tax_filter_dict:
-                tax_filter = TaxInvoiceFilter(**tax_filter_dict)
-                tax_queryset = tax_filter.filter(tax_queryset)
+            # q 필터링 (거래처명 또는 품목명 검색)
+            if hasattr(filters, 'q') and filters.q:
+                tax_queryset = tax_queryset.filter(
+                    Q(client__name__icontains=filters.q) |
+                    Q(line_items__icontains=filters.q)
+                )
+            
+            # 날짜 범위 필터링
+            if hasattr(filters, 'start_date') and filters.start_date:
+                tax_queryset = tax_queryset.filter(transaction_date__gte=filters.start_date)
+            if hasattr(filters, 'end_date') and filters.end_date:
+                tax_queryset = tax_queryset.filter(transaction_date__lte=filters.end_date)
+            
+            # 숨김 여부 필터링
+            if hasattr(filters, 'is_hidden') and filters.is_hidden is not None:
+                tax_queryset = tax_queryset.filter(is_hidden=filters.is_hidden)
+            
+            # account_status 필터링 (여러 값 지원: 쉼표로 구분)
+            if hasattr(filters, 'account_status') and filters.account_status:
+                statuses = [s.strip() for s in filters.account_status.split(',')]
+                status_q = Q()
+                
+                for status in statuses:
+                    if status == "overdue":
+                        status_q |= Q(tax_invoice_account__status=AccountStatus.overdue)
+                    elif status == "partial":
+                        status_q |= Q(tax_invoice_account__status=AccountStatus.partial)
+                    elif status == "waiting":
+                        status_q |= Q(tax_invoice_account__status=AccountStatus.waiting)
+                    elif status == "completed":
+                        status_q |= Q(tax_invoice_account__status=AccountStatus.completed)
+                
+                if status_q:
+                    tax_queryset = tax_queryset.filter(status_q)
             
             # 정렬 처리
             if ordering:
@@ -143,30 +166,49 @@ async def list_published_documents(
                     )
                 )
         
-        # 현금영수증 조회 (현금영수증은 항상 매입만 있으므로 cash_receipt_type 필터링 불필요)
+        # 현금영수증 조회
         if should_fetch_cash:
             cash_queryset = CashReceipt.objects.filter(
                 client__factory_id=factory_id
             ).select_related("client").prefetch_related("cash_receipt_account")
             
-            # 현금영수증 전용 필터 생성
-            from tax.schemas.inbound import CashReceiptFilter
-            cash_filter_dict = {}
-            if hasattr(filters, 'q') and filters.q:
-                cash_filter_dict['q'] = filters.q
-            if hasattr(filters, 'start_date') and filters.start_date:
-                cash_filter_dict['start_date'] = filters.start_date
-            if hasattr(filters, 'end_date') and filters.end_date:
-                cash_filter_dict['end_date'] = filters.end_date
-            if hasattr(filters, 'is_hidden') and filters.is_hidden is not None:
-                cash_filter_dict['is_hidden'] = filters.is_hidden
-            if hasattr(filters, 'account_status') and filters.account_status:
-                cash_filter_dict['account_status'] = filters.account_status
+            if document_type == "purchase":
+                cash_queryset = cash_queryset.filter(cash_receipt_type="purchase")
             
-            # CashReceiptFilter로 필터링
-            if cash_filter_dict:
-                cash_filter = CashReceiptFilter(**cash_filter_dict)
-                cash_queryset = cash_filter.filter(cash_queryset)
+            # q 필터링 (거래처명 또는 품목명 검색)
+            if hasattr(filters, 'q') and filters.q:
+                cash_queryset = cash_queryset.filter(
+                    Q(client__name__icontains=filters.q) |
+                    Q(item_name__icontains=filters.q)
+                )
+            
+            # 날짜 범위 필터링
+            if hasattr(filters, 'start_date') and filters.start_date:
+                cash_queryset = cash_queryset.filter(transaction_date__gte=filters.start_date)
+            if hasattr(filters, 'end_date') and filters.end_date:
+                cash_queryset = cash_queryset.filter(transaction_date__lte=filters.end_date)
+            
+            # 숨김 여부 필터링
+            if hasattr(filters, 'is_hidden') and filters.is_hidden is not None:
+                cash_queryset = cash_queryset.filter(is_hidden=filters.is_hidden)
+            
+            # account_status 필터링 (여러 값 지원: 쉼표로 구분)
+            if hasattr(filters, 'account_status') and filters.account_status:
+                statuses = [s.strip() for s in filters.account_status.split(',')]
+                status_q = Q()
+                
+                for status in statuses:
+                    if status == "overdue":
+                        status_q |= Q(cash_receipt_account__status=AccountStatus.overdue)
+                    elif status == "partial":
+                        status_q |= Q(cash_receipt_account__status=AccountStatus.partial)
+                    elif status == "waiting":
+                        status_q |= Q(cash_receipt_account__status=AccountStatus.waiting)
+                    elif status == "completed":
+                        status_q |= Q(cash_receipt_account__status=AccountStatus.completed)
+                
+                if status_q:
+                    cash_queryset = cash_queryset.filter(status_q)
             
             # 정렬 처리
             if ordering:

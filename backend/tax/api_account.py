@@ -92,24 +92,31 @@ async def update_tax_invoice_account(
         # 필드 업데이트
         update_data = payload.dict(exclude_unset=True)
         
-        # outstanding_balance가 변경되는 경우
+        # outstanding_balance 변경 여부 추적
+        new_balance = None
         if "outstanding_balance" in update_data:
             new_balance = update_data.pop("outstanding_balance")
-            update_account_balance_and_status(account, new_balance)
         
-        # 나머지 필드 업데이트 (status는 제외 - 나중에 자동 계산)
-        status_value = None
-        if "status" in update_data:
-            status_value = update_data.pop("status")
+        # status는 기본적으로 자동 계산 대상이므로 별도 처리
+        status_value = update_data.pop("status", None)
         
+        # agreed_payment_date 변경 여부 추적
+        agreed_payment_date_changed = "agreed_payment_date" in update_data
+        
+        # 나머지 필드 업데이트
         for field, value in update_data.items():
             if hasattr(account, field):
                 setattr(account, field, value)
         
-        # agreed_payment_date, outstanding_balance, status 등이 변경된 경우 상태 재계산
-        # 약정 지급일이 지났으면 무조건 overdue로 설정 (status 수동 변경 무시)
-        if update_data or status_value is not None:
+        # 잔액/약정입금일 변경 시 상태 재계산 (status 수동 변경 무시)
+        if new_balance is not None:
+            update_account_balance_and_status(account, new_balance)
+        elif agreed_payment_date_changed:
             update_account_balance_and_status(account, account.outstanding_balance)
+        else:
+            if status_value:
+                account.status = status_value
+            account.save()
         
         return account
     

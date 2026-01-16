@@ -196,7 +196,5 @@ class PublishedDocumentFilter(FilterSchema):
     is_hidden: Optional[bool] = Field(None, q="is_hidden", description="숨김 여부")
     account_status: Optional[str] = Field(
         None, 
-        q=["tax_invoice_account__status", "cash_receipt_account__status"],
-        description="채권/채무 상태 (waiting-대기, overdue-연체, partial-일부, completed-완료)",
-        expression_connector="OR",
+        description="채권/채무 상태 (waiting-대기, overdue-연체, partial-일부, completed-완료). 여러 값을 쉼표로 구분하여 지정 가능 (예: overdue,partial)",
     )
