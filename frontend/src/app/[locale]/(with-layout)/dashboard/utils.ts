@@ -30,7 +30,7 @@ export const gridLayout = [
   { i: 'account', x: 2, y: 10, w: 2, h: 4, minW: 2, minH: 3 },
 ];
 
-export type WidgetId =
+export type WidgetIdType =
   | 'summaryKpi'
   | 'profitGraph'
   | 'pendingQuote'
@@ -40,24 +40,28 @@ export type WidgetId =
   | 'taxStatus'
   | 'account';
 
-export interface WidgetMetadata {
-  id: WidgetId;
+export interface WidgetMetadataModel {
+  id: WidgetIdType;
   labelKey: string; // i18n key for dashboard translations
   icon: Icon;
 }
 
-export const widgetMetadata: WidgetMetadata[] = [
+export const widgetMetadata: WidgetMetadataModel[] = [
   { id: 'summaryKpi', labelKey: 'summaryKPITitle', icon: ChartBar },
   { id: 'profitGraph', labelKey: 'profitGraph.title', icon: ChartLine },
   { id: 'pendingQuote', labelKey: 'pendingQuote.title', icon: ClipboardText },
   { id: 'processProject', labelKey: 'processProject.title', icon: ListChecks },
-  { id: 'todaySchedule', labelKey: 'todayProductionSchedule.title', icon: CalendarStar },
+  {
+    id: 'todaySchedule',
+    labelKey: 'todayProductionSchedule.title',
+    icon: CalendarStar,
+  },
   { id: 'deliverySchedule', labelKey: 'deliveryScheduleTitle', icon: Package },
   { id: 'taxStatus', labelKey: 'tax.title', icon: Receipt },
   { id: 'account', labelKey: 'account.title', icon: MoneyWavy },
 ];
 
-export const allWidgetIds: WidgetId[] = widgetMetadata.map((w) => w.id);
+export const allWidgetIds: WidgetIdType[] = widgetMetadata.map((w) => w.id);
 
 export const getVisibleItemCount = (
   width: number,

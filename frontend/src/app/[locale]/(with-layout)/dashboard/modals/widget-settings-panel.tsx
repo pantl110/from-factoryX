@@ -3,14 +3,14 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { X, ArrowCounterClockwise } from '@phosphor-icons/react';
-import { widgetMetadata, WidgetId } from '../utils';
+import { widgetMetadata, WidgetIdType } from '../utils';
 import Checkbox from '@/ui/checkbox';
 import IconBtn from '@/ui/icon-btn';
 import MiniBtn from '@/ui/mini-btn';
 
 interface WidgetSettingsPanelProps {
-  hiddenWidgets: WidgetId[];
-  onToggleWidget: (widgetId: WidgetId) => void;
+  hiddenWidgets: WidgetIdType[];
+  onToggleWidget: (widgetId: WidgetIdType) => void;
   onReset: () => void;
   onClose: () => void;
 }

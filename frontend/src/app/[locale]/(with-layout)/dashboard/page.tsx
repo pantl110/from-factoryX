@@ -35,7 +35,7 @@ import { TodayProductionPlanModel } from './type';
 import NoHistoryBox from '@/ui/no-history-box';
 import Footer from '@/components/footer';
 import MobileDashboardPage from '@/app/[locale]/(mobile)/dashboard';
-import { gridLayout, WidgetId } from './utils';
+import { gridLayout, WidgetIdType } from './utils';
 import { Account } from './account';
 import WidgetSettingsPanel from './modals/widget-settings-panel';
 
@@ -50,10 +50,10 @@ const DashboardPageContent = () => {
   const { factoryId, initializeFactoryId } = useMemberStore();
 
   // Widget visibility state
-  const [hiddenWidgets, setHiddenWidgets] = useState<WidgetId[]>([]);
+  const [hiddenWidgets, setHiddenWidgets] = useState<WidgetIdType[]>([]);
   const [isSettingsPanelOpen, setIsSettingsPanelOpen] = useState(false);
 
-  const toggleWidget = useCallback((widgetId: WidgetId) => {
+  const toggleWidget = useCallback((widgetId: WidgetIdType) => {
     setHiddenWidgets((prev) =>
       prev.includes(widgetId)
         ? prev.filter((id) => id !== widgetId)
@@ -67,11 +67,13 @@ const DashboardPageContent = () => {
 
   // Filter layout based on hidden widgets
   const filteredGridLayout = useMemo(() => {
-    return gridLayout.filter((item) => !hiddenWidgets.includes(item.i as WidgetId));
+    return gridLayout.filter(
+      (item) => !hiddenWidgets.includes(item.i as WidgetIdType)
+    );
   }, [hiddenWidgets]);
 
   const isWidgetVisible = useCallback(
-    (widgetId: WidgetId) => !hiddenWidgets.includes(widgetId),
+    (widgetId: WidgetIdType) => !hiddenWidgets.includes(widgetId),
     [hiddenWidgets]
   );
 
@@ -248,7 +250,7 @@ const DashboardPageContent = () => {
         ) : (
           <>
             <div className="flex flex-col gap-11 p-10">
-              <div ref={containerRef}>
+              <div ref={containerRef} className="w-full">
                 {effectiveGridWidth > 0 && (
                   <ReactGridLayout
                     className="layout"
