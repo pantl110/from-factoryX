@@ -1,6 +1,7 @@
 from django.test import TestCase
 from user.api import router as user_router
 from factory.api_member import router
+from factory.api_member_v2 import router as router_v2
 from ninja.testing import TestAsyncClient
 from user.models import User
 from factory.models import Factory, FactoryMember
@@ -11,6 +12,7 @@ from datetime import datetime
 class TestFactoryMember(TestCase):
     def setUp(self):
         self.client = TestAsyncClient(router)
+        self.client_v2 = TestAsyncClient(router_v2)
         self.auth_client = TestAsyncClient(user_router)
         self.user = User.objects.create_user(
             username="testuser",
@@ -410,16 +412,16 @@ class TestFactoryMember(TestCase):
         url = f"/me/dashboard-layout?factory_id={self.factory.id}"
 
         # 초기 조회 - null
-        response = await self.client.get(url, headers=headers)
+        response = await self.client_v2.get(url, headers=headers)
         self.assertEqual(response.status_code, 200)
         self.assertIsNone(response.json()["widgets"])
 
         # 저장
         payload = {"widgets": [{"id": "summaryKpi", "x": 0, "y": 0}]}
-        response = await self.client.put(url, headers=headers, json=payload)
+        response = await self.client_v2.put(url, headers=headers, json=payload)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.json()["widgets"][0]["id"], "summaryKpi")
 
         # 조회
-        response = await self.client.get(url, headers=headers)
+        response = await self.client_v2.get(url, headers=headers)
         self.assertEqual(response.json()["widgets"][0]["id"], "summaryKpi")

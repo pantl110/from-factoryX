@@ -28,6 +28,7 @@ from stock.api_material_history_v2 import router as materialHistoryV2_router
 from stock.api_material_product import router as materialProduct_router
 from factory.api import router as factory_router
 from factory.api_member import router as factoryMember_router
+from factory.api_member_v2 import router as factoryMemberV2_router
 from factory.api_eq import router as factoryEQ_router
 from stock.api_product import router as stockProduct_router
 from stock.api_product_history import router as stockProductHistory_router
@@ -85,6 +86,7 @@ base_api.add_router("v1/stock/material", material_router)
 base_api.add_router("v1/stock/product", stockProduct_router)
 base_api.add_router("v1/stock", stock_router)
 base_api.add_router("v1/factory/member", factoryMember_router)
+base_api.add_router("v2/factory/member", factoryMemberV2_router)
 base_api.add_router("v1/factory/equipment", factoryEQ_router)
 base_api.add_router("v1/factory/client", factoryClient_router)
 base_api.add_router("v1/factory", factory_router)
