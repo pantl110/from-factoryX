@@ -691,6 +691,10 @@
   "dashboard": {
     "mainTitle": "팩토리엑스 현황판",
     "summaryKPITitle": "Summary KPI",
+    "widgetSettings": {
+      "title": "위젯 설정",
+      "reset": "초기화"
+    },
     "noSummaryData": "요약할 데이터가 없어요.",
     "noSummaryDataDescription": "시스템을 계속 사용하면 주요 지표가 자동으로 요약돼요.",
     "deliveryScheduleTitle": "납품 예정 현황",

@@ -690,6 +690,10 @@
   "dashboard": {
     "mainTitle": "Factory X Dashboard",
     "summaryKPITitle": "Summary KPI",
+    "widgetSettings": {
+      "title": "Widget Settings",
+      "reset": "Reset"
+    },
     "noSummaryData": "No data to summarize.",
     "noSummaryDataDescription": "Key indicators will be automatically summarized as you continue using the system.",
     "deliveryScheduleTitle": "Delivery Schedule",

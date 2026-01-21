@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, Suspense, useState } from 'react';
+import { useEffect, Suspense, useState, useMemo, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import ReactGridLayout, { useContainerWidth } from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
@@ -35,8 +35,9 @@ import { TodayProductionPlanModel } from './type';
 import NoHistoryBox from '@/ui/no-history-box';
 import Footer from '@/components/footer';
 import MobileDashboardPage from '@/app/[locale]/(mobile)/dashboard';
-import { gridLayout } from './utils';
+import { gridLayout, WidgetId } from './utils';
 import { Account } from './account';
+import WidgetSettingsPanel from './modals/widget-settings-panel';
 
 const DashboardPageContent = () => {
   const t = useTranslations('dashboard');
@@ -47,6 +48,32 @@ const DashboardPageContent = () => {
   const { getTodayProductionPlans, isLoading: isTodayPlansLoading } =
     useGetTodayProductionPlans();
   const { factoryId, initializeFactoryId } = useMemberStore();
+
+  // Widget visibility state
+  const [hiddenWidgets, setHiddenWidgets] = useState<WidgetId[]>([]);
+  const [isSettingsPanelOpen, setIsSettingsPanelOpen] = useState(false);
+
+  const toggleWidget = useCallback((widgetId: WidgetId) => {
+    setHiddenWidgets((prev) =>
+      prev.includes(widgetId)
+        ? prev.filter((id) => id !== widgetId)
+        : [...prev, widgetId]
+    );
+  }, []);
+
+  const resetWidgets = useCallback(() => {
+    setHiddenWidgets([]);
+  }, []);
+
+  // Filter layout based on hidden widgets
+  const filteredGridLayout = useMemo(() => {
+    return gridLayout.filter((item) => !hiddenWidgets.includes(item.i as WidgetId));
+  }, [hiddenWidgets]);
+
+  const isWidgetVisible = useCallback(
+    (widgetId: WidgetId) => !hiddenWidgets.includes(widgetId),
+    [hiddenWidgets]
+  );
 
   const { data: taxInvoicesQueryData, isLoading: isTaxInvoicesLoading } =
     useGetPublishedDocuments(
@@ -204,7 +231,7 @@ const DashboardPageContent = () => {
     <>
       {/* 데스크톱에서만 MainTitleSec 표시 */}
       <div className="hidden sm:block">
-        <MainTitleSec />
+        <MainTitleSec onOpenSettings={() => setIsSettingsPanelOpen(true)} />
       </div>
 
       {/* 모바일 640px 이하에서는 빈 화면 표시 */}
@@ -225,7 +252,7 @@ const DashboardPageContent = () => {
                 {effectiveGridWidth > 0 && (
                   <ReactGridLayout
                     className="layout"
-                    layout={gridLayout}
+                    layout={filteredGridLayout}
                     width={effectiveGridWidth}
                     gridConfig={{
                       cols: 4,
@@ -240,117 +267,136 @@ const DashboardPageContent = () => {
                     dragConfig={{ enabled: true }}
                   >
                     {/* Summary KPI */}
-                    <div
-                      key="summaryKpi"
-                      className="flex flex-col h-full min-h-0"
-                    >
-                      <h3 className="Heading-3">{t('summaryKPITitle')}</h3>
-                      {factoryId && dashboardData ? (
-                        <div className="flex flex-col gap-3 mt-3 h-full min-h-0 overflow-visible">
-                          <DailyProductionQuantity
-                            currentMonthProjects={
-                              dashboardData.current_month_projects
-                            }
-                            previousMonthProjects={
-                              dashboardData.previous_month_projects
-                            }
-                          />
-                          <ShortageCount
-                            shortageMaterialsCount={
-                              dashboardData.shortage_materials_count
-                            }
-                          />
-                          <ProductionYield
-                            monthlyProfits={dashboardData.monthly_profits}
-                          />
-                        </div>
-                      ) : (
-                        <div className="mt-3 h-full min-h-0 overflow-auto">
-                          <NoHistoryBox
-                            title={t('noSummaryData')}
-                            text={t('noSummaryDataDescription')}
-                            height="h-full"
-                          />
-                        </div>
-                      )}
-                    </div>
+                    {isWidgetVisible('summaryKpi') && (
+                      <div
+                        key="summaryKpi"
+                        className="flex flex-col h-full min-h-0"
+                      >
+                        <h3 className="Heading-3">{t('summaryKPITitle')}</h3>
+                        {factoryId && dashboardData ? (
+                          <div className="flex flex-col gap-3 mt-3 h-full min-h-0 overflow-visible">
+                            <DailyProductionQuantity
+                              currentMonthProjects={
+                                dashboardData.current_month_projects
+                              }
+                              previousMonthProjects={
+                                dashboardData.previous_month_projects
+                              }
+                            />
+                            <ShortageCount
+                              shortageMaterialsCount={
+                                dashboardData.shortage_materials_count
+                              }
+                            />
+                            <ProductionYield
+                              monthlyProfits={dashboardData.monthly_profits}
+                            />
+                          </div>
+                        ) : (
+                          <div className="mt-3 h-full min-h-0 overflow-auto">
+                            <NoHistoryBox
+                              title={t('noSummaryData')}
+                              text={t('noSummaryDataDescription')}
+                              height="h-full"
+                            />
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     {/* 생산 이익 그래프 */}
-                    <div
-                      key="profitGraph"
-                      className="flex flex-col h-full min-h-0"
-                    >
-                      <ProfitGraph
-                        monthlyProfits={dashboardData.monthly_profits}
-                        lastYearMonthlyProfits={
-                          dashboardData.last_year_monthly_profits
-                        }
-                      />
-                    </div>
+                    {isWidgetVisible('profitGraph') && (
+                      <div
+                        key="profitGraph"
+                        className="flex flex-col h-full min-h-0"
+                      >
+                        <ProfitGraph
+                          monthlyProfits={dashboardData.monthly_profits}
+                          lastYearMonthlyProfits={
+                            dashboardData.last_year_monthly_profits
+                          }
+                        />
+                      </div>
+                    )}
 
                     {/* 견적 및 주문 현황 */}
-                    <div
-                      key="pendingQuote"
-                      className="flex flex-col h-full min-h-0"
-                    >
-                      <PendingQuote
-                        projects={quotationProjectsData}
-                        isLoading={isProjectsLoading}
-                      />
-                    </div>
+                    {isWidgetVisible('pendingQuote') && (
+                      <div
+                        key="pendingQuote"
+                        className="flex flex-col h-full min-h-0"
+                      >
+                        <PendingQuote
+                          projects={quotationProjectsData}
+                          isLoading={isProjectsLoading}
+                        />
+                      </div>
+                    )}
 
                     {/* 생산 프로젝트 */}
-                    <div
-                      key="processProject"
-                      className="flex flex-col h-full min-h-0"
-                    >
-                      <ProcessProject
-                        projects={productionProjectsData}
-                        isLoading={isProjectsLoading}
-                      />
-                    </div>
+                    {isWidgetVisible('processProject') && (
+                      <div
+                        key="processProject"
+                        className="flex flex-col h-full min-h-0"
+                      >
+                        <ProcessProject
+                          projects={productionProjectsData}
+                          isLoading={isProjectsLoading}
+                        />
+                      </div>
+                    )}
 
                     {/* 오늘의 생산 일정 */}
-                    <div
-                      key="todaySchedule"
-                      className="flex flex-col h-full min-h-0"
-                    >
-                      <TodayProductionSchedule
-                        todayProductionPlans={todayProductionPlans}
-                        isLoading={isTodayPlansLoading}
-                      />
-                    </div>
+                    {isWidgetVisible('todaySchedule') && (
+                      <div
+                        key="todaySchedule"
+                        className="flex flex-col h-full min-h-0"
+                      >
+                        <TodayProductionSchedule
+                          todayProductionPlans={todayProductionPlans}
+                          isLoading={isTodayPlansLoading}
+                        />
+                      </div>
+                    )}
 
                     {/* 납품 예정 현황 */}
-                    <div
-                      key="deliverySchedule"
-                      className="flex flex-col h-full min-h-0 gap-3"
-                    >
-                      <div className="h-10 flex items-center">
-                        <h3 className="Heading-3">
-                          {t('deliveryScheduleTitle')}
-                        </h3>
+                    {isWidgetVisible('deliverySchedule') && (
+                      <div
+                        key="deliverySchedule"
+                        className="flex flex-col h-full min-h-0 gap-3"
+                      >
+                        <div className="h-10 flex items-center">
+                          <h3 className="Heading-3">
+                            {t('deliveryScheduleTitle')}
+                          </h3>
+                        </div>
+                        <div className="flex-1 min-h-0 overflow-auto h-full">
+                          <DeliveryTable />
+                        </div>
                       </div>
-                      <div className="flex-1 min-h-0 overflow-auto h-full">
-                        <DeliveryTable />
-                      </div>
-                    </div>
+                    )}
 
                     {/* 세금계산서 현황 */}
-                    <div
-                      key="taxStatus"
-                      className="flex flex-col h-full min-h-0"
-                    >
-                      <Tax
-                        taxInvoicesData={taxInvoicesData}
-                        isLoading={isTaxInvoicesLoading}
-                      />
-                    </div>
+                    {isWidgetVisible('taxStatus') && (
+                      <div
+                        key="taxStatus"
+                        className="flex flex-col h-full min-h-0"
+                      >
+                        <Tax
+                          taxInvoicesData={taxInvoicesData}
+                          isLoading={isTaxInvoicesLoading}
+                        />
+                      </div>
+                    )}
 
                     {/* 채권채무 현황 */}
-                    <div key="account" className="flex flex-col h-full min-h-0">
-                      <Account />
-                    </div>
+                    {isWidgetVisible('account') && (
+                      <div
+                        key="account"
+                        className="flex flex-col h-full min-h-0"
+                      >
+                        <Account />
+                      </div>
+                    )}
                   </ReactGridLayout>
                 )}
               </div>
@@ -368,6 +414,16 @@ const DashboardPageContent = () => {
           subtext={t('onboardingToastSubtext')}
           type="primary"
           isVisible={isVisible}
+        />
+      )}
+
+      {/* Widget Settings Panel */}
+      {isSettingsPanelOpen && (
+        <WidgetSettingsPanel
+          hiddenWidgets={hiddenWidgets}
+          onToggleWidget={toggleWidget}
+          onReset={resetWidgets}
+          onClose={() => setIsSettingsPanelOpen(false)}
         />
       )}
     </>

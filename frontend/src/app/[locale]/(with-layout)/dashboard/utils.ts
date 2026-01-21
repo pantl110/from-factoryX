@@ -1,3 +1,15 @@
+import {
+  ChartBar,
+  ChartLine,
+  ClipboardText,
+  ListChecks,
+  CalendarStar,
+  Package,
+  Receipt,
+  MoneyWavy,
+  Icon,
+} from '@phosphor-icons/react';
+
 export const gridLayout = [
   { i: 'summaryKpi', x: 0, y: 0, w: 1, h: 5, minW: 1, minH: 5 },
   { i: 'profitGraph', x: 1, y: 0, w: 3, h: 5, minW: 2, minH: 2 },
@@ -17,6 +29,35 @@ export const gridLayout = [
   { i: 'taxStatus', x: 0, y: 10, w: 2, h: 4, minW: 2, minH: 3 },
   { i: 'account', x: 2, y: 10, w: 2, h: 4, minW: 2, minH: 3 },
 ];
+
+export type WidgetId =
+  | 'summaryKpi'
+  | 'profitGraph'
+  | 'pendingQuote'
+  | 'processProject'
+  | 'todaySchedule'
+  | 'deliverySchedule'
+  | 'taxStatus'
+  | 'account';
+
+export interface WidgetMetadata {
+  id: WidgetId;
+  labelKey: string; // i18n key for dashboard translations
+  icon: Icon;
+}
+
+export const widgetMetadata: WidgetMetadata[] = [
+  { id: 'summaryKpi', labelKey: 'summaryKPITitle', icon: ChartBar },
+  { id: 'profitGraph', labelKey: 'profitGraph.title', icon: ChartLine },
+  { id: 'pendingQuote', labelKey: 'pendingQuote.title', icon: ClipboardText },
+  { id: 'processProject', labelKey: 'processProject.title', icon: ListChecks },
+  { id: 'todaySchedule', labelKey: 'todayProductionSchedule.title', icon: CalendarStar },
+  { id: 'deliverySchedule', labelKey: 'deliveryScheduleTitle', icon: Package },
+  { id: 'taxStatus', labelKey: 'tax.title', icon: Receipt },
+  { id: 'account', labelKey: 'account.title', icon: MoneyWavy },
+];
+
+export const allWidgetIds: WidgetId[] = widgetMetadata.map((w) => w.id);
 
 export const getVisibleItemCount = (
   width: number,
