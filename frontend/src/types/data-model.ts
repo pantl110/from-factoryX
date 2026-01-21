@@ -1926,6 +1926,21 @@ export interface MaterialUsageListResponseModel extends PaginationModel {
   data: MaterialUsageResponseModel[];
 }
 
+//////////////////////
+// Dashboard Layout API
+export interface WidgetLayoutModel {
+  id: string;
+  visible: boolean;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+export interface DashboardLayoutResponseModel {
+  widgets: WidgetLayoutModel[] | null;
+}
+
 export type {
   MemberRoleType,
   MemberStatusType,

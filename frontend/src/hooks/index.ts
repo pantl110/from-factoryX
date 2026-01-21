@@ -202,6 +202,8 @@ export { default as useGetTodayProductionPlans } from './dashboard/use-get-today
 export { default as useGetUndeliveredProducts } from './dashboard/use-get-undelivered-products';
 export { default as useGetDashboard } from './dashboard/use-get-dashboard';
 export { default as useGetMobileDashboardCounts } from './dashboard/use-get-mobile-dashboard-counts';
+export { default as useGetDashboardLayout } from './dashboard/use-get-dashboard-layout';
+export { default as useUpdateDashboardLayout } from './dashboard/use-update-dashboard-layout';
 
 // websocket related hooks
 export { useWebSocket } from './websocket/use-websocket';

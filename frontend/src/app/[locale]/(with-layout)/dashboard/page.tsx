@@ -25,10 +25,13 @@ import {
   useGetTodayProductionPlans,
   useGetPublishedDocuments,
   useGetDashboard,
+  useGetDashboardLayout,
+  useUpdateDashboardLayout,
 } from '@/hooks';
 import {
   ProjectResponseModel,
   DashboardResponseModel,
+  WidgetLayoutModel,
 } from '@/types/data-model';
 import useMemberStore from '@/store/member-store';
 import { TodayProductionPlanModel } from './type';
@@ -39,6 +42,17 @@ import { gridLayout, WidgetIdType } from './utils';
 import { Account } from './account';
 import WidgetSettingsPanel from './modals/widget-settings-panel';
 
+// Default widget layout with visible flag
+const getDefaultWidgetLayout = (): WidgetLayoutModel[] =>
+  gridLayout.map((item) => ({
+    id: item.i,
+    visible: true,
+    x: item.x,
+    y: item.y,
+    w: item.w,
+    h: item.h,
+  }));
+
 const DashboardPageContent = () => {
   const t = useTranslations('dashboard');
   const { isToastOpen, isVisible, showToast } = useToast();
@@ -47,30 +61,111 @@ const DashboardPageContent = () => {
   const { getDashboard, isLoading: isDashboardLoading } = useGetDashboard();
   const { getTodayProductionPlans, isLoading: isTodayPlansLoading } =
     useGetTodayProductionPlans();
+  const {
+    data: layoutData,
+    isLoading: isLayoutLoading,
+    isSuccess: isLayoutSuccess,
+  } = useGetDashboardLayout();
+  const { updateDashboardLayout } = useUpdateDashboardLayout();
   const { factoryId, initializeFactoryId } = useMemberStore();
 
-  // Widget visibility state
-  const [hiddenWidgets, setHiddenWidgets] = useState<WidgetIdType[]>([]);
+  // Widget layout state (from API or default)
+  const [widgetLayout, setWidgetLayout] = useState<WidgetLayoutModel[]>(
+    getDefaultWidgetLayout()
+  );
   const [isSettingsPanelOpen, setIsSettingsPanelOpen] = useState(false);
 
-  const toggleWidget = useCallback((widgetId: WidgetIdType) => {
-    setHiddenWidgets((prev) =>
-      prev.includes(widgetId)
-        ? prev.filter((id) => id !== widgetId)
-        : [...prev, widgetId]
-    );
-  }, []);
+  // API 응답으로 레이아웃 초기화
+  useEffect(() => {
+    if (isLayoutSuccess && layoutData?.widgets) {
+      setWidgetLayout(layoutData.widgets);
+    }
+  }, [isLayoutSuccess, layoutData]);
+
+  // Derive hiddenWidgets from widgetLayout for backward compatibility
+  const hiddenWidgets = useMemo(
+    () =>
+      widgetLayout.filter((w) => !w.visible).map((w) => w.id as WidgetIdType),
+    [widgetLayout]
+  );
+
+  // Save layout to backend
+  const saveLayoutToBackend = useCallback(
+    (newLayout: WidgetLayoutModel[]) => {
+      updateDashboardLayout(newLayout);
+    },
+    [updateDashboardLayout]
+  );
+
+  const toggleWidget = useCallback(
+    (widgetId: WidgetIdType) => {
+      setWidgetLayout((prev) => {
+        const newLayout = prev.map((w) =>
+          w.id === widgetId ? { ...w, visible: !w.visible } : w
+        );
+        saveLayoutToBackend(newLayout);
+        return newLayout;
+      });
+    },
+    [saveLayoutToBackend]
+  );
 
   const resetWidgets = useCallback(() => {
-    setHiddenWidgets([]);
-  }, []);
+    const defaultLayout = getDefaultWidgetLayout();
+    setWidgetLayout(defaultLayout);
+    saveLayoutToBackend(defaultLayout);
+  }, [saveLayoutToBackend]);
 
-  // Filter layout based on hidden widgets
+  // Handle layout change from ReactGridLayout (position/size)
+  const handleLayoutChange = useCallback(
+    (
+      newGridLayout: readonly {
+        i: string;
+        x: number;
+        y: number;
+        w: number;
+        h: number;
+      }[]
+    ) => {
+      setWidgetLayout((prev) => {
+        const newLayout = prev.map((widget) => {
+          const gridItem = newGridLayout.find((item) => item.i === widget.id);
+          if (gridItem) {
+            return {
+              ...widget,
+              x: gridItem.x,
+              y: gridItem.y,
+              w: gridItem.w,
+              h: gridItem.h,
+            };
+          }
+          return widget;
+        });
+        saveLayoutToBackend(newLayout);
+        return newLayout;
+      });
+    },
+    [saveLayoutToBackend]
+  );
+
+  // Filter layout based on hidden widgets for ReactGridLayout
   const filteredGridLayout = useMemo(() => {
-    return gridLayout.filter(
-      (item) => !hiddenWidgets.includes(item.i as WidgetIdType)
-    );
-  }, [hiddenWidgets]);
+    return widgetLayout
+      .filter((w) => w.visible)
+      .map((w) => {
+        const original = gridLayout.find((g) => g.i === w.id);
+        return {
+          i: w.id,
+          x: w.x,
+          y: w.y,
+          w: w.w,
+          h: w.h,
+          minW: original?.minW,
+          minH: original?.minH,
+          maxH: original?.maxH,
+        };
+      });
+  }, [widgetLayout]);
 
   const isWidgetVisible = useCallback(
     (widgetId: WidgetIdType) => !hiddenWidgets.includes(widgetId),
@@ -129,7 +224,8 @@ const DashboardPageContent = () => {
     isDashboardLoading ||
     isProjectsLoading ||
     isTodayPlansLoading ||
-    isTaxInvoicesLoading;
+    isTaxInvoicesLoading ||
+    isLayoutLoading;
 
   useEffect(() => {
     const from = searchParams.get('from');
@@ -267,6 +363,7 @@ const DashboardPageContent = () => {
                       handles: ['se', 'e', 's'],
                     }}
                     dragConfig={{ enabled: true }}
+                    onLayoutChange={handleLayoutChange}
                   >
                     {/* Summary KPI */}
                     {isWidgetVisible('summaryKpi') && (
