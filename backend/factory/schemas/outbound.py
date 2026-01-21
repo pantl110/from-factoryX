@@ -136,3 +136,13 @@ class FactoryModelDetailOut(ModelSchema):
     class Meta:
         model = Factory
         fields = "__all__"
+
+
+# ------------------------------------------------------------
+# Dashboard Layout API
+# ------------------------------------------------------------
+
+
+# (GET) Dashboard Layout
+class DashboardLayoutOut(Schema):
+    widgets: Optional[List[dict]] = None

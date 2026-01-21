@@ -292,3 +292,10 @@ class FactoryMember(BaseModel):
         blank=True,
         help_text="바로빌 비밀번호",
     )
+    # 대시보드 레이아웃
+    dashboard_layout = models.JSONField(
+        null=True,
+        blank=True,
+        default=None,
+        help_text="대시보드 위젯 레이아웃 설정",
+    )

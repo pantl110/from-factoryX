@@ -399,3 +399,27 @@ class TestFactoryMember(TestCase):
             self.assertIsNone(member["user"])
             self.assertEqual(member["name"], "")
             self.assertEqual(member["status"], "invited")
+
+    # ------------------------------------------------------------
+    # Dashboard Layout API Tests
+    # ------------------------------------------------------------
+
+    async def test_dashboard_layout(self):
+        """대시보드 레이아웃 저장/조회 테스트"""
+        headers = await self.authenticate()
+        url = f"/me/dashboard-layout?factory_id={self.factory.id}"
+
+        # 초기 조회 - null
+        response = await self.client.get(url, headers=headers)
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNone(response.json()["widgets"])
+
+        # 저장
+        payload = {"widgets": [{"id": "summaryKpi", "x": 0, "y": 0}]}
+        response = await self.client.put(url, headers=headers, json=payload)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["widgets"][0]["id"], "summaryKpi")
+
+        # 조회
+        response = await self.client.get(url, headers=headers)
+        self.assertEqual(response.json()["widgets"][0]["id"], "summaryKpi")

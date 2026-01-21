@@ -1,5 +1,5 @@
 from ninja import Field, FilterSchema, Schema
-from typing import Optional
+from typing import Optional, List
 from pydantic import field_validator
 
 
@@ -127,3 +127,13 @@ class FactoryClientUpdateIn(Schema):
 # (GET) Factory Client Search Filter
 class FactoryClientSearchFilter(FilterSchema):
     q: Optional[str] = None
+
+
+# ------------------------------------------------------------
+# Dashboard Layout API
+# ------------------------------------------------------------
+
+
+# (PUT) Dashboard Layout Update
+class DashboardLayoutIn(Schema):
+    widgets: List[dict]
