@@ -1,7 +1,7 @@
 'use client';
 
 import MiniBtn from '@/ui/mini-btn';
-import { BellSimple, ChatCircle } from '@phosphor-icons/react';
+import { BellSimple, ChatCircle, FilePlus } from '@phosphor-icons/react';
 import { ProductionTabType } from './types';
 import ProfileImage from '@/ui/profile-image';
 import { usePathname } from 'next/navigation';
@@ -23,6 +23,7 @@ interface TopBarContentProps {
   onMoveToStorageClick?: () => void;
   onNotificationClick?: () => void;
   onNoraClick?: () => void;
+  onCloudUploadClick?: () => void;
 }
 
 const TopBarContent = ({
@@ -33,6 +34,7 @@ const TopBarContent = ({
   onMoveToStorageClick,
   onNotificationClick,
   onNoraClick,
+  onCloudUploadClick,
 }: TopBarContentProps) => {
   const t = useTranslations('topBar');
   const tCommon = useTranslations('common');
@@ -585,13 +587,7 @@ const TopBarContent = ({
   return (
     <>
       <div className="flex items-center gap-1">
-        <div
-          className="flex items-center justify-center w-11 h-11 cursor-pointer hover:bg-bg rounded-lg"
-          onClick={onNoraClick}
-          title={t('aiAssistant')}
-        >
-          <ChatCircle size={20} className="text-dg" />
-        </div>
+
         <div
           className="flex items-center justify-center w-11 h-11 relative cursor-pointer hover:bg-bg rounded-lg"
           onClick={onNotificationClick}
@@ -600,6 +596,20 @@ const TopBarContent = ({
           {hasUnreadNotifications && (
             <span className="absolute top-[9px] left-[29px] w-1 h-1 bg-primary rounded-full " />
           )}
+        </div>
+        <div
+          className="flex items-center justify-center w-11 h-11 cursor-pointer hover:bg-bg rounded-lg"
+          onClick={onCloudUploadClick}
+          title="파일 업로드"
+        >
+          <FilePlus size={20} className="text-dg" />
+        </div>
+        <div
+          className="flex items-center justify-center w-11 h-11 cursor-pointer hover:bg-bg rounded-lg"
+          onClick={onNoraClick}
+          title={t('aiAssistant')}
+        >
+          <ChatCircle size={20} className="text-dg" />
         </div>
         <div
           className="flex items-center justify-center w-10 h-10 cursor-pointer relative"

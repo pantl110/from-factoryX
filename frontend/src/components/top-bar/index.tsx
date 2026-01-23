@@ -5,6 +5,7 @@ import TopBarContent from './top-bar-content';
 import NotificationModal from './modals/notification-modal';
 import TopBarCrumb from './top-bar-crumb';
 import NoraModal from './nora-modal';
+import CloudUploadModal from './modals/cloud-upload-modal';
 import { useState, useEffect, useCallback } from 'react';
 import { NotificationResponseModel } from '@/types/data-model';
 import { useGetNotifications, useWebSocket } from '@/hooks';
@@ -44,6 +45,7 @@ const TopBar = ({ isSidebarVisible }: TopBarProps) => {
 
   const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
   const [isNoraOpen, setIsNoraOpen] = useState(false);
+  const [isCloudUploadModalOpen, setIsCloudUploadModalOpen] = useState(false);
   const [noraModalSize, setNoraModalSize] = useState<{
     width?: number;
     height?: number;
@@ -162,6 +164,7 @@ const TopBar = ({ isSidebarVisible }: TopBarProps) => {
               onMoveToStorageClick={() => setMoveToStorageModalOpen(true)}
               onNotificationClick={() => setIsNotificationModalOpen(true)}
               onNoraClick={() => setIsNoraOpen(true)}
+              onCloudUploadClick={() => setIsCloudUploadModalOpen(true)}
               hasUnreadNotifications={
                 notifications.find((n) => !n.is_read) !== undefined
               }
@@ -190,6 +193,10 @@ const TopBar = ({ isSidebarVisible }: TopBarProps) => {
           initialHeight={noraModalSize.height}
           onSizeChange={handleNoraSizeChange}
         />
+      )}
+
+      {isCloudUploadModalOpen && (
+        <CloudUploadModal onClose={() => setIsCloudUploadModalOpen(false)} />
       )}
     </>
   );

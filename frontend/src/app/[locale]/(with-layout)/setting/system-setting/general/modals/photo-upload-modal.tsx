@@ -43,6 +43,7 @@ const PhotoUploadModal = ({
       <div className="mt-4">
         <DropzoneArea
           onClose={onClose}
+          fileCount={1}
           accept={{
             'image/*': ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp'],
           }}

@@ -74,6 +74,7 @@ const ExcelUploadModal = ({
         ) : (
           <DropzoneArea
             onClose={onClose}
+            fileCount={1}
             onComplete={(files) => {
               if (files && files.length > 0) {
                 handleComplete(files[0]);

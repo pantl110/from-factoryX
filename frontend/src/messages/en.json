@@ -3,6 +3,7 @@
     "close": "Close",
     "save": "Save",
     "cancel": "Cancel",
+    "upload": "Upload",
     "next": "Next",
     "previous": "Previous",
     "delete": "Delete",
@@ -196,9 +197,12 @@
     "aiAssistant": "AI Assistant",
     "moveToDeliveryFailed": "Failed to move to delivery stage."
   },
+  "cloudUpload": {
+    "subtitle": "Selecting an upload location will save files to that repository."
+  },
   "dropzone": {
     "dragAndDrop": "You can drag and drop files\nor upload them using the button below.",
-    "maxFiles": "(Max 10 files)",
+    "maxFiles": "(Max {count} files)",
     "selectFromComputer": "Select from computer",
     "fileTypes": {
       "image": "Image",
@@ -207,7 +211,7 @@
     },
     "add": "Add",
     "upload": "Upload",
-    "maxFilesError": "You can upload up to 10 files only."
+    "maxFilesError": "You can upload up to {count} files only."
   },
   "document": {
     "title": "Documents",

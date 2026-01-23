@@ -387,6 +387,7 @@ const ExcelUploadModal = ({
           ) : (
             <DropzoneArea
               onClose={onClose}
+              fileCount={1}
               onComplete={handleComplete}
               onFileUpload={onFileUpload}
               accept={{

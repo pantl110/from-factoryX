@@ -23,15 +23,17 @@ interface DropzoneProps {
   onComplete?: (files: File[]) => void | Promise<void>;
   accept?: Record<string, string[]>;
   onFileUpload?: (hasFiles: boolean) => void;
+  hideUploadButton?: boolean;
 }
 
 const DropzoneArea = ({
   variant = 'default',
-  fileCount = 1,
+  fileCount,
   onClose,
   onComplete,
   accept,
   onFileUpload,
+  hideUploadButton = false,
 }: DropzoneProps) => {
   const t = useTranslations('dropzone');
   const [files, setFiles] = useState<File[]>([]);
@@ -43,7 +45,8 @@ const DropzoneArea = ({
   const onDrop = useCallback(
     (acceptedFiles: File[]) => {
       const currentCount = files.length;
-      const availableSlots = fileCount - currentCount;
+      const availableSlots =
+        typeof fileCount === 'number' ? fileCount - currentCount : Infinity;
       let filesToAdd = acceptedFiles;
       const shouldShowToast = acceptedFiles.length > availableSlots;
 
@@ -103,7 +106,8 @@ const DropzoneArea = ({
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const newFiles = Array.from(event.target.files || []);
     const currentCount = files.length;
-    const availableSlots = fileCount - currentCount;
+    const availableSlots =
+      typeof fileCount === 'number' ? fileCount - currentCount : Infinity;
     let filesToAdd = newFiles;
     const shouldShowToast = newFiles.length > availableSlots;
 
@@ -252,7 +256,10 @@ const DropzoneArea = ({
               {/* 기본 이미지 */}
               <input {...getInputProps()} />
               <p className="Me_Body-2 text-dg whitespace-pre-line text-center">
-                {t('dragAndDrop')} {variant === 'location' ? t('maxFiles') : ''}
+                {t('dragAndDrop')}{' '}
+                {variant === 'location' && typeof fileCount === 'number'
+                  ? t('maxFiles', { count: fileCount })
+                  : ''}
               </p>
               <MiniBtn
                 text={t('selectFromComputer')}
@@ -300,26 +307,26 @@ const DropzoneArea = ({
             ))}
           </ul>
           <div className="mt-4 flex justify-end gap-[5px]">
-            {fileCount > files.length && (
+            {(typeof fileCount !== 'number' || fileCount > files.length) && (
               <MiniBtn
                 text={t('add')}
                 textColor="text-sv"
                 hoverColor="hover:bg-bg"
                 onClick={() => {
-                  if (fileInputRef.current && files.length < fileCount) {
+                  if (fileInputRef.current) {
                     fileInputRef.current.click();
                   }
                 }}
-                disabled={files.length >= fileCount}
+                disabled={
+                  typeof fileCount === 'number' && files.length >= fileCount
+                }
               />
             )}
 
-            {variant !== 'location' && (
+            {variant !== 'location' && !hideUploadButton && (
               <MiniBtn
                 text={t('upload')}
-                textColor="text-wh"
-                bgColor="bg-primary"
-                hoverColor="hover:bg-primary-hover"
+                variant="primary"
                 onClick={onComplete ? () => onComplete(files) : onClose}
               />
             )}
@@ -332,17 +339,22 @@ const DropzoneArea = ({
         ref={fileInputRef}
         style={{ display: 'none' }}
         multiple
-        accept="image/jpeg,image/png,image/gif,image/webp"
+        accept={accept ? Object.keys(accept).join(',') : undefined}
         onChange={handleFileChange}
-        // Prevent selecting more files if already 9
-        disabled={files.length >= fileCount}
+        disabled={
+          typeof fileCount === 'number' && files.length >= fileCount
+        }
       />
 
       {/* 토스트 */}
       {isToastOpen && (
         <Toast
           icon={<WarningCircle size={20} className="text-red" />}
-          text={t('maxFilesError')}
+          text={
+            typeof fileCount === 'number'
+              ? t('maxFilesError', { count: fileCount })
+              : t('maxFilesError')
+          }
           subtext=""
           type="red"
           isVisible={isVisible}
