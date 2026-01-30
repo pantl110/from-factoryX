@@ -1,21 +1,30 @@
-from ninja.errors import HttpError
-from document.models import Quotation, QuotationProduct, WorkInstruction, WorkInstructionHistory
+"""
+document 앱 유틸: 견적서 조회, OCR(Upstage + LLM 구조화), 생산지시서 이력.
+"""
+from __future__ import annotations
 
+import io
 import json
 import os
-from pathlib import Path
-from typing import Any, Dict, List
-from datetime import datetime, date
-from django.conf import settings
+import re
+from datetime import date, datetime
+from typing import Any, Dict, List, Tuple
 
-import aiohttp
+import requests
+from dotenv import load_dotenv
 from langchain.output_parsers import ResponseSchema, StructuredOutputParser
 from langchain.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
-from dotenv import load_dotenv
-import requests
+from ninja.errors import HttpError
+
+from document.models import Quotation, QuotationProduct, WorkInstruction, WorkInstructionHistory
 
 load_dotenv()
+
+
+# -----------------------------------------------------------------------------
+# Quotation
+# -----------------------------------------------------------------------------
 
 
 async def get_quotation_by_id(quotation_id: int, user):
@@ -36,21 +45,89 @@ async def get_quotation_product_by_id(qp_id: int, user):
         raise HttpError(404, "해당 견적서 품목이 존재하지 않거나 접근 권한이 없습니다.")
 
 
-def extract_text_from_upstage(digitize_json: Dict[str, Any]) -> str:
-    """Extract concatenated text from Upstage digitization response.
+# -----------------------------------------------------------------------------
+# OCR (Upstage digitization + LLM 구조화)
+# -----------------------------------------------------------------------------
 
-    The response structure may vary. This function tries common patterns:
-    1. `pages`: list of dicts with `text` field.
-    2. top-level `text` field.
-    3. fallback to json.dumps if unsure.
+# 견적서 구조화 스키마 키 (document.schemas.outbound.OCRClientInfoOut / OCRRequestItemOut 와 동일)
+OCR_CLIENT_INFO_KEYS = (
+    "company_name",
+    "registration_number",
+    "ceo_name",
+    "delivery_date",
+    "business_type",
+    "category",
+    "address",
+    "manager_name",
+    "email",
+    "fax_number",
+    "call_number",
+)
+OCR_REQUEST_ITEM_KEYS = ("item_name", "item_code", "spec", "unit", "quantity", "unit_price")
+
+OCR_PARSE_ERROR_MESSAGE = (
+    "OCR 결과를 정리하는 중 오류가 발생했습니다. "
+    "문서가 흐리거나 손글씨가 많으면 실패할 수 있습니다. 파일을 확인한 뒤 다시 시도해 주세요."
+)
+
+
+def _ocr_filename_and_content_type(content: bytes) -> Tuple[str, str]:
+    """파일 시그니처로 확장자와 Content-Type 결정. Upstage API 전송 시 사용."""
+    if content.startswith(b"%PDF"):
+        return "document.pdf", "application/pdf"
+    if content.startswith(b"\xff\xd8\xff"):
+        return "document.jpg", "image/jpeg"
+    if content.startswith(b"\x89PNG\r\n\x1a\n"):
+        return "document.png", "image/png"
+    if content.startswith(b"GIF87a") or content.startswith(b"GIF89a"):
+        return "document.gif", "image/gif"
+    if content.startswith(b"RIFF") and content[8:12] == b"WEBP":
+        return "document.webp", "image/webp"
+    return "document.pdf", "application/octet-stream"
+
+
+def extract_text_from_upstage(digitize_json: Dict[str, Any]) -> str:
+    """Upstage document-digitization 응답에서 텍스트만 추출.
+
+    지원 패턴: pages[].text, top-level text, 그 외는 json.dumps.
     """
     if "pages" in digitize_json and isinstance(digitize_json["pages"], list):
         texts = [page.get("text", "") for page in digitize_json["pages"]]
         return "\n".join(texts).strip()
     if "text" in digitize_json and isinstance(digitize_json["text"], str):
         return digitize_json["text"].strip()
-    # Fallback: dump the entire JSON (not ideal, but avoids crash)
     return json.dumps(digitize_json, ensure_ascii=False)
+
+
+def _clean_json_string(raw: str) -> str:
+    """LLM 출력 문자열을 표준 JSON 형태로 정제. 마크다운 코드블록·trailing comma 제거."""
+    s = raw.strip()
+    if s.startswith("```"):
+        lines = s.split("\n")
+        if lines[0].startswith("```"):
+            lines = lines[1:]
+        if lines and lines[-1].strip() == "```":
+            lines = lines[:-1]
+        s = "\n".join(lines)
+    s = re.sub(r",\s*([}\]])", r"\1", s.strip())
+    return s
+
+
+def _normalize_parsed_quote(data: Dict[str, Any]) -> Dict[str, Any]:
+    """json.loads 결과를 client_info / request_items 스키마 형태로 정규화."""
+    client_info = data.get("client_info") or {}
+    request_items = data.get("request_items") or []
+
+    def _str(v: Any) -> str:
+        return "" if v is None else str(v).strip()
+
+    client = {k: _str(client_info.get(k, "")) for k in OCR_CLIENT_INFO_KEYS}
+    items = [
+        {k: _str(item.get(k, "")) for k in OCR_REQUEST_ITEM_KEYS}
+        for item in request_items
+        if isinstance(item, dict)
+    ]
+    return {"client_info": client, "request_items": items}
 
 
 def parse_quote_text(
@@ -110,27 +187,56 @@ def parse_quote_text(
     )
 
     llm = ChatOpenAI(model_name=model_name, temperature=temperature)
-    chain = prompt | llm | parser
-    return chain.invoke({"document": text, "format_instructions": format_instructions})
+    chain = prompt | llm
+    result = chain.invoke({"document": text, "format_instructions": format_instructions})
 
-
-async def content_ocr(file):
-    api_key = os.getenv("UPSTAGE_API_KEY")
+    raw = getattr(result, "content", str(result))
 
     try:
-        url = "https://api.upstage.ai/v1/document-digitization"
-        headers = {"Authorization": f"Bearer {api_key}"}
+        return parser.parse(result)
+    except Exception:
+        try:
+            cleaned = _clean_json_string(raw)
+            data = json.loads(cleaned)
+            return _normalize_parsed_quote(data)
+        except (json.JSONDecodeError, TypeError, KeyError):
+            raise
 
-        files = {"document": file}
-        data = {"model": "ocr"}
+
+def _is_ocr_parse_error(err_msg: str) -> bool:
+    """LLM/파서 쪽 JSON 파싱 실패로 인한 오류인지 여부."""
+    return (
+        "invalid JSON" in err_msg
+        or "Expecting value" in err_msg
+        or "OutputParserException" in err_msg
+    )
+
+
+async def content_ocr(file: bytes) -> Dict[str, Any]:
+    """업로드 파일을 Upstage OCR 후 LLM으로 견적서 구조화. PDF·이미지 지원."""
+    api_key = os.getenv("UPSTAGE_API_KEY")
+    url = "https://api.upstage.ai/v1/document-digitization"
+    headers = {"Authorization": f"Bearer {api_key}"}
+
+    filename, content_type = _ocr_filename_and_content_type(file)
+    files = {"document": (filename, io.BytesIO(file), content_type)}
+    data = {"model": "ocr"}
+
+    try:
         response = requests.post(url, headers=headers, files=files, data=data)
-        # print(response.json())
         text = extract_text_from_upstage(response.json())
-        structured = parse_quote_text(text)
-        # return json.dumps(structured, ensure_ascii=False, indent=2)
-        return structured
+        return parse_quote_text(text)
+    except HttpError:
+        raise
     except Exception as e:
-        raise HttpError(500, f"OCR error: {str(e)}")
+        if _is_ocr_parse_error(str(e)):
+            raise HttpError(500, OCR_PARSE_ERROR_MESSAGE) from e
+        raise HttpError(500, f"OCR error: {str(e)}") from e
+
+
+# -----------------------------------------------------------------------------
+# Work instruction history
+# -----------------------------------------------------------------------------
 
 
 def create_work_instruction_history(
