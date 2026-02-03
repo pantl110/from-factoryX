@@ -101,9 +101,8 @@ async def list_factory_clients(
 
     @sync_to_async
     def get_factory_clients():
-        queryset = FactoryClient.objects.filter(
-            factory_id=factory_id, factory__owner=user
-        )
+        # 멤버(소유자·매니저·조회자 등)는 해당 공장의 거래처 목록 조회 가능
+        queryset = FactoryClient.objects.filter(factory_id=factory_id)
         if filters and filters.q:
             qs = queryset.filter(name__icontains=filters.q)
             qs = qs.union(
