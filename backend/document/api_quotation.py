@@ -64,8 +64,8 @@ async def upload_file(request, payload: OcrIn):
 async def send_quotation_email(request, payload: QuotationEmailSendIn):
     factory_id = payload.factory_id
     user = request.auth
-    factory = await get_factory_by_id(int(factory_id), user)
-    await is_factory_member(int(factory_id), user)
+    await is_factory_member(int(factory_id), user)  # 멤버(소유자·관리자·조회자)만 전송 가능
+    factory = await get_factory_by_id(int(factory_id), None)  # 멤버 검증 후 공장 조회(소유자만이 아님)
 
     try:
         # PDF 파일 처리
