@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef } from 'react';
 import { useTranslations } from 'next-intl';
 import Modal from '@/ui/modal/modal';
 import MiniBtn from '@/ui/mini-btn';
@@ -16,29 +16,30 @@ interface CloudUploadModalProps {
   onClose: () => void;
 }
 
-type UploadTarget = 'factory' | 'client';
+type UploadTargetType = 'factory' | 'client';
 
 const CloudUploadModal = ({ onClose }: CloudUploadModalProps) => {
   const t = useTranslations('cloudUpload');
   const tCommon = useTranslations('common');
-  
-  const [uploadTarget, setUploadTarget] = useState<UploadTarget>('factory');
-  const [selectedClient, setSelectedClient] = useState<ClientResponseModel | null>(null);
+
+  const [uploadTarget, setUploadTarget] = useState<UploadTargetType>('factory');
+  const [selectedClient, setSelectedClient] =
+    useState<ClientResponseModel | null>(null);
   const [clientSearchTerm, setClientSearchTerm] = useState('');
   const [isClientDropdownOpen, setIsClientDropdownOpen] = useState(false);
-  const [files, setFiles] = useState<File[]>([]);
+  const [, setFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [hasFiles, setHasFiles] = useState(false);
   const dropzoneFilesRef = useRef<File[]>([]);
 
-  // 파일 크기 포맷팅 함수
-  const formatFileSize = (bytes: number): string => {
+  // 파일 크기 포맷팅 함수 (향후 표시용으로 사용 가능)
+  const _formatFileSize = (bytes: number): string => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
   };
 
   // 거래처 선택 핸들러
@@ -64,7 +65,7 @@ const CloudUploadModal = ({ onClose }: CloudUploadModalProps) => {
   const handleUpload = async () => {
     const selectedFiles = dropzoneFilesRef.current;
     if (selectedFiles.length === 0) return;
-    
+
     // 거래처 클라우드 선택 시 거래처가 선택되지 않았으면 업로드 불가
     if (uploadTarget === 'client' && !selectedClient) {
       alert('거래처를 선택해주세요.');
@@ -163,9 +164,7 @@ const CloudUploadModal = ({ onClose }: CloudUploadModalProps) => {
             >
               <div className="flex flex-col">
                 <h5 className="Heading-5 text-dg mb-1">내부 자료실</h5>
-                <p className="Re_Body-2 text-gr">
-                  내부 자료실에 저장됩니다
-                </p>
+                <p className="Re_Body-2 text-gr">내부 자료실에 저장됩니다</p>
               </div>
             </div>
 
@@ -192,7 +191,9 @@ const CloudUploadModal = ({ onClose }: CloudUploadModalProps) => {
                 }
               }}
             >
-              <div className={`p-4 rounded-[8px] ${uploadTarget === 'client' ? 'bg-secondary' : ''}`}>
+              <div
+                className={`p-4 rounded-[8px] ${uploadTarget === 'client' ? 'bg-secondary' : ''}`}
+              >
                 <div className="flex flex-col">
                   <h5 className="Heading-5 text-dg mb-1">거래처 자료실</h5>
                   <p className="Re_Body-2 text-gr">
@@ -203,7 +204,10 @@ const CloudUploadModal = ({ onClose }: CloudUploadModalProps) => {
 
               {/* 거래처 선택 UI (카드 내부) */}
               {uploadTarget === 'client' && (
-                <div className="p-4 border-t border-lg" onClick={(e) => e.stopPropagation()}>
+                <div
+                  className="p-4 border-t border-lg"
+                  onClick={(e) => e.stopPropagation()}
+                >
                   <div className="relative">
                     {!selectedClient ? (
                       <>
@@ -212,11 +216,19 @@ const CloudUploadModal = ({ onClose }: CloudUploadModalProps) => {
                           value={clientSearchTerm}
                           onChange={handleClientSearchChange}
                           onFocus={() => {
-                            if (clientSearchTerm && clientSearchTerm.length > 0) {
+                            if (
+                              clientSearchTerm &&
+                              clientSearchTerm.length > 0
+                            ) {
                               setIsClientDropdownOpen(true);
                             }
                           }}
-                          onBlur={() => setTimeout(() => setIsClientDropdownOpen(false), 150)}
+                          onBlur={() =>
+                            setTimeout(
+                              () => setIsClientDropdownOpen(false),
+                              150
+                            )
+                          }
                           width="w-full"
                         />
                         {isClientDropdownOpen && clientSearchTerm && (
@@ -234,7 +246,9 @@ const CloudUploadModal = ({ onClose }: CloudUploadModalProps) => {
                       </>
                     ) : (
                       <div className="flex justify-between items-center rounded-[8px]">
-                        <p className="Me_body-1 text-dg">{selectedClient.name}</p>
+                        <p className="Me_body-1 text-dg">
+                          {selectedClient.name}
+                        </p>
                         <IconBtn
                           icon={X}
                           iconSize={16}
@@ -285,7 +299,9 @@ const CloudUploadModal = ({ onClose }: CloudUploadModalProps) => {
               </div>
               <div className="flex items-center justify-center gap-2">
                 <Spinner />
-                <span className="Me_Body-2 text-gr">{Math.round(uploadProgress)}%</span>
+                <span className="Me_Body-2 text-gr">
+                  {Math.round(uploadProgress)}%
+                </span>
               </div>
             </div>
           </div>
@@ -303,7 +319,9 @@ const CloudUploadModal = ({ onClose }: CloudUploadModalProps) => {
               text={tCommon('upload')}
               variant="primary"
               onClick={handleUpload}
-              disabled={!hasFiles || (uploadTarget === 'client' && !selectedClient)}
+              disabled={
+                !hasFiles || (uploadTarget === 'client' && !selectedClient)
+              }
             />
           </div>
         )}

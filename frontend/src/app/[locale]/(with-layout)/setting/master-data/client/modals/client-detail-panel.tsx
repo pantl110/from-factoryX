@@ -2,7 +2,7 @@ import useGetClientDetail from '@/hooks/factory/factory-client/use-get-client-de
 import { useUpdateClient } from '@/hooks';
 import { ClientUpdateModel } from '@/types/data-model';
 import Panel from '@/ui/panel';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import MiniBtn from '@/ui/mini-btn';
 import useMemberStore from '@/store/member-store';
@@ -11,6 +11,7 @@ import { ClientInfo } from './client-info';
 import { AccountInfo } from './account-info';
 import { DepositorInfo } from './depositor-info';
 import { useTranslations } from 'next-intl';
+import ClientDocuments, { ClientDocumentItemModel } from './client-documents';
 
 interface ClientDetailPanelProps {
   clientId: number;
@@ -26,6 +27,10 @@ const ClientDetailPanel = ({
   const factoryId = useMemberStore((state) => state.factoryId);
   const { clientDetail, isLoading } = useGetClientDetail(clientId, factoryId);
   const { updateClient, isLoading: isUpdateLoading } = useUpdateClient();
+
+  const [clientDocuments, setClientDocuments] = useState<
+    ClientDocumentItemModel[]
+  >([]);
 
   const tCommon = useTranslations('common');
   const role = useMemberStore((state) => state.role);
@@ -107,6 +112,23 @@ const ClientDetailPanel = ({
     }
   };
 
+  const handleClientFilesSelected = (files: File[]) => {
+    if (!files.length) return;
+
+    const now = new Date();
+    const newItems: ClientDocumentItemModel[] = files.map((file, index) => ({
+      id: `${now.getTime()}-${file.name}-${index}`,
+      name: file.name,
+      size: file.size,
+      mimeType: file.type,
+      uploadedAt: now.toISOString(),
+      uploaderName: undefined,
+    }));
+
+    // 최신 업로드가 위로 오도록 prepend
+    setClientDocuments((prev) => [...newItems, ...prev]);
+  };
+
   return (
     <Panel
       title={tCommon('client')}
@@ -149,6 +171,14 @@ const ClientDetailPanel = ({
               hasSubscription={hasSubscription}
             />
           )}
+
+          <ClientDocuments
+            documents={clientDocuments}
+            isLoading={false}
+            isViewer={isViewer}
+            hasSubscription={hasSubscription}
+            onFilesSelected={handleClientFilesSelected}
+          />
         </div>
       )}
     </Panel>

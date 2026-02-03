@@ -341,9 +341,7 @@ const DropzoneArea = ({
         multiple
         accept={accept ? Object.keys(accept).join(',') : undefined}
         onChange={handleFileChange}
-        disabled={
-          typeof fileCount === 'number' && files.length >= fileCount
-        }
+        disabled={typeof fileCount === 'number' && files.length >= fileCount}
       />
 
       {/* 토스트 */}

@@ -55,7 +55,7 @@ const PrintView = ({
 
   return (
     <div className="w-full flex flex-col gap-6 px-8 pb-8">
-      <div className="sticky pt-8 top-0 bg-wh">
+      <div className="sticky pt-8 top-0 z-10 bg-wh">
         <div className="flex justify-between h-13 border-b border-lg">
           <h3 className="Heading-3">{documentTitle}</h3>
           <IconBtn icon={X} onClick={onClose || (() => {})} />

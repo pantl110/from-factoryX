@@ -587,7 +587,6 @@ const TopBarContent = ({
   return (
     <>
       <div className="flex items-center gap-1">
-
         <div
           className="flex items-center justify-center w-11 h-11 relative cursor-pointer hover:bg-bg rounded-lg"
           onClick={onNotificationClick}

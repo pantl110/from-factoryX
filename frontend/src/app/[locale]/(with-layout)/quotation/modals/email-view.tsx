@@ -218,7 +218,7 @@ const EmailView = ({
   return (
     <>
       <div className="w-full flex flex-col gap-6 px-8 pb-8">
-        <div className="sticky pt-8 top-0 bg-wh">
+        <div className="sticky pt-8 top-0 z-10 bg-wh">
           <div className="flex justify-between h-13 border-b border-lg">
             <h3 className="Heading-3">{documentTitle}</h3>
             <button
@@ -229,7 +229,7 @@ const EmailView = ({
             </button>
           </div>
 
-          <div className="py-6 w-full flex justify-between border-b border-lg mb-6">
+          <div className="py-6 w-full flex justify-between border-b border-lg">
             <div>
               <h2 className="Heading-2">
                 {t('sendEmailTitle', { documentTitle })}
@@ -261,8 +261,10 @@ const EmailView = ({
               />
             </div>
           </div>
+        </div>
 
-          {/* 화면 표시용 */}
+        {/* 화면 표시용 */}
+        <div>
           <OrderDocumentView
             documentTitle={documentTitle}
             clientData={clientData}

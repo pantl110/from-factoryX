@@ -689,8 +689,8 @@ export interface ProductMaterialConnectionModel {
 export interface MaterialProductConnectionResponseModel {
   message: string;
   created_connections:
-  | MaterialProductConnectionModel[]
-  | ProductMaterialConnectionModel[]; // 생성된 연결 목록
+    | MaterialProductConnectionModel[]
+    | ProductMaterialConnectionModel[]; // 생성된 연결 목록
   total_count: number; // 생성된 총 연결 수
 }
 
@@ -1667,11 +1667,11 @@ export interface PublishedDocumentFilterModel {
    * - 'sales-tax': 매출 세금계산서만 조회
    */
   document_type?:
-  | 'tax'
-  | 'cash-receipt'
-  | 'purchase'
-  | 'purchase-tax'
-  | 'sales-tax';
+    | 'tax'
+    | 'cash-receipt'
+    | 'purchase'
+    | 'purchase-tax'
+    | 'sales-tax';
   q?: string; // 검색어
   start_date?: string; // 시작일 (YYYY-MM-DD)
   end_date?: string; // 종료일 (YYYY-MM-DD)

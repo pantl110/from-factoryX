@@ -1748,6 +1748,9 @@
         },
         "tableHeader": {
           "clientType": "고객 유형"
+        },
+        "documents": {
+          "title": "자료실"
         }
       },
       "facility": {
