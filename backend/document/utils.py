@@ -68,7 +68,6 @@ OCR_REQUEST_ITEM_KEYS = ("item_name", "item_code", "spec", "unit", "quantity", "
 
 OCR_PARSE_ERROR_MESSAGE = (
     "OCR 결과를 정리하는 중 오류가 발생했습니다. "
-    "문서가 흐리거나 손글씨가 많으면 실패할 수 있습니다. 파일을 확인한 뒤 다시 시도해 주세요."
 )
 
 
@@ -192,13 +191,21 @@ def parse_quote_text(
     다음 문서(견적서 OCR 결과)에서 거래처 정보(client_info)와 요청 정보(request_items)를 추출하여 JSON 으로만 응답하십시오.
 
     • client_info 는 업체당 1개의 dict 로, 아래 키를 모두 포함합니다.
-    company_name, registration_number, ceo_name, delivery_date, business_type,
-    category, address, manager_name, email, fax_number, call_number
-    값이 없으면 빈 문자열로 설정합니다.
+      company_name, registration_number, ceo_name, delivery_date, business_type,
+      category, address, manager_name, email, fax_number, call_number
+      값이 없으면 빈 문자열로 설정합니다.
 
     • request_items 는 품목별 dict 들의 리스트이며, 각 dict 는 다음 키를 포함합니다.
-    item_name, item_code, spec, unit, quantity, unit_price
-    값이 없으면 빈 문자열로 설정합니다.
+      item_name, item_code, spec, unit, quantity, unit_price
+      값이 없으면 빈 문자열로 설정합니다.
+
+    • 숫자 처리 규칙 (quantity, unit_price)
+      - quantity 와 unit_price 에는 문서에 적힌 숫자 문자열을 그대로 복사합니다.
+      - 쉼표(,)와 온점(.)의 위치를 임의로 변경하거나 제거/추가하지 마십시오.
+      - 예: 문서에 '5,044.00' 이 적혀 있으면, 출력도 반드시 '5,044.00' 이어야 합니다.
+        '5044', '504,400', '5.044,00' 등으로 바꾸면 안 됩니다.
+      - quantity 에는 수량 의미의 컬럼(예: '수량', 'QTY')의 값을,
+        unit_price 에는 단가/가격 의미의 컬럼(예: '단가', '단가(원)', 'Unit Price')의 값을 넣으십시오.
 
     다른 내용, 설명, 마크다운은 포함하지 마십시오.
 
