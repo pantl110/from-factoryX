@@ -10,6 +10,7 @@ import re
 from datetime import date, datetime
 from typing import Any, Dict, List, Tuple
 
+import fitz  # PyMuPDF
 import requests
 from dotenv import load_dotenv
 from langchain.output_parsers import ResponseSchema, StructuredOutputParser
@@ -84,6 +85,42 @@ def _ocr_filename_and_content_type(content: bytes) -> Tuple[str, str]:
     if content.startswith(b"RIFF") and content[8:12] == b"WEBP":
         return "document.webp", "image/webp"
     return "document.pdf", "application/octet-stream"
+
+
+def render_pdf_first_page_to_image(
+    content: bytes, max_size: int = 512
+) -> bytes:
+    """
+    PDF 바이트에서 첫 페이지를 PNG 이미지로 렌더링해 반환.
+
+    - max_size: 긴 변 기준 최대 픽셀 수 (기본 512)
+    """
+    try:
+        doc = fitz.open(stream=content, filetype="pdf")
+    except Exception as e:
+        raise ValueError(f"PDF를 여는 중 오류가 발생했습니다: {e}") from e
+
+    if len(doc) == 0:
+        raise ValueError("페이지가 없는 PDF입니다.")
+
+    page = doc[0]
+
+    # 기본 렌더링으로 크기를 확인
+    pix = page.get_pixmap()
+    width, height = pix.width, pix.height
+
+    # 긴 변 기준으로 축소 비율 계산
+    longest = max(width, height)
+    scale = 1.0
+    if longest > max_size:
+        scale = max_size / float(longest)
+
+    if scale != 1.0:
+        mat = fitz.Matrix(scale, scale)
+        pix = page.get_pixmap(matrix=mat)
+
+    # PNG 바이트로 변환
+    return pix.tobytes("png")
 
 
 def extract_text_from_upstage(digitize_json: Dict[str, Any]) -> str:

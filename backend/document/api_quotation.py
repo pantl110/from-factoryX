@@ -2,7 +2,7 @@ from ninja import Router
 from ninja.errors import HttpError
 from ninja.responses import Response
 from api.security import jwt_auth
-from document.utils import content_ocr
+from document.utils import content_ocr, render_pdf_first_page_to_image
 from document.schemas.inbound import OcrIn, QuotationEmailSendIn
 from document.schemas.outbound import QuotationDetailOut, OCRResultOut
 from document.models import Quotation, QuotationProduct
@@ -45,11 +45,26 @@ async def upload_file(request, payload: OcrIn):
         # Read the file as binary data
         file_content = payload.data
         content = base64.b64decode(file_content)
+
+        # OCR 결과 (client_info / request_items)
         data = await content_ocr(content)
-        # print(data)
-        # Here you would process the binary data as needed
-        # For now, just returning basic file information
+
+        # PDF인 경우에는 항상 썸네일 생성 시도
+        try:
+            if content.startswith(b"%PDF"):
+                thumbnail_bytes = render_pdf_first_page_to_image(content)
+                thumbnail_b64 = base64.b64encode(thumbnail_bytes).decode("ascii")
+                data["thumbnail_image"] = thumbnail_b64
+            else:
+                # 이미지 등 비-PDF는 썸네일 생성하지 않음
+                data["thumbnail_image"] = None
+        except Exception:
+            # 썸네일 생성 실패 시 OCR 데이터만 반환
+            data["thumbnail_image"] = None
+
         return data
+    except HttpError:
+        raise
     except Exception as e:
         raise HttpError(500, f"OCR 중 오류 발생: {str(e)}")
 

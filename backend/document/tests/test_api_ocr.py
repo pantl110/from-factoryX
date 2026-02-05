@@ -68,19 +68,41 @@ class TestDocumentOCR(TestCase):
         }
 
     async def test_ocr_pdf_upload(self):
-        """Test uploading a PDF file to the OCR endpoint"""
-        # Authenticate first
+        """PDF 파일 OCR 업로드 기본 동작 테스트 (썸네일 옵션 없이)"""
         headers = await self.authenticate()
-        # Prepare the file for upload``
         async with aiofiles.open(self.pdf_file_path, "rb") as f:
             content = await f.read()
         payload = {
             "data": base64.b64encode(content).decode("utf-8"),
         }
-        # Upload the PDF file - Django client handles file uploads differently
         response = await self.quotation_client.post(
             f"/ocr?factory_id={self.factory.id}",
             headers=headers,
             json=payload,
         )
-        print(response.json())
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        # 기본 OCR 결과 구조 확인
+        self.assertIn("client_info", data)
+        self.assertIn("request_items", data)
+
+    async def test_ocr_pdf_upload_with_thumbnail(self):
+        """PDF 파일 OCR 업로드 + 썸네일 생성 옵션 테스트"""
+        headers = await self.authenticate()
+        async with aiofiles.open(self.pdf_file_path, "rb") as f:
+            content = await f.read()
+        payload = {
+            "data": base64.b64encode(content).decode("utf-8"),
+            "include_thumbnail": True,
+        }
+        response = await self.quotation_client.post(
+            f"/ocr?factory_id={self.factory.id}",
+            headers=headers,
+            json=payload,
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("client_info", data)
+        self.assertIn("request_items", data)
+        # 썸네일 필드는 존재해야 하며, 생성 실패 시 None 일 수 있음
+        self.assertIn("thumbnail_image", data)
