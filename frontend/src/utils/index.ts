@@ -53,3 +53,6 @@ export { calculateAvgProductionTime } from './calculate-production-time';
 
 // Project utilities
 export { getProjectStatusColor } from './get-project-status-color';
+
+// String utilities
+export { normalizeForMatch } from './normalize-for-match';

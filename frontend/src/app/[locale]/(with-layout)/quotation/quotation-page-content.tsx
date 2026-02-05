@@ -761,6 +761,18 @@ const QuotationPageContent = () => {
                     ocrData?.request_items as OcrRequestItemModel[]
                   }
                   productList={productList}
+                  onOcrUnmatchedProducts={() => {
+                    setToastContent({
+                      text: tQuotation(
+                        'requestInfo.toast.ocrUnmatchedProducts'
+                      ),
+                      subtext: tQuotation(
+                        'requestInfo.toast.ocrUnmatchedProductsSubtext'
+                      ),
+                      type: 'primary',
+                    });
+                    showToast();
+                  }}
                 />
               </div>
             </div>

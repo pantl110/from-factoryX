@@ -1688,6 +1688,10 @@
       "empty": {
         "title": "No request info yet.",
         "description": "Add products to measure unit prices."
+      },
+      "toast": {
+        "ocrUnmatchedProducts": "Some items couldn't be matched to a product.",
+        "ocrUnmatchedProductsSubtext": "Search by product name to fill in the empty rows."
       }
     },
     "tabArea": {

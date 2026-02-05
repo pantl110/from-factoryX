@@ -1689,6 +1689,10 @@
       "empty": {
         "title": "요청 정보가 아직 없어요.",
         "description": "제품을 추가해서 단가를 측정해 보세요."
+      },
+      "toast": {
+        "ocrUnmatchedProducts": "일부 항목은 제품과 매칭되지 않았어요.",
+        "ocrUnmatchedProductsSubtext": "제품명 검색으로 비어 있는 칸을 채워 주세요."
       }
     },
     "tabArea": {

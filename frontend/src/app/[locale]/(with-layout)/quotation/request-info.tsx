@@ -16,6 +16,7 @@ import PriceInfo from '@/ui/price-info';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import { useTranslations } from 'next-intl';
+import { normalizeForMatch } from '@/utils';
 
 interface RequestInfoProps {
   onProductClick: (productId: number) => void;
@@ -24,6 +25,7 @@ interface RequestInfoProps {
   quotationId?: number;
   ocrRequestData?: OcrRequestItemModel[];
   productList?: ProductResponseModel[];
+  onOcrUnmatchedProducts?: () => void;
 }
 
 const RequestInfo = ({
@@ -33,6 +35,7 @@ const RequestInfo = ({
   quotationId,
   ocrRequestData,
   productList,
+  onOcrUnmatchedProducts,
 }: RequestInfoProps) => {
   const tCommon = useTranslations('common');
   const tRequestInfo = useTranslations('quotation.requestInfo');
@@ -104,18 +107,29 @@ const RequestInfo = ({
 
       // OCR 데이터로 제품 목록 생성
       const ocrProducts = ocrRequestData.map((item: OcrRequestItemModel) => {
-        // 품목코드로 기존 제품 찾기
-        const existingProduct = productList?.find(
-          (p) => p.code === item.item_code
+        // 1단계: 품목코드로 기존 제품 찾기 (양쪽 정규화 후 비교)
+        let existingProduct = productList?.find(
+          (p) => normalizeForMatch(p.code) === normalizeForMatch(item.item_code)
         );
+
+        // 2단계: 없으면 제품명으로 후보 조회 (정확히 1개일 때만 매칭)
+        if (!existingProduct && productList) {
+          const byName = productList.filter(
+            (p) =>
+              normalizeForMatch(p.name) === normalizeForMatch(item.item_name)
+          );
+          if (byName.length === 1) {
+            existingProduct = byName[0];
+          }
+        }
 
         const { id: productId, code, name, spec, unit } = existingProduct || {};
         return {
-          productId: productId || null,
-          product_code: code || '',
-          product_name: name || '',
-          spec: spec || '',
-          unit: unit || '',
+          productId: productId ?? null,
+          product_code: code ?? '',
+          product_name: name ?? '',
+          spec: spec ?? '',
+          unit: unit ?? '',
           quantity: parseNumber(item.quantity),
           unit_price: parseNumber(item.unit_price),
           supply_amount: null,
@@ -128,8 +142,16 @@ const RequestInfo = ({
 
       // 상위 컴포넌트에 제품 목록 전달
       onProductsChange?.(ocrProducts);
+
+      // 제품 정보가 비어 있는 행이 하나라도 있으면 안내 콜백
+      const hasUnmatched = ocrProducts.some(
+        (p) => !p.productId || !p.product_code
+      );
+      if (hasUnmatched) {
+        onOcrUnmatchedProducts?.();
+      }
     }
-  }, [ocrRequestData, productList, onProductsChange]);
+  }, [ocrRequestData, productList, onProductsChange, onOcrUnmatchedProducts]);
 
   // fields가 변경될 때마다 유효성 검사 해서 hasQuotationProducts 업데이트하여 버튼 disabled 여부 결정
   useEffect(() => {
