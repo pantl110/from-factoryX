@@ -9,6 +9,7 @@ import os
 import re
 from datetime import date, datetime
 from typing import Any, Dict, List, Tuple
+import logging
 
 import fitz  # PyMuPDF
 import requests
@@ -21,6 +22,10 @@ from ninja.errors import HttpError
 from document.models import Quotation, QuotationProduct, WorkInstruction, WorkInstructionHistory
 
 load_dotenv()
+
+
+# module-level logger
+logger = logging.getLogger(__name__)
 
 
 # -----------------------------------------------------------------------------
@@ -232,11 +237,24 @@ def parse_quote_text(
 
     raw = getattr(result, "content", str(result))
 
+    # 디버깅: LLM 원본 출력 일부 로깅
+    try:
+        logger.info("[OCR] LLM raw output sample: %s", raw[:500])
+    except Exception:
+        pass
+
     try:
         return parser.parse(result)
     except Exception:
         try:
             cleaned = _clean_json_string(raw)
+
+            # 디버깅: 정제된 JSON 문자열 일부 로깅
+            try:
+                logger.info("[OCR] Cleaned JSON string sample: %s", cleaned[:500])
+            except Exception:
+                pass
+
             data = json.loads(cleaned)
             return _normalize_parsed_quote(data)
         except (json.JSONDecodeError, TypeError, KeyError):
@@ -264,8 +282,45 @@ async def content_ocr(file: bytes) -> Dict[str, Any]:
 
     try:
         response = requests.post(url, headers=headers, files=files, data=data)
-        text = extract_text_from_upstage(response.json())
-        return parse_quote_text(text)
+        digitize_json = response.json()
+
+        # 디버깅: Upstage OCR 원본 응답 일부 로깅
+        try:
+            logger.info(
+                "[OCR] Upstage response sample: %s",
+                str(digitize_json)[:500],
+            )
+        except Exception:
+            # 로깅 실패는 OCR 흐름에 영향을 주지 않음
+            pass
+
+        text = extract_text_from_upstage(digitize_json)
+
+        # 디버깅: LLM에 전달되는 OCR 텍스트 일부 로깅
+        try:
+            logger.info(
+                "[OCR] Extracted text sample: %s",
+                text[:500],
+            )
+        except Exception:
+            pass
+
+        parsed = parse_quote_text(text)
+
+        # 디버깅: 최종 품목별 수량/단가 요약 로깅
+        try:
+            for idx, item in enumerate(parsed.get("request_items", [])):
+                logger.info(
+                    "[OCR] Parsed item #%d: name=%s quantity=%s unit_price=%s",
+                    idx,
+                    item.get("item_name"),
+                    item.get("quantity"),
+                    item.get("unit_price"),
+                )
+        except Exception:
+            pass
+
+        return parsed
     except HttpError:
         raise
     except Exception as e:
