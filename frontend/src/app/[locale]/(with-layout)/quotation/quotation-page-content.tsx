@@ -124,6 +124,17 @@ const QuotationPageContent = () => {
     type: 'red',
   });
 
+  const handleOcrUnmatchedProducts = useCallback(() => {
+    setToastContent({
+      text: tQuotation('requestInfo.toast.ocrUnmatchedProducts'),
+      subtext: tQuotation(
+        'requestInfo.toast.ocrUnmatchedProductsSubtext'
+      ),
+      type: 'primary',
+    });
+    showToast();
+  }, [tQuotation, showToast]);
+
   // RequestInfo에서 받은 products 데이터
   const [quotationProducts, setQuotationProducts] = useState<
     QuotationProductDetailResponseModel[]
@@ -761,18 +772,7 @@ const QuotationPageContent = () => {
                     ocrData?.request_items as OcrRequestItemModel[]
                   }
                   productList={productList}
-                  onOcrUnmatchedProducts={() => {
-                    setToastContent({
-                      text: tQuotation(
-                        'requestInfo.toast.ocrUnmatchedProducts'
-                      ),
-                      subtext: tQuotation(
-                        'requestInfo.toast.ocrUnmatchedProductsSubtext'
-                      ),
-                      type: 'primary',
-                    });
-                    showToast();
-                  }}
+                  onOcrUnmatchedProducts={handleOcrUnmatchedProducts}
                 />
               </div>
             </div>
