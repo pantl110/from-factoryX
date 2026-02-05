@@ -102,9 +102,13 @@ const RequestInfo = ({
       const parseNumber = (val?: string | number | null) => {
         if (val === null || val === undefined) return null;
         if (typeof val === 'number') return val;
-        const digits = val.toString().replace(/[^0-9]/g, '');
-        if (!digits) return null;
-        const num = parseInt(digits, 10);
+
+        // 쉼표(,)만 제거하고 소수점(.)은 유지해서
+        // "100.0" -> 100, "5,040.00" -> 5040 으로 파싱되도록 처리
+        const normalized = val.toString().replace(/,/g, '').trim();
+        if (!normalized) return null;
+
+        const num = parseFloat(normalized);
         return Number.isNaN(num) ? null : num;
       };
 

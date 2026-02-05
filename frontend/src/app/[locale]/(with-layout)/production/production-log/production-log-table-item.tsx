@@ -12,6 +12,7 @@ import useSubscriptionStore from '@/store/subscription-store';
 import { ProductionResultPanel } from './production-result-panel';
 import { RoundChip } from '@/ui';
 import { InventoryStatusColorMap } from '@/types/status-type';
+import { calculateAvgProductionTime } from '@/utils/calculate-production-time';
 
 interface ProductionLogTableItemProps {
   plan: ProjectPlanModel;
@@ -73,6 +74,13 @@ const ProductionLogTableItem = ({
   const watchedQuantity = watch('quantity');
   const watchedStartDate = watch('start_date');
   const watchedEndDate = watch('end_date');
+
+  // 시작/종료 시간과 수량으로 한 개당 소요 시간(초) 계산
+  const calculatedAvgTime = calculateAvgProductionTime(
+    watchedStartDate,
+    watchedEndDate,
+    watchedQuantity
+  );
 
   const handleFormChange = (
     field: 'quantity' | 'start_date' | 'end_date',
@@ -205,9 +213,17 @@ const ProductionLogTableItem = ({
           />
         </div>
         <p className="w-[140px] px-3 cursor-default">
-          {plan.avg_production_time !== null
-            ? `${plan.avg_production_time.toLocaleString()}초`
-            : '-'}
+          {(() => {
+            // 계산된 값이 있으면 우선 사용, 없으면 백엔드 값 사용
+            const displayTime =
+              calculatedAvgTime !== null
+                ? calculatedAvgTime
+                : (plan.avg_production_time ?? null);
+
+            return displayTime !== null && displayTime !== undefined
+              ? `${displayTime.toLocaleString()}초`
+              : '-';
+          })()}
         </p>
         <div className="w-[150px] px-2">
           <div className="flex items-center gap-2.5">

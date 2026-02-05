@@ -42,12 +42,12 @@ const FacilityHistoryItem = ({ plan }: FacilityHistoryItemProps) => {
         <p
           className="flex-1 px-3 truncate"
           title={
-            avgProductionTime !== '-'
+            avgProductionTime !== null
               ? `${avgProductionTime}${tCommon('seconds')}`
               : '-'
           }
         >
-          {avgProductionTime !== '-'
+          {avgProductionTime !== null
             ? `${avgProductionTime}${tCommon('seconds')}`
             : '-'}
         </p>

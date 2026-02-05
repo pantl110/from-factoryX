@@ -54,16 +54,17 @@ const ImagePreview = ({
   const tDocumentType = useTranslations('document.type');
   const [isEnlargeOpen, setIsEnlargeOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const { imageUrl: storeImageUrl, thumbnailUrl, setOcrData, ocrData } =
-    useOcrStore();
+  const {
+    imageUrl: storeImageUrl,
+    thumbnailUrl,
+    setOcrData,
+    ocrData,
+  } = useOcrStore();
   const role = useMemberStore((state) => state.role);
   // 원본 파일 URL: prop으로 전달된 imageUrl이 있으면 사용, 없으면 store에서 가져온 것 사용
   const displayFileUrl = propImageUrl || storeImageUrl || '';
 
-  const isPdf = useMemo(
-    () => isPdfUrl(displayFileUrl),
-    [displayFileUrl]
-  );
+  const isPdf = useMemo(() => isPdfUrl(displayFileUrl), [displayFileUrl]);
 
   // 미리보기용 URL
   const displayImageUrl = useMemo(

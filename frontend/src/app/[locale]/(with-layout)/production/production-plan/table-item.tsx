@@ -18,6 +18,7 @@ import {
 import { useState, useEffect } from 'react';
 import ProductDetail from '../../stock/product/product-detail';
 import { formatDateTime } from '@/utils/format-number';
+import { calculateAvgProductionTime } from '@/utils/calculate-production-time';
 import { useForm, Controller } from 'react-hook-form';
 import MiniBtn from '@/ui/mini-btn';
 import useMemberStore from '@/store/member-store';
@@ -143,6 +144,13 @@ const TableItem = ({
   const watchedEquipmentId = watch('equipment_id');
   const watchedStartDate = watch('start_date');
   const watchedEndDate = watch('end_date');
+
+  // 시작/종료 시간과 수량으로 한 개당 소요 시간(초) 계산
+  const calculatedAvgTime = calculateAvgProductionTime(
+    watchedStartDate,
+    watchedEndDate,
+    watchedQuantity
+  );
 
   // 원본 데이터와 비교하여 실제 변경사항이 있는지 확인
   const originalStartDate = item.start_date || '';
@@ -378,9 +386,17 @@ const TableItem = ({
     ),
     productionTimePerUnit: (
       <span className="cursor-default">
-        {item.avg_production_time !== null
-          ? `${item.avg_production_time.toLocaleString()}${tCommon('seconds')}`
-          : '-'}
+        {(() => {
+          // 계산된 값이 있으면 우선 사용, 없으면 백엔드에서 내려준 avg_production_time 사용
+          const displayTime =
+            calculatedAvgTime !== null
+              ? calculatedAvgTime
+              : (item.avg_production_time ?? null);
+
+          return displayTime !== null && displayTime !== undefined
+            ? `${displayTime.toLocaleString()}${tCommon('seconds')}`
+            : '-';
+        })()}
       </span>
     ),
     expectedCompletionDate: (

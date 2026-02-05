@@ -5,15 +5,15 @@
  * @param startDate - 생산 시작일 (ISO 문자열 또는 Date 객체)
  * @param endDate - 생산 종료일 (ISO 문자열 또는 Date 객체)
  * @param quantity - 생산 수량
- * @returns 계산된 단위당 시간 (초 단위, 반올림하여 정수로 반환), 계산 불가능한 경우 '-'
+ * @returns 계산된 단위당 시간 (초 단위, 반올림하여 정수로 반환), 계산 불가능한 경우 null
  */
 export const calculateAvgProductionTime = (
   startDate: string | Date | null | undefined,
   endDate: string | Date | null | undefined,
   quantity: number | null | undefined
-): string => {
+): number | null => {
   if (!startDate || !endDate || !quantity || quantity === 0) {
-    return '-';
+    return null;
   }
 
   try {
@@ -22,7 +22,7 @@ export const calculateAvgProductionTime = (
 
     // 유효한 날짜인지 확인
     if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-      return '-';
+      return null;
     }
 
     // 날짜 차이를 밀리초로 계산
@@ -33,8 +33,8 @@ export const calculateAvgProductionTime = (
     const avgTime = diffInSeconds / quantity;
 
     // 반올림하여 정수로 변환
-    return Math.round(avgTime).toString();
+    return Math.round(avgTime);
   } catch {
-    return '-';
+    return null;
   }
 };
