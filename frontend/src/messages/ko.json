@@ -1685,6 +1685,7 @@
     },
     "requestInfo": {
       "title": "요청 정보",
+      "orderTitle": "주문 정보",
       "addProduct": "제품 추가하기",
       "empty": {
         "title": "요청 정보가 아직 없어요.",

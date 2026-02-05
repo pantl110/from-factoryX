@@ -8,6 +8,7 @@ import {
   QuotationProductDetailResponseModel,
   ProductResponseModel,
   OcrRequestItemModel,
+  ProjectStatusType,
 } from '@/types/data-model';
 import ProductEnrollmentDropdown from './modals/product-enrollment-dropdown';
 import ProductDetail from '../stock/product/product-detail';
@@ -26,6 +27,7 @@ interface RequestInfoProps {
   ocrRequestData?: OcrRequestItemModel[];
   productList?: ProductResponseModel[];
   onOcrUnmatchedProducts?: () => void;
+  projectStatus: ProjectStatusType;
 }
 
 const RequestInfo = ({
@@ -36,6 +38,7 @@ const RequestInfo = ({
   ocrRequestData,
   productList,
   onOcrUnmatchedProducts,
+  projectStatus,
 }: RequestInfoProps) => {
   const tCommon = useTranslations('common');
   const tRequestInfo = useTranslations('quotation.requestInfo');
@@ -261,7 +264,11 @@ const RequestInfo = ({
   return (
     <>
       <div className="flex justify-between items-center relative">
-        <h3 className="Heading-3">{tRequestInfo('title')}</h3>
+        <h3 className="Heading-3">
+          {projectStatus === 'confirmed'
+            ? tRequestInfo('orderTitle')
+            : tRequestInfo('title')}
+        </h3>
         <MiniBtn
           text={tRequestInfo('addProduct')}
           textColor="text-dg"
@@ -296,7 +303,7 @@ const RequestInfo = ({
             <table className="w-full min-w-[938px]">
               <thead>
                 <tr className="flex items-center h-12 border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
-                  <th className="text-left px-3 flex-1">
+                  <th className="text-left px-3 flex-[1.5]">
                     {tCommon('productName')}
                   </th>
                   <th className="text-left px-3 flex-1">

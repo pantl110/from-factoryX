@@ -773,6 +773,7 @@ const QuotationPageContent = () => {
                   }
                   productList={productList}
                   onOcrUnmatchedProducts={handleOcrUnmatchedProducts}
+                  projectStatus={projectStatus}
                 />
               </div>
             </div>

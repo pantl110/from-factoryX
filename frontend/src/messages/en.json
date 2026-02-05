@@ -1684,6 +1684,7 @@
     },
     "requestInfo": {
       "title": "Request Info",
+      "orderTitle": "Order Info",
       "addProduct": "Add Product",
       "empty": {
         "title": "No request info yet.",

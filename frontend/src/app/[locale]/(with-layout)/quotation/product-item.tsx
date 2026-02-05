@@ -62,7 +62,7 @@ const ProductItem = ({
         onClick={!onlyRead ? onClick : undefined}
       >
         <td
-          className="flex-1 px-3 flex items-center gap-1 relative min-w-0"
+          className="flex-[1.5] px-3 flex items-center gap-1 relative min-w-0"
           title={data?.product_name}
           onClick={
             !onlyRead
