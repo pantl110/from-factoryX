@@ -885,6 +885,8 @@ export interface OcrClientInfoModel {
 export interface OcrDataModel {
   client_info: OcrClientInfoModel; // 클라이언트 정보
   request_items: OcrRequestItemModel[]; // 요청 제품 리스트
+  // 옵션: PDF 첫 페이지를 렌더링한 썸네일 이미지(Base64 인코딩된 PNG)
+  thumbnail_image?: string | null;
 }
 
 // 견적서 상세 조회

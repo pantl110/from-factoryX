@@ -11,7 +11,8 @@ interface OcrUploadResponseModel {
   status: string;
   message?: string;
   data?: OcrDataModel; // OCR 결과 데이터
-  imageUrl?: string; // S3에 업로드된 이미지 URL
+  imageUrl?: string; // S3에 업로드된 원본 파일 URL (이미지 또는 PDF)
+  thumbnailUrl?: string; // PDF 첫 페이지 썸네일 (data URL)
 }
 
 const useOcrUpload = () => {
@@ -70,7 +71,11 @@ const useOcrUpload = () => {
       );
 
       if (response.ok) {
-        const result = await response.json();
+        const result: OcrDataModel = await response.json();
+
+        const thumbnailUrl = result.thumbnail_image
+          ? `data:image/png;base64,${result.thumbnail_image}`
+          : undefined;
 
         // OCR API는 성공 시 직접 데이터를 반환
         // client_info와 request_items가 있으면 성공으로 간주
@@ -79,6 +84,7 @@ const useOcrUpload = () => {
             status: 'success',
             data: result,
             imageUrl,
+            thumbnailUrl,
             message: 'OCR 처리에 성공했습니다.',
           };
         } else {
@@ -87,6 +93,7 @@ const useOcrUpload = () => {
             status: 'error',
             message: 'OCR 결과 데이터 형식이 올바르지 않습니다.',
             imageUrl, // OCR 실패 시에도 업로드된 이미지 URL 포함
+            thumbnailUrl,
           };
         }
       } else {

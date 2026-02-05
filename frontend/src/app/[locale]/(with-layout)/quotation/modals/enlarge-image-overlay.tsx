@@ -4,12 +4,16 @@ import Image from 'next/image';
 import { useTranslations } from 'next-intl';
 
 interface EnlargeImageOverlayProps {
-  imageUrl: string;
+  fileUrl: string;
+  previewUrl?: string;
+  isPdf?: boolean;
   onClose: () => void;
 }
 
 const EnlargeImageOverlay = ({
-  imageUrl,
+  fileUrl,
+  previewUrl,
+  isPdf = false,
   onClose,
 }: EnlargeImageOverlayProps) => {
   const t = useTranslations('quotation.enlargeImage');
@@ -33,20 +37,32 @@ const EnlargeImageOverlay = ({
       }}
     >
       <div
-        className="relative h-[85%] flex items-center justify-center"
+        className="relative h-[85%] w-[90%] max-w-[1000px] flex items-center justify-center"
         onClick={(e) => e.stopPropagation()}
       >
-        <Image
-          src={imageUrl}
-          alt={t('alt')}
-          width={800}
-          height={600}
-          className="h-full w-fit object-contain rounded-lg"
-          quality={100}
-          unoptimized={true}
-        />
+        {isPdf ? (
+          <Image
+            src={previewUrl || fileUrl}
+            alt={t('alt')}
+            width={800}
+            height={600}
+            className="h-full w-fit object-contain rounded-lg"
+            quality={100}
+            unoptimized={true}
+          />
+        ) : (
+          <Image
+            src={fileUrl}
+            alt={t('alt')}
+            width={800}
+            height={600}
+            className="h-full w-fit object-contain rounded-lg"
+            quality={100}
+            unoptimized={true}
+          />
+        )}
         <button
-          className="absolute top-0 right-0 z-1 w-10 h-10 flex items-center justify-center bg-[#cfcfcf] rounded-bl-lg rounded-tr-lg hover:bg-gr transition-colors duration-200 z-1"
+          className="absolute top-0 right-0 z-10 w-10 h-10 flex items-center justify-center bg-[#cfcfcf] rounded-bl-lg rounded-tr-lg hover:bg-gr transition-colors duration-200"
           onClick={onClose}
         >
           <ArrowsInSimple size={20} className="text-sv" />

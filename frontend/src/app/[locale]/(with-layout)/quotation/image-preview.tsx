@@ -1,5 +1,5 @@
 import { ArrowsOutIcon, PencilSimple } from '@phosphor-icons/react/dist/ssr';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import EnlargeImageOverlay from './modals/enlarge-image-overlay';
 import Image from 'next/image';
 import ExcelUploadModal from '../project/process/modals/excel-upload-modal';
@@ -15,6 +15,36 @@ interface ImagePreviewProps {
   onOcrDataChange?: (ocrData: OcrDataModel) => void;
 }
 
+const isPdfUrl = (url: string) => {
+  if (!url) return false;
+  try {
+    const pathname = new URL(url).pathname.toLowerCase();
+    return pathname.endsWith('.pdf');
+  } catch {
+    return url.toLowerCase().includes('.pdf');
+  }
+};
+
+const getPreviewImageUrl = ({
+  fileUrl,
+  isPdf,
+  thumbnailUrl,
+  thumbnailBase64,
+}: {
+  fileUrl: string;
+  isPdf: boolean;
+  thumbnailUrl: string | null;
+  thumbnailBase64?: string | null;
+}) => {
+  if (isPdf) {
+    if (thumbnailUrl) return thumbnailUrl;
+    if (thumbnailBase64) {
+      return `data:image/png;base64,${thumbnailBase64}`;
+    }
+  }
+  return fileUrl;
+};
+
 const ImagePreview = ({
   className = '',
   projectStatus,
@@ -24,10 +54,28 @@ const ImagePreview = ({
   const tDocumentType = useTranslations('document.type');
   const [isEnlargeOpen, setIsEnlargeOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const { imageUrl: storeImageUrl, setOcrData, ocrData } = useOcrStore();
+  const { imageUrl: storeImageUrl, thumbnailUrl, setOcrData, ocrData } =
+    useOcrStore();
   const role = useMemberStore((state) => state.role);
-  // prop으로 전달된 imageUrl이 있으면 사용, 없으면 store에서 가져온 것 사용
-  const displayImageUrl = propImageUrl || storeImageUrl || '';
+  // 원본 파일 URL: prop으로 전달된 imageUrl이 있으면 사용, 없으면 store에서 가져온 것 사용
+  const displayFileUrl = propImageUrl || storeImageUrl || '';
+
+  const isPdf = useMemo(
+    () => isPdfUrl(displayFileUrl),
+    [displayFileUrl]
+  );
+
+  // 미리보기용 URL
+  const displayImageUrl = useMemo(
+    () =>
+      getPreviewImageUrl({
+        fileUrl: displayFileUrl,
+        isPdf,
+        thumbnailUrl,
+        thumbnailBase64: ocrData?.thumbnail_image ?? null,
+      }),
+    [displayFileUrl, isPdf, thumbnailUrl, ocrData?.thumbnail_image]
+  );
 
   // OCR 데이터가 변경될 때마다 부모 컴포넌트에 알림
   useEffect(() => {
@@ -36,12 +84,16 @@ const ImagePreview = ({
     }
   }, [ocrData, onOcrDataChange]);
 
-  const handleOcrComplete = (ocrData?: OcrDataModel, imageUrl?: string) => {
+  const handleOcrComplete = (
+    ocrData?: OcrDataModel,
+    imageUrl?: string,
+    thumbnailUrl?: string
+  ) => {
     if (ocrData) {
       // OCR 데이터가 있으면 견적서 생성 페이지로 이동
 
-      // Zustand store에 OCR 데이터 저장
-      setOcrData(ocrData, imageUrl || '');
+      // Zustand store에 OCR 데이터 + 원본 URL + 썸네일 저장
+      setOcrData(ocrData, imageUrl || '', thumbnailUrl);
 
       // 부모 컴포넌트에 OCR 데이터 변경 알림
       if (onOcrDataChange) {
@@ -86,7 +138,9 @@ const ImagePreview = ({
       </div>
       {isEnlargeOpen && (
         <EnlargeImageOverlay
-          imageUrl={displayImageUrl}
+          fileUrl={displayFileUrl}
+          previewUrl={displayImageUrl}
+          isPdf={isPdf}
           onClose={() => setIsEnlargeOpen(false)}
         />
       )}

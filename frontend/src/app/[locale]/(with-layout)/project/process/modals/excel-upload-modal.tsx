@@ -8,7 +8,7 @@ import Spinner from '@/ui/spinner';
 
 interface UploadModalProps {
   onClose: () => void;
-  onComplete: (ocrData?: OcrDataModel, imageUrl?: string) => void;
+  onComplete: (ocrData?: OcrDataModel, imageUrl?: string, thumbnailUrl?: string) => void;
   documentTitle: string;
 }
 
@@ -27,14 +27,14 @@ const ExcelUploadModal = ({
         const result = await uploadOcr(file);
         if (result.status === 'success') {
           // OCR 성공 시 데이터 반환
-          onComplete(result.data, result.imageUrl);
+          onComplete(result.data, result.imageUrl, result.thumbnailUrl);
           onClose(); // 모달 닫기 추가
         } else {
           // OCR 실패 시 에러 처리
           alert(
             t('errors.ocrFailed') + (result.message ? ' ' + result.message : '')
           );
-          onComplete(undefined, result.imageUrl); // OCR 실패 시에도 업로드된 이미지 URL 전달
+          onComplete(undefined, result.imageUrl, result.thumbnailUrl); // OCR 실패 시에도 업로드된 파일 URL·썸네일 전달
           onClose(); // 모달 닫기 추가
         }
       } catch (err) {
