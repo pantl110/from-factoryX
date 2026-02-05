@@ -88,12 +88,12 @@ def _ocr_filename_and_content_type(content: bytes) -> Tuple[str, str]:
 
 
 def render_pdf_first_page_to_image(
-    content: bytes, max_size: int = 512
+    content: bytes, zoom: float = 2.0
 ) -> bytes:
     """
     PDF 바이트에서 첫 페이지를 PNG 이미지로 렌더링해 반환.
 
-    - max_size: 긴 변 기준 최대 픽셀 수 (기본 512)
+    - zoom: 렌더링 배율 (기본 2.0 ≒ A4를 적당히 선명하게 보기 좋은 크기)
     """
     try:
         doc = fitz.open(stream=content, filetype="pdf")
@@ -105,21 +105,10 @@ def render_pdf_first_page_to_image(
 
     page = doc[0]
 
-    # 기본 렌더링으로 크기를 확인
-    pix = page.get_pixmap()
-    width, height = pix.width, pix.height
+    # 기본 72dpi 기준, zoom 배율로 렌더링 (예: 2.0 → 약 144dpi)
+    mat = fitz.Matrix(zoom, zoom)
+    pix = page.get_pixmap(matrix=mat)
 
-    # 긴 변 기준으로 축소 비율 계산
-    longest = max(width, height)
-    scale = 1.0
-    if longest > max_size:
-        scale = max_size / float(longest)
-
-    if scale != 1.0:
-        mat = fitz.Matrix(scale, scale)
-        pix = page.get_pixmap(matrix=mat)
-
-    # PNG 바이트로 변환
     return pix.tobytes("png")
 
 
