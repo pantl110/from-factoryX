@@ -816,7 +816,10 @@ const QuotationPageContent = () => {
 
       {/* 출력하기 버튼 */}
       {isPrintOpen && (
-        <OverlayView onClose={() => setIsPrintOpen(false)}>
+        <OverlayView
+          blockExit
+          onClose={() => setIsPrintOpen(false)}
+        >
           <PrintView
             documentTitle={
               projectStatus === 'confirmed'
@@ -837,7 +840,10 @@ const QuotationPageContent = () => {
       )}
       {/* 이메일 보내기 버튼 */}
       {isEmailOpen && (
-        <OverlayView onClose={() => setIsEmailOpen(false)}>
+        <OverlayView
+          blockExit
+          onClose={() => setIsEmailOpen(false)}
+        >
           <EmailView
             documentTitle={
               projectStatus === 'confirmed'

@@ -1,7 +1,7 @@
 'use client';
 
 import { X } from '@phosphor-icons/react/dist/ssr';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import IconBtn from '../icon-btn';
 
 interface ModalProps {
@@ -40,23 +40,10 @@ const Modal = ({
     };
   }, []);
 
-  const mouseDownOnBackdropRef = useRef(false);
-
   return (
     <div
       role="presentation"
       className="bg-black/50 w-full h-full fixed top-0 left-0 flex justify-center items-center z-50"
-      onMouseDown={(e) => {
-        mouseDownOnBackdropRef.current = e.target === e.currentTarget;
-      }}
-      onClick={(e) => {
-        if (e.target !== e.currentTarget) return;
-        if (!mouseDownOnBackdropRef.current) return;
-        onClose?.();
-      }}
-      onKeyDown={(e) => {
-        if (e.key === 'Escape') onClose?.();
-      }}
     >
       <div
         className={`bg-wh ${width} ${height} ${scroll ? '' : 'p-6'} rounded-lg max-h-[85%] ${className} shrink-0`}
