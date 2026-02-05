@@ -152,8 +152,8 @@ async def reset_password(request, data: PasswordResetIn):
             is_verified=True,
         )
 
-        # 만료 시간 확인 (인증 후 5분 내에 비밀번호 재설정해야 함)
-        if verification.created_at + timedelta(minutes=5) < datetime.now():
+        # 만료 시간 확인 (인증 후 3분 내에 비밀번호 재설정해야 함)
+        if verification.created_at + timedelta(minutes=3) < datetime.now():
             raise HttpError(400, "인증 시간이 만료되었습니다. 다시 인증해주세요.")
 
         # 사용자 찾기

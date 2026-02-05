@@ -232,24 +232,11 @@ def parse_quote_text(
 
     raw = getattr(result, "content", str(result))
 
-    # 디버깅: LLM 원본 출력 일부 콘솔 출력
-    try:
-        print("[OCR] LLM raw output sample:", raw[:500])
-    except Exception:
-        pass
-
     try:
         return parser.parse(result)
     except Exception:
         try:
             cleaned = _clean_json_string(raw)
-
-            # 디버깅: 정제된 JSON 문자열 일부 콘솔 출력
-            try:
-                print("[OCR] Cleaned JSON string sample:", cleaned[:500])
-            except Exception:
-                pass
-
             data = json.loads(cleaned)
             return _normalize_parsed_quote(data)
         except (json.JSONDecodeError, TypeError, KeyError):
@@ -278,39 +265,8 @@ async def content_ocr(file: bytes) -> Dict[str, Any]:
     try:
         response = requests.post(url, headers=headers, files=files, data=data)
         digitize_json = response.json()
-
-        # 디버깅: Upstage OCR 원본 응답 일부 콘솔 출력
-        try:
-            print("[OCR] Upstage response sample:", str(digitize_json)[:500])
-        except Exception:
-            # 디버깅 출력 실패는 OCR 흐름에 영향을 주지 않음
-            pass
-
         text = extract_text_from_upstage(digitize_json)
-
-        # 디버깅: LLM에 전달되는 OCR 텍스트 일부 콘솔 출력
-        try:
-            print("[OCR] Extracted text sample:", text[:500])
-        except Exception:
-            pass
-
-        parsed = parse_quote_text(text)
-
-        # 디버깅: 최종 품목별 수량/단가 요약 콘솔 출력
-        try:
-            for idx, item in enumerate(parsed.get("request_items", [])):
-                print(
-                    "[OCR] Parsed item #{}: name={} quantity={} unit_price={}".format(
-                        idx,
-                        item.get("item_name"),
-                        item.get("quantity"),
-                        item.get("unit_price"),
-                    )
-                )
-        except Exception:
-            pass
-
-        return parsed
+        return parse_quote_text(text)
     except HttpError:
         raise
     except Exception as e:
