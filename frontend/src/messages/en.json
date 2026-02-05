@@ -265,7 +265,7 @@
         "noFiles": "You can drag and drop or upload image or PDF files."
       },
       "errors": {
-        "ocrFailed": "OCR processing failed.",
+        "ocrFailed": "An error occurred during OCR processing. If the document is blurry or contains a lot of handwriting, OCR may fail. Please check the file and try again.",
         "uploadError": "An error occurred during OCR upload."
       }
     }
@@ -1680,7 +1680,11 @@
       "searchProductName": "Search product name"
     },
     "toast": {
-      "emailSent": "Email has been sent successfully."
+      "emailSent": "Email has been sent successfully.",
+      "ocrNotice": {
+        "text": "This content was read by OCR. Please double-check numbers and text.",
+        "subtext": "Especially review quantity, unit price, total amount, and due date carefully against the original document."
+      }
     },
     "requestInfo": {
       "title": "Request Info",

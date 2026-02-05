@@ -127,9 +127,7 @@ const QuotationPageContent = () => {
   const handleOcrUnmatchedProducts = useCallback(() => {
     setToastContent({
       text: tQuotation('requestInfo.toast.ocrUnmatchedProducts'),
-      subtext: tQuotation(
-        'requestInfo.toast.ocrUnmatchedProductsSubtext'
-      ),
+      subtext: tQuotation('requestInfo.toast.ocrUnmatchedProductsSubtext'),
       type: 'primary',
     });
     showToast();
@@ -401,6 +399,7 @@ const QuotationPageContent = () => {
     imageUrl,
     setOcrData,
     clientList,
+    tQuotation,
   ]);
 
   // 저장된 견적서 데이터에 uploaded_file이 있으면 quotation 탭 활성화
@@ -704,11 +703,23 @@ const QuotationPageContent = () => {
             {selectedProduct ? (
               <History selectedProduct={selectedProduct} />
             ) : ocrData || quotationData?.uploaded_file ? (
-              <PreviewImage
-                projectStatus={projectStatus}
-                imageUrl={imageUrl || quotationData?.uploaded_file}
-                onOcrDataChange={handleOcrDataChange}
-              />
+              <div className="flex flex-col gap-3 h-full">
+                <PreviewImage
+                  projectStatus={projectStatus}
+                  imageUrl={imageUrl || quotationData?.uploaded_file}
+                  onOcrDataChange={handleOcrDataChange}
+                />
+                {ocrData && (
+                  <div className="px-4 py-3 rounded-lg bg-bg mt-1">
+                    <p className="Me_Body-2 text-dg mb-1">
+                      {tQuotation('toast.ocrNotice.text')}
+                    </p>
+                    <p className="Re_Body-2 text-gr">
+                      {tQuotation('toast.ocrNotice.subtext')}
+                    </p>
+                  </div>
+                )}
+              </div>
             ) : (
               <History selectedProduct={null} />
             )}
@@ -817,10 +828,7 @@ const QuotationPageContent = () => {
 
       {/* 출력하기 버튼 */}
       {isPrintOpen && (
-        <OverlayView
-          blockExit
-          onClose={() => setIsPrintOpen(false)}
-        >
+        <OverlayView blockExit onClose={() => setIsPrintOpen(false)}>
           <PrintView
             documentTitle={
               projectStatus === 'confirmed'
@@ -841,10 +849,7 @@ const QuotationPageContent = () => {
       )}
       {/* 이메일 보내기 버튼 */}
       {isEmailOpen && (
-        <OverlayView
-          blockExit
-          onClose={() => setIsEmailOpen(false)}
-        >
+        <OverlayView blockExit onClose={() => setIsEmailOpen(false)}>
           <EmailView
             documentTitle={
               projectStatus === 'confirmed'
