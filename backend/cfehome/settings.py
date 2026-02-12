@@ -34,6 +34,7 @@ DEBUG = config("DJANGO_DEBUG", default=False, cast=bool)
 
 ALLOWED_HOSTS = [
     ".railway.app",
+    "api.factoryx.work",
 ]
 
 ASGI_APPLICATION = "cfehome.asgi.application"
@@ -48,6 +49,8 @@ if DEBUG:
 CSRF_TRUSTED_ORIGINS = [
     "http://*.railway.app",
     "https://*.railway.app",
+    "http://api.factoryx.work",
+    "https://api.factoryx.work",
 ]
 
 
