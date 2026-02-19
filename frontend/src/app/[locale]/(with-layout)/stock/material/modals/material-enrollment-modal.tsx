@@ -204,8 +204,11 @@ const MaterialEnrollmentModal = ({
       width="w-[520px]"
     >
       {!isSuccessModalOpen && (
-        <div onKeyDown={handleSubmitKeyDown}>
-          <div className="flex justify-end h-12 gap-2.5 mt-4 items-center">
+        <div
+          className="flex max-h-[calc(85vh-180px)] flex-col min-h-0"
+          onKeyDown={handleSubmitKeyDown}
+        >
+          <div className="flex shrink-0 justify-end h-12 gap-2.5 mt-4 items-center">
             <div className="flex-1 relative">
               <SearchInput
                 placeholder={t('searchPlaceholder')}
@@ -252,7 +255,7 @@ const MaterialEnrollmentModal = ({
               onClick={() => setIsManualAddMode(true)}
             />
           </div>
-          <div className="mt-4 max-h-[calc(85vh-203px)] overflow-y-auto scrollbar-hide">
+          <div className="mt-4 flex-1 min-h-0 overflow-y-auto scrollbar-hide">
             {/* 직접 추가 area */}
             {isManualAddMode && (
               <ManualAddMaterial

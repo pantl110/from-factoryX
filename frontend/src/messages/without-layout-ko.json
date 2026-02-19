@@ -15,6 +15,9 @@
     "signup": "회원가입",
     "findPassword": "비밀번호 찾기",
     "errors": {
+      "errors": {
+        "serverConnectionFailedRetry": "서버 연결에 실패했습니다. 다시 시도해주세요."
+      },
       "userInfoFetchFailed": "사용자 정보를 가져오는데 실패했습니다.",
       "loginFailed": "로그인에 실패했습니다. 다시 시도해주세요.",
       "accountNotFound": "입력하신 이메일로 가입된 계정이 존재하지 않습니다.",

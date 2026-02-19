@@ -2,6 +2,9 @@
   "login": {
     "title": "Login",
     "errors": {
+      "errors": {
+        "serverConnectionFailedRetry": "Failed to connect to server. Please try again."
+      },
       "userInfoFetchFailed": "Failed to fetch user information.",
       "loginFailed": "Login failed. Please try again.",
       "accountNotFound": "No account found with the email you entered.",
