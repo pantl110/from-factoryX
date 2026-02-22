@@ -69,15 +69,8 @@ const LanguageSetting = () => {
   }, [userInfo?.language]);
 
   const handleLanguageSelect = async (language: LanguageInfoModel) => {
-    // 언어 코드를 백엔드 형식으로 변환 (ko -> 'korean', en -> 'english')
-    const languageMap: Record<string, string> = {
-      ko: 'korean',
-      en: 'english',
-    };
-    const backendLanguage = languageMap[language.code] || language.code;
-
-    // 백엔드에 언어 변경 요청
-    const result = await updateMe({ language: backendLanguage });
+    // ISO 639-1 코드(ko/en) 그대로 전송
+    const result = await updateMe({ language: language.code });
 
     if (result.success) {
       setSelectedLanguage(language);

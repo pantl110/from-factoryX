@@ -99,7 +99,7 @@ export interface UserInfoModel {
   profile_image?: string | null;
   member_id: number;
   barobill_user_id?: string | null;
-  language: string | 'korean' | 'english';
+  language: string | 'ko' | 'en';
 }
 
 // 회원 정보 수정
