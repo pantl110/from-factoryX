@@ -1,6 +1,5 @@
-from ninja import Schema, Field, ModelSchema
-from user.models import User
-from typing import Optional
+from ninja import Schema, Field
+from typing import Optional, Literal
 
 
 class UserSignupIn(Schema):
@@ -47,7 +46,9 @@ class UserUpdateIn(Schema):
     marketing_agreement: Optional[bool] = Field(
         None, description="마케팅 정보 수신 동의 여부"
     )
-    language: Optional[str] = Field(None, description="언어 설정 (ko: 한국어, en: English)")
+    language: Optional[Literal["ko", "en"]] = Field(
+        None, description="언어 설정 (ko: 한국어, en: English). ko, en만 허용."
+    )
 
 
 class PasswordResetIn(Schema):
