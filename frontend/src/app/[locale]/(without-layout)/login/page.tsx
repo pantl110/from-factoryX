@@ -111,12 +111,14 @@ const LoginPage = () => {
           <form
             onSubmit={handleSubmit(onSubmit)}
             className="flex flex-col w-100"
+            autoComplete="off"
           >
             <div className="flex flex-col">
               <Input
                 type="email"
                 placeholder={t('email.placeholder')}
                 label={tCommon('email')}
+                autoComplete="off"
                 {...register('email', {
                   required: t('email.required'),
                   validate: (value) => {
@@ -138,6 +140,7 @@ const LoginPage = () => {
                 type="password"
                 placeholder={t('password.placeholder')}
                 label={t('password.label')}
+                autoComplete="off"
                 {...register('password', {
                   required: t('password.required'),
                   validate: (value) => {

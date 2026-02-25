@@ -41,6 +41,7 @@ interface InputProps {
   onClickButton?: () => void;
   textarea?: boolean;
   minRows?: number;
+  autoComplete?: string;
 }
 
 const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
@@ -70,6 +71,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
       onClickButton,
       textarea = false,
       minRows = 3,
+      autoComplete,
     },
     ref
   ) => {
@@ -277,6 +279,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
               }
               pattern={type === 'number' ? '[0-9.]*' : undefined}
               step={type === 'number' ? step || '0.1' : undefined}
+              autoComplete={autoComplete}
             />
 
             {isShowPasswordToggle && (
