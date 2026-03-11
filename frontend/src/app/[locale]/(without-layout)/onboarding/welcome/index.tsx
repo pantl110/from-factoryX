@@ -111,7 +111,9 @@ const Welcome = ({ onNextStep, onPrevStep }: WelcomeProps) => {
         <br />
         <br />
         {tThirdStep('description.part4')}{' '}
-        <span className="text-primary">{tThirdStep('description.highlight')}</span>{' '}
+        <span className="text-primary">
+          {tThirdStep('description.highlight')}
+        </span>{' '}
         {tThirdStep('description.part5')}
         <br />
         {tThirdStep('description.part6')}
