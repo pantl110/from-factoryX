@@ -13,6 +13,7 @@ interface WelcomeProps {
 
 const Welcome = ({ onNextStep, onPrevStep }: WelcomeProps) => {
   const t = useTranslations('onboarding.welcome');
+  const tThirdStep = useTranslations('onboarding.thirdStep');
   const tCommon = useTranslations('common');
   const tFirstStep = useTranslations('onboarding.firstStep');
   const { createFactory, isLoading } = useCreateFactory();
@@ -97,9 +98,24 @@ const Welcome = ({ onNextStep, onPrevStep }: WelcomeProps) => {
   return (
     <div className="bg-wh z-1 w-[600px] py-10 px-8 flex flex-col items-center rounded-lg">
       <h3 className="Heading-3 text-primary mb-1">{t('title')}</h3>
-      <p className="Me_Body-2 text-center whitespace-pre-line">
-        {t('description')}
-      </p>
+      <div className="Me_Body-2 text-bl text-center">
+        {tThirdStep('description.part1')}
+        {tThirdStep('description.part2') && (
+          <>
+            <br />
+            {tThirdStep('description.part2')}
+          </>
+        )}
+        <br />
+        {tThirdStep('description.part3')}
+        <br />
+        <br />
+        {tThirdStep('description.part4')}{' '}
+        <span className="text-primary">{tThirdStep('description.highlight')}</span>{' '}
+        {tThirdStep('description.part5')}
+        <br />
+        {tThirdStep('description.part6')}
+      </div>
       <div className="p-7">
         <Image src={onboardingImage} alt="onboarding" />
       </div>

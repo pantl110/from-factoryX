@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from 'react';
 import { OnboardingStepType } from './types';
+import Welcome from './welcome';
 // TODO: 온보딩 임시 스킵 - 나중에 원복 필요
-// import Welcome from './welcome';
 // import FirstStep from './first-step';
 // import SecondStep from './second-step';
-import ThirdStep from './third-step';
+// import ThirdStep from './third-step';
 import { useRouter } from '@/i18n/navigation';
 import ChoosingRole from './choosing-role';
 import { useGetFactoryList } from '@/hooks';
@@ -67,13 +67,13 @@ const OnboardingPage = () => {
       }
     };
   }, []);
-  // TODO: 온보딩 welcome/first-step/second-step 임시 스킵 - 나중에 원복 필요
+  // TODO: 온보딩 first-step/second-step/third-step 임시 스킵 - 나중에 원복 필요
   const steps = [
     'choosing-role',
-    // 'welcome',
+    'welcome',
     // 'first-step',
     // 'second-step',
-    'third-step',
+    // 'third-step',
   ] as const;
   type StepType = (typeof steps)[number];
 
@@ -96,11 +96,11 @@ const OnboardingPage = () => {
     switch (currentStep) {
       case 'choosing-role':
         return <ChoosingRole onNextStep={handleNextStep} />;
+      case 'welcome':
+        return (
+          <Welcome onNextStep={handleNextStep} onPrevStep={handlePrevStep} />
+        );
       // TODO: 온보딩 임시 스킵 - 나중에 원복 필요
-      // case 'welcome':
-      //   return (
-      //     <Welcome onNextStep={handleNextStep} onPrevStep={handlePrevStep} />
-      //   );
       // case 'first-step':
       //   return (
       //     <FirstStep onNextStep={handleNextStep} onPrevStep={handlePrevStep} />
@@ -109,10 +109,10 @@ const OnboardingPage = () => {
       //   return (
       //     <SecondStep onNextStep={handleNextStep} onPrevStep={handlePrevStep} />
       //   );
-      case 'third-step':
-        return (
-          <ThirdStep onNextStep={handleNextStep} onPrevStep={handlePrevStep} />
-        );
+      // case 'third-step':
+      //   return (
+      //     <ThirdStep onNextStep={handleNextStep} onPrevStep={handlePrevStep} />
+      //   );
       default:
         return <ChoosingRole onNextStep={handleNextStep} />;
     }
