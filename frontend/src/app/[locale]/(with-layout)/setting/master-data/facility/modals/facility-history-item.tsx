@@ -5,6 +5,7 @@ import IconBtn from '@/ui/icon-btn';
 import { ArrowLineUpRight } from '@phosphor-icons/react';
 import ProductDetail from '@/app/[locale]/(with-layout)/stock/product/product-detail';
 import { useTranslations } from 'next-intl';
+import { formatSecondsToDuration } from '@/utils/format-seconds';
 
 interface FacilityHistoryItemProps {
   plan: FacilityPlanResponseModel;
@@ -43,12 +44,12 @@ const FacilityHistoryItem = ({ plan }: FacilityHistoryItemProps) => {
           className="flex-1 px-3 truncate"
           title={
             avgProductionTime !== null
-              ? `${avgProductionTime}${tCommon('seconds')}`
+              ? (formatSecondsToDuration(avgProductionTime) ?? '-')
               : '-'
           }
         >
           {avgProductionTime !== null
-            ? `${avgProductionTime}${tCommon('seconds')}`
+            ? (formatSecondsToDuration(avgProductionTime) ?? '-')
             : '-'}
         </p>
       </div>

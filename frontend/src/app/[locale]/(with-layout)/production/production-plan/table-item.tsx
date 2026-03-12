@@ -19,6 +19,7 @@ import { useState, useEffect } from 'react';
 import ProductDetail from '../../stock/product/product-detail';
 import { formatDateTime } from '@/utils/format-number';
 import { calculateAvgProductionTime } from '@/utils/calculate-production-time';
+import { formatSecondsToDuration } from '@/utils/format-seconds';
 import { useForm, Controller } from 'react-hook-form';
 import MiniBtn from '@/ui/mini-btn';
 import useMemberStore from '@/store/member-store';
@@ -387,15 +388,14 @@ const TableItem = ({
     productionTimePerUnit: (
       <span className="cursor-default">
         {(() => {
-          // 계산된 값이 있으면 우선 사용, 없으면 백엔드에서 내려준 avg_production_time 사용
           const displayTime =
             calculatedAvgTime !== null
               ? calculatedAvgTime
               : (item.avg_production_time ?? null);
 
-          return displayTime !== null && displayTime !== undefined
-            ? `${displayTime.toLocaleString()}${tCommon('seconds')}`
-            : '-';
+          const formatted = formatSecondsToDuration(displayTime);
+
+          return formatted ?? '-';
         })()}
       </span>
     ),

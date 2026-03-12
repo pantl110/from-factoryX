@@ -7,6 +7,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { formatDateTime } from '@/hooks';
 import { useEffect } from 'react';
 import { calculateAvgProductionTime } from '@/utils/calculate-production-time';
+import { formatSecondsToDuration } from '@/utils/format-seconds';
 
 interface ProductionInfoProps {
   plan: ProjectPlanModel;
@@ -120,15 +121,14 @@ export const ProductionInfo = ({
           <InfoLabelValue
             label={t('timePerUnit')}
             value={(() => {
-              // 계산된 값이 있으면 우선 사용, 없으면 백엔드 값 사용
               const displayTime =
                 calculatedAvgTime !== null
                   ? calculatedAvgTime
                   : (plan.avg_production_time ?? null);
 
-              return displayTime !== null && displayTime !== undefined
-                ? `${displayTime.toLocaleString()}${tCommon('seconds')}`
-                : '-';
+              const formatted = formatSecondsToDuration(displayTime);
+
+              return formatted ?? '-';
             })()}
           />
         </div>
