@@ -121,7 +121,10 @@ const EmailView = ({
         );
 
         const imgData = pageCanvas.toDataURL('image/png');
-        const imgHeightMm = (sliceHeight * availableWidth) / canvas.width / (canvas.width / availableWidth);
+        const imgHeightMm =
+          (sliceHeight * availableWidth) /
+          canvas.width /
+          (canvas.width / availableWidth);
 
         pdf.addImage(
           imgData,
