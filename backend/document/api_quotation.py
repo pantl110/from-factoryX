@@ -111,7 +111,7 @@ async def send_quotation_email(request, payload: QuotationEmailSendIn):
         # HTML 이메일 템플릿 생성
         factory_name = factory.name if factory.name else "Factory X"
         client_name = payload.client_name if payload.client_name else "고객님"
-        doc_label = "주문서" if getattr(payload, "is_confirmed", False) else "견적서"
+        doc_label = "주문서" if getattr(payload, "is_confirmed", False) else "견적 요청서"
         filename = "order.pdf" if doc_label == "주문서" else "quotation.pdf"
 
         html_message = f"""
@@ -342,13 +342,13 @@ async def get_quotation_detail(request, quotation_id: int):
 #         </head>
 #         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
 #             <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-#                 <h2 style="color: #2c3e50;">[{factory_name}] 견적서가 도착했습니다</h2>
+#                 <h2 style="color: #2c3e50;">[{factory_name}] 견적 요청서가 도착했습니다</h2>
 #                 <p>안녕하세요, {client_name}!</p>
-#                 <p>요청하신 견적서를 첨부파일로 보내드립니다.</p>
-#                 <p>첨부된 견적서를 검토해 주시고, 문의사항이 있으시면 언제든지 연락 주시기 바랍니다.</p>
+#                 <p>요청하신 견적 요청서를 첨부파일로 보내드립니다.</p>
+#                 <p>첨부된 견적 요청서를 검토해 주시고, 문의사항이 있으시면 언제든지 연락 주시기 바랍니다.</p>
 
 #                 <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
-#                     <strong>견적서 정보:</strong><br>
+#                     <strong>견적 요청서 정보:</strong><br>
 #                     <ul style="margin: 10px 0;">
 #                         <li>공장명: {factory_name}</li>
 #                         <li>견적서 ID: {quotation.id}</li>
@@ -370,7 +370,7 @@ async def get_quotation_detail(request, quotation_id: int):
 
 #         success = await sync_to_async(send_email_with_attachments)(
 #             to_emails=[payload.email],
-#             subject=f"[{factory_name}] 견적서가 도착했습니다",
+#             subject=f"[{factory_name}] 견적 요청서가 도착했습니다",
 #             html_message=html_message,
 #             text_message="",  # 빈 문자열로 설정하여 HTML만 표시
 #             attachments=[
