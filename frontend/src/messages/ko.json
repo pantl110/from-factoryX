@@ -230,7 +230,7 @@
     "actionAdded": "생산 계획 추가",
     "type": {
       "documentType": "문서 유형",
-      "quotationRequest": "견적 요청서",
+      "quotationRequest": "견적서",
       "orderDocument": "주문서",
       "productionInstruction": "생산지시서",
       "salesTaxInvoice": "매출 세금계산서",
