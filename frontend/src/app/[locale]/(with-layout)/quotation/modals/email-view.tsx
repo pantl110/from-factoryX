@@ -74,11 +74,7 @@ const EmailView = ({
         backgroundColor: '#ffffff',
       });
 
-      const imgData = canvas.toDataURL('image/png'); // 캔버스를 PNG 이미지로 변환 // PDF에 이미지를 삽입하기 위한 데이터
-      const pdf = new jsPDF('p', 'mm', 'a4'); // PDF 문서 생성
-      // p: portrait (세로 방향)
-      // mm: 단위를 밀리미터로 설정
-      // a4: A4 크기
+      const pdf = new jsPDF('p', 'mm', 'a4');
 
       const imgWidth = 210; // A4 너비 (mm)
       const pageHeight = 295; // A4 높이 (mm)
@@ -87,39 +83,60 @@ const EmailView = ({
       const marginPx = 32;
       const marginMm = marginPx * 0.264583;
 
-      // 여백을 제외한 실제 이미지 너비
+      // 여백을 제외한 실제 이미지/콘텐츠 영역
       const availableWidth = imgWidth - marginMm * 2;
-
-      // 이미지 높이 계산 (여백을 제외한 너비에 맞춤)
-      const imgHeight = (canvas.height * availableWidth) / canvas.width;
-
-      // 아래쪽 여백을 고려한 실제 이미지 높이
       const availableHeight = pageHeight - marginMm * 2;
-      let heightLeft = imgHeight;
 
-      // 여백을 적용하여 이미지 삽입 (좌우 여백: marginMm, 위쪽 여백: 0)
-      pdf.addImage(
-        imgData,
-        'PNG',
-        marginMm,
-        0, // 위쪽 여백 없음
-        availableWidth,
-        imgHeight
-      );
-      heightLeft -= availableHeight; // 아래쪽 여백을 고려한 높이만큼 감소
+      // canvas를 세로로 잘라 여러 페이지에 나눠 넣기
+      const pageCanvas = document.createElement('canvas');
+      const pageContext = pageCanvas.getContext('2d');
+      const pageHeightPx = (availableHeight * canvas.width) / availableWidth; // 비율 유지한 상태에서 한 페이지에 들어갈 캔버스 높이(px)
 
-      while (heightLeft >= 0) {
-        pdf.addPage();
-        // 여백을 적용하여 이미지 삽입 (좌우 여백: marginMm, 위쪽 여백: 0)
+      pageCanvas.width = canvas.width;
+      pageCanvas.height = pageHeightPx;
+
+      let renderedHeight = 0;
+
+      while (renderedHeight < canvas.height) {
+        if (!pageContext) break;
+
+        // 현재 페이지에 들어갈 부분을 잘라서 그리기
+        pageContext.clearRect(0, 0, pageCanvas.width, pageCanvas.height);
+
+        const remainingHeight = canvas.height - renderedHeight;
+        const sliceHeight = Math.min(remainingHeight, pageHeightPx);
+
+        pageCanvas.height = sliceHeight;
+
+        pageContext.drawImage(
+          canvas,
+          0,
+          renderedHeight,
+          canvas.width,
+          sliceHeight,
+          0,
+          0,
+          canvas.width,
+          sliceHeight
+        );
+
+        const imgData = pageCanvas.toDataURL('image/png');
+        const imgHeightMm = (sliceHeight * availableWidth) / canvas.width / (canvas.width / availableWidth);
+
         pdf.addImage(
           imgData,
           'PNG',
           marginMm,
-          0, // 위쪽 여백 없음
+          marginMm,
           availableWidth,
-          imgHeight
+          (sliceHeight * availableWidth) / canvas.width
         );
-        heightLeft -= availableHeight; // 아래쪽 여백을 고려한 높이만큼 감소
+
+        renderedHeight += sliceHeight;
+
+        if (renderedHeight < canvas.height) {
+          pdf.addPage();
+        }
       }
 
       // data URI -> base64 string
