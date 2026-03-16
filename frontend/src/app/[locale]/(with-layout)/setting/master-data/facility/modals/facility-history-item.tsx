@@ -4,7 +4,6 @@ import { useState } from 'react';
 import IconBtn from '@/ui/icon-btn';
 import { ArrowLineUpRight } from '@phosphor-icons/react';
 import ProductDetail from '@/app/[locale]/(with-layout)/stock/product/product-detail';
-import { useTranslations } from 'next-intl';
 import { formatSecondsToDuration } from '@/utils/format-seconds';
 
 interface FacilityHistoryItemProps {
@@ -12,7 +11,6 @@ interface FacilityHistoryItemProps {
 }
 
 const FacilityHistoryItem = ({ plan }: FacilityHistoryItemProps) => {
-  const tCommon = useTranslations('common');
   const [isProductDetailOpen, setIsProductDetailOpen] = useState(false);
   const avgProductionTime = calculateAvgProductionTime(
     plan.start_date,

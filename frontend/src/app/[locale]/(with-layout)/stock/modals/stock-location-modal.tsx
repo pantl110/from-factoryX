@@ -12,6 +12,13 @@ import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import { useTranslations } from 'next-intl';
 
+export interface StagedLocationDataModel {
+  location: string;
+  detail_location?: string;
+  memo?: string;
+  images: string[];
+}
+
 interface StockLocationModalProps {
   mode: 'add' | 'update';
   selectedLocation?: LocationModel | null;
@@ -19,6 +26,7 @@ interface StockLocationModalProps {
   materialId?: number | null;
   onClose: () => void;
   onSuccess?: () => void;
+  onStage?: (data: StagedLocationDataModel) => void;
 }
 
 interface LocationFormModel {
@@ -35,6 +43,7 @@ const StockLocationModal = ({
   materialId,
   onClose,
   onSuccess,
+  onStage,
 }: StockLocationModalProps) => {
   const t = useTranslations('stock.stockLocation.modal');
   const tCommon = useTranslations('common');
@@ -93,6 +102,16 @@ const StockLocationModal = ({
         // 추가 모드
         const id = materialId || productId;
         if (!id) {
+          // 제품이 아직 생성되지 않은 경우: staging으로 임시 저장
+          if (onStage) {
+            onStage({
+              location: data.location,
+              detail_location: data.detail_location || undefined,
+              memo: data.memo.trim() === '' ? undefined : data.memo,
+              images,
+            });
+            onClose();
+          }
           return;
         }
 

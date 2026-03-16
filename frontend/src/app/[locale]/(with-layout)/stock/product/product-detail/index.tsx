@@ -21,6 +21,7 @@ import {
 } from '@/hooks';
 import { useTranslations } from 'next-intl';
 import { useStagedMaterials } from '@/app/[locale]/(with-layout)/stock/product/product-detail/bom/use-staged-materials';
+import { useStagedLocations } from '@/app/[locale]/(with-layout)/stock/product/product-detail/use-staged-locations';
 import ConnectMaterialModal from '../modals/connect-material-modal';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { useUploadFile, useToast } from '@/hooks';
@@ -28,6 +29,7 @@ import MaterialDetailPanel from '../../material/material-detail';
 import Toast from '@/ui/toast';
 import { WarningCircle } from '@phosphor-icons/react';
 import useMemberStore from '@/store/member-store';
+import useAuthStore from '@/store/auth-store';
 import ProjectStockHistoryModal from './product-history/modals/project-stock-history-modal';
 import useSubscriptionStore from '@/store/subscription-store';
 import LocationItem from '../../location-item';
@@ -77,6 +79,7 @@ const ProductDetail = ({
   } = useMaterialProduct();
   const factoryId = useMemberStore((state) => state.factoryId);
   const role = useMemberStore((state) => state.role);
+  const userInfo = useAuthStore((state) => state.userInfo);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
     (state) => state.hasSubscription
@@ -142,6 +145,14 @@ const ProductDetail = ({
     updateStagedQuantity,
     addStagedMaterials,
   } = useStagedMaterials();
+
+  // 스테이징된 창고 위치 관리 커스텀 훅 (제품 생성 전 임시 저장)
+  const {
+    stagedLocations,
+    addStagedLocation,
+    removeStagedLocation,
+    persistStagedLocations,
+  } = useStagedLocations();
 
   // 모달의 중복 차단을 위한 이미 연결된 자재 ID 목록
   const connectedMaterialIds = useMemo(() => {
@@ -537,6 +548,10 @@ const ProductDetail = ({
           if (stagedMaterials.length > 0) {
             await persistStagedConnections(effectiveProductId);
           }
+          // 생성 모드에서 임시로 추가한 창고 위치 저장
+          if (stagedLocations.length > 0) {
+            await persistStagedLocations(effectiveProductId);
+          }
         }
         // 제품 정보 변경 시 reload를 위해 onSuccess 호출
         onSuccess?.();
@@ -546,8 +561,14 @@ const ProductDetail = ({
       const result = await handleSaveProductInfo();
       if (result.success) {
         const effectiveProductId = productId || result.productId || null;
-        if (effectiveProductId && stagedMaterials.length > 0) {
-          await persistStagedConnections(effectiveProductId);
+        if (effectiveProductId) {
+          if (stagedMaterials.length > 0) {
+            await persistStagedConnections(effectiveProductId);
+          }
+          // 생성 모드에서 임시로 추가한 창고 위치 저장
+          if (stagedLocations.length > 0) {
+            await persistStagedLocations(effectiveProductId);
+          }
         }
         // 제품 정보 변경 시 reload를 위해 onSuccess 호출
         onSuccess?.();
@@ -583,7 +604,10 @@ const ProductDetail = ({
         title={tProduct('title')}
         onClose={onClose}
         headerButton={
-          (isDirty || isLocationDirty || isQuantityDirty) && (
+          (isDirty ||
+            isLocationDirty ||
+            isQuantityDirty ||
+            stagedLocations.length > 0) && (
             <MiniBtn
               text={tCommon('save')}
               textColor="text-primary"
@@ -622,25 +646,27 @@ const ProductDetail = ({
               <h3 className="Heading-3 h-10 flex items-center text-dg ">
                 {t('title.product')}
               </h3>
-              {locationListData &&
-                'locations' in locationListData &&
-                locationListData.locations.length > 0 && (
-                  <MiniBtn
-                    text={tCommon('add')}
-                    variant="whiteOutline"
-                    disabled={isViewer || !hasSubscription()}
-                    onClick={() => {
-                      setSelectedLocation(null);
-                      setIsStockLocationModalOpen(true);
-                    }}
-                  />
-                )}
+              {(stagedLocations.length > 0 ||
+                (locationListData &&
+                  'locations' in locationListData &&
+                  locationListData.locations.length > 0)) && (
+                <MiniBtn
+                  text={tCommon('add')}
+                  variant="whiteOutline"
+                  disabled={isViewer || !hasSubscription()}
+                  onClick={() => {
+                    setSelectedLocation(null);
+                    setIsStockLocationModalOpen(true);
+                  }}
+                />
+              )}
             </div>
             {/* locations가 없을 때 */}
             {isLocationLoading ? (
               <div className="h-50" />
             ) : locationListData && 'locations' in locationListData ? (
-              locationListData.locations.length === 0 ? (
+              locationListData.locations.length === 0 &&
+              stagedLocations.length === 0 ? (
                 <NoHistoryBox
                   title={t('empty.title')}
                   text={t('empty.description.product')}
@@ -675,14 +701,50 @@ const ProductDetail = ({
                           }}
                         />
 
-                        {index < locationListData.locations.length - 1 && (
+                        {(index < locationListData.locations.length - 1 ||
+                          stagedLocations.length > 0) && (
                           <div className="h-[1px] bg-lg w-full" />
                         )}
                       </React.Fragment>
                     )
                   )}
+                  {stagedLocations.map((loc, index) => (
+                    <React.Fragment key={loc.tempId}>
+                      <LocationItem
+                        image={loc.images?.[0] || ''}
+                        length={loc.images?.length || 0}
+                        email={userInfo?.email}
+                        role={role || undefined}
+                        location={loc.location || ''}
+                        memo={loc.memo}
+                        onDelete={() => removeStagedLocation(loc.tempId)}
+                      />
+                      {index < stagedLocations.length - 1 && (
+                        <div className="h-[1px] bg-lg w-full" />
+                      )}
+                    </React.Fragment>
+                  ))}
                 </div>
               )
+            ) : stagedLocations.length > 0 ? (
+              <div className="px-4 py-3 rounded-[8px] border border-lg flex flex-col gap-3">
+                {stagedLocations.map((loc, index) => (
+                  <React.Fragment key={loc.tempId}>
+                    <LocationItem
+                      image={loc.images?.[0] || ''}
+                      length={loc.images?.length || 0}
+                      email={userInfo?.email}
+                      role={role || undefined}
+                      location={loc.location || ''}
+                      memo={loc.memo}
+                      onDelete={() => removeStagedLocation(loc.tempId)}
+                    />
+                    {index < stagedLocations.length - 1 && (
+                      <div className="h-[1px] bg-lg w-full" />
+                    )}
+                  </React.Fragment>
+                ))}
+              </div>
             ) : (
               <NoHistoryBox
                 title={t('empty.title')}
@@ -813,6 +875,7 @@ const ProductDetail = ({
               await listLocations('product', productId);
             }
           }}
+          onStage={!productId ? addStagedLocation : undefined}
         />
       )}
 

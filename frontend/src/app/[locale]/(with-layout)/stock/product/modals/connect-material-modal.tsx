@@ -354,26 +354,41 @@ const ConnectMaterialModal = ({
       scroll={true}
     >
       <div>
-        <div className="my-4 flex gap-2.5 px-6 relative">
-          <SearchInput
-            placeholder={t('searchPlaceholder')}
-            width="flex-1"
-            value={input}
-            onChange={(value) => {
-              setInput(value);
-              if (value.length > 0) {
-                setIsDropdownOpen(true);
-              } else {
-                setIsDropdownOpen(false);
-              }
-            }}
-            onFocus={() => {
-              if (input.length > 0) {
-                setIsDropdownOpen(true);
-              }
-            }}
-            onBlur={() => setTimeout(() => setIsDropdownOpen(false), 150)}
-          />
+        <div className="my-4 flex gap-2.5 px-6">
+          <div className="relative flex-1">
+            <SearchInput
+              placeholder={t('searchPlaceholder')}
+              width="w-full"
+              value={input}
+              onChange={(value) => {
+                setInput(value);
+                if (value.length > 0) {
+                  setIsDropdownOpen(true);
+                } else {
+                  setIsDropdownOpen(false);
+                }
+              }}
+              onFocus={() => {
+                if (input.length > 0) {
+                  setIsDropdownOpen(true);
+                }
+              }}
+              onBlur={() => setTimeout(() => setIsDropdownOpen(false), 150)}
+            />
+            {isDropdownOpen && input && (
+              <div className="absolute left-0 top-14 z-10 w-full">
+                <MaterialNameDropdown
+                  searchTerm={input}
+                  onSelect={handleSelectMaterial}
+                  onClose={() => {
+                    setIsDropdownOpen(false);
+                    setInput('');
+                  }}
+                  width="w-full"
+                />
+              </div>
+            )}
+          </div>
           <MiniBtn
             text={tStock('manualAddButton')}
             textColor="text-dg"
@@ -382,20 +397,6 @@ const ConnectMaterialModal = ({
             height="h-12"
             onClick={() => setIsManualAddMode(true)}
           />
-
-          {isDropdownOpen && input && (
-            <div className="absolute left-6 top-14 z-10 w-[451px]">
-              <MaterialNameDropdown
-                searchTerm={input}
-                onSelect={handleSelectMaterial}
-                onClose={() => {
-                  setIsDropdownOpen(false);
-                  setInput('');
-                }}
-                width="w-full"
-              />
-            </div>
-          )}
         </div>
 
         <div className="flex flex-col px-6 pb-6 max-h-[calc(85vh-181px)] overflow-y-auto">

@@ -225,31 +225,31 @@ const StockStatusItem = ({
       </p>
       <div
         className={`flex-1 px-3 text-dg h-full flex items-center min-w-0 ${
-          connection.substitutes.length > 0
+          connection.substitutes?.length > 0
             ? 'hover:bg-bg cursor-pointer transition-colors duration-200'
             : 'cursor-default'
         }`}
         role="button"
         tabIndex={0}
         title={
-          connection.substitutes.length > 0
+          connection.substitutes?.length > 0
             ? tCommon('listFormat', {
-                first: connection.substitutes[0],
-                count: connection.substitutes.length - 1,
+                first: connection.substitutes?.[0],
+                count: connection.substitutes?.length - 1,
               })
             : '-'
         }
         onClick={
-          connection.substitutes.length > 0
+          connection.substitutes?.length > 0
             ? () => onOpenSubstituteMaterialsModal(connection.material_id)
             : undefined
         }
       >
         <p className="truncate">
-          {connection.substitutes.length > 0
+          {connection.substitutes?.length > 0
             ? tCommon('listFormat', {
-                first: connection.substitutes[0],
-                count: connection.substitutes.length - 1,
+                first: connection.substitutes?.[0],
+                count: connection.substitutes?.length - 1,
               })
             : '-'}
         </p>

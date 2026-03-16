@@ -107,7 +107,6 @@ export const Account = () => {
             <NoHistoryBox
               title={tAccount('empty.title')}
               text={tAccount('empty.description')}
-              height="h-full"
             />
           ) : (
             filteredDocuments.map((document: PublishedDocumentOutModel) => {
