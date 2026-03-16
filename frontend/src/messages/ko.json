@@ -557,7 +557,7 @@
         },
         "labels": {
           "invoiceSent": "입금 요청서 전송",
-          "totalBilledAmount": "청구금액(합계)",
+          "totalBilledAmount": "청구금액",
           "amountPayable": "미지급액(잔액)",
           "amountReceivable": "미수금액(잔액)",
           "collectionTerms": "결제 조건"
