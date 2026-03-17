@@ -11,11 +11,10 @@ const OrderInfo = ({ products }: OrderInfoProps) => {
   const tOrderInfo = useTranslations('mobile.orderInfo');
   const productsData = Array.isArray(products) ? products : [];
 
-  const totalAmount = productsData.reduce((acc, product) => {
+  const totalSupplyAmount = productsData.reduce((acc, product) => {
     return acc + product.quantity * product.unit_price;
   }, 0);
-  const totalTaxAmount = totalAmount * 0.1;
-  const totalSupplyAmount = totalAmount - totalTaxAmount;
+  const totalTaxAmount = totalSupplyAmount * 0.1;
 
   return (
     <div className="px-7 py-8 flex flex-col gap-8">
@@ -37,7 +36,7 @@ const OrderInfo = ({ products }: OrderInfoProps) => {
         <div className="flex justify-between">
           <h4 className="m-Heading-4b">{tOrderInfo('totalTotalAmount')}</h4>
           <span className="m-Heading-3-semibold text-primary">
-            {totalAmount.toLocaleString()}
+            {totalSupplyAmount.toLocaleString()}
             {t('won')}
           </span>
         </div>

@@ -385,29 +385,16 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
                 tax_amount: product.unit_price * product.quantity * 0.1,
               })
             )}
-            supplyAmount={(() => {
-              // 국세청 공식: 합계금액에서 공급가액 계산
-              const totalAmount =
-                projectData.quotations[0].products_info.reduce(
-                  (acc, product) =>
-                    acc + product.unit_price * product.quantity || 0,
-                  0
-                );
-              // 국세청 공식: 공급가액 = 합계금액 ÷ 1.1
-              return Math.floor(totalAmount / 1.1);
-            })()}
-            taxAmount={(() => {
-              // 국세청 공식: 합계금액에서 공급가액과 세액 계산
-              const totalAmount =
-                projectData.quotations[0].products_info.reduce(
-                  (acc, product) =>
-                    acc + product.unit_price * product.quantity || 0,
-                  0
-                );
-              // 국세청 공식: 공급가액 = 합계금액 ÷ 1.1, 세액 = 합계금액 - 공급가액
-              const calculatedSupplyAmount = Math.floor(totalAmount / 1.1);
-              return totalAmount - calculatedSupplyAmount;
-            })()}
+            supplyAmount={projectData.quotations[0].products_info.reduce(
+              (acc, product) =>
+                acc + product.unit_price * product.quantity || 0,
+              0
+            )}
+            taxAmount={projectData.quotations[0].products_info.reduce(
+              (acc, product) =>
+                acc + product.unit_price * product.quantity * 0.1 || 0,
+              0
+            )}
           />
         </Panel>
       )}

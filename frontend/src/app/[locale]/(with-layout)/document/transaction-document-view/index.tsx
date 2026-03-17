@@ -18,13 +18,11 @@ const TransactionDocumentView = ({
 }: TransactionDocumentViewProps) => {
   const tCommon = useTranslations('common');
   const tDocument = useTranslations('document');
-  const totalAmount = quotationData.products_info.reduce(
+  const supplyAmount = quotationData.products_info.reduce(
     (sum, item) => sum + (item.unit_price * item.quantity || 0),
     0
   );
-  // 국세청 공식: 공급가액 = 합계금액 ÷ 1.1, 세액 = 합계금액 - 공급가액
-  const supplyAmount = Math.floor(totalAmount / 1.1);
-  const taxAmount = totalAmount - supplyAmount;
+  const taxAmount = supplyAmount * 0.1;
 
   return (
     <div className="flex flex-col gap-6">

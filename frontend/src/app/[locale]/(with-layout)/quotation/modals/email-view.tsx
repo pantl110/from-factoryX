@@ -45,23 +45,13 @@ const EmailView = ({
   const pdfRef = useRef<HTMLDivElement>(null);
   const { sendQuotationEmail, isLoading } = useSendQuotationEmail();
 
-  // 국세청 공식: 합계금액에서 공급가액과 세액 계산
-  const totalAmount = productItems.reduce((sum, item) => {
-    // supply_amount와 tax_amount가 모두 있으면 합계금액으로 사용
-    if (
-      item.supply_amount !== null &&
-      item.supply_amount !== undefined &&
-      item.tax_amount !== null &&
-      item.tax_amount !== undefined
-    ) {
-      return sum + item.supply_amount + item.tax_amount;
+  const calculatedSupplyAmount = productItems.reduce((sum, item) => {
+    if (item.supply_amount !== null && item.supply_amount !== undefined) {
+      return sum + item.supply_amount;
     }
-    // 없으면 quantity * unit_price를 합계금액(세금 포함)으로 간주
     return sum + (item.quantity || 0) * (item.unit_price || 0);
   }, 0);
-  // 국세청 공식: 공급가액 = 합계금액 ÷ 1.1, 세액 = 합계금액 - 공급가액
-  const calculatedSupplyAmount = Math.floor(totalAmount / 1.1);
-  const calculatedTaxAmount = totalAmount - calculatedSupplyAmount;
+  const calculatedTaxAmount = calculatedSupplyAmount * 0.1;
 
   const generatePDFBase64 = async (): Promise<string | null> => {
     if (!pdfRef.current) return null;
