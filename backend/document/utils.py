@@ -124,6 +124,19 @@ def extract_text_from_upstage(digitize_json: Dict[str, Any]) -> str:
     return json.dumps(digitize_json, ensure_ascii=False)
 
 
+def extract_text_from_upstage_document_parse(digitize_json: Dict[str, Any]) -> str:
+    """Upstage document-parse 응답에서 HTML/Markdown 콘텐츠 추출.
+
+    document-parse는 pages[].content에 구조화된 HTML/Markdown이 담겨 있음.
+    """
+    if "pages" in digitize_json and isinstance(digitize_json["pages"], list):
+        contents = [page.get("content", page.get("text", "")) for page in digitize_json["pages"]]
+        return "\n".join(contents).strip()
+    if "content" in digitize_json and isinstance(digitize_json["content"], str):
+        return digitize_json["content"].strip()
+    return extract_text_from_upstage(digitize_json)
+
+
 def _clean_json_string(raw: str) -> str:
     """LLM 출력 문자열을 표준 JSON 형태로 정제. 마크다운 코드블록·trailing comma 제거."""
     s = raw.strip()
@@ -266,6 +279,32 @@ async def content_ocr(file: bytes) -> Dict[str, Any]:
         response = requests.post(url, headers=headers, files=files, data=data)
         digitize_json = response.json()
         text = extract_text_from_upstage(digitize_json)
+        return parse_quote_text(text)
+    except HttpError:
+        raise
+    except Exception as e:
+        if _is_ocr_parse_error(str(e)):
+            raise HttpError(500, OCR_PARSE_ERROR_MESSAGE) from e
+        raise HttpError(500, f"OCR error: {str(e)}") from e
+
+
+async def content_ocr_document_parse(file: bytes) -> Dict[str, Any]:
+    """업로드 파일을 Upstage document-parse 후 LLM으로 견적서 구조화. PDF·이미지 지원.
+
+    document-parse는 표 구조를 HTML로 반환하여 LLM 파싱 정확도가 높음.
+    """
+    api_key = os.getenv("UPSTAGE_API_KEY")
+    url = "https://api.upstage.ai/v1/document-digitization"
+    headers = {"Authorization": f"Bearer {api_key}"}
+
+    filename, content_type = _ocr_filename_and_content_type(file)
+    files = {"document": (filename, io.BytesIO(file), content_type)}
+    data = {"model": "document-parse-251217", "mode": "enhanced"}
+
+    try:
+        response = requests.post(url, headers=headers, files=files, data=data)
+        digitize_json = response.json()
+        text = extract_text_from_upstage_document_parse(digitize_json)
         return parse_quote_text(text)
     except HttpError:
         raise

@@ -2,7 +2,7 @@ from ninja import Router
 from ninja.errors import HttpError
 from ninja.responses import Response
 from api.security import jwt_auth
-from document.utils import content_ocr, render_pdf_first_page_to_image
+from document.utils import content_ocr_document_parse, render_pdf_first_page_to_image
 from document.schemas.inbound import OcrIn, QuotationEmailSendIn
 from document.schemas.outbound import QuotationDetailOut, OCRResultOut
 from document.models import Quotation, QuotationProduct
@@ -47,7 +47,7 @@ async def upload_file(request, payload: OcrIn):
         content = base64.b64decode(file_content)
 
         # OCR 결과 (client_info / request_items)
-        data = await content_ocr(content)
+        data = await content_ocr_document_parse(content)
 
         # PDF인 경우에는 항상 썸네일 생성 시도
         try:
