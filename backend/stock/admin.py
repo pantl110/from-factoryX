@@ -60,22 +60,8 @@ class MaterialAdmin(admin.ModelAdmin):
     )
 
 
-class MaterialHistoryForm(forms.ModelForm):
-    created_at = forms.DateTimeField(
-        label="생성일",
-        required=False,
-        widget=forms.DateTimeInput(attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"),
-        input_formats=["%Y-%m-%dT%H:%M", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M"],
-    )
-
-    class Meta:
-        model = MaterialHistory
-        exclude = ["created_at"]
-
-
 @admin.register(MaterialHistory)
 class MaterialHistoryAdmin(admin.ModelAdmin):
-    form = MaterialHistoryForm
     list_display = [
         "id",
         "type",
@@ -95,11 +81,6 @@ class MaterialHistoryAdmin(admin.ModelAdmin):
     readonly_fields = ["updated_at"]
     list_per_page = 20
     inlines = [MaterialRepackagingInline] if MaterialRepackagingInline else []
-
-    def save_model(self, request, obj, form, change):
-        super().save_model(request, obj, form, change)
-        if "created_at" in form.cleaned_data and form.cleaned_data["created_at"]:
-            MaterialHistory.objects.filter(pk=obj.pk).update(created_at=form.cleaned_data["created_at"])
 
     fieldsets = (
         (
@@ -122,9 +103,29 @@ class MaterialHistoryAdmin(admin.ModelAdmin):
         ("세금 정보", {"fields": ("cash_receipt",)}),
         (
             "시스템 정보",
-            {"fields": ("created_at", "updated_at"), "classes": ("collapse",)},
+            {"fields": ("created_at_editable", "updated_at"), "classes": ("collapse",)},
         ),
     )
+
+    def get_form(self, request, obj=None, **kwargs):
+        form = super().get_form(request, obj, **kwargs)
+        form.base_fields["created_at_editable"] = forms.DateTimeField(
+            label="생성일",
+            required=False,
+            widget=forms.DateTimeInput(
+                attrs={"type": "datetime-local"},
+                format="%Y-%m-%dT%H:%M",
+            ),
+            input_formats=["%Y-%m-%dT%H:%M", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M"],
+            initial=obj.created_at if obj else None,
+        )
+        return form
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        new_created_at = form.cleaned_data.get("created_at_editable")
+        if new_created_at:
+            MaterialHistory.objects.filter(pk=obj.pk).update(created_at=new_created_at)
 
     def get_inlines(self, request, obj):
         """구매 타입일 때만 소분 인라인 표시"""
