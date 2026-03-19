@@ -1,3 +1,4 @@
+from django import forms
 from django.contrib import admin
 from .models import (
     Material,
@@ -59,8 +60,22 @@ class MaterialAdmin(admin.ModelAdmin):
     )
 
 
+class MaterialHistoryForm(forms.ModelForm):
+    created_at = forms.DateTimeField(
+        label="생성일",
+        required=False,
+        widget=forms.DateTimeInput(attrs={"type": "datetime-local"}, format="%Y-%m-%dT%H:%M"),
+        input_formats=["%Y-%m-%dT%H:%M", "%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M"],
+    )
+
+    class Meta:
+        model = MaterialHistory
+        fields = "__all__"
+
+
 @admin.register(MaterialHistory)
 class MaterialHistoryAdmin(admin.ModelAdmin):
+    form = MaterialHistoryForm
     list_display = [
         "id",
         "type",
@@ -77,9 +92,14 @@ class MaterialHistoryAdmin(admin.ModelAdmin):
     ]
     list_filter = ["type", "created_at", "material__factory"]
     search_fields = ["material__name", "client__name"]
-    readonly_fields = ["created_at", "updated_at"]
+    readonly_fields = ["updated_at"]
     list_per_page = 20
     inlines = [MaterialRepackagingInline] if MaterialRepackagingInline else []
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        if "created_at" in form.cleaned_data and form.cleaned_data["created_at"]:
+            MaterialHistory.objects.filter(pk=obj.pk).update(created_at=form.cleaned_data["created_at"])
 
     fieldsets = (
         (
