@@ -70,7 +70,7 @@ class MaterialHistoryForm(forms.ModelForm):
 
     class Meta:
         model = MaterialHistory
-        fields = "__all__"
+        exclude = []
 
 
 @admin.register(MaterialHistory)
