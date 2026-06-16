@@ -7,13 +7,21 @@ from barobill.barobill_error_code import barobill_error_codes
 from datetime import datetime, date
 
 
+def _generate_barobill_id(factory_id):
+    """바로빌 회원 ID 생성. 바로빌 ID는 최대 20자 제한이 있어 이를 넘지 않도록 보장한다."""
+    prefix = f"fx{factory_id}-"
+    suffix_len = max(4, 20 - len(prefix))
+    barobill_id = prefix + "".join(
+        random.choices(string.ascii_lowercase + string.digits, k=suffix_len)
+    )
+    return barobill_id[:20]
+
+
 async def add_corp_to_barobill(
     factory, barobill_id=None, barobill_password=None, grade="대표"
 ):
     if not barobill_id:
-        barobill_id = f"factory-{factory.id}-" + "".join(
-            random.choices(string.ascii_letters + string.digits, k=10)
-        )
+        barobill_id = _generate_barobill_id(factory.id)
     if not barobill_password:
         barobill_password = "".join(
             random.choices(string.ascii_letters + string.digits, k=20)
@@ -67,9 +75,7 @@ async def add_user_to_barobill(
     factory, barobill_id=None, barobill_password=None, grade="담당자"
 ):
     if not barobill_id:
-        barobill_id = f"factory-{factory.id}-" + "".join(
-            random.choices(string.ascii_letters + string.digits, k=10)
-        )
+        barobill_id = _generate_barobill_id(factory.id)
     if not barobill_password:
         barobill_password = "".join(
             random.choices(string.ascii_letters + string.digits, k=20)
