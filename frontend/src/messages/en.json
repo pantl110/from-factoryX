@@ -645,6 +645,12 @@
       "buttons": {
         "selectIssueType": "Select Issue Type"
       },
+      "toast": {
+        "createSuccessTitle": "Tax invoice created.",
+        "createSuccessSubtitle": "You can view the created tax invoice in the document view.",
+        "createFailTitle": "Failed to create tax invoice.",
+        "createFailSubtitle": "Please try again."
+      },
       "errors": {
         "createTaxInvoiceFailed": "Failed to create tax invoice.",
         "createTaxInvoiceError": "Failed to create tax invoice: ",

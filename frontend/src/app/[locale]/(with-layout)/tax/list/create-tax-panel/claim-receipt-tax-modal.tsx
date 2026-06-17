@@ -6,15 +6,13 @@ import { useTranslations } from 'next-intl';
 interface ClaimReceiptTaxModalProps {
   onClose: () => void;
   issueType: 'invoice' | 'receipt';
-  handleTemporarySave: (transactionType: TransactionType) => Promise<boolean>;
-  setIsEditingMode: (isEditingMode: boolean) => void;
+  onConfirm: (transactionType: TransactionType) => Promise<void>;
 }
 
 const ClaimReceiptTaxModal = ({
   onClose,
   issueType,
-  handleTemporarySave,
-  setIsEditingMode,
+  onConfirm,
 }: ClaimReceiptTaxModalProps) => {
   const t = useTranslations('tax.createTaxPanel.claimReceiptTaxModal');
   const tTax = useTranslations('tax');
@@ -45,22 +43,9 @@ const ClaimReceiptTaxModal = ({
             textColor="text-wh"
             bgColor="bg-primary"
             hoverColor="hover:bg-primary-hover"
-            onClick={async () => {
-              try {
-                const isSuccess = await handleTemporarySave(
-                  issueType === 'invoice' ? 'invoice' : 'receipt'
-                );
-                // 성공했을 때만 편집 모드 해제 및 모달 닫기
-                if (isSuccess) {
-                  if (setIsEditingMode) {
-                    setIsEditingMode(false);
-                  }
-                  onClose();
-                }
-              } catch {
-                // console.error('임시저장 실패:', error);
-              }
-            }}
+            onClick={() =>
+              onConfirm(issueType === 'invoice' ? 'invoice' : 'receipt')
+            }
           />
         </div>
       </Modal>

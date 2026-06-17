@@ -31,7 +31,7 @@ import ProductInfo, {
   ProductInfoRefModel,
   ProductFormDataModel,
 } from './product-info';
-import { WarningCircle } from '@phosphor-icons/react';
+import { WarningCircle, CheckCircle } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
 
 // 세금계산서 편집용 제품 데이터 타입
@@ -121,6 +121,7 @@ const CreatTaxPanel = ({
   const { showToast, isToastOpen, isVisible } = useToast();
   const [errorText, setErrorText] = useState('');
   const [errorSubtext, setErrorSubtext] = useState('');
+  const [toastType, setToastType] = useState<'red' | 'primary'>('red');
   const [showWriteDateError, setShowWriteDateError] = useState(false); // 작성일자만 에러 표시
 
   const factoryId = useMemberStore((state) => state.factoryId);
@@ -181,6 +182,28 @@ const CreatTaxPanel = ({
   const handleModalClose = () => {
     setIsClaimTaxModalOpen(false);
     setSelectedIssueType(null);
+  };
+
+  // 모달 "확인" — 세금계산서 생성(임시저장) 후 결과에 따라 토스트/판넬 처리
+  const handleModalConfirm = async (transactionType: TransactionType) => {
+    const isSuccess = await handleTemporarySave(transactionType);
+    if (isSuccess) {
+      // 성공: 성공 토스트 + 모달/판넬 닫기
+      setToastType('primary');
+      setErrorText(t('toast.createSuccessTitle'));
+      setErrorSubtext(t('toast.createSuccessSubtitle'));
+      showToast();
+      setIsEditingMode?.(false);
+      handleModalClose();
+      onClose();
+    } else {
+      // 실패: 실패 토스트 + 모달만 닫고 판넬 유지
+      setToastType('red');
+      setErrorText(t('toast.createFailTitle'));
+      setErrorSubtext(t('toast.createFailSubtitle'));
+      showToast();
+      handleModalClose();
+    }
   };
 
   // 판매처 정보 폼 유효성 및 변경 상태 변경 핸들러
@@ -686,18 +709,23 @@ const CreatTaxPanel = ({
         <ClaimReceiptTaxModal
           onClose={handleModalClose}
           issueType={selectedIssueType}
-          handleTemporarySave={handleTemporarySave}
-          setIsEditingMode={setIsEditingMode || (() => {})}
+          onConfirm={handleModalConfirm}
         />
       )}
 
       {/* 바로빌 등록 실패 토스트 */}
       {isToastOpen && (
         <Toast
-          icon={<WarningCircle size={20} className="text-red" />}
+          icon={
+            toastType === 'primary' ? (
+              <CheckCircle size={20} className="text-primary" />
+            ) : (
+              <WarningCircle size={20} className="text-red" />
+            )
+          }
           text={errorText}
           subtext={errorSubtext || t('errors.tryAgain')}
-          type="red"
+          type={toastType}
           isVisible={isVisible}
         />
       )}
