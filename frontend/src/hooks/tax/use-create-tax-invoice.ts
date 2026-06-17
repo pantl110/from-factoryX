@@ -58,9 +58,26 @@ const useCreateTaxInvoice = () => {
           setCreatedTaxInvoice(result);
           return { success: true, data: result };
         } else {
-          const errorData = await response.json();
-          const errorMessage =
-            errorData.detail || '세금계산서 생성에 실패했습니다.';
+          const errorData = await response.json().catch(() => ({}));
+          const detail = errorData?.detail;
+          let errorMessage = '세금계산서 생성에 실패했습니다.';
+          if (typeof detail === 'string') {
+            errorMessage = detail;
+          } else if (Array.isArray(detail)) {
+            // Pydantic 422 검증 에러: [{ loc, msg }] → 읽기 좋은 메시지로 변환
+            errorMessage =
+              detail
+                .map((e) => {
+                  const field = Array.isArray(e?.loc)
+                    ? e.loc[e.loc.length - 1]
+                    : '';
+                  return field ? `${field}: ${e?.msg}` : e?.msg;
+                })
+                .filter(Boolean)
+                .join('\n') || errorMessage;
+          } else if (detail && typeof detail === 'object') {
+            errorMessage = JSON.stringify(detail);
+          }
           setError(errorMessage);
           return { success: false, error: errorMessage };
         }

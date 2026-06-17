@@ -466,8 +466,9 @@ const CreatTaxPanel = ({
               amount:
                 ((p.quantity || 0) * (p.unitPrice || 0)).toString() || '0', // 공급가액
               tax:
-                ((p.quantity || 0) * (p.unitPrice || 0) * 0.1).toString() ||
-                '0', // 세액
+                Math.floor(
+                  (p.quantity || 0) * (p.unitPrice || 0) * 0.1
+                ).toString() || '0', // 세액 (원 미만 절사 — 국세청 홈택스 기준)
             })) || [];
 
         const taxInvoiceData: CreateTaxInvoiceModel = {
@@ -482,9 +483,8 @@ const CreatTaxPanel = ({
             (sum, item) => sum + Number(item.amount),
             0
           ),
-          tax_amount: lineItems.reduce(
-            (sum, item) => sum + Number(item.tax),
-            0
+          tax_amount: Math.floor(
+            lineItems.reduce((sum, item) => sum + Number(item.tax), 0)
           ),
           is_hidden: false,
         };
