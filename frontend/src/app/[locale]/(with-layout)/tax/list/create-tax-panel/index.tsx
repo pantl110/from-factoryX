@@ -16,6 +16,7 @@ import {
   useLinkTaxInvoice,
   useToast,
   useCheckBarobill,
+  usePublishTaxInvoice,
 } from '@/hooks';
 import useMemberStore from '@/store/member-store';
 import {
@@ -114,6 +115,9 @@ const CreatTaxPanel = ({
   const { createClient } = useCreateClient();
   const { updateClient } = useUpdateClient();
   const { createTaxInvoice } = useCreateTaxInvoice();
+  const { publishTaxInvoice } = usePublishTaxInvoice();
+  // 생성된 세금계산서 id 보관 (모달 확인 시 생성 후 발행에 사용)
+  const createdTaxIdRef = useRef<number | null>(null);
   const { linkTaxInvoice } = useLinkTaxInvoice();
   const { checkBarobill } = useCheckBarobill();
 
@@ -184,23 +188,52 @@ const CreatTaxPanel = ({
     setSelectedIssueType(null);
   };
 
-  // 모달 "확인" — 세금계산서 생성(임시저장) 후 결과에 따라 토스트/판넬 처리
+  // 모달 "확인" — 세금계산서 생성(임시저장) 후 국세청 발행까지 진행
   const handleModalConfirm = async (transactionType: TransactionType) => {
-    const isSuccess = await handleTemporarySave(transactionType);
-    if (isSuccess) {
-      // 성공: 성공 토스트 + 모달/판넬 닫기
-      setToastType('primary');
-      setErrorText(t('toast.createSuccessTitle'));
-      setErrorSubtext(t('toast.createSuccessSubtitle'));
-      showToast();
-      setIsEditingMode?.(false);
-      handleModalClose();
-      onClose();
-    } else {
-      // 실패: 실패 토스트 + 모달만 닫고 판넬 유지
+    createdTaxIdRef.current = null;
+
+    // 1) 생성(임시저장)
+    const isSaved = await handleTemporarySave(transactionType);
+    if (!isSaved) {
+      // 생성 자체 실패: 에러 토스트 + 모달만 닫고 판넬 유지
       setToastType('red');
       setErrorText(t('toast.createFailTitle'));
       setErrorSubtext(t('toast.createFailSubtitle'));
+      showToast();
+      handleModalClose();
+      return;
+    }
+
+    const taxId = createdTaxIdRef.current;
+    if (!taxId) {
+      // 생성은 됐으나 id를 못 얻음 → 임시저장 상태로 남김 + 에러 토스트
+      setToastType('red');
+      setErrorText(t('toast.publishFailTitle'));
+      setErrorSubtext(t('toast.publishFailSavedSubtitle'));
+      showToast();
+      handleModalClose();
+      return;
+    }
+
+    // 2) 국세청 발행
+    const publishResult = await publishTaxInvoice(taxId);
+    if (publishResult.success) {
+      // 발행 성공: 성공 토스트 후 판넬 닫기
+      // (토스트가 판넬 내부에 렌더링되므로, 보이도록 잠시 뒤 닫는다)
+      setToastType('primary');
+      setErrorText(t('toast.publishSuccessTitle'));
+      setErrorSubtext(t('toast.publishSuccessSubtitle'));
+      showToast();
+      setIsEditingMode?.(false);
+      handleModalClose();
+      setTimeout(() => {
+        onClose();
+      }, 1500);
+    } else {
+      // 발행 실패: 임시저장 상태로 남음(이미 생성됨) + 에러 토스트, 판넬 유지
+      setToastType('red');
+      setErrorText(t('toast.publishFailTitle'));
+      setErrorSubtext(publishResult.error || t('toast.publishFailSavedSubtitle'));
       showToast();
       handleModalClose();
     }
@@ -524,6 +557,11 @@ const CreatTaxPanel = ({
             project_id: projectId,
             tax_id: result.id,
           });
+        }
+
+        // 생성된 세금계산서 id 보관 (모달 확인 시 발행에 사용)
+        if (result.id) {
+          createdTaxIdRef.current = result.id;
         }
 
         // 새로 생성된 세금계산서 ID를 부모에게 전달 (연결 후 전달)

@@ -650,7 +650,11 @@
         "createSuccessTitle": "세금계산서가 생성되었어요.",
         "createSuccessSubtitle": "생성된 세금계산서는 문서 뷰에서 확인할 수 있어요.",
         "createFailTitle": "세금계산서 생성에 실패했어요.",
-        "createFailSubtitle": "다시 시도해 주세요."
+        "createFailSubtitle": "다시 시도해 주세요.",
+        "publishSuccessTitle": "세금계산서가 발행되었어요.",
+        "publishSuccessSubtitle": "발행된 세금계산서는 발행 목록에서 확인할 수 있어요.",
+        "publishFailTitle": "세금계산서 발행에 실패했어요.",
+        "publishFailSavedSubtitle": "임시저장되었어요. 잠시 후 다시 시도해 주세요."
       },
       "errors": {
         "createTaxInvoiceFailed": "세금계산서 생성에 실패했습니다.",
