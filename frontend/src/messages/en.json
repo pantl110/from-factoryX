@@ -621,7 +621,7 @@
     "createTaxPanel": {
       "claimReceiptTaxModal": {
         "title": "Create tax invoice using {issueType} method?",
-        "subtitle": "Tax invoices issued using {issueType} method will be displayed as '{issueType}' in the document view."
+        "subtitle": "Tax invoices issued using {issueType} method will be displayed as ''{issueType}'' in the document view."
       },
       "addItemDropdown": {
         "existing": "Add Existing Product",

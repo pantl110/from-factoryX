@@ -622,7 +622,7 @@
     "createTaxPanel": {
       "claimReceiptTaxModal": {
         "title": "{issueType} 방식으로 세금계산서를 생성할까요?",
-        "subtitle": "{issueType} 방식으로 발행된 세금계산서는 문서 뷰에 '{issueType}'로 표시돼요."
+        "subtitle": "{issueType} 방식으로 발행된 세금계산서는 문서 뷰에 ''{issueType}''로 표시돼요."
       },
       "addItemDropdown": {
         "existing": "기존 제품 추가",

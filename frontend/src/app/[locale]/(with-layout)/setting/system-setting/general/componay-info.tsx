@@ -270,9 +270,7 @@ const CompanyInfo = () => {
             <div className="flex justify-end">
               <MiniBtn
                 text={tCommon('save')}
-                textColor="text-primary"
-                bgColor="bg-primary-8"
-                hoverColor="hover:bg-secondary-hover"
+                variant="primary"
                 type="submit"
                 disabled={isProcessing || !factoryId}
               />
