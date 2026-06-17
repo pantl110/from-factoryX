@@ -48,7 +48,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         {/* 메인 콘텐츠 영역 */}
         <div
           className={`flex flex-col min-h-screen transition-all duration-300 ease-in-out ${
-            isProductionPage && !isSidebarVisible ? 'ml-0' : 'ml-0 sm:ml-64'
+            isProductionPage && !isSidebarVisible ? 'ml-0' : 'ml-0 sm:ml-52'
           }`}
         >
           {/* 데스크톱 탑바 */}
