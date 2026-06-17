@@ -113,7 +113,8 @@ CORS_ALLOWED_ORIGINS = []
 ENV_CORS_ALLOWED_ORIGINS = config("CORS_ALLOWED_ORIGINS", cast=str, default="")
 for origin in ENV_CORS_ALLOWED_ORIGINS.split(","):
     if origin.strip():  # 빈 문자열 체크
-        CORS_ALLOWED_ORIGINS.append(origin.strip().lower())
+        # 후행 슬래시 제거 (corsheaders.E014: Origin은 path가 없어야 함)
+        CORS_ALLOWED_ORIGINS.append(origin.strip().lower().rstrip("/"))
 
 # cors & csrf
 SESSION_COOKIE_SECURE = True
