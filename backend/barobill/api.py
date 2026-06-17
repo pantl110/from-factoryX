@@ -164,8 +164,12 @@ async def get_check_barobill_cert(request, factory_id: int):
     factory = await get_factory_by_id(factory_id, user)
     factory_member = await is_factory_member(factory.id, user)
 
-    result = await check_barobill_cert(factory.business_registration_number)
-    return {"message": "바로빌 기업 인증서 등록 여부 확인", "is_valid": result}
+    has_cert = await check_barobill_cert(factory.business_registration_number)
+    return {
+        "message": "바로빌 기업 인증서 등록 여부 확인",
+        "has_cert": has_cert,
+        "is_valid": has_cert,  # 하위호환
+    }
 
 
 @router.get(

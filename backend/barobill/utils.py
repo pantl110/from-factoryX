@@ -111,6 +111,10 @@ async def add_user_to_barobill(
     return barobill_id, barobill_password
 
 
+# 공동인증서 미등록/검증실패 코드 — 에러가 아니라 "등록 필요" 상태로 처리한다.
+BAROBILL_NO_CERT_CODES = (-26001, -26002, -26003, -31100)
+
+
 async def check_barobill_cert(factory_business_registration_number):
     certKey = settings.BAROBILL_CERT_KEY
     corpNum = factory_business_registration_number
@@ -118,13 +122,17 @@ async def check_barobill_cert(factory_business_registration_number):
         CERTKEY=certKey,
         CorpNum=corpNum,
     )
+    # 인증서 미등록/검증실패는 정상 상태(등록 유도)로 보고 has_cert=False 반환
+    if result in BAROBILL_NO_CERT_CODES:
+        return False
     if result < 0:
+        # 그 외 음수는 진짜 API 오류
         raise HttpError(
             400,
             f"바로빌 인증서 유효성 검사 실패: {barobill_error_codes.get(result, 'Unknown error')}",
         )
 
-    return result
+    return True
 
 
 async def check_barobill_expire_date(factory_business_registration_number):
