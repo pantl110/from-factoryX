@@ -238,7 +238,9 @@ const CreatTaxPanel = ({
       // 발행 실패: 임시저장 상태로 남음(이미 생성됨) + 에러 토스트, 판넬 유지
       setToastType('red');
       setErrorText(t('toast.publishFailTitle'));
-      setErrorSubtext(publishResult.error || t('toast.publishFailSavedSubtitle'));
+      setErrorSubtext(
+        publishResult.error || t('toast.publishFailSavedSubtitle')
+      );
       showToast();
       handleModalClose();
     }
