@@ -118,6 +118,11 @@ const CreatTaxPanel = ({
   const { publishTaxInvoice } = usePublishTaxInvoice();
   // 생성된 세금계산서 id 보관 (모달 확인 시 생성 후 발행에 사용)
   const createdTaxIdRef = useRef<number | null>(null);
+  // 생성 후 id를 기억 → 재시도 시 새로 생성하지 않고 수정되도록(중복 임시저장 방지)
+  const [currentTaxId, setCurrentTaxId] = useState<number | undefined>(taxId);
+  useEffect(() => {
+    setCurrentTaxId(taxId);
+  }, [taxId]);
   const { linkTaxInvoice } = useLinkTaxInvoice();
   const { checkBarobill } = useCheckBarobill();
 
@@ -528,7 +533,7 @@ const CreatTaxPanel = ({
             })) || [];
 
         const taxInvoiceData: CreateTaxInvoiceModel = {
-          tax_id: taxId,
+          tax_id: currentTaxId,
           factory: factoryId,
           client: currentClientId || null, // 거래처 ID가 없으면 null
           line_items: lineItems,
@@ -559,9 +564,10 @@ const CreatTaxPanel = ({
           });
         }
 
-        // 생성된 세금계산서 id 보관 (모달 확인 시 발행에 사용)
+        // 생성된 세금계산서 id 보관 (모달 확인 시 발행에 사용 + 재시도 시 중복 방지)
         if (result.id) {
           createdTaxIdRef.current = result.id;
+          setCurrentTaxId(result.id);
         }
 
         // 새로 생성된 세금계산서 ID를 부모에게 전달 (연결 후 전달)
