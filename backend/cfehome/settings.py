@@ -324,10 +324,9 @@ AWS_STORAGE_BUCKET_NAME = config("AWS_STORAGE_BUCKET_NAME", default=None)
 # Barobill settings
 BAROBILL_CERT_KEY = config("BAROBILL_CERT_KEY", default=None)
 ENABLE_BAROBILL = config("ENABLE_BAROBILL", default=False, cast=bool)
-# 'test'(기본, testws.baroservice.com) 또는 'prod'(ws.baroservice.com)로 서버 분기
-BAROBILL_ENV = config("BAROBILL_ENV", default="test")
 if ENABLE_BAROBILL:
-    if BAROBILL_ENV == "prod":
+    # 운영(DJANGO_ENV_NAME == "production")만 운영 서버, 그 외 환경은 테스트 서버(안전 기본값)
+    if DJANGO_ENV_NAME == "production":
         _barobill_ti_wsdl = "https://ws.baroservice.com/TI.asmx?WSDL"  # 운영서버
         _barobill_cashbill_wsdl = "https://ws.baroservice.com/CASHBILL.asmx?WSDL"  # 운영서버
     else:
