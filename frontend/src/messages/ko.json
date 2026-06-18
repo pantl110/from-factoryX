@@ -1115,7 +1115,8 @@
   },
   "stock": {
     "title": "재고 관리",
-    "excelDownloadButton": "엑셀 양식 다운로드",
+    "excelDownloadButtonProduct": "제품 엑셀 양식 다운로드",
+    "excelDownloadButtonMaterial": "자재 엑셀 양식 다운로드",
     "addProductButton": "제품 추가하기",
     "addMaterialButton": "자재 추가하기",
     "tabs": {
@@ -1355,9 +1356,9 @@
             "unknownError": "오류가 발생했습니다."
           },
           "excelColumns": {
-            "productName": "품목명",
+            "productName": "제품명",
             "materialName": "자재명",
-            "productCode": "품목코드",
+            "productCode": "제품코드",
             "materialCode": "자재코드",
             "specification": "규격",
             "unit": "단위",

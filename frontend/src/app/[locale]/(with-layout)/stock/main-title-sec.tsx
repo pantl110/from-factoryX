@@ -80,7 +80,11 @@ const MainTitleSec = ({
         <h1 className="Heading-1 text-dg">{t('title')}</h1>
         <div className="flex gap-2.5">
           <MiniBtn
-            text={t('excelDownloadButton')}
+            text={
+              selectedTab === 'product'
+                ? t('excelDownloadButtonProduct')
+                : t('excelDownloadButtonMaterial')
+            }
             textColor="text-dg"
             borderColor="border-lg"
             hoverColor="hover:bg-bg"

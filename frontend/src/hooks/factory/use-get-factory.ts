@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { FactoriesResponseModel } from '@/types/data-model';
 
@@ -96,7 +96,12 @@ const fetchFactoryDetail = async (
 
 // 공장 상세 조회
 export const useGetFactory = () => {
+  const queryClient = useQueryClient();
   const [currentFactoryId, setCurrentFactoryId] = useState<number | null>(null);
+
+  // getFactory가 매 렌더마다 재생성되지 않도록 최신 factoryId를 ref로 추적
+  const currentFactoryIdRef = useRef<number | null>(null);
+  currentFactoryIdRef.current = currentFactoryId;
 
   const factoryQuery = useQuery<FactoriesResponseModel, Error>({
     queryKey:
@@ -118,21 +123,26 @@ export const useGetFactory = () => {
   const getFactory = useCallback(
     async (factoryId: number) => {
       // factoryId가 변경되면 useQuery가 자동으로 새로운 데이터를 가져옵니다
-      if (currentFactoryId !== factoryId) {
+      if (currentFactoryIdRef.current !== factoryId) {
         setCurrentFactoryId(factoryId);
         // factoryId가 변경되면 useQuery가 자동으로 실행되므로
         // refetch를 기다릴 필요는 없지만, 호환성을 위해 Promise를 반환합니다
         return { success: true, data: null };
       } else {
-        // 같은 factoryId면 refetch만 실행
-        const result = await factoryQuery.refetch();
-        if (result.data) {
-          return { success: true, data: result.data };
+        // 같은 factoryId면 강제로 재조회 (queryClient로 처리해 의존성을 안정화)
+        try {
+          const data = await queryClient.fetchQuery({
+            queryKey: FACTORY_DETAIL_QUERY_KEY(factoryId),
+            queryFn: () => fetchFactoryDetail(factoryId),
+            staleTime: 0,
+          });
+          return { success: true, data };
+        } catch {
+          return { success: false, error: '공장 정보를 불러오지 못했습니다.' };
         }
-        return { success: false, error: '공장 정보를 불러오지 못했습니다.' };
       }
     },
-    [currentFactoryId, factoryQuery]
+    [queryClient]
   );
 
   return {

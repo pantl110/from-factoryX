@@ -64,7 +64,7 @@ export const ProductionInfo = ({
     <div className="flex flex-col gap-3">
       <h3 className="Heading-3 h-10 flex items-center">{t('title')}</h3>
 
-      <div>
+      <div className="border-b border-lg">
         <div className="flex">
           <InfoLabelValue
             label={tCommon('productName')}

@@ -1114,7 +1114,8 @@
   },
   "stock": {
     "title": "Inventory",
-    "excelDownloadButton": "Download Excel Template",
+    "excelDownloadButtonProduct": "Download Product Excel Template",
+    "excelDownloadButtonMaterial": "Download Material Excel Template",
     "addProductButton": "Add Product",
     "addMaterialButton": "Add Material",
     "tabs": {
