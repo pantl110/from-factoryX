@@ -273,13 +273,10 @@ const RequestInfo = ({
             ? tRequestInfo('orderTitle')
             : tRequestInfo('title')}
         </h3>
-        <MiniBtn
+        <MiniBtn variant="whiteOutline"
           text={tRequestInfo('addProduct')}
-          textColor="text-dg"
-          borderColor="border-lg"
           icon={CaretDown}
           iconPosition="right"
-          hoverColor="hover:bg-bg"
           onClick={() => setIsProductEnrollmentDropdownOpen(true)}
           disabled={isViewer || !hasSubscription()}
         />

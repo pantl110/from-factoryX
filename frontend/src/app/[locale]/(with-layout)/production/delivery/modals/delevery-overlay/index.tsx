@@ -41,17 +41,12 @@ const DeliveryOverlay = ({ onClose, data }: DeliveryOverlayProps) => {
             </div>
           </div>
           <div className="flex gap-2.5">
-            <MiniBtn
+            <MiniBtn variant="white"
               text={tCommon('cancel')}
-              textColor="text-sv"
-              hoverColor="hover:bg-bg"
               onClick={onClose}
             />
-            <MiniBtn
+            <MiniBtn variant="primary"
               text={tCommon('print')}
-              textColor="text-wh"
-              bgColor="bg-primary"
-              hoverColor="hover:bg-primary-hover"
               onClick={reactToPrintFn}
             />
           </div>

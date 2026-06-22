@@ -152,11 +152,8 @@ const MaterialInputItem = ({
 
       {plusMode && (
         <div className="flex justify-end">
-          <MiniBtn
+          <MiniBtn variant="whiteOutline"
             text={tCommon('delete')}
-            textColor="text-dg"
-            borderColor="border-lg"
-            hoverColor="hover:bg-bg"
             onClick={onDelete}
           />
         </div>

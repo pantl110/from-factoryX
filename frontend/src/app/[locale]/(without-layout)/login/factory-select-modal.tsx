@@ -85,11 +85,11 @@
 //           onClick={handleExistingFactorySelect}
 //           disabled={isDeleteFactoryLoading || isDeleteMemberLoading}
 //         />
-//         <MiniBtn
+//         <MiniBtn variant="primary"
 //           text="새 공장에 참여"
-//           textColor="text-wh"
-//           bgColor="bg-primary"
-//           hoverColor="hover:bg-primary-hover"
+//
+//
+//
 //           onClick={handleNewFactorySelect}
 //           disabled={isDeleteFactoryLoading || isDeleteMemberLoading}
 //         />

@@ -79,22 +79,17 @@ const MainTitleSec = ({
       <div className="flex items-center justify-between">
         <h1 className="Heading-1 text-dg">{t('title')}</h1>
         <div className="flex gap-2.5">
-          <MiniBtn
+          <MiniBtn variant="whiteOutline"
             text={
               selectedTab === 'product'
                 ? t('excelDownloadButtonProduct')
                 : t('excelDownloadButtonMaterial')
             }
-            textColor="text-dg"
-            borderColor="border-lg"
-            hoverColor="hover:bg-bg"
             disabled={!factoryId || isViewer || !hasSubscription()}
             onClick={handleExcelDownload}
           />
           <div className="relative">
-            <MiniBtn
-              bgColor="bg-primary"
-              textColor="text-wh"
+            <MiniBtn variant="primary"
               text={
                 selectedTab === 'product'
                   ? t('addProductButton')
@@ -103,7 +98,6 @@ const MainTitleSec = ({
               icon={CaretDown}
               iconPosition="right"
               iconColor="text-white"
-              hoverColor="hover:bg-primary-hover"
               onClick={() =>
                 selectedTab === 'product'
                   ? onProductAddDropdownOpen(true)

@@ -432,13 +432,10 @@ const TableItem = ({
     '': (
       <div className="w-full h-full flex justify-between items-center">
         {operationStatus === 'pending' && !isViewer && hasSubscription() && (
-          <MiniBtn
+          <MiniBtn variant="whiteOutline"
             text={tCommon('save')}
             onClick={handleSave}
             disabled={!isSaveButtonEnabled}
-            hoverColor="hover:bg-bg"
-            textColor="text-dg"
-            borderColor="border-lg"
             height="h-8"
           />
         )}

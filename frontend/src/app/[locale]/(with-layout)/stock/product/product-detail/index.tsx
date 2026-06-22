@@ -608,11 +608,8 @@ const ProductDetail = ({
             isLocationDirty ||
             isQuantityDirty ||
             stagedLocations.length > 0) && (
-            <MiniBtn
+            <MiniBtn variant="secondary"
               text={tCommon('save')}
-              textColor="text-primary"
-              bgColor="bg-primary-8"
-              hoverColor="hover:bg-secondary-hover"
               onClick={handleSave}
               disabled={
                 !isValid ||

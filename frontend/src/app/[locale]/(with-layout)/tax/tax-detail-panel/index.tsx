@@ -149,11 +149,8 @@ const TaxDetailPanel = ({
             <>
               {/* 전송 대기 시 취소 가능 */}
               {isPendingTransmission && (
-                <MiniBtn
+                <MiniBtn variant="red"
                   text={tDetailPanel('buttons.cancelPublish')}
-                  textColor="text-red"
-                  bgColor="bg-red-8"
-                  hoverColor="hover:bg-red-hover"
                   onClick={async () => {
                     if (itemId) {
                       const result = await cancelTaxInvoice(itemId);

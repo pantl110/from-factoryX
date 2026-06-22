@@ -62,12 +62,8 @@ const SearchDeleteTable = ({
         (!disableForProdManager || role !== 'prod_manager') &&
         hasSubscription() && (
           <div className="flex gap-1">
-            {/* <MiniBtn
+            {/* <MiniBtn variant="whiteOutline"
             text="취소"
-            textColor="text-dg"
-            borderColor="border-lg"
-            bgColor="bg-white"
-            hoverColor="hover:bg-bg"
             onClick={onCancel}
           /> */}
             <MiniBtn

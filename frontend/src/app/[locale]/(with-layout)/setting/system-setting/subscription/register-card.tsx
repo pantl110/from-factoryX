@@ -42,11 +42,8 @@ const RegisterCard = ({
             <h4 className="Heading-4">
               {paymentAuth?.card_company} {paymentAuth?.card_number}
             </h4>
-            <MiniBtn
+            <MiniBtn variant="red"
               text={t('delete')}
-              textColor="text-red"
-              bgColor="bg-red-8"
-              hoverColor="hover:bg-red-hover"
               onClick={() => setIsCardDeleteModalOpen(true)}
               disabled={!isAdmin}
             />

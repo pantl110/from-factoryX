@@ -23,18 +23,13 @@ const DeleteModal = ({
       onClose={onClose}
     >
       <div className="flex gap-[5px] justify-end mt-4">
-        <MiniBtn
+        <MiniBtn variant="white"
           text={t('cancel')}
-          textColor="text-sv"
           onClick={onClose}
-          hoverColor="hover:bg-bg"
         />
-        <MiniBtn
+        <MiniBtn variant="red"
           text={t('delete')}
-          textColor="text-red"
-          bgColor="bg-red-8"
           onClick={onDelete}
-          hoverColor="hover:bg-red-hover"
           disabled={isLoading}
         />
       </div>

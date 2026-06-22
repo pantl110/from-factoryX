@@ -147,12 +147,9 @@ const ProductionMonitor = ({
               <div className="flex flex-col gap-4 h-full min-h-0">
                 {projectStatus !== 'completed' && (
                   <div>
-                    <MiniBtn
+                    <MiniBtn variant="whiteOutline"
                       text={t('writeButton')}
-                      textColor="text-dg"
-                      borderColor="border-lg"
                       onClick={() => setIsCreateMemoModalOpen(true)}
-                      hoverColor="hover:bg-bg"
                       disabled={isViewer || !hasSubscription()}
                     />
                   </div>

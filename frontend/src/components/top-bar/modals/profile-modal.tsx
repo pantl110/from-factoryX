@@ -82,11 +82,8 @@ const ProfileModal = ({ onClose }: ProfileModalProps) => {
       {/* 버튼 영역 */}
       <div className="flex gap-2.5">
         <div className="flex-1">
-          <MiniBtn
+          <MiniBtn variant="whiteOutline"
             text={t('manageProfile')}
-            borderColor="border-lg"
-            textColor="text-dg"
-            hoverColor="hover:bg-bg"
             width="w-full"
             onClick={() => {
               router.push('/setting');
@@ -95,11 +92,8 @@ const ProfileModal = ({ onClose }: ProfileModalProps) => {
           />
         </div>
         <div className="flex-1">
-          <MiniBtn
+          <MiniBtn variant="whiteOutline"
             text={t('logout')}
-            borderColor="border-lg"
-            textColor="text-dg"
-            hoverColor="hover:bg-bg"
             width="w-full"
             onClick={async () => {
               await logout();

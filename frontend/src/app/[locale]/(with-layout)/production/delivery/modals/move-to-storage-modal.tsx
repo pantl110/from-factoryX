@@ -21,17 +21,12 @@ const MoveToStorageModal = ({
   return (
     <Modal title={t('title')} onClose={onClose} subtitle={t('subtitle')}>
       <div className="flex gap-2.5 mt-4 justify-end">
-        <MiniBtn
+        <MiniBtn variant="white"
           text={tCommon('cancel')}
-          textColor="text-sv"
-          hoverColor="hover:bg-bg"
           onClick={onClose}
         />
-        <MiniBtn
+        <MiniBtn variant="primary"
           text={t('button')}
-          textColor="text-wh"
-          bgColor="bg-primary"
-          hoverColor="hover:bg-primary-hover"
           onClick={onMoveToStorage}
           disabled={isLoading}
         />

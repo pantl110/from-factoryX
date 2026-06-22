@@ -79,14 +79,11 @@ const TodayProductionSchedule = ({
       <div className="flex flex-col h-full">
         <div className="flex justify-between items-center">
           <h3 className="Heading-3">{t('title')}</h3>
-          <MiniBtn
+          <MiniBtn variant="whiteOutline"
             text={t('printButton')}
-            textColor="text-dg"
-            borderColor="border-lg"
             onClick={() => {
               setIsPrintOverlayOpen(true);
             }}
-            hoverColor="hover:bg-bg"
             disabled={!shouldShowPrint}
           />
         </div>
@@ -121,11 +118,9 @@ const TodayProductionSchedule = ({
                   </div>
                 </div>
                 <MiniBtn
-                  text={t('printButton')}
-                  textColor="text-wh"
-                  bgColor="bg-primary"
-                  hoverColor="hover:bg-primary-hover"
+                  variant="primary"
                   borderColor="border-primary-hover"
+                  text={t('printButton')}
                   onClick={async () => {
                     // 출력 직전에 메모를 저장
                     if (latestWorkInstructionId) {

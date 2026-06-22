@@ -299,11 +299,8 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
                 {tStockLocation('title.material')}
               </h3>
               {fields.length > 0 && (
-                <MiniBtn
+                <MiniBtn variant="whiteOutline"
                   text={tCommon('add')}
-                  textColor="text-dg"
-                  borderColor="border-lg"
-                  hoverColor="hover:bg-bg"
                   onClick={() => setIsUploadModalOpen(true)}
                   disabled={isViewer || !hasSubscription()}
                 />

@@ -83,18 +83,13 @@ const CreateMemoModal = ({ onClose, onSuccess }: CreateMemoModalProps) => {
           placeholder={t('contentPlaceholder')}
         />
         <div className="flex gap-2.5 justify-end mt-4">
-          <MiniBtn
+          <MiniBtn variant="white"
             text={tCommon('cancel')}
-            textColor="text-sv"
             onClick={onClose}
-            hoverColor="hover:bg-bg"
             type="button"
           />
-          <MiniBtn
+          <MiniBtn variant="primary"
             text={t('createButton')}
-            textColor="text-wh"
-            bgColor="bg-primary"
-            hoverColor="hover:bg-primary-hover"
             type="submit"
             disabled={isLoading || !isValid}
           />

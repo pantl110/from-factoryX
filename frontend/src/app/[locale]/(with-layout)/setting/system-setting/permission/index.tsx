@@ -167,14 +167,11 @@ const Permission = () => {
                   !isFactoryInfoComplete ? tooltip.onMouseLeave : undefined
                 }
               >
-                <MiniBtn
+                <MiniBtn variant="secondary"
                   text={t('inviteModal.inviteButton')}
-                  textColor="text-primary"
-                  bgColor="bg-primary-8"
                   onClick={() => {
                     setIsInviteModalOpen(true);
                   }}
-                  hoverColor="hover:bg-secondary-hover"
                   disabled={
                     !isFactoryInfoComplete ||
                     isViewer ||

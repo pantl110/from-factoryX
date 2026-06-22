@@ -51,12 +51,9 @@ const MainTitleSec = ({
       <div className="flex items-center justify-between">
         <div className="Heading-1 text-dg">{t('title')}</div>
         <div className="relative">
-          <MiniBtn
-            bgColor="bg-primary"
-            textColor="text-white"
+          <MiniBtn variant="primary"
             text={t('createButton')}
             onClick={onNewQuotation}
-            hoverColor="hover:bg-primary-hover"
             icon={CaretDown}
             iconPosition="right"
             disabled={!factoryId || role === 'viewer' || !hasSubscription()}

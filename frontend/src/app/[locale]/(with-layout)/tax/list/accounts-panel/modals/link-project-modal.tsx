@@ -126,7 +126,6 @@ const LinkProjectModal = ({
             />
             <MiniBtn
               text={t('linkButton')}
-              hoverColor="hover:bg-primary-hover"
               variant="primary"
               disabled={!selectedId || isLinking}
               onClick={handleLinkButtonClick}

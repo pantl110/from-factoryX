@@ -139,11 +139,8 @@ const ClientDetailPanel = ({
       headerButton={
         (!clientDetail || isDirty) &&
         !isLoading && (
-          <MiniBtn
+          <MiniBtn variant="secondary"
             text={tCommon('save')}
-            textColor="text-primary"
-            bgColor="bg-primary-8"
-            hoverColor="hover:bg-secondary-hover"
             disabled={!isDirty || !isValid || isUpdateLoading}
             onClick={handleSubmit(onSubmit)}
           />

@@ -232,14 +232,11 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
             </div>
 
             <div onClick={(e) => openAuthBtnDropdown(e)} ref={authBtnDivRef}>
-              <MiniBtn
+              <MiniBtn variant="whiteOutline"
                 text={tInviteModal('authButton')}
-                textColor="text-dg"
-                borderColor="border-lg"
                 icon={CaretDown}
                 iconPosition="right"
                 height="h-12"
-                hoverColor="hover:bg-bg"
                 disabled={!shouldSelectAuth}
               />
             </div>
@@ -327,18 +324,13 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
               </div>
             )}
             <div className="flex justify-end gap-2.5 mb-6">
-              <MiniBtn
+              <MiniBtn variant="white"
                 text={tCommon('cancel')}
-                textColor="text-sv"
                 onClick={onClose}
-                hoverColor="hover:bg-bg"
               />
-              <MiniBtn
+              <MiniBtn variant="primary"
                 text={tInviteModal('inviteButton')}
-                textColor="text-wh"
-                bgColor="bg-primary"
                 onClick={handleInviteMembers}
-                hoverColor="hover:bg-primary-hover"
                 disabled={members.length === 0 || isInviteLoading}
               />
             </div>
@@ -351,18 +343,13 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
           onClose={handleSuccessClose}
         >
           <div className="flex justify-end mt-4 gap-[5px]">
-            <MiniBtn
+            <MiniBtn variant="white"
               text={tCommon('close')}
-              textColor="text-sv"
               onClick={handleSuccessClose}
-              hoverColor="hover:bg-bg"
             />
-            <MiniBtn
+            <MiniBtn variant="primary"
               text={tCommon('confirm')}
-              textColor="text-wh"
-              bgColor="bg-primary"
               onClick={handleSuccessClose}
-              hoverColor="hover:bg-primary-hover"
             />
           </div>
         </Modal>

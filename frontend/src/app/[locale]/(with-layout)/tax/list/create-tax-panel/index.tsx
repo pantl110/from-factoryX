@@ -645,11 +645,8 @@ const CreatTaxPanel = ({
   // 헤더 버튼 구성
   const headerButton = (
     <div className="flex gap-2">
-      <MiniBtn
+      <MiniBtn variant="secondary"
         text={tTax('publishStatus.temporary')}
-        textColor="text-primary"
-        bgColor="bg-primary-8"
-        hoverColor="hover:bg-secondary-hover"
         onClick={async () => {
           const isSuccess = await handleTemporarySave('receipt', projectId);
           // 성공했을 때만 판넬 닫기
@@ -668,11 +665,8 @@ const CreatTaxPanel = ({
         }
       />
       <div className="relative">
-        <MiniBtn
+        <MiniBtn variant="primary"
           text={t('buttons.selectIssueType')}
-          textColor="text-wh"
-          bgColor="bg-primary"
-          hoverColor="hover:bg-primary-hover"
           icon={CaretDown}
           iconPosition="right"
           onClick={handleIssueTypeDropdownOpen}
@@ -721,11 +715,8 @@ const CreatTaxPanel = ({
             <h3 className="Heading-3 h-10 items-center flex">
               {tCommon('orderProductInfo')}
             </h3>
-            <MiniBtn
+            <MiniBtn variant="whiteOutline"
               text={`${tCommon('product')} ${tCommon('add')}`}
-              textColor="text-dg"
-              borderColor="border-lg"
-              hoverColor="hover:bg-bg"
               icon={CaretDown}
               iconPosition="right"
               onClick={() => setIsAddProductDropdownOpen(true)}

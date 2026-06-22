@@ -137,11 +137,8 @@ const ReceiptDetailPanel = ({
         onClose={onClose}
         headerButton={
           showLinkButton ? (
-            <MiniBtn
+            <MiniBtn variant="whiteOutline"
               text={tList('tableHeader.projectLink.purchase')}
-              textColor="text-dg"
-              borderColor="border-lg"
-              hoverColor="hover:bg-bg"
               onClick={() => {
                 setIsLinkReceiptModalOpen(true);
               }}

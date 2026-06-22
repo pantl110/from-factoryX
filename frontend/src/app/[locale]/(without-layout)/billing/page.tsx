@@ -239,11 +239,8 @@ const BillingPageContent = () => {
 
             {/* 버튼 */}
             <div className="w-full mt-20">
-              <MiniBtn
+              <MiniBtn variant="primary"
                 text={tCommon('confirm')}
-                bgColor="bg-primary"
-                textColor="text-wh"
-                hoverColor="hover:bg-primary-hover"
                 width="w-full"
                 onClick={handleConfirm}
               />
@@ -278,11 +275,8 @@ const BillingPageContent = () => {
 
             {/* 버튼 */}
             <div className="w-full mt-10">
-              <MiniBtn
+              <MiniBtn variant="primary"
                 text={t('buttons.retry')}
-                bgColor="bg-primary"
-                textColor="text-wh"
-                hoverColor="hover:bg-primary-hover"
                 width="w-full"
                 onClick={handleRetry}
               />

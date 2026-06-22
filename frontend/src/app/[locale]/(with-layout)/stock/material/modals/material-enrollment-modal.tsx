@@ -246,12 +246,9 @@ const MaterialEnrollmentModal = ({
                 </div>
               )}
             </div>
-            <MiniBtn
+            <MiniBtn variant="whiteOutline"
               text={tStock('manualAddButton')}
-              textColor="text-dg"
-              borderColor="border-lg"
               height="h-12"
-              hoverColor="hover:bg-bg"
               onClick={() => setIsManualAddMode(true)}
             />
           </div>

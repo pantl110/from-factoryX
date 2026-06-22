@@ -34,12 +34,9 @@ const DeleteAccount = () => {
           <p className="Me_Body-2 text-sv">{t('description')}</p>
         </div>
         <div className="flex justify-end">
-          <MiniBtn
+          <MiniBtn variant="red"
             text={t('buttonText')}
-            bgColor="bg-red-8"
-            textColor="text-red"
             onClick={() => setIsDeleteModalOpen(true)}
-            hoverColor="hover:bg-red-hover"
           />
         </div>
       </div>

@@ -178,18 +178,13 @@ const AddReturnModal = ({
         />
       </div>
       <div className="flex gap-2.5 mt-4 justify-end">
-        <MiniBtn
+        <MiniBtn variant="white"
           text={tCommon('cancel')}
           onClick={onClose}
-          textColor="text-sv"
-          hoverColor="hover:bg-bg"
         />
-        <MiniBtn
+        <MiniBtn variant="primary"
           text={tProduction('register')}
           onClick={handleSubmitRefund}
-          textColor="text-wh"
-          bgColor="bg-primary"
-          hoverColor="hover:bg-primary-hover"
           disabled={
             isCreateRefundLoading ||
             !selectedProduct ||

@@ -302,30 +302,22 @@ const LinkTaxModal = ({
               canCreate ? 'justify-between' : 'justify-end'
             }`}
           >
-            <MiniBtn
+            <MiniBtn variant="white"
               text={tCommon('cancel')}
-              hoverColor="hover:bg-bg"
-              textColor="text-sv"
               onClick={onClose}
             />
             <div className="flex gap-2.5">
               {canCreate && (
-                <MiniBtn
+                <MiniBtn variant="whiteOutline"
                   text={t('buttons.createTaxInvoice')}
-                  hoverColor="hover:bg-bg"
-                  borderColor="border-lg"
-                  textColor="text-dg"
                   onClick={() => {
                     setIsTaxPanelOpen?.(true);
                     onClose();
                   }}
                 />
               )}
-              <MiniBtn
+              <MiniBtn variant="primary"
                 text={t('buttons.linkHistory')}
-                hoverColor="hover:bg-primary-hover"
-                bgColor="bg-primary"
-                textColor="text-wh"
                 disabled={!selectedId || isLinking || isConnecting}
                 onClick={handleLinkButtonClick}
               />

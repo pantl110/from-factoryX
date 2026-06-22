@@ -572,12 +572,9 @@ const MaterialDetailPanel = ({
         onClose={() => setIsMaterialDetailOpen(false)}
         headerButton={
           isMaterialDetailDirty && (
-            <MiniBtn
+            <MiniBtn variant="secondary"
               text={tCommon('save')}
               onClick={handleSaveMaterialDetail}
-              hoverColor="hover:bg-secondary-hover"
-              textColor="text-primary"
-              bgColor="bg-primary-8"
               disabled={!hasRequiredFieldsFilled}
             />
           )

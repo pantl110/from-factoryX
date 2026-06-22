@@ -78,12 +78,9 @@ const NotificationModal = ({
       scroll={true}
       button={
         unreadCount === 0 ? null : (
-          <MiniBtn
+          <MiniBtn variant="whiteOutline"
             height="h-8"
             text={t('markAllAsRead')}
-            textColor="text-dg"
-            borderColor="border-lg"
-            hoverColor="hover:bg-bg"
             onClick={handleReadAll}
             disabled={isLoading || isMarkAllLoading}
           />

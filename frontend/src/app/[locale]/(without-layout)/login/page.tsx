@@ -157,11 +157,8 @@ const LoginPage = () => {
                 )}
               </div>
             </div>
-            <MiniBtn
+            <MiniBtn variant="primary"
               text={t('button')}
-              bgColor="bg-primary"
-              textColor="text-wh"
-              hoverColor="hover:bg-primary-hover"
               height="h-12"
               type="submit"
               disabled={!isButtonEnabled}

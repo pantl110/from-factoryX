@@ -94,32 +94,25 @@ const MemoSection = ({
         {projectStatus !== 'completed' && (
           <div className="flex gap-2.5 justify-end">
             {!isEditMode ? (
-              <MiniBtn
+              <MiniBtn variant="whiteOutline"
                 text={tCommon('edit')}
-                textColor="text-dg"
-                borderColor="border-lg"
-                hoverColor="hover:bg-bg"
                 onClick={() => setIsEditMode(true)}
                 disabled={isViewer || !hasSubscription()}
               />
             ) : (
               <>
                 <MiniBtn
-                  text={tCommon('cancel')}
-                  textColor="text-sv"
+                  variant="white"
                   borderColor="border-lg"
-                  hoverColor="hover:bg-bg"
+                  text={tCommon('cancel')}
                   onClick={() => {
                     setIsEditMode(false);
                     setMemoTitle(title);
                     setMemoContent(content);
                   }}
                 />
-                <MiniBtn
+                <MiniBtn variant="primary"
                   text={tCommon('save')}
-                  textColor="text-wh"
-                  bgColor="bg-primary"
-                  hoverColor="hover:bg-primary-hover"
                   onClick={handleMemoSave}
                   disabled={isLoading}
                 />

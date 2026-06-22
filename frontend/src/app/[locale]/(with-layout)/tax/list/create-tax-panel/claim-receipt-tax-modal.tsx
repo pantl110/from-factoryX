@@ -32,17 +32,12 @@ const ClaimReceiptTaxModal = ({
     <>
       <Modal title={getTitle()} subtitle={getSubtitle()} onClose={onClose}>
         <div className="flex justify-end gap-[5px] mt-4">
-          <MiniBtn
+          <MiniBtn variant="white"
             text={tCommon('cancel')}
-            textColor="text-sv"
-            hoverColor="hover:bg-bg"
             onClick={onClose}
           />
-          <MiniBtn
+          <MiniBtn variant="primary"
             text={tCommon('confirm')}
-            textColor="text-wh"
-            bgColor="bg-primary"
-            hoverColor="hover:bg-primary-hover"
             onClick={() =>
               onConfirm(issueType === 'invoice' ? 'invoice' : 'receipt')
             }
@@ -58,11 +53,8 @@ const ClaimReceiptTaxModal = ({
           onClose={() => setIsNextModalOpen(false)}
         >
           <div className="flex justify-end gap-[5px] mt-4">
-            <MiniBtn
+            <MiniBtn variant="primary"
               text="확인"
-              textColor="text-wh"
-              bgColor="bg-primary"
-              hoverColor="hover:bg-primary-hover"
               onClick={() => {
                 setIsNextModalOpen(false);
                 onClose(); // 모든 모달 닫기

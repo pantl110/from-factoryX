@@ -19,18 +19,13 @@ const StartProductionModal = ({
   return (
     <Modal onClose={onClose} title={t('title')} subtitle={t('subtitle')}>
       <div className="flex justify-end gap-[5px] mt-4">
-        <MiniBtn
+        <MiniBtn variant="white"
           text={tCommon('cancel')}
-          textColor="text-sv"
           onClick={onClose}
-          hoverColor="hover:bg-bg"
         />
-        <MiniBtn
+        <MiniBtn variant="primary"
           text={t('startButton')}
-          textColor="text-wh"
-          bgColor="bg-primary"
           onClick={onClick}
-          hoverColor="hover:bg-primary-hover"
           disabled={isLoading}
         />
       </div>

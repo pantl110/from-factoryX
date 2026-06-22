@@ -437,11 +437,8 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
           onClose={() => setIsTaxPanelOpen(false)}
           headerButton={
             taxData.tax_invoice_type === 'sales' ? (
-              <MiniBtn
+              <MiniBtn variant="whiteOutline"
                 text={tList('tableHeader.projectLink.sales')}
-                textColor="text-dg"
-                borderColor="border-lg"
-                hoverColor="hover:bg-bg"
                 onClick={() => {
                   setIsLinkProjectModalOpen(true);
                 }}

@@ -166,11 +166,8 @@ const ProductEnrollmentModal = ({
           }}
           onBlur={() => setTimeout(() => setIsOpen(false), 150)}
         />
-        <MiniBtn
+        <MiniBtn variant="whiteOutline"
           text={tStock('manualAddButton')}
-          textColor="text-dg"
-          borderColor="border-lg"
-          hoverColor="hover:bg-bg"
           height="h-12"
           onClick={() => setIsManualAddMode(true)}
         />
@@ -223,17 +220,12 @@ const ProductEnrollmentModal = ({
         )}
 
         <div className="flex gap-2.5 justify-end">
-          <MiniBtn
+          <MiniBtn variant="white"
             text={tCommon('cancel')}
-            textColor="text-sv"
-            hoverColor="hover:bg-bg"
             onClick={onClose}
           />
-          <MiniBtn
+          <MiniBtn variant="primary"
             text={tCommon('add')}
-            textColor="text-wh"
-            bgColor="bg-primary"
-            hoverColor="hover:bg-primary-hover"
             disabled={
               selectedProducts.length === 0 ||
               isManualAddMode ||

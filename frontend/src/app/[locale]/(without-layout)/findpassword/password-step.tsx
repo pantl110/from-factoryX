@@ -85,12 +85,9 @@ const PasswordStep = ({
         </div>
       </div>
 
-      <MiniBtn
+      <MiniBtn variant="primary"
         width="w-full"
         text={t('buttons.changePassword')}
-        bgColor="bg-primary"
-        textColor="text-wh"
-        hoverColor="hover:bg-primary-hover"
         height="h-12"
         type="submit"
         disabled={!isValid || resetPassword.isLoading}

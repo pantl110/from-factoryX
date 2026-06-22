@@ -55,11 +55,8 @@ const PurchaseTableTiem = ({
       </p>
       {canLink && (
         <div className="px-3 flex-[1.9]">
-          <MiniBtn
+          <MiniBtn variant="whiteOutline"
             text={tList('tableHeader.projectLink.purchase')}
-            textColor="text-dg"
-            borderColor="border-lg"
-            hoverColor="hover:bg-bg"
             onClick={() => {
               setIsLinkModalOpen?.(true);
               setSelectedLineItem?.(lineItem);

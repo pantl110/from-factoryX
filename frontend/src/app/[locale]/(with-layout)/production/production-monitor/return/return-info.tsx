@@ -189,11 +189,8 @@ const ReturnInfo = ({
           <h3 className="Heading-3 text-dg flex items-center">{t('title')}</h3>
           <div className="flex gap-2.5">
             {!isEditing && (
-              <MiniBtn
+              <MiniBtn variant="whiteOutline"
                 text={tCommon('edit')}
-                textColor="text-dg"
-                borderColor="border-lg"
-                hoverColor="hover:bg-bg"
                 onClick={() => setIsEditing(true)}
                 disabled={
                   isViewer ||
@@ -205,11 +202,8 @@ const ReturnInfo = ({
               />
             )}
 
-            <MiniBtn
+            <MiniBtn variant="primary"
               text={t('registerProductionButton')}
-              hoverColor="hover:bg-primary-hover"
-              textColor="text-wh"
-              bgColor="bg-primary"
               onClick={() => setIsRegisterProductionModalOpen(true)}
               disabled={
                 isViewer ||

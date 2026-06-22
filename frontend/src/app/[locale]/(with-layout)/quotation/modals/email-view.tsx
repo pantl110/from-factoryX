@@ -257,11 +257,8 @@ const EmailView = ({
               </button> */}
 
               {/* 이메일 전송 버튼 */}
-              <MiniBtn
+              <MiniBtn variant="primary"
                 text={t('sendButton', { documentTitle })}
-                textColor="text-wh"
-                bgColor="bg-primary"
-                hoverColor="hover:bg-primary-hover"
                 onClick={handleSendEmail}
                 disabled={isLoading || isEmailSending}
               />

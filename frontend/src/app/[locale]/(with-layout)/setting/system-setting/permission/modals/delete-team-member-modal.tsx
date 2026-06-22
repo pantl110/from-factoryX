@@ -19,18 +19,13 @@ const DeleteTeamMemberModal = ({
   return (
     <Modal title={t('title')} subtitle={t('subtitle')} onClose={onClose}>
       <div className="flex justify-end mt-4 gap-[5px]">
-        <MiniBtn
+        <MiniBtn variant="white"
           text={tCommon('cancel')}
-          textColor="text-sv"
           onClick={onClose}
-          hoverColor="hover:bg-bg"
         />
-        <MiniBtn
+        <MiniBtn variant="red"
           text={tCommon('delete')}
-          textColor="text-red"
-          bgColor="bg-red-8"
           onClick={onDelete}
-          hoverColor="hover:bg-red-hover "
         />
       </div>
     </Modal>

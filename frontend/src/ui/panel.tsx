@@ -114,11 +114,8 @@ const Panel = forwardRef<PanelRefModel, PanelProps>(
 
               {/* 나중에 정리하기 */}
               {hasSaveButton && (
-                <MiniBtn
+                <MiniBtn variant="secondary"
                   text="저장"
-                  textColor="text-primary"
-                  bgColor="bg-primary-8"
-                  hoverColor="hover:bg-secondary-hover"
                 />
               )}
             </div>

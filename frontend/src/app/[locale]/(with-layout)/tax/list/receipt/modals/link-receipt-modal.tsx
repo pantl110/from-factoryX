@@ -187,11 +187,8 @@ const LinkReceiptModal = ({
                   placeholder={t('searchPlaceholder')}
                   onChange={(value) => setSearchKeyword(value)}
                 />
-                <MiniBtn
+                <MiniBtn variant="whiteOutline"
                   text={t('buttons.addSelected')}
-                  hoverColor="hover:bg-bg"
-                  textColor="text-dg"
-                  borderColor="border-lg"
                   disabled={selectedUnlinkedIds.length === 0}
                   onClick={handleAddSelected}
                 />
@@ -215,11 +212,8 @@ const LinkReceiptModal = ({
                 <p className="Heading-5 text-dg">
                   {t('selectedCount', { count: linkedMaterialHistory.length })}
                 </p>
-                <MiniBtn
+                <MiniBtn variant="whiteOutline"
                   text={tCommon('deleteAll')}
-                  hoverColor="hover:bg-bg"
-                  textColor="text-dg"
-                  borderColor="border-lg"
                   onClick={async () => {
                     // 오른쪽 모든 항목을 다시 왼쪽으로 되돌림
                     setUnlinkedMaterialHistory((prev) => [
@@ -272,18 +266,13 @@ const LinkReceiptModal = ({
 
           {/* 버튼 영역 */}
           <div className={`flex gap-2.5 pt-2 justify-end`}>
-            <MiniBtn
+            <MiniBtn variant="white"
               text={tCommon('cancel')}
-              hoverColor="hover:bg-bg"
-              textColor="text-sv"
               onClick={onClose}
             />
             <div className="flex gap-2.5">
-              <MiniBtn
+              <MiniBtn variant="primary"
                 text={t('buttons.link')}
-                hoverColor="hover:bg-primary-hover"
-                bgColor="bg-primary"
-                textColor="text-wh"
                 disabled={isUpdating || differenceAmount !== 0}
                 onClick={async () => {
                   const ids = linkedMaterialHistory.map((i) => i.id);

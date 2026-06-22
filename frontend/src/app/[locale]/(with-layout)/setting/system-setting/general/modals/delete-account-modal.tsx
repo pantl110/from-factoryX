@@ -19,18 +19,13 @@ const DeleteAccountModal = ({
   return (
     <Modal title={t('title')} subtitle={t('subtitle')} onClose={onClose}>
       <div className="flex justify-end gap-[5px] mt-4">
-        <MiniBtn
+        <MiniBtn variant="white"
           text={tCommon('cancel')}
-          textColor="text-sv"
           onClick={onClose}
-          hoverColor="hover:bg-bg"
         />
-        <MiniBtn
+        <MiniBtn variant="red"
           text={tCommon('delete')}
-          bgColor="bg-red-8"
-          textColor="text-red"
           onClick={onConfirm}
-          hoverColor="hover:bg-red-hover"
           disabled={isLoading}
         />
       </div>

@@ -70,17 +70,12 @@ const RegisterProductionModal = ({
         onClose={isLoading ? () => {} : onClose} // 로딩 중에는 창 닫기 비활성화
       >
         <div className="flex justify-end gap-[5px]">
-          <MiniBtn
+          <MiniBtn variant="white"
             text={tCommon('cancel')}
-            textColor="text-sv"
-            hoverColor="hover:bg-bg"
             onClick={onClose}
           />
-          <MiniBtn
+          <MiniBtn variant="primary"
             text={t('startButton')}
-            hoverColor="hover:bg-primary-hover"
-            textColor="text-wh"
-            bgColor="bg-primary"
             onClick={handleRegisterProduction}
             disabled={isLoading}
           />

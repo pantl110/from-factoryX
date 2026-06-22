@@ -389,11 +389,8 @@ const ConnectMaterialModal = ({
               </div>
             )}
           </div>
-          <MiniBtn
+          <MiniBtn variant="whiteOutline"
             text={tStock('manualAddButton')}
-            textColor="text-dg"
-            borderColor="border-lg"
-            hoverColor="hover:bg-bg"
             height="h-12"
             onClick={() => setIsManualAddMode(true)}
           />
@@ -455,17 +452,12 @@ const ConnectMaterialModal = ({
           )}
 
           <div className="flex gap-2.5 justify-end">
-            <MiniBtn
+            <MiniBtn variant="white"
               text={tCommon('cancel')}
-              textColor="text-sv"
-              hoverColor="hover:bg-bg"
               onClick={onClose}
             />
-            <MiniBtn
+            <MiniBtn variant="primary"
               text={tCommon('add')}
-              textColor="text-wh"
-              bgColor="bg-primary"
-              hoverColor="hover:bg-primary-hover"
               disabled={
                 (selectedMaterials.length === 0 && newMaterials.length === 0) ||
                 isManualAddMode ||
