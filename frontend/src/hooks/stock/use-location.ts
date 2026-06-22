@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   LocationModel,
   LocationListResponseModel,
@@ -7,6 +8,7 @@ import {
 import useMemberStore from '@/store/member-store';
 
 const useLocation = () => {
+  const tErrors = useTranslations('common.errors');
   const factoryId = useMemberStore((state) => state.factoryId);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -21,8 +23,8 @@ const useLocation = () => {
     setError(null);
 
     if (!factoryId) {
-      setError('factory_id가 필요합니다.');
-      return { success: false, error: 'factory_id가 필요합니다.' };
+      setError(tErrors('factoryIdRequired'));
+      return { success: false, error: tErrors('factoryIdRequired') };
     }
 
     try {
@@ -40,12 +42,12 @@ const useLocation = () => {
         setData(result);
         return { success: true, data: result };
       } else {
-        setError(result.detail || '창고 위치 생성에 실패했습니다.');
+        setError(result.detail || tErrors('locationCreateFailed'));
         return { success: false, error: result.detail };
       }
     } catch {
-      setError('서버 연결에 실패했습니다.');
-      return { success: false, error: '서버 연결에 실패했습니다.' };
+      setError(tErrors('serverConnectionFailed'));
+      return { success: false, error: tErrors('serverConnectionFailed') };
     } finally {
       setIsLoading(false);
     }
@@ -59,8 +61,8 @@ const useLocation = () => {
       setError(null);
 
       if (!factoryId) {
-        setError('factory_id가 필요합니다.');
-        return { success: false, error: 'factory_id가 필요합니다.' };
+        setError(tErrors('factoryIdRequired'));
+        return { success: false, error: tErrors('factoryIdRequired') };
       }
 
       try {
@@ -86,17 +88,17 @@ const useLocation = () => {
           setData(result);
           return { success: true, data: result };
         } else {
-          setError(result.detail || '창고 위치 목록 조회에 실패했습니다.');
+          setError(result.detail || tErrors('locationReadFailed'));
           return { success: false, error: result.detail };
         }
       } catch {
-        setError('서버 연결에 실패했습니다.');
-        return { success: false, error: '서버 연결에 실패했습니다.' };
+        setError(tErrors('serverConnectionFailed'));
+        return { success: false, error: tErrors('serverConnectionFailed') };
       } finally {
         setIsLoading(false);
       }
     },
-    [factoryId]
+    [factoryId, tErrors]
   );
 
   // 창고 위치 수정
@@ -108,8 +110,8 @@ const useLocation = () => {
     setError(null);
 
     if (!factoryId) {
-      setError('factory_id가 필요합니다.');
-      return { success: false, error: 'factory_id가 필요합니다.' };
+      setError(tErrors('factoryIdRequired'));
+      return { success: false, error: tErrors('factoryIdRequired') };
     }
 
     try {
@@ -127,12 +129,12 @@ const useLocation = () => {
         setData(result);
         return { success: true, data: result };
       } else {
-        setError(result.detail || '창고 위치 수정에 실패했습니다.');
+        setError(result.detail || tErrors('locationUpdateFailed'));
         return { success: false, error: result.detail };
       }
     } catch {
-      setError('서버 연결에 실패했습니다.');
-      return { success: false, error: '서버 연결에 실패했습니다.' };
+      setError(tErrors('serverConnectionFailed'));
+      return { success: false, error: tErrors('serverConnectionFailed') };
     } finally {
       setIsLoading(false);
     }
@@ -147,8 +149,8 @@ const useLocation = () => {
     setError(null);
 
     if (!factoryId) {
-      setError('factory_id가 필요합니다.');
-      return { success: false, error: 'factory_id가 필요합니다.' };
+      setError(tErrors('factoryIdRequired'));
+      return { success: false, error: tErrors('factoryIdRequired') };
     }
 
     try {
@@ -168,12 +170,12 @@ const useLocation = () => {
         setData(result);
         return { success: true, data: result };
       } else {
-        setError(result.detail || '창고 위치 삭제에 실패했습니다.');
+        setError(result.detail || tErrors('locationDeleteFailed'));
         return { success: false, error: result.detail };
       }
     } catch {
-      setError('서버 연결에 실패했습니다.');
-      return { success: false, error: '서버 연결에 실패했습니다.' };
+      setError(tErrors('serverConnectionFailed'));
+      return { success: false, error: tErrors('serverConnectionFailed') };
     } finally {
       setIsLoading(false);
     }

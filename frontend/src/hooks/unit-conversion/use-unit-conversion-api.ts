@@ -8,6 +8,7 @@ import {
   UnitConversionModel,
 } from '@/types/data-model';
 import axios from 'axios';
+import { useTranslations } from 'next-intl';
 
 export interface UnitConversionCreatePayloadModel {
   // backend schema: UnitConversionCreateSchema
@@ -55,6 +56,7 @@ interface ApiResponseModel<T> {
 const API_BASE = process.env.NEXT_PUBLIC_API_URL;
 
 const useUnitConversionApi = () => {
+  const tErrors = useTranslations('common.errors');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { factoryId } = useMemberStore();
@@ -77,8 +79,7 @@ const useUnitConversionApi = () => {
         if (!factoryId) {
           return {
             success: false,
-            error:
-              '공장 정보가 초기화되지 않았습니다. 잠시 후 다시 시도해주세요.',
+            error: tErrors('factoryInfoNotInitialized'),
           };
         }
 
@@ -140,7 +141,7 @@ const useUnitConversionApi = () => {
         ) {
           return { success: false, error: '요청이 취소되었습니다.' };
         }
-        let msg = '알 수 없는 오류가 발생했습니다.';
+        let msg = tErrors('unknownError');
         if (axios.isAxiosError(err)) {
           const data = err.response?.data as unknown;
           if (data && typeof data === 'object') {
@@ -156,9 +157,9 @@ const useUnitConversionApi = () => {
               (typeof maybeDetail === 'string' && maybeDetail) ||
               (typeof maybeMessage === 'string' && maybeMessage) ||
               err.message ||
-              'API 요청에 실패했습니다.';
+              tErrors('apiRequestFailed');
           } else {
-            msg = err.message || 'API 요청에 실패했습니다.';
+            msg = err.message || tErrors('apiRequestFailed');
           }
         } else if (err instanceof Error) {
           msg = err.message;
@@ -169,7 +170,7 @@ const useUnitConversionApi = () => {
         if (!abortControllerRef.current?.signal.aborted) setIsLoading(false);
       }
     },
-    [factoryId]
+    [factoryId, tErrors]
   );
 
   useEffect(() => {

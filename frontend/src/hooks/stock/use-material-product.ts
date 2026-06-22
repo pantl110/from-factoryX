@@ -1,4 +1,5 @@
 import { useState, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   CreateMaterialProductModel,
   MaterialProductConnectionResponseModel,
@@ -14,6 +15,7 @@ type ConnectionModelType =
 // 원자재와 제품을 연결하여 BOM(Bill of Materials)을 생성합니다.
 // type에 따라 원자재 기준 또는 제품 기준으로 연결할 수 있습니다.
 const useMaterialProduct = () => {
+  const tErrors = useTranslations('common.errors');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -29,9 +31,9 @@ const useMaterialProduct = () => {
     setIsSuccess(false);
 
     if (!factoryId) {
-      setError('공장 정보가 없습니다. 잠시 후 다시 시도해주세요.');
+      setError(tErrors('factoryInfoMissing'));
       setIsLoading(false);
-      return { success: false, error: '공장 정보가 없습니다.' };
+      return { success: false, error: tErrors('factoryInfoMissingShort') };
     }
 
     try {
@@ -50,12 +52,12 @@ const useMaterialProduct = () => {
         setIsSuccess(true);
         return { success: true, data: result };
       } else {
-        setError(result.detail || '연결 생성에 실패했습니다.');
+        setError(result.detail || tErrors('connectionCreateFailed'));
         return { success: false, error: result.detail };
       }
     } catch {
-      setError('서버 연결에 실패했습니다.');
-      return { success: false, error: '서버 연결에 실패했습니다.' };
+      setError(tErrors('serverConnectionFailed'));
+      return { success: false, error: tErrors('serverConnectionFailed') };
     } finally {
       setIsLoading(false);
     }
@@ -70,9 +72,9 @@ const useMaterialProduct = () => {
       setIsSuccess(false);
 
       if (!factoryId) {
-        setError('공장 정보가 없습니다. 잠시 후 다시 시도해주세요.');
+        setError(tErrors('factoryInfoMissing'));
         setIsLoading(false);
-        return { success: false, error: '공장 정보가 없습니다.' };
+        return { success: false, error: tErrors('factoryInfoMissingShort') };
       }
 
       try {
@@ -89,17 +91,17 @@ const useMaterialProduct = () => {
           setIsSuccess(true);
           return { success: true, data: result };
         } else {
-          setError(result.detail || '연결 조회에 실패했습니다.');
+          setError(result.detail || tErrors('connectionReadFailed'));
           return { success: false, error: result.detail };
         }
       } catch {
-        setError('서버 연결에 실패했습니다.');
-        return { success: false, error: '서버 연결에 실패했습니다.' };
+        setError(tErrors('serverConnectionFailed'));
+        return { success: false, error: tErrors('serverConnectionFailed') };
       } finally {
         setIsLoading(false);
       }
     },
-    [factoryId]
+    [factoryId, tErrors]
   );
 
   // 연결 삭제
@@ -109,9 +111,9 @@ const useMaterialProduct = () => {
     setIsSuccess(false);
 
     if (!factoryId) {
-      setError('공장 정보가 없습니다. 잠시 후 다시 시도해주세요.');
+      setError(tErrors('factoryInfoMissing'));
       setIsLoading(false);
-      return { success: false, error: '공장 정보가 없습니다.' };
+      return { success: false, error: tErrors('factoryInfoMissingShort') };
     }
 
     try {
@@ -128,12 +130,12 @@ const useMaterialProduct = () => {
         setIsSuccess(true);
         return { success: true, data: result };
       } else {
-        setError(result.detail || '연결 삭제에 실패했습니다.');
+        setError(result.detail || tErrors('connectionDeleteFailed'));
         return { success: false, error: result.detail };
       }
     } catch {
-      setError('서버 연결에 실패했습니다.');
-      return { success: false, error: '서버 연결에 실패했습니다.' };
+      setError(tErrors('serverConnectionFailed'));
+      return { success: false, error: tErrors('serverConnectionFailed') };
     } finally {
       setIsLoading(false);
     }
@@ -156,9 +158,9 @@ const useMaterialProduct = () => {
     setIsSuccess(false);
 
     if (!factoryId) {
-      setError('공장 정보가 없습니다. 잠시 후 다시 시도해주세요.');
+      setError(tErrors('factoryInfoMissing'));
       setIsLoading(false);
-      return { success: false, error: '공장 정보가 없습니다.' };
+      return { success: false, error: tErrors('factoryInfoMissingShort') };
     }
 
     try {
@@ -177,12 +179,12 @@ const useMaterialProduct = () => {
         setIsSuccess(true);
         return { success: true, data: result };
       } else {
-        setError(result.detail || '연결 수정에 실패했습니다.');
+        setError(result.detail || tErrors('connectionUpdateFailed'));
         return { success: false, error: result.detail };
       }
     } catch {
-      setError('서버 연결에 실패했습니다.');
-      return { success: false, error: '서버 연결에 실패했습니다.' };
+      setError(tErrors('serverConnectionFailed'));
+      return { success: false, error: tErrors('serverConnectionFailed') };
     } finally {
       setIsLoading(false);
     }
