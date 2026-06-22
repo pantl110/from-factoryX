@@ -123,7 +123,7 @@ const PlanItem = ({
             ) : (
               <MiniBtn
                 text={t('planItem.buttons.unsubscribe')}
-                variant="outline"
+                variant="ghost"
                 onClick={() => setIsCancelSubscriptionModalOpen(true)}
                 disabled={!isAdmin}
               />

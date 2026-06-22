@@ -197,7 +197,7 @@ const PaymentDue = () => {
           const chipVariant =
             document.document_type === 'tax' && invoiceType === 'sales'
               ? 'red-secondary'
-              : 'secondary';
+              : 'blue';
 
           const clientName = document.client_name || '-';
           const agreedDate =

@@ -40,6 +40,7 @@ const MaterialInfo = ({ material, isLoading }: MaterialInfoProps) => {
         : (color as
             | 'primary'
             | 'secondary'
+            | 'blue'
             | 'red'
             | 'red-secondary'
             | 'orange'

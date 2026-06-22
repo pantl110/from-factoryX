@@ -77,7 +77,7 @@ const ConfirmationRequired = ({
       <AlarmItem
         key={index}
         chipText={formatChipText(project.days_since_confirmed, tAlarm)}
-        chipVariant="secondary"
+        chipVariant="blue"
         name={project.client_name ?? '-'}
         subText={getProductNamesDisplay(project.product_names ?? [], tRoot)}
         onClick={() => {

@@ -16,7 +16,7 @@ import { useInfiniteQuery } from '@tanstack/react-query';
 import axios from 'axios';
 import { Spinner, MoBtn, NoHistoryBox } from '@/ui';
 
-type ChipVariantType = 'secondary' | 'red-secondary' | 'outline';
+type ChipVariantType = 'secondary' | 'blue' | 'red-secondary' | 'outline';
 
 const normalizeDate = (date: Date) =>
   new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -46,7 +46,7 @@ const getChipInfo = (
   }
 
   if (diff === 0) {
-    return { text: t('todayIsDeliveryDate'), variant: 'secondary' };
+    return { text: t('todayIsDeliveryDate'), variant: 'blue' };
   }
 
   const daysRemaining = Math.round(diff);

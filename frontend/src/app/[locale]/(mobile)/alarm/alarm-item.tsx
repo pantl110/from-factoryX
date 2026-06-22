@@ -3,7 +3,7 @@ import { CaretRight } from '@phosphor-icons/react';
 
 interface AlarmItemProps {
   chipText: string;
-  chipVariant: 'secondary' | 'red-secondary' | 'outline';
+  chipVariant: 'secondary' | 'blue' | 'red-secondary' | 'outline';
   name: string;
   subText: string;
   subChipText?: string;

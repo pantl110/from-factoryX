@@ -12,7 +12,7 @@ interface TopbarProps {
 const Topbar = ({ title, onBackClick }: TopbarProps) => {
   const router = useRouter();
   return (
-    <div className="sticky top-0 z-30 h-[50px] bg-wh flex items-center justify-between px-5">
+    <div className="sticky top-0 z-30 h-[50px] bg-bg flex items-center justify-between px-5">
       <IconBtn
         icon={CaretLeft}
         iconSize={20}

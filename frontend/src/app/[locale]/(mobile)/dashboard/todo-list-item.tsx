@@ -12,7 +12,7 @@ const TodoListItem = ({ title, count, onClick }: TodoListItemProps) => {
 
   return (
     <button
-      className="flex-1 flex flex-col gap-2.5 px-4 pt-4 pb-3 rounded-[8px] border border-lg"
+      className="flex-1 flex flex-col gap-2.5 px-4 pt-4 pb-3 rounded-[8px] border border-lg hover:bg-bg transition-colors duration-200"
       onClick={onClick}
     >
       <p className="m-Body-4 text-sv text-left">{title}</p>

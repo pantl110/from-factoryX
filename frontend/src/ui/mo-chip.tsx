@@ -3,6 +3,7 @@ interface MoChipProps {
   variant:
     | 'primary'
     | 'secondary'
+    | 'blue'
     | 'red'
     | 'red-secondary'
     | 'orange'
@@ -32,6 +33,8 @@ const MoChip = ({
         return 'bg-primary text-wh';
       case 'secondary':
         return 'bg-green-8 text-primary';
+      case 'blue':
+        return 'bg-blue-8 text-blue';
       case 'red':
         return 'bg-red text-wh';
       case 'red-secondary':
