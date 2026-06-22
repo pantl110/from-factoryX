@@ -1,14 +1,15 @@
 import { ProjectStatusType } from '@/types/status-type';
 
 type RoundChipColorType =
-  | 'primary'
-  | 'secondary'
   | 'red'
   | 'green'
   | 'orange'
   | 'yellow'
   | 'purple'
-  | 'gray';
+  | 'gray'
+  | 'white'
+  | 'whiteOutline'
+  | 'blue';
 
 /**
  * 프로젝트 상태를 RoundChip color로 매핑하는 함수
@@ -23,9 +24,9 @@ export const getProjectStatusColor = (
     confirmed: 'orange',
     pending: 'gray',
     production: 'purple',
-    manufactured: 'secondary',
+    manufactured: 'blue',
     delivery: 'green',
-    completed: 'secondary',
+    completed: 'blue',
     suspended: 'red',
   };
   return colorMap[status] || 'gray';

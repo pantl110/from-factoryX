@@ -71,7 +71,7 @@ const TableHeader = ({
                 text={tList('status.' + statusKey)}
                 variant="sm"
                 color={
-                  colorMap.color as 'gray' | 'orange' | 'secondary' | 'red'
+                  colorMap.color as 'gray' | 'orange' | 'blue' | 'red'
                 }
               />
             );

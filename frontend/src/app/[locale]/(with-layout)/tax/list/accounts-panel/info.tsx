@@ -215,7 +215,7 @@ const Info = React.forwardRef<InfoHandleModel, InfoProps>(
                       color={
                         (account?.invoice_sent_count ?? 0) === 0
                           ? 'gray'
-                          : 'secondary'
+                          : 'blue'
                       }
                     />
                     {onOpenSendEmailModal && (
@@ -370,7 +370,7 @@ const Info = React.forwardRef<InfoHandleModel, InfoProps>(
                                 daysUntilPayment === 'D-0' ||
                                 daysUntilPayment.startsWith('D+')
                                   ? 'red'
-                                  : 'secondary'
+                                  : 'blue'
                               }
                             />
                           )}

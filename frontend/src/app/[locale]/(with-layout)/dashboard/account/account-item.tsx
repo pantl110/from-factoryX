@@ -2,7 +2,7 @@ import { RoundChip } from '@/ui';
 
 interface AccountItemProps {
   chipText: string;
-  chipColor: 'red' | 'secondary';
+  chipColor: 'red' | 'blue';
   description: string;
   date: string;
   isOverdue?: boolean;

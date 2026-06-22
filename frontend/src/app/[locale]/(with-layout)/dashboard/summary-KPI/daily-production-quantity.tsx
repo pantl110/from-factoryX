@@ -48,7 +48,7 @@ const DailyProductionQuantity = ({
                     changePercentage === 0
                       ? 'text-dg'
                       : isNegative
-                        ? 'text-primary'
+                        ? 'text-blue'
                         : 'text-red'
                   } items-center Re_Body-1`}
                 >

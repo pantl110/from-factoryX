@@ -42,7 +42,7 @@ const ClientTableItem = ({
             <RoundChip
               text={tCommon('customer')}
               variant="sm"
-              color="secondary"
+              color="blue"
             />
           )}
           {client.is_supplier === true && (

@@ -4,14 +4,15 @@ export interface StatusColorModel {
   textColor?: string;
   hover?: string;
   color?:
-    | 'primary'
-    | 'secondary'
     | 'red'
     | 'orange'
     | 'purple'
     | 'green'
     | 'yellow'
-    | 'gray';
+    | 'gray'
+    | 'white'
+    | 'whiteOutline'
+    | 'blue';
 }
 
 // 팩토리 멤버 type
@@ -22,7 +23,7 @@ export const MemberRoleColorMap: Record<MemberRoleType, StatusColorModel> = {
   manager: {
     bgColor: 'bg-primary-8',
     textColor: 'text-primary',
-    color: 'secondary',
+    color: 'blue',
   },
   viewer: { bgColor: 'bg-yellow-8', textColor: 'text-yellow', color: 'yellow' },
   prod_manager: {
@@ -130,7 +131,7 @@ export const InventoryStatusColorMap: Record<
   충분: {
     textColor: 'text-primary',
     bgColor: 'bg-primary-8',
-    color: 'secondary',
+    color: 'blue',
   },
   위험: { textColor: 'text-orange', bgColor: 'bg-orange-8', color: 'orange' },
   부족: { textColor: 'text-red', bgColor: 'bg-red-8', color: 'red' },
@@ -165,7 +166,7 @@ export const TaxDocumentTypeColorMap: Record<
   sales: {
     bgColor: 'bg-primary-8',
     textColor: 'text-primary',
-    color: 'secondary',
+    color: 'blue',
   },
   purchase: { bgColor: 'bg-red-8', textColor: 'text-red', color: 'red' },
 };
@@ -299,7 +300,7 @@ export const MaterialStatusTypeColorMap: Record<
   과재고: {
     color: 'red',
   },
-  충분: { color: 'secondary' },
+  충분: { color: 'blue' },
   위험: { color: 'orange' },
   부족: { color: 'red' },
 };
@@ -312,7 +313,7 @@ export const ExpiryStatusColorMap: Record<ExpiryStatusType, StatusColorModel> =
     safe: {
       textColor: 'text-primary',
       bgColor: 'bg-primary-8',
-      color: 'secondary',
+      color: 'blue',
     },
   };
 
@@ -341,7 +342,7 @@ export const AccountsStatusColorMap: Record<
   completed: {
     textColor: 'text-primary',
     bgColor: 'bg-primary-8',
-    color: 'secondary',
+    color: 'blue',
   },
   overdue: { textColor: 'text-red', bgColor: 'bg-red-8', color: 'red' },
 };

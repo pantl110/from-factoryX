@@ -5,12 +5,16 @@ import axios from 'axios';
 import { ClientModel, ClientResponseModel } from '@/types/data-model';
 import useMemberStore from '@/store/member-store';
 
+export type CreateClientResult =
+  | { success: true; data: ClientResponseModel }
+  | { success: false; error: string };
+
 const useCreateClient = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const factoryId = useMemberStore((state) => state.factoryId);
 
-  const createClient = async (data: ClientModel) => {
+  const createClient = async (data: ClientModel): Promise<CreateClientResult> => {
     setIsLoading(true);
     setError(null);
 

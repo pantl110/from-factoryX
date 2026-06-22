@@ -53,7 +53,7 @@ export const SubMaterialItem = ({
   // 재고 상태 계산 함수
   const getStockStatus = (): {
     text: string;
-    color: 'secondary' | 'red';
+    color: 'blue' | 'red';
   } | null => {
     // 백엔드에서 status를 받은 경우 우선 사용
     if (material.status) {
@@ -63,7 +63,7 @@ export const SubMaterialItem = ({
           material.status === '위험' || material.status === '부족';
         return {
           text: tCommon(translationKey),
-          color: isRedStatus ? ('red' as const) : ('secondary' as const),
+          color: isRedStatus ? ('red' as const) : ('blue' as const),
         };
       }
     }
@@ -88,7 +88,7 @@ export const SubMaterialItem = ({
     if (currentStock >= standardStock) {
       return {
         text: tCommon('inventoryStatus.sufficient'),
-        color: 'secondary' as const,
+        color: 'blue' as const,
       };
     } else {
       return {

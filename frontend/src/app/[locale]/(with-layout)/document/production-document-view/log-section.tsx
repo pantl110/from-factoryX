@@ -54,7 +54,7 @@ export const LogSection = ({ workInstructionId }: LogSectionProps) => {
 
   // item에 따라 RoundChip 색상 결정
   const getChipColor = (item: string) => {
-    if (item === t('actionAdded')) return 'secondary';
+    if (item === t('actionAdded')) return 'blue';
     if (item === t('actionRemoved')) return 'red';
     if (item === tCommon('productionEquipment')) return 'gray';
     if (item === tCommon('productionQuantity')) return 'whiteOutline';

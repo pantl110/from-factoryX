@@ -18,6 +18,7 @@ import {
   useCheckBarobill,
   usePublishTaxInvoice,
 } from '@/hooks';
+import type { CreateClientResult } from '@/hooks';
 import useMemberStore from '@/store/member-store';
 import {
   FactoriesUpdateModel,
@@ -358,7 +359,9 @@ const CreatTaxPanel = ({
 
   // 거래처 정보 생성 함수
   const createClientInfo = useCallback(
-    async (clientFormData: ClientInfoFormDataModel) => {
+    async (
+      clientFormData: ClientInfoFormDataModel
+    ): Promise<CreateClientResult> => {
       if (!factoryId)
         return { success: false, error: t('errors.factoryIdNotSet') };
 
@@ -458,7 +461,7 @@ const CreatTaxPanel = ({
         // 새로운 거래처 생성 (거래처 정보가 입력되어 있을 때만)
         if (clientInfoFormData && hasClientInfoRequiredValues) {
           const createResult = await createClientInfo(clientInfoFormData);
-          if (createResult.success && createResult.data) {
+          if (createResult.success) {
             // 생성된 거래처 ID로 상태 업데이트 및 현재 ID 설정
             currentClientId = createResult.data.id;
             setSelectedClientId(createResult.data.id);
@@ -481,7 +484,7 @@ const CreatTaxPanel = ({
             // 거래처 수정 실패 시 새로 생성 시도
             if (updateResult.error?.includes('거래처를 찾을 수 없습니다')) {
               const createResult = await createClientInfo(clientInfoFormData);
-              if (createResult.success && createResult.data) {
+              if (createResult.success) {
                 currentClientId = createResult.data.id;
                 setSelectedClientId(createResult.data.id);
               } else {

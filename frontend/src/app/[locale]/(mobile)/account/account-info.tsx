@@ -47,7 +47,7 @@ const AccountInfo = ({ type, account }: AccountInfoProps) => {
             ? 'red-secondary'
             : statusColorMap.color === 'orange'
               ? 'orange'
-              : statusColorMap.color === 'secondary'
+              : statusColorMap.color === 'blue'
                 ? 'secondary'
                 : 'outline'
         }

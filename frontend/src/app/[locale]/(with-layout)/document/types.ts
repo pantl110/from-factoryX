@@ -12,7 +12,7 @@ export const DocumentTypeColorMap: Record<
   {
     bgColor: string;
     textColor: string;
-    color: 'yellow' | 'purple' | 'green' | 'secondary' | 'red' | 'orange';
+    color: 'yellow' | 'purple' | 'green' | 'blue' | 'red' | 'orange';
   }
 > = {
   주문서: { bgColor: 'bg-yellow-8', textColor: 'text-yellow', color: 'yellow' },
@@ -29,7 +29,7 @@ export const DocumentTypeColorMap: Record<
   '매출 세금계산서': {
     bgColor: 'bg-primary-8',
     textColor: 'text-primary',
-    color: 'secondary',
+    color: 'blue',
   },
   '매입 세금계산서': {
     bgColor: 'bg-red-8',

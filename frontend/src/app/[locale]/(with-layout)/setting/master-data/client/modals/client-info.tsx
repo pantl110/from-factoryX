@@ -194,7 +194,7 @@ export const ClientInfo = ({
                   <RoundChip
                     text={tCommon('customer')}
                     variant="sm"
-                    color="secondary"
+                    color="blue"
                   />
                 )}
                 {clientDetail?.is_supplier === true && (

@@ -30,8 +30,6 @@ const TableItem = ({
         ? t('pending')
         : '-';
   const chipColor:
-    | 'primary'
-    | 'secondary'
     | 'red'
     | 'green'
     | 'orange'
@@ -40,11 +38,11 @@ const TableItem = ({
     | 'gray'
     | 'white'
     | 'whiteOutline'
-    | 'grayBlue' =
+    | 'blue' =
     item.publish_status === 'temporary'
-      ? 'secondary'
+      ? 'blue'
       : item.publish_status === 'pending'
-        ? 'grayBlue'
+        ? 'blue'
         : 'gray';
 
   return (
@@ -63,24 +61,7 @@ const TableItem = ({
         {chipText === '-' ? (
           <span className="text-dg">-</span>
         ) : (
-          <RoundChip
-            text={chipText}
-            color={
-              chipColor as
-                | 'primary'
-                | 'secondary'
-                | 'red'
-                | 'green'
-                | 'orange'
-                | 'yellow'
-                | 'purple'
-                | 'gray'
-                | 'white'
-                | 'whiteOutline'
-                | 'grayBlue'
-            }
-            variant="sm"
-          />
+          <RoundChip text={chipText} color={chipColor} variant="sm" />
         )}
       </div>
       <div className="px-2 flex-2">
@@ -88,20 +69,7 @@ const TableItem = ({
           text={
             item.tax_invoice_type === 'sales' ? tTax('sales') : tTax('purchase')
           }
-          color={
-            (item.tax_invoice_type === 'sales' ? 'secondary' : 'red') as
-              | 'primary'
-              | 'secondary'
-              | 'red'
-              | 'green'
-              | 'orange'
-              | 'yellow'
-              | 'purple'
-              | 'gray'
-              | 'white'
-              | 'whiteOutline'
-              | 'grayBlue'
-          }
+          color={item.tax_invoice_type === 'sales' ? 'blue' : 'red'}
           variant="sm"
         />
       </div>

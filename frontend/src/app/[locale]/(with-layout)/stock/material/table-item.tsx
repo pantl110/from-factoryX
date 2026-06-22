@@ -110,7 +110,7 @@ const TableItem = ({
               <RoundChip
                 text={getExpiryStatusText(expiryStatus)}
                 variant="sm"
-                color={expiryStatus === '위험' ? 'red' : 'secondary'}
+                color={expiryStatus === '위험' ? 'red' : 'blue'}
               />
             </div>
           ) : (

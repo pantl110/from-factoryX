@@ -120,7 +120,7 @@ export const Account = () => {
                 document.tax_invoice_type === 'sales';
               const chipText =
                 diffDays >= 0 ? `D+${diffDays}` : `D-${Math.abs(diffDays)}`;
-              const chipColor = isReceivable ? 'secondary' : 'red';
+              const chipColor = isReceivable ? 'blue' : 'red';
               const isOverdue = diffDays >= 0;
               const amount = formatAmount(
                 account?.outstanding_balance || document.total_amount || 0

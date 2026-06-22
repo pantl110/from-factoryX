@@ -54,7 +54,7 @@ const ProductionYield = ({ monthlyProfits }: ProductionYieldProps) => {
                     ? 'text-dg'
                     : isNegative
                       ? 'text-red'
-                      : 'text-primary'
+                      : 'text-blue'
                 } items-center`}
               >
                 <p>

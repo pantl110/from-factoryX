@@ -108,7 +108,7 @@ const TableItem = ({
                 : `${item.account.invoice_sent_count}회 발송`
             }
             variant="sm"
-            color={item.account.invoice_sent_count === 0 ? 'gray' : 'secondary'}
+            color={item.account.invoice_sent_count === 0 ? 'gray' : 'blue'}
           />
         </div>
       )}

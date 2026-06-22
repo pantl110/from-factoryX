@@ -78,7 +78,7 @@ export const SubstituteMaterialDropdown = ({
           }}
         >
           <div className="pl-2 pr-4 flex items-center gap-2">
-            <RoundChip text={t('label')} variant="sm" color="secondary" />
+            <RoundChip text={t('label')} variant="sm" color="blue" />
             <p className="Heading-4 text-dg">{item.name}</p>
           </div>
         </DropdownItem>

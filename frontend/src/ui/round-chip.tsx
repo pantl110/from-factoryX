@@ -4,8 +4,6 @@ interface RoundChipProps {
   text: string;
   variant: 'default' | 'defaultSmall' | 'sm' | 'role';
   color:
-    | 'primary'
-    | 'secondary'
     | 'red'
     | 'green'
     | 'orange'
@@ -14,12 +12,10 @@ interface RoundChipProps {
     | 'gray'
     | 'white'
     | 'whiteOutline'
-    | 'grayBlue';
+    | 'blue';
 }
 
 const colorClasses = {
-  primary: 'bg-primary text-wh',
-  secondary: 'bg-primary-8 text-primary',
   red: 'bg-red-8 text-red',
   green: 'bg-green-8 text-green',
   orange: 'bg-orange-8 text-orange',
@@ -28,7 +24,7 @@ const colorClasses = {
   gray: 'bg-bg text-dg',
   white: 'bg-wh text-dg',
   whiteOutline: 'bg-wh text-dg border border-lg',
-  grayBlue: 'bg-bg text-primary',
+  blue: 'bg-blue-8 text-blue',
 } as const;
 
 const sizeClasses = {

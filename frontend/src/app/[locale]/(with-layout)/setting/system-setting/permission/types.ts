@@ -12,8 +12,7 @@ export interface AuthInfoModel {
   type: PermissionRoleType;
   description: string;
   color:
-    | 'primary'
-    | 'secondary'
+    | 'blue'
     | 'red'
     | 'green'
     | 'orange'
@@ -45,7 +44,7 @@ export const PermissionRoleInfo: Record<PermissionRoleType, AuthInfoModel> = {
     type: '운영자',
     description:
       '주요 기능(견적서, 생산 관리 등)에 접근할 수 있어요.\n시스템 설정을 제외한 대부분의 작업을 수행할 수 있어요.',
-    color: 'secondary',
+    color: 'blue',
     chipColor: {
       text: 'text-primary',
       bg: 'bg-primary-8',
