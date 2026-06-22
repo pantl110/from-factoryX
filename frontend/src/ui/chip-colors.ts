@@ -11,4 +11,4 @@ export const chipColorClasses = {
   primary: 'bg-primary text-wh',
 } as const;
 
-export type ChipColor = keyof typeof chipColorClasses;
+export type ChipColorType = keyof typeof chipColorClasses;

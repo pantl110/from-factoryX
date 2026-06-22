@@ -28,10 +28,7 @@ const FreePlan = ({ endDate }: FreePlanProps) => {
     <div className="flex flex-col gap-1 py-4 px-6 bg-green-8 rounded-xl">
       <div className="flex gap-2 items-center justify-between">
         <h3 className="Heading-3 text-primary">{t('title')}</h3>
-        <Chip
-          text={t('daysUntilEnd', { days: remainingDays })}
-          color="gray"
-        />
+        <Chip text={t('daysUntilEnd', { days: remainingDays })} color="gray" />
       </div>
       <p className="text-dg Re_Body-1 whitespace-pre-line">
         {t('description')}

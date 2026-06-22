@@ -1,10 +1,10 @@
 import clsx from 'clsx';
-import { chipColorClasses, ChipColor } from './chip-colors';
+import { chipColorClasses, ChipColorType } from './chip-colors';
 
 interface RoundChipProps {
   text: string;
   variant: 'default' | 'defaultSmall' | 'sm' | 'role';
-  color: ChipColor;
+  color: ChipColorType;
 }
 
 const colorClasses = chipColorClasses;

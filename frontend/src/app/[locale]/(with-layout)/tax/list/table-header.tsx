@@ -70,9 +70,7 @@ const TableHeader = ({
               <RoundChip
                 text={tList('status.' + statusKey)}
                 variant="sm"
-                color={
-                  colorMap.color as 'gray' | 'orange' | 'blue' | 'red'
-                }
+                color={colorMap.color as 'gray' | 'orange' | 'blue' | 'red'}
               />
             );
           })()

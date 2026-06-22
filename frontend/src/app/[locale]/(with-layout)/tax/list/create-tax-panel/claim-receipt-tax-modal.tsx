@@ -32,11 +32,9 @@ const ClaimReceiptTaxModal = ({
     <>
       <Modal title={getTitle()} subtitle={getSubtitle()} onClose={onClose}>
         <div className="flex justify-end gap-[5px] mt-4">
-          <MiniBtn variant="white"
-            text={tCommon('cancel')}
-            onClick={onClose}
-          />
-          <MiniBtn variant="secondary"
+          <MiniBtn variant="white" text={tCommon('cancel')} onClick={onClose} />
+          <MiniBtn
+            variant="secondary"
             text={tCommon('confirm')}
             onClick={() =>
               onConfirm(issueType === 'invoice' ? 'invoice' : 'receipt')

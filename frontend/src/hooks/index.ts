@@ -40,7 +40,7 @@ export { default as useGetEquipmentDetail } from './factory/factory-equipment/us
 
 // Factory client related hooks
 export { default as useCreateClient } from './factory/factory-client/use-create-client';
-export type { CreateClientResult } from './factory/factory-client/use-create-client';
+export type { CreateClientResultType } from './factory/factory-client/use-create-client';
 export { default as useGetClient } from './factory/factory-client/use-get-client';
 export { default as useGetClientDetail } from './factory/factory-client/use-get-client-detail';
 export { default as useUpdateClient } from './factory/factory-client/use-update-client';

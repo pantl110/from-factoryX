@@ -93,7 +93,8 @@ const PasswordStep = ({
         </div>
       </div>
 
-      <MiniBtn variant="secondary"
+      <MiniBtn
+        variant="secondary"
         width="w-full"
         text={t('buttons.complete')}
         height="h-12"

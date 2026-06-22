@@ -39,11 +39,7 @@ const ClientTableItem = ({
       <div className="px-3 flex-[1.3]">
         <div className="flex gap-1">
           {client.is_customer === true && (
-            <RoundChip
-              text={tCommon('customer')}
-              variant="sm"
-              color="blue"
-            />
+            <RoundChip text={tCommon('customer')} variant="sm" color="blue" />
           )}
           {client.is_supplier === true && (
             <RoundChip text={tCommon('supplier')} variant="sm" color="red" />

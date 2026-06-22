@@ -261,7 +261,8 @@ const DropzoneArea = ({
                   ? t('maxFiles', { count: fileCount })
                   : ''}
               </p>
-              <MiniBtn variant="outline"
+              <MiniBtn
+                variant="outline"
                 text={t('selectFromComputer')}
                 type="button"
                 onClick={open}
@@ -304,7 +305,8 @@ const DropzoneArea = ({
           </ul>
           <div className="mt-4 flex justify-end gap-[5px]">
             {(typeof fileCount !== 'number' || fileCount > files.length) && (
-              <MiniBtn variant="gray"
+              <MiniBtn
+                variant="gray"
                 text={t('add')}
                 onClick={() => {
                   if (fileInputRef.current) {

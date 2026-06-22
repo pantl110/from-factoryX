@@ -239,7 +239,8 @@ const BillingPageContent = () => {
 
             {/* 버튼 */}
             <div className="w-full mt-20">
-              <MiniBtn variant="secondary"
+              <MiniBtn
+                variant="secondary"
                 text={tCommon('confirm')}
                 width="w-full"
                 onClick={handleConfirm}
@@ -275,7 +276,8 @@ const BillingPageContent = () => {
 
             {/* 버튼 */}
             <div className="w-full mt-10">
-              <MiniBtn variant="secondary"
+              <MiniBtn
+                variant="secondary"
                 text={t('buttons.retry')}
                 width="w-full"
                 onClick={handleRetry}

@@ -171,7 +171,8 @@ const EmailStep = ({
           </div>
         </div>
       )}
-      <MiniBtn variant="secondary"
+      <MiniBtn
+        variant="secondary"
         width="w-full"
         text={
           verification.isVerificationSent
@@ -188,9 +189,7 @@ const EmailStep = ({
         disabled={
           verification.isVerificationSent
             ? !verificationCode || verificationCode.length !== 6 || isChecking
-            : !watchedValues.email ||
-              !!errors.email ||
-              isSending // 로딩 중에는 버튼 비활성화
+            : !watchedValues.email || !!errors.email || isSending // 로딩 중에는 버튼 비활성화
         }
       />
       {!verification.isVerificationSent && termsError && (

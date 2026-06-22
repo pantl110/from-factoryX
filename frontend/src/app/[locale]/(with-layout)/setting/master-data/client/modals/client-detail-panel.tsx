@@ -139,7 +139,8 @@ const ClientDetailPanel = ({
       headerButton={
         (!clientDetail || isDirty) &&
         !isLoading && (
-          <MiniBtn variant="secondary"
+          <MiniBtn
+            variant="secondary"
             text={tCommon('save')}
             disabled={!isDirty || !isValid || isUpdateLoading}
             onClick={handleSubmit(onSubmit)}

@@ -66,11 +66,7 @@ const RefundPolicyModal = ({ onClose }: RefundPolicyModalProps) => {
         </div>
 
         <div className="flex justify-end mb-4">
-          <MiniBtn
-            text={tCommon('close')}
-            variant="white"
-            onClick={onClose}
-          />
+          <MiniBtn text={tCommon('close')} variant="white" onClick={onClose} />
         </div>
       </div>
     </Modal>

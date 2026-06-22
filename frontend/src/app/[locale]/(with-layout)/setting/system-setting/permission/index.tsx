@@ -167,7 +167,8 @@ const Permission = () => {
                   !isFactoryInfoComplete ? tooltip.onMouseLeave : undefined
                 }
               >
-                <MiniBtn variant="secondary"
+                <MiniBtn
+                  variant="secondary"
                   text={t('inviteModal.inviteButton')}
                   onClick={() => {
                     setIsInviteModalOpen(true);

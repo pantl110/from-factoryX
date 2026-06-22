@@ -34,7 +34,8 @@ const DeleteAccount = () => {
           <p className="Me_Body-2 text-sv">{t('description')}</p>
         </div>
         <div className="flex justify-end">
-          <MiniBtn variant="red"
+          <MiniBtn
+            variant="red"
             text={t('buttonText')}
             onClick={() => setIsDeleteModalOpen(true)}
           />

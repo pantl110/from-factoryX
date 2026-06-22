@@ -51,7 +51,8 @@ const MainTitleSec = ({
       <div className="flex items-center justify-between">
         <div className="Heading-1 text-dg">{t('title')}</div>
         <div className="relative">
-          <MiniBtn variant="secondary"
+          <MiniBtn
+            variant="secondary"
             text={t('createButton')}
             onClick={onNewQuotation}
             icon={CaretDown}

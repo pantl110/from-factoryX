@@ -608,7 +608,8 @@ const ProductDetail = ({
             isLocationDirty ||
             isQuantityDirty ||
             stagedLocations.length > 0) && (
-            <MiniBtn variant="secondary"
+            <MiniBtn
+              variant="secondary"
               text={tCommon('save')}
               onClick={handleSave}
               disabled={

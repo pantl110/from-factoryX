@@ -79,7 +79,8 @@ const MainTitleSec = ({
       <div className="flex items-center justify-between">
         <h1 className="Heading-1 text-dg">{t('title')}</h1>
         <div className="flex gap-2.5">
-          <MiniBtn variant="outline"
+          <MiniBtn
+            variant="outline"
             text={
               selectedTab === 'product'
                 ? t('excelDownloadButtonProduct')
@@ -89,7 +90,8 @@ const MainTitleSec = ({
             onClick={handleExcelDownload}
           />
           <div className="relative">
-            <MiniBtn variant="secondary"
+            <MiniBtn
+              variant="secondary"
               text={
                 selectedTab === 'product'
                   ? t('addProductButton')

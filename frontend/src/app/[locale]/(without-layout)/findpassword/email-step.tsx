@@ -172,7 +172,8 @@ const EmailStep = ({
           </div>
         </div>
       )}
-      <MiniBtn variant="secondary"
+      <MiniBtn
+        variant="secondary"
         width="w-full"
         text={
           verification.isVerificationSent

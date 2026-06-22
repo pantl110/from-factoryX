@@ -185,7 +185,8 @@ const FacilityDetailPanel = ({
       onClose={onClose}
       headerButton={
         (!facility || isDirty) && (
-          <MiniBtn variant="secondary"
+          <MiniBtn
+            variant="secondary"
             text={tCommon('save')}
             onClick={handleSubmit(onSubmit)}
             disabled={!isValid}

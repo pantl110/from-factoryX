@@ -94,7 +94,8 @@ const MemoSection = ({
         {projectStatus !== 'completed' && (
           <div className="flex gap-2.5 justify-end">
             {!isEditMode ? (
-              <MiniBtn variant="outline"
+              <MiniBtn
+                variant="outline"
                 text={tCommon('edit')}
                 onClick={() => setIsEditMode(true)}
                 disabled={isViewer || !hasSubscription()}
@@ -110,7 +111,8 @@ const MemoSection = ({
                     setMemoContent(content);
                   }}
                 />
-                <MiniBtn variant="secondary"
+                <MiniBtn
+                  variant="secondary"
                   text={tCommon('save')}
                   onClick={handleMemoSave}
                   disabled={isLoading}

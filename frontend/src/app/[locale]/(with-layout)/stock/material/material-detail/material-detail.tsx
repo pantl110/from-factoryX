@@ -299,7 +299,8 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
                 {tStockLocation('title.material')}
               </h3>
               {fields.length > 0 && (
-                <MiniBtn variant="outline"
+                <MiniBtn
+                  variant="outline"
                   text={tCommon('add')}
                   onClick={() => setIsUploadModalOpen(true)}
                   disabled={isViewer || !hasSubscription()}

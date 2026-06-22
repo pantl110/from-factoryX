@@ -34,9 +34,7 @@ const TabArea = ({
             : tDocumentType('quotationRequest')}
         </button>
       )}
-      <div
-        className={`pb-1 ${getTabItemClass(activeTab === 'history')}`}
-      >
+      <div className={`pb-1 ${getTabItemClass(activeTab === 'history')}`}>
         {tTabArea('history')}
       </div>
     </div>

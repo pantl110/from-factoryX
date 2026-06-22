@@ -1,9 +1,9 @@
 import { CaretDown } from '@phosphor-icons/react';
-import { chipColorClasses, ChipColor } from './chip-colors';
+import { chipColorClasses, ChipColorType } from './chip-colors';
 
 interface ChipProps {
   text: string;
-  color?: ChipColor;
+  color?: ChipColorType;
   bgColor?: string;
   textColor?: string;
   borderColor?: string;

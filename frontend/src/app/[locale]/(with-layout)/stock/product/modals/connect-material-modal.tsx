@@ -389,7 +389,8 @@ const ConnectMaterialModal = ({
               </div>
             )}
           </div>
-          <MiniBtn variant="outline"
+          <MiniBtn
+            variant="outline"
             text={tStock('manualAddButton')}
             height="h-12"
             onClick={() => setIsManualAddMode(true)}
@@ -452,11 +453,13 @@ const ConnectMaterialModal = ({
           )}
 
           <div className="flex gap-2.5 justify-end">
-            <MiniBtn variant="white"
+            <MiniBtn
+              variant="white"
               text={tCommon('cancel')}
               onClick={onClose}
             />
-            <MiniBtn variant="secondary"
+            <MiniBtn
+              variant="secondary"
               text={tCommon('add')}
               disabled={
                 (selectedMaterials.length === 0 && newMaterials.length === 0) ||

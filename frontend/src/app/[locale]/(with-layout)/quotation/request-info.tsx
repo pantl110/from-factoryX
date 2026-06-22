@@ -273,7 +273,8 @@ const RequestInfo = ({
             ? tRequestInfo('orderTitle')
             : tRequestInfo('title')}
         </h3>
-        <MiniBtn variant="outline"
+        <MiniBtn
+          variant="outline"
           text={tRequestInfo('addProduct')}
           icon={CaretDown}
           iconPosition="right"

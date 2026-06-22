@@ -18,7 +18,7 @@ import {
   useCheckBarobill,
   usePublishTaxInvoice,
 } from '@/hooks';
-import type { CreateClientResult } from '@/hooks';
+import type { CreateClientResultType } from '@/hooks';
 import useMemberStore from '@/store/member-store';
 import {
   FactoriesUpdateModel,
@@ -361,7 +361,7 @@ const CreatTaxPanel = ({
   const createClientInfo = useCallback(
     async (
       clientFormData: ClientInfoFormDataModel
-    ): Promise<CreateClientResult> => {
+    ): Promise<CreateClientResultType> => {
       if (!factoryId)
         return { success: false, error: t('errors.factoryIdNotSet') };
 
@@ -648,7 +648,8 @@ const CreatTaxPanel = ({
   // 헤더 버튼 구성
   const headerButton = (
     <div className="flex gap-2">
-      <MiniBtn variant="gray"
+      <MiniBtn
+        variant="gray"
         text={tTax('publishStatus.temporary')}
         onClick={async () => {
           const isSuccess = await handleTemporarySave('receipt', projectId);
@@ -668,7 +669,8 @@ const CreatTaxPanel = ({
         }
       />
       <div className="relative">
-        <MiniBtn variant="secondary"
+        <MiniBtn
+          variant="secondary"
           text={t('buttons.selectIssueType')}
           icon={CaretDown}
           iconPosition="right"
@@ -718,7 +720,8 @@ const CreatTaxPanel = ({
             <h3 className="Heading-3 h-10 items-center flex">
               {tCommon('orderProductInfo')}
             </h3>
-            <MiniBtn variant="outline"
+            <MiniBtn
+              variant="outline"
               text={`${tCommon('product')} ${tCommon('add')}`}
               icon={CaretDown}
               iconPosition="right"

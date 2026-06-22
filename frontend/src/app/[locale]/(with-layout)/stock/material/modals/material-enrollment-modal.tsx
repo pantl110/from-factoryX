@@ -246,7 +246,8 @@ const MaterialEnrollmentModal = ({
                 </div>
               )}
             </div>
-            <MiniBtn variant="outline"
+            <MiniBtn
+              variant="outline"
               text={tStock('manualAddButton')}
               height="h-12"
               onClick={() => setIsManualAddMode(true)}

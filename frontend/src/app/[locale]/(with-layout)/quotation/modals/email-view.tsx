@@ -257,7 +257,8 @@ const EmailView = ({
               </button> */}
 
               {/* 이메일 전송 버튼 */}
-              <MiniBtn variant="secondary"
+              <MiniBtn
+                variant="secondary"
                 text={t('sendButton', { documentTitle })}
                 onClick={handleSendEmail}
                 disabled={isLoading || isEmailSending}

@@ -78,7 +78,8 @@ const NotificationModal = ({
       scroll={true}
       button={
         unreadCount === 0 ? null : (
-          <MiniBtn variant="outline"
+          <MiniBtn
+            variant="outline"
             height="h-8"
             text={t('markAllAsRead')}
             onClick={handleReadAll}

@@ -155,7 +155,8 @@ const LoginPage = () => {
                 )}
               </div>
             </div>
-            <MiniBtn variant="secondary"
+            <MiniBtn
+              variant="secondary"
               text={t('button')}
               height="h-12"
               type="submit"
