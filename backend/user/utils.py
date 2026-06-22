@@ -182,9 +182,9 @@ def send_verification_email(email, code, verification_type):
 
     # 개발 환경에서는 콘솔에 출력
     if verification_type == "signup":
-        subject = "[Factory X] 회원가입 인증 코드"
+        subject = "[판틀110] 회원가입 인증 코드"
         message = f"""
-안녕하세요! Factory X입니다.
+안녕하세요! 판틀110입니다.
 
 회원가입을 완료하기 위해 아래 인증 코드를 입력해주세요.
 
@@ -195,9 +195,9 @@ def send_verification_email(email, code, verification_type):
 감사합니다.
         """
     elif verification_type == "password_reset":
-        subject = "[Factory X] 비밀번호 재설정 인증 코드"
+        subject = "[판틀110] 비밀번호 재설정 인증 코드"
         message = f"""
-안녕하세요! Factory X입니다.
+안녕하세요! 판틀110입니다.
 
 비밀번호 재설정을 위해 아래 인증 코드를 입력해주세요.
 

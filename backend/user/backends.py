@@ -123,10 +123,10 @@ class SESEmailService:
         """Send verification email with custom template"""
         try:
             if verification_type == "signup":
-                subject = "[Factory X] 회원가입 인증 코드"
+                subject = "[판틀110] 회원가입 인증 코드"
                 template = self._get_signup_template(verification_code)
             elif verification_type == "password_reset":
-                subject = "[Factory X] 비밀번호 재설정 인증 코드"
+                subject = "[판틀110] 비밀번호 재설정 인증 코드"
                 template = self._get_password_reset_template(verification_code)
             else:
                 raise ValueError(f"Unsupported verification type: {verification_type}")
@@ -169,16 +169,16 @@ class SESEmailService:
         <html>
         <head>
             <meta charset="UTF-8">
-            <title>Factory X 회원가입 인증</title>
+            <title>판틀110 회원가입 인증</title>
         </head>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
             <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-                <h2 style="color: #2c3e50;">Factory X 회원가입 인증</h2>
-                <p>안녕하세요! Factory X입니다.</p>
+                <h2 style="color: #2c3e50;">판틀110 회원가입 인증</h2>
+                <p>안녕하세요! 판틀110입니다.</p>
                 <p>회원가입을 완료하기 위해 아래 인증 코드를 입력해주세요.</p>
                 
                 <div style="background-color: #f8f9fa; padding: 20px; border-radius: 5px; text-align: center; margin: 20px 0;">
-                    <h3 style="color: #007bff; font-size: 32px; margin: 0; letter-spacing: 5px;">{code}</h3>
+                    <h3 style="color: #02d677; font-size: 32px; margin: 0; letter-spacing: 5px;">{code}</h3>
                 </div>
                 
                 <p style="color: #6c757d; font-size: 14px;">
@@ -188,7 +188,7 @@ class SESEmailService:
                 
                 <hr style="border: none; border-top: 1px solid #dee2e6; margin: 30px 0;">
                 <p style="color: #6c757d; font-size: 12px;">
-                    Factory X 팀<br>
+                    판틀110 팀<br>
                     이 이메일은 자동으로 발송된 메일입니다.
                 </p>
             </div>
@@ -203,12 +203,12 @@ class SESEmailService:
         <html>
         <head>
             <meta charset="UTF-8">
-            <title>Factory X 비밀번호 재설정</title>
+            <title>판틀110 비밀번호 재설정</title>
         </head>
         <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
             <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-                <h2 style="color: #dc3545;">Factory X 비밀번호 재설정</h2>
-                <p>안녕하세요! Factory X입니다.</p>
+                <h2 style="color: #dc3545;">판틀110 비밀번호 재설정</h2>
+                <p>안녕하세요! 판틀110입니다.</p>
                 <p>비밀번호 재설정을 위해 아래 인증 코드를 입력해주세요.</p>
                 
                 <div style="background-color: #f8f9fa; padding: 20px; border-radius: 5px; text-align: center; margin: 20px 0;">
@@ -222,7 +222,7 @@ class SESEmailService:
                 
                 <hr style="border: none; border-top: 1px solid #dee2e6; margin: 30px 0;">
                 <p style="color: #6c757d; font-size: 12px;">
-                    Factory X 팀<br>
+                    판틀110 팀<br>
                     이 이메일은 자동으로 발송된 메일입니다.
                 </p>
             </div>

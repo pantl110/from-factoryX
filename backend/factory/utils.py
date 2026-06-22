@@ -199,12 +199,12 @@ def _create_html_email(factory, role, invited_by_user, invite_url):
     <html>
     <head>
         <meta charset="UTF-8">
-        <title>Factory X 팩토리 초대</title>
+        <title>판틀110 팩토리 초대</title>
     </head>
     <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
         <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
-            <h2 style="color: #2c3e50;">Factory X 팩토리 초대</h2>
-            <p>안녕하세요! Factory X입니다.</p>
+            <h2 style="color: #2c3e50;">판틀110 팩토리 초대</h2>
+            <p>안녕하세요! 판틀110입니다.</p>
             <p><strong>{invited_by_user.email}</strong>님이 <strong>{factory.name}</strong> 팩토리에 초대했습니다.</p>
             
             <div style="background-color: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0;">
@@ -230,7 +230,7 @@ def _create_html_email(factory, role, invited_by_user, invite_url):
             
             <hr style="border: none; border-top: 1px solid #dee2e6; margin: 30px 0;">
             <p style="color: #6c757d; font-size: 12px;">
-                Factory X 팀<br>
+                판틀110 팀<br>
                 이 이메일은 자동으로 발송된 메일입니다.
             </p>
         </div>
@@ -242,7 +242,7 @@ def _create_html_email(factory, role, invited_by_user, invite_url):
 def _create_text_email(factory, role, invited_by_user, invite_url):
     """텍스트 이메일 템플릿 생성"""
     return f"""
-안녕하세요! Factory X입니다.
+안녕하세요! 판틀110입니다.
 
 {invited_by_user.email}님이 {factory.name} 팩토리에 초대했습니다.
 
@@ -255,13 +255,13 @@ def _create_text_email(factory, role, invited_by_user, invite_url):
 {invite_url}
 
 감사합니다.
-Factory X 팀
+판틀110 팀
     """
 
 
 def send_invite_email(email, factory, role, invited_by_user):
     """팩토리 멤버 초대 이메일 발송"""
-    subject = f"[Factory X] {factory.name} 팩토리 초대"
+    subject = f"[판틀110] {factory.name} 팩토리 초대"
     invite_url = f"{settings.FRONTEND_URL}/invite?factory_id={factory.id}&email={email}&role={role}"
 
     html_message, text_message = create_invite_email_templates(
@@ -631,7 +631,7 @@ def send_report_email_example(factory, report_data, recipients):
         <p>문의사항이 있으시면 언제든지 연락 주시기 바랍니다.</p>
         <br>
         <p>감사합니다.</p>
-        <p>Factory X 팀</p>
+        <p>판틀110 팀</p>
     </body>
     </html>
     """
@@ -647,7 +647,7 @@ def send_report_email_example(factory, report_data, recipients):
 
     return send_email_with_attachments(
         to_emails=recipients,
-        subject=f"[Factory X] {factory.name} 월간 보고서",
+        subject=f"[판틀110] {factory.name} 월간 보고서",
         html_message=html_message,
         attachments=attachments,
     )
@@ -663,14 +663,14 @@ def send_document_email_example(to_email, document_path, message):
         <p>첨부된 문서를 확인해 주세요.</p>
         <br>
         <p>감사합니다.</p>
-        <p>Factory X 팀</p>
+        <p>판틀110 팀</p>
     </body>
     </html>
     """
 
     return send_email_with_attachments(
         to_emails=[to_email],
-        subject="[Factory X] 문서 전송",
+        subject="[판틀110] 문서 전송",
         html_message=html_message,
         attachments=[document_path],  # 파일 경로 직접 전달
     )
@@ -698,14 +698,14 @@ def send_multi_attachment_email_example(recipients, files_data):
         <p>검토 후 피드백 부탁드립니다.</p>
         <br>
         <p>감사합니다.</p>
-        <p>Factory X 팀</p>
+        <p>판틀110 팀</p>
     </body>
     </html>
     """
 
     return send_email_with_attachments(
         to_emails=recipients,
-        subject="[Factory X] 문서 패키지 전송",
+        subject="[판틀110] 문서 패키지 전송",
         html_message=html_message,
         attachments=attachments,
         cc_emails=["manager@factory-x.com"],  # 매니저에게 참조
