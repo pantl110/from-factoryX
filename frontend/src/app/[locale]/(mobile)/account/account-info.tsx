@@ -314,8 +314,9 @@ const AccountInfo = ({ type, account }: AccountInfoProps) => {
         <div className="flex gap-2 items-center">
           <div className="w-1.5 h-1.5 bg-lg rounded-full" />
           <h3 className="m-Body-4 text-primary">
-            {type === 'income' ? '매출' : '매입'} 세금계산서는 PC 버전에서
-            확인하실 수 있습니다.
+            {tMobile('taxInvoicePcOnly', {
+              type: type === 'income' ? tMobile('sales') : tMobile('purchase'),
+            })}
           </h3>
         </div>
       </div>
@@ -323,7 +324,7 @@ const AccountInfo = ({ type, account }: AccountInfoProps) => {
       {/* 버튼 */}
       {type === 'income' && account?.tax_invoice?.project_id && (
         <MoBtn
-          text="납기 상세 보러가기"
+          text={tMobile('viewDeliveryDetail')}
           variant="outline"
           icon={<CaretRight />}
           width="w-full"

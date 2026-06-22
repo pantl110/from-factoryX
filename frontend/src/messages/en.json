@@ -66,7 +66,9 @@
       "businessAddress": "Enter business address.",
       "email": "Enter email.",
       "fax": "Enter fax number.",
-      "companyName": "Enter company name."
+      "companyName": "Enter company name.",
+      "search": "Enter a search term.",
+      "date": "YYYY-MM-DD"
     },
     "customer": "Customer",
     "supplier": "Supplier",
@@ -373,6 +375,10 @@
         "partial": "Partial",
         "completed": "Completed",
         "overdue": "Overdue"
+      },
+      "sentStatus": {
+        "notSent": "Not Sent",
+        "sentCount": "Sent {count}x"
       },
       "tableHeader": {
         "projectLink": {
@@ -2159,7 +2165,11 @@
       "productDetailInfo": "You can view detailed product information on PC."
     },
     "account": {
-      "sendPaymentRequest": "Send Request"
+      "sendPaymentRequest": "Send Request",
+      "sales": "Sales",
+      "purchase": "Purchase",
+      "taxInvoicePcOnly": "{type} tax invoices can be viewed on the PC version.",
+      "viewDeliveryDetail": "View Delivery Details"
     },
     "orderConfirmModal": {
       "title": "Confirm Order",

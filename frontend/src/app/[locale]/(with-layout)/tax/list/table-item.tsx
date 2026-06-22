@@ -10,6 +10,7 @@ import { IconBtn, MiniBtn, RoundChip } from '@/ui';
 import useMemberStore from '@/store/member-store';
 import router from 'next/router';
 import { ArrowLineUpRight } from '@phosphor-icons/react';
+import { useTranslations } from 'next-intl';
 
 interface TableItemProps {
   onItemClick?: () => void;
@@ -28,6 +29,8 @@ const TableItem = ({
   onOpenLinkProjectModal,
   taxType,
 }: TableItemProps) => {
+  const t = useTranslations('tax.list.sentStatus');
+  const tCommon = useTranslations('common');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const isProdManager = role === 'prod_manager';
@@ -104,8 +107,8 @@ const TableItem = ({
           <RoundChip
             text={
               item.account.invoice_sent_count === 0
-                ? '미발송'
-                : `${item.account.invoice_sent_count}회 발송`
+                ? t('notSent')
+                : t('sentCount', { count: item.account.invoice_sent_count })
             }
             variant="sm"
             color={item.account.invoice_sent_count === 0 ? 'gray' : 'blue'}
@@ -132,7 +135,7 @@ const TableItem = ({
           />
         ) : (
           <MiniBtn
-            text="연결하기"
+            text={tCommon('link')}
             variant="outline"
             height="h-8"
             onClick={

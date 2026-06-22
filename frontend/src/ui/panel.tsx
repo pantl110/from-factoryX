@@ -1,6 +1,7 @@
 'use client';
 
 import { ArrowLineRightIcon } from '@phosphor-icons/react/dist/ssr';
+import { useTranslations } from 'next-intl';
 import {
   useEffect,
   useState,
@@ -27,6 +28,7 @@ export interface PanelRefModel {
 
 const Panel = forwardRef<PanelRefModel, PanelProps>(
   ({ children, title, onClose, hasSaveButton = false, headerButton }, ref) => {
+    const t = useTranslations('common');
     const [isVisible, setIsVisible] = useState(false);
     const [shouldRender, setShouldRender] = useState(true);
 
@@ -114,9 +116,7 @@ const Panel = forwardRef<PanelRefModel, PanelProps>(
 
               {/* 나중에 정리하기 */}
               {hasSaveButton && (
-                <MiniBtn variant="secondary"
-                  text="저장"
-                />
+                <MiniBtn variant="secondary" text={t('save')} />
               )}
             </div>
 

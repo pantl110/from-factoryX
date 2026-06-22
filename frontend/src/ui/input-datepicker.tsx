@@ -2,6 +2,7 @@
 
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 
 interface InputDatepickerProps {
@@ -19,12 +20,14 @@ const InputDatepicker = ({
   label,
   value,
   onChange,
-  placeholder = '연도-월-일',
+  placeholder,
   required,
   showError = false,
   inputRef,
   onKeyDown,
 }: InputDatepickerProps) => {
+  const tPlaceholder = useTranslations('common.placeholders');
+  const resolvedPlaceholder = placeholder ?? tPlaceholder('date');
   const [selectedDate, setSelectedDate] = useState<Date | null>(
     value ? new Date(value) : null
   );
@@ -100,7 +103,7 @@ const InputDatepicker = ({
           onKeyDown={onKeyDown}
           onChange={handleChange}
           dateFormat="yyyy-MM-dd"
-          placeholderText={placeholder}
+          placeholderText={resolvedPlaceholder}
           className={`w-full h-12 min-h-9 rounded px-3 Re_Body-1 placeholder:text-sv outline-none border transition-colors duration-200
           ${
             hasError

@@ -6,7 +6,7 @@ import { UseFormRegister, FieldErrors, UseFormSetError } from 'react-hook-form';
 import { SignupFormDataModel } from '@/types/data-model';
 import { validateEmail } from '@/utils/validation';
 import { useEmailVerification } from '@/hooks/users/use-email-verification';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 
 interface EmailStepProps {
@@ -44,9 +44,20 @@ const EmailStep = ({
   const { sendVerificationCode, verifyCode, isSending, isChecking } =
     useEmailVerification();
   const [verificationError, setVerificationError] = useState<string>('');
+  const [termsError, setTermsError] = useState<string>('');
   const t = useTranslations('signup.emailStep');
 
+  useEffect(() => {
+    if (isRequiredTermsChecked) setTermsError('');
+  }, [isRequiredTermsChecked]);
+
   const handleSendVerificationCode = async () => {
+    if (!isRequiredTermsChecked) {
+      setTermsError(t('errors.termsRequired'));
+      return;
+    }
+    setTermsError('');
+
     if (!watchedValues.email || errors.email) return;
 
     // 이메일 인증 코드 발송
@@ -179,10 +190,12 @@ const EmailStep = ({
             ? !verificationCode || verificationCode.length !== 6 || isChecking
             : !watchedValues.email ||
               !!errors.email ||
-              !isRequiredTermsChecked ||
               isSending // 로딩 중에는 버튼 비활성화
         }
       />
+      {!verification.isVerificationSent && termsError && (
+        <span className="mt-2 text-red Re_Body-1">{termsError}</span>
+      )}
     </>
   );
 };

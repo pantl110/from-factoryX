@@ -376,7 +376,8 @@
       },
       "errors": {
         "verificationExpired": "Verification time has expired. Please request verification again.",
-        "sendFailed": "Failed to send email verification code."
+        "sendFailed": "Failed to send email verification code.",
+        "termsRequired": "Please agree to the required terms."
       },
       "buttons": {
         "resend": "Resend",

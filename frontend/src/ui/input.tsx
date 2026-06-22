@@ -5,6 +5,7 @@ import {
   EyeIcon,
   EyeSlashIcon,
 } from '@phosphor-icons/react/dist/ssr';
+import { useTranslations } from 'next-intl';
 import { useState, forwardRef, useMemo, useEffect, useRef } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 
@@ -50,7 +51,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
       label,
       value,
       onChange,
-      placeholder = '검색어를 입력하세요.',
+      placeholder,
       required,
       type = 'text',
       disabled = false,
@@ -75,6 +76,8 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
     },
     ref
   ) => {
+    const tPlaceholder = useTranslations('common.placeholders');
+    const resolvedPlaceholder = placeholder ?? tPlaceholder('search');
     const [isShowPassword, setisShowPassword] = useState(false);
     const [isFocused, setIsFocused] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -199,7 +202,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
             className="w-full h-12 min-h-9 rounded px-3 Re_Body-1 border border-lg hover:border-primary flex items-center justify-between transition-colors duration-200 ease-in-out"
           >
             <span className={`Re_Body-1 ${value ? 'text-dg' : 'text-sv'}`}>
-              {value || placeholder}
+              {value || resolvedPlaceholder}
             </span>
             <CaretDown size={20} className="text-sv" />
           </button>
@@ -233,7 +236,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
               onKeyDown={onKeyDown}
               onFocus={handleFocus}
               onBlur={handleBlur}
-              placeholder={placeholder}
+              placeholder={resolvedPlaceholder}
               disabled={disabled || disabledSetting || disabledReadOnly}
               className={`${inputClassName} ${className ?? ''}`}
               style={{
@@ -271,7 +274,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
               onKeyDown={onKeyDown}
               onFocus={handleFocus}
               onBlur={handleBlur}
-              placeholder={placeholder}
+              placeholder={resolvedPlaceholder}
               disabled={disabled || disabledSetting || disabledReadOnly}
               className={`${inputClassName} ${className ?? ''}`}
               onWheel={
