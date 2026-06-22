@@ -240,7 +240,7 @@ const EmailView = ({
               <h2 className="Heading-2">
                 {t('sendEmailTitle', { documentTitle })}
               </h2>
-              <div className="mt-2.5 Me_Body-3 text-gr">
+              <div className="mt-2.5 Me_Body-1 text-gr">
                 {t('sendEmailDescription')}
               </div>
             </div>

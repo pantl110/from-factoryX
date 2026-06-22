@@ -35,7 +35,7 @@ const PendingQuoteItem = ({ project, onClick }: PendingQuoteItemProps) => {
       <div className="flex flex-col gap-2.5">
         <h4 className="Heading-4">{project.client_name || '-'}</h4>
         <div
-          className="Me_Body-1 text-sv truncate"
+          className="Me_Body-3 text-sv truncate"
           title={getProductDisplayText()}
         >
           {/* <span>{tCommon('productName')}</span> */}
@@ -44,7 +44,7 @@ const PendingQuoteItem = ({ project, onClick }: PendingQuoteItemProps) => {
         </div>
       </div>
       <div className="flex items-center">
-        <p className="flex-1 Me_Body-1 text-sv">
+        <p className="flex-1 Me_Body-3 text-sv">
           {formatISODate(project.created_at) || '-'}
         </p>
         <RoundChip

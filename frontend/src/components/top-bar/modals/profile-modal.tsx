@@ -65,13 +65,13 @@ const ProfileModal = ({ onClose }: ProfileModalProps) => {
           </div>
           <div className="flex flex-col gap-4">
             <div className="flex gap-2 items-center">
-              <p className="Me_Body-1 text-sv">
+              <p className="Me_Body-3 text-sv">
                 {getRoleText(role, tPermission)}
               </p>
               {userInfo?.username && (
                 <>
                   <div className="w-[1px] bg-gr h-[56%]"></div>
-                  <p className="Me_Body-1 text-sv">{userInfo?.username}</p>
+                  <p className="Me_Body-3 text-sv">{userInfo?.username}</p>
                 </>
               )}
             </div>

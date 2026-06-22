@@ -306,7 +306,7 @@ const RequestInfo = ({
           <div className="w-full overflow-x-auto">
             <table className="w-full min-w-[938px]">
               <thead>
-                <tr className="flex items-center h-12 border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
+                <tr className="flex items-center h-12 border-t border-b border-lg Me_Body-3 text-sv rounded-sm">
                   <th className="text-left px-3 flex-[1.5]">
                     {tCommon('productName')}
                   </th>

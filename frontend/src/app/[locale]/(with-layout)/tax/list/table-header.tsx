@@ -83,7 +83,7 @@ const TableHeader = ({
 
   return (
     <div
-      className={`text-sv flex items-center w-full h-12 border-t border-b border-lg Me_Body-1 ${
+      className={`text-sv flex items-center w-full h-12 border-t border-b border-lg Me_Body-3 ${
         taxType === 'sales' ? 'min-w-[1360px]' : 'min-w-[1192px]'
       }`}
     >

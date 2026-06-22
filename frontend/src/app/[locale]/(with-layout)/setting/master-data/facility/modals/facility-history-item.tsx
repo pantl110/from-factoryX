@@ -20,7 +20,7 @@ const FacilityHistoryItem = ({ plan }: FacilityHistoryItemProps) => {
 
   return (
     <>
-      <div className="h-14 flex items-center Me_Body-1 text-dg border-b border-lg cursor-default">
+      <div className="h-14 flex items-center Me_Body-3 text-dg border-b border-lg cursor-default">
         <div className="flex-1 px-3 flex items-center justify-between gap-1 min-w-0">
           <p className="text-dg truncate" title={plan.product_name || '-'}>
             {plan.product_name || '-'}

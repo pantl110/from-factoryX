@@ -20,7 +20,7 @@ const Preview = ({
     <div className="p-5 flex flex-col gap-2 rounded-[8px] bg-bg">
       <div className="flex items-center justify-between w-full">
         {/* <h4 className="Heading-4 text-primary">단위 계산 미리보기</h4> */}
-        <span className="text-sv Me_Body-1">
+        <span className="text-sv Me_Body-3">
           {tPreview('autoCalculateDescription')}
         </span>
       </div>
@@ -33,7 +33,7 @@ const Preview = ({
           <div className="flex gap-2">
             <div className="flex-1 py-3 pl-4 pr-3 rounded-[8px] bg-wh">
               <div className="flex items-center justify-between mb-2">
-                <span className="Me_Body-3 text-primary">
+                <span className="Me_Body-1 text-primary">
                   {addUnitType === 'material'
                     ? tPreview('materialQuestion', {
                         standardUnit,

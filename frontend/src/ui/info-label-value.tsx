@@ -138,7 +138,7 @@ const InfoLabelValue = ({
   const renderText = () => {
     // value가 없거나 빈 문자열이면 placeholder 표시
     if (!value || (typeof value === 'string' && value.trim() === '')) {
-      return <span className="text-gr Me_Body-1">{placeholder || '-'}</span>;
+      return <span className="text-gr Me_Body-3">{placeholder || '-'}</span>;
     }
     return value;
   };
@@ -213,7 +213,7 @@ const InfoLabelValue = ({
   };
 
   return (
-    <div className="flex w-full Me_Body-1 border-t border-lg">
+    <div className="flex w-full Me_Body-3 border-t border-lg">
       <div className="w-[137px] bg-lg-table flex gap-2 p-3 cursor-default">
         <div className="text-sv">{label}</div>
         {required && <div className="text-sv">*</div>}

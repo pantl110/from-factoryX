@@ -56,7 +56,7 @@ const History = ({ selectedProduct }: HistoryProps) => {
         <div className="flex justify-between items-center h-10 mb-3">
           <h3 className="Heading-3">{t('title')}</h3>
         </div>
-        <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
+        <div className="flex items-center h-12 border-t border-b border-lg Me_Body-3 text-sv rounded-sm">
           <p className="flex-[1.2] py-1 px-3 ">{tCommon('date')}</p>
           <p className="flex-2 py-1 px-3 ">{tCommon('productName')}</p>
           <p className="flex-1 py-1 px-3 ">{tCommon('quantity')}</p>

@@ -12,7 +12,7 @@ const PlanChangeSection = ({ title, content }: PlanChangeSectionProps) => {
     <div className="rounded flex flex-col gap-4 h-full">
       <div className="flex flex-col gap-3 flex-1">
         <div className="flex gap-2">
-          <div className="h-11 px-3 w-[120px] Me_Body-1 bg-bg flex items-center justify-center rounded">
+          <div className="h-11 px-3 w-[120px] Me_Body-3 bg-bg flex items-center justify-center rounded">
             {t('title')}
           </div>
           <div className="h-11 border px-3 Re_Body-1 text-dg border-lg flex items-center rounded-lg flex-1">

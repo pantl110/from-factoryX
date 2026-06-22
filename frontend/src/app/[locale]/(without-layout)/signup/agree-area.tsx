@@ -73,7 +73,7 @@ const AgreeArea = ({ watchedValues, setValue, register }: AgreeAreaProps) => {
       <input type="hidden" {...register('marketing_agreement')} />
       <div className="flex gap-2">
         <Checkbox isChecked={isAllChecked} onToggle={handleToggleAll} />
-        <p className="text-bl Me_Body-1">{t('agreeAll')}</p>
+        <p className="text-bl Me_Body-3">{t('agreeAll')}</p>
       </div>
       <div className="flex justify-between">
         <div className="flex gap-2">
@@ -81,10 +81,10 @@ const AgreeArea = ({ watchedValues, setValue, register }: AgreeAreaProps) => {
             isChecked={watchedValues.terms_of_service}
             onToggle={handleToggleService}
           />
-          <p className="text-sv Me_Body-1">{t('termsOfService.label')}</p>
+          <p className="text-sv Me_Body-3">{t('termsOfService.label')}</p>
         </div>
         <button
-          className="text-sv Me_Body-1 hover:text-primary"
+          className="text-sv Me_Body-3 hover:text-primary"
           onClick={() =>
             window.open(`/${locale}/signup/terms-of-service`, '_blank')
           }
@@ -98,10 +98,10 @@ const AgreeArea = ({ watchedValues, setValue, register }: AgreeAreaProps) => {
             isChecked={watchedValues.privacy_policy_agreement}
             onToggle={handleTogglePrivacy}
           />
-          <p className="text-sv Me_Body-1">{t('privacyPolicy.label')}</p>
+          <p className="text-sv Me_Body-3">{t('privacyPolicy.label')}</p>
         </div>
         <button
-          className="text-sv Me_Body-1 hover:text-primary"
+          className="text-sv Me_Body-3 hover:text-primary"
           onClick={() =>
             window.open(`/${locale}/signup/privacy-policy`, '_blank')
           }
@@ -115,10 +115,10 @@ const AgreeArea = ({ watchedValues, setValue, register }: AgreeAreaProps) => {
             isChecked={watchedValues.marketing_agreement}
             onToggle={handleToggleMarketing}
           />
-          <p className="text-sv Me_Body-1">{t('marketingAgreement.label')}</p>
+          <p className="text-sv Me_Body-3">{t('marketingAgreement.label')}</p>
         </div>
         <button
-          className="text-sv Me_Body-1 hover:text-primary"
+          className="text-sv Me_Body-3 hover:text-primary"
           onClick={() =>
             window.open(`/${locale}/signup/marketing-info`, '_blank')
           }

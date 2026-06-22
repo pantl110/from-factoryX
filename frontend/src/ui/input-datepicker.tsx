@@ -86,7 +86,7 @@ const InputDatepicker = ({
 
       {label && (
         <div className="flex items-center gap-1 h-5">
-          <label className="Me_Body-1 text-dg">{label}</label>
+          <label className="Me_Body-3 text-dg">{label}</label>
           {required && <span className="text-primary">*</span>}
         </div>
       )}

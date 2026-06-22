@@ -12,7 +12,7 @@ const MaterialInfoTable = ({ lineItem }: MaterialInfoTableProps) => {
 
   return (
     <div>
-      <div className="text-sv flex items-center w-full h-12 border-t border-b border-lg Me_Body-1">
+      <div className="text-sv flex items-center w-full h-12 border-t border-b border-lg Me_Body-3">
         <p className="flex-2 px-3">{tCommon('materialName')}</p>
         <p className="flex-2 px-3">{tCommon('specification')}</p>
         <p className="flex-1 px-3">{tCommon('quantity')}</p>
@@ -21,7 +21,7 @@ const MaterialInfoTable = ({ lineItem }: MaterialInfoTableProps) => {
         <p className="flex-[1.5] px-3">{tTax('taxAmount')}</p>
         <p className="flex-[1.5] px-3">{tCommon('amount')}</p>
       </div>
-      <div className="flex items-center h-14 w-full text-bl Me_Body-1 border-b border-lg">
+      <div className="flex items-center h-14 w-full text-bl Me_Body-3 border-b border-lg">
         <p className="flex-2 px-3 text-dg truncate" title={lineItem.name}>
           {lineItem.name || '-'}
         </p>

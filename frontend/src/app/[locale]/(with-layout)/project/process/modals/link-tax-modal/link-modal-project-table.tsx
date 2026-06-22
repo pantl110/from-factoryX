@@ -38,7 +38,7 @@ const LinkModalProjectTable = ({
         </div>
       ) : items && items.length > 0 ? (
         <>
-          <div className="text-sv flex items-center w-full h-12 border-t border-b border-lg Me_Body-1">
+          <div className="text-sv flex items-center w-full h-12 border-t border-b border-lg Me_Body-3">
             <p className="flex-1 px-3">{t('type')}</p>
             <div
               className="px-3 w-[150px] h-full flex items-center gap-1 hover:bg-bg cursor-pointer"

@@ -40,7 +40,7 @@ const TableItem = ({
     overdueDaysCount > 0 ? `${overdueDaysCount}${tCommon('days')}` : '-';
 
   return (
-    <div className="flex items-center border-b border-lg h-14 w-full text-bl Me_Body-1 cursor-default">
+    <div className="flex items-center border-b border-lg h-14 w-full text-bl Me_Body-3 cursor-default">
       <p className="flex-1 px-3 text-dg truncate" title={expectedDate}>
         {expectedDate}
       </p>

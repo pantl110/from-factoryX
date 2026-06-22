@@ -33,7 +33,7 @@ const Chip = ({
   padding = 'px-3',
   width = 'w-fit',
   size = 'default',
-  textStyle = 'Me_Body-1',
+  textStyle = 'Me_Body-3',
 }: ChipProps) => {
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();

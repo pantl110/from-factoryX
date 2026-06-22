@@ -53,7 +53,7 @@ const DeliveryTable = () => {
   return (
     <div className="flex flex-col justify-between">
       <div>
-        <div className="flex w-full h-12 items-center Me_Body-1 text-sv border-t border-b border-lg">
+        <div className="flex w-full h-12 items-center Me_Body-3 text-sv border-t border-b border-lg">
           <p className="px-3 w-[150px]">{tCommon('clientName')}</p>
           <p className="px-3 flex-1">{tCommon('productName')}</p>
           <p className="px-3 flex-1">{tCommon('deliveryDate')}</p>

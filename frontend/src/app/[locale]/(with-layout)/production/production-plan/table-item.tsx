@@ -460,7 +460,7 @@ const TableItem = ({
   return (
     <>
       <div
-        className={`group flex items-center min-w-[1920px] h-12 border-b border-lg Me_Body-1 bg-whit ${
+        className={`group flex items-center min-w-[1920px] h-12 border-b border-lg Me_Body-3 bg-whit ${
           operationStatus === 'completed' ? 'text-gr' : 'text-dg'
         }`}
       >

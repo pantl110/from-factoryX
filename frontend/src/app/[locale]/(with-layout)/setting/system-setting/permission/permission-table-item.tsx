@@ -101,7 +101,7 @@ const PermissionTableItem = ({
   return (
     <>
       <>
-        <div className="flex items-center justify-between w-full h-14 text-dg Me_Body-1 border-b border-lg group cursor-default">
+        <div className="flex items-center justify-between w-full h-14 text-dg Me_Body-3 border-b border-lg group cursor-default">
           {!isViewer && !isProdManager && hasSubscription() && (
             <Checkbox isChecked={isChecked} onToggle={onToggle || (() => {})} />
           )}

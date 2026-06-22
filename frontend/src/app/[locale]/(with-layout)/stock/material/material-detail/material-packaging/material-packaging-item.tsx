@@ -30,7 +30,7 @@ export const MaterialPackagingItem = ({
   const parentLotNumber = repackaging.lot_number.replace(/-\d+$/, '');
 
   return (
-    <div className="flex items-center h-14 border-b border-lg Me_Body-1 cursor-default">
+    <div className="flex items-center h-14 border-b border-lg Me_Body-3 cursor-default">
       {/* <div className="flex-[0.8] px-3">
         <Chip text="사용중" textColor="text-primary" bgColor="bg-primary-8" />
       </div> */}

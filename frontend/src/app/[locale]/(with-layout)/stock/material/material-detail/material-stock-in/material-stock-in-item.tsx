@@ -32,7 +32,7 @@ export const MaterialStockInItem = ({
   );
 
   return (
-    <div className="flex items-center h-14 border-b border-lg Me_Body-1 group cursor-default">
+    <div className="flex items-center h-14 border-b border-lg Me_Body-3 group cursor-default">
       <div className="flex-[2] px-3 flex items-center justify-between">
         <p className="text-dg">{history.lot_number || '-'}</p>
         {!isViewer && hasSubscription() && (

@@ -6,7 +6,7 @@ interface OrderTableItemProps {
 
 const OrderTableItem = ({ lineItem }: OrderTableItemProps) => {
   return (
-    <div className="h-14 w-full flex items-center Me_Body-1 text-dg border-b border-lg">
+    <div className="h-14 w-full flex items-center Me_Body-3 text-dg border-b border-lg">
       <p className="flex-[1.6] px-3 truncate" title={lineItem.name}>
         {lineItem.name}
       </p>

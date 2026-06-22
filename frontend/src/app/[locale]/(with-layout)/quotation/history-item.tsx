@@ -22,7 +22,7 @@ const HistoryItem = ({
   totalPrice,
 }: HistoryItemProps) => {
   return (
-    <div className="flex items-center w-full h-14 Me_Body-1 text-dg border-b border-lg">
+    <div className="flex items-center w-full h-14 Me_Body-3 text-dg border-b border-lg">
       <p className="flex-[1.2] py-1 px-3 truncate" title={date}>
         {formatDate(date)}
       </p>

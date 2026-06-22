@@ -36,7 +36,7 @@ const DeliveryOverlay = ({ onClose, data }: DeliveryOverlayProps) => {
         <div className="pb-6 w-full flex justify-between border-b border-lg sticky pt-8 top-0 bg-wh">
           <div>
             <h2 className="Heading-2">{tDelivery('printConfirmTitle')}</h2>
-            <div className="mt-2.5 Me_Body-3 text-gr">
+            <div className="mt-2.5 Me_Body-1 text-gr">
               {tDelivery('printConfirmDescription')}
             </div>
           </div>

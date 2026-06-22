@@ -64,7 +64,7 @@ const ProjectStockHistoryModal = ({
         <div className="mt-4 mx-4">
           {histories.length > 0 ? (
             <>
-              <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1">
+              <div className="flex items-center h-12 border-t border-b border-lg Me_Body-3">
                 <p className="flex-1 py-1 px-3 text-sv">
                   {t('tableHeader.processDate')}
                 </p>
@@ -82,7 +82,7 @@ const ProjectStockHistoryModal = ({
               <div className="overflow-y-auto max-h-[calc(85vh-220px)] scrollbar-hide pb-4">
                 {histories.map((history) => (
                   <div
-                    className="flex items-center h-14 border-b border-lg Me_Body-1"
+                    className="flex items-center h-14 border-b border-lg Me_Body-3"
                     key={history.id}
                   >
                     <p className="flex-1 px-3 text-dg">

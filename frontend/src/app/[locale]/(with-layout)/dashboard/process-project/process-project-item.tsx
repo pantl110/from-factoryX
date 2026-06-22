@@ -26,14 +26,14 @@ const ProcessProjectItem = ({ project, onClick }: ProcessProjectItemProps) => {
     >
       <div className="flex flex-col gap-1">
         <h4 className="Heading-4">{project.client_name}</h4>
-        <div className="Me_Body-1 text-sv">
+        <div className="Me_Body-3 text-sv">
           <span>{tCommon('dueDate')}</span>
           <span className="text-gr"> | </span>
           <span>{project.quotations[0].due_date}</span>
         </div>
       </div>
       <div className="flex items-center">
-        <p className="flex-1 Me_Body-1 text-dg">
+        <p className="flex-1 Me_Body-3 text-dg">
           {formatRelativeTime(getStartDate(project))}
         </p>
         <RoundChip

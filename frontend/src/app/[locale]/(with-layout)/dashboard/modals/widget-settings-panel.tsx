@@ -128,7 +128,7 @@ const WidgetSettingsPanel = ({
 
                     {/* Label */}
                     <span
-                      className={`flex-1 Me_Body-1 ${isChecked ? 'text-dg' : 'text-sv'}`}
+                      className={`flex-1 Me_Body-3 ${isChecked ? 'text-dg' : 'text-sv'}`}
                     >
                       {tDashboard(widget.labelKey)}
                     </span>

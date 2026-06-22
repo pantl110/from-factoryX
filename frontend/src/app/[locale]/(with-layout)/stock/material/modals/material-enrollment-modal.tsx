@@ -316,7 +316,7 @@ const MaterialEnrollmentModal = ({
             {/* 선택된 원자재 리스트 */}
             {selectedMaterials.length > 0 && (
               <div className="mt-4 flex flex-col">
-                <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1">
+                <div className="flex items-center h-12 border-t border-b border-lg Me_Body-3">
                   <p className="flex-1 px-3 text-sv">{t('tableHeader.name')}</p>
                   <p className="w-[80px] px-3 text-sv">{tCommon('unit')}</p>
                   <p className="w-[100px] text-sv px-3">
@@ -334,7 +334,7 @@ const MaterialEnrollmentModal = ({
                   {selectedMaterials.map((mat) => (
                     <div
                       key={mat.code}
-                      className="flex items-center h-14 border-b border-lg Me_Body-1 group"
+                      className="flex items-center h-14 border-b border-lg Me_Body-3 group"
                     >
                       <p
                         className="flex-1 px-3 text-dg truncate"

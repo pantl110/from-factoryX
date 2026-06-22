@@ -49,7 +49,7 @@ const TableItem = ({
 
   return (
     <div
-      className="flex items-center h-14 min-w-[1272px] border-b border-lg Me_Body-1 cursor-pointer hover:bg-bg transition-colors duration-200"
+      className="flex items-center h-14 min-w-[1272px] border-b border-lg Me_Body-3 cursor-pointer hover:bg-bg transition-colors duration-200"
       onClick={onItemClick}
     >
       <div onClick={(e) => e.stopPropagation()}>

@@ -161,7 +161,7 @@ const TableItem = ({
       <div
         className={`flex items-center h-14 ${
           isArchived ? 'w-full' : 'w-[1448px]'
-        } border-b border-lg Me_Body-1 cursor-pointer hover:bg-bg`}
+        } border-b border-lg Me_Body-3 cursor-pointer hover:bg-bg`}
         role="button"
         tabIndex={0}
         onClick={handleClick}

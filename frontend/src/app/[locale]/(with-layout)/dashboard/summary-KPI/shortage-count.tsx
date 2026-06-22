@@ -30,7 +30,7 @@ const ShortageCount = ({ shortageMaterialsCount }: ShortageCountProps) => {
             onClick={() => {
               router.push('/stock?tab=material');
             }}
-            className="px-4 rounded-md Me_Body-1 text-dg border border-lg opacity-0 hover:bg-bg group-hover:opacity-100 transition-opacity duration-200"
+            className="px-4 rounded-md Me_Body-3 text-dg border border-lg opacity-0 hover:bg-bg group-hover:opacity-100 transition-opacity duration-200"
           >
             {t('checkShortageMaterials')}
           </button>

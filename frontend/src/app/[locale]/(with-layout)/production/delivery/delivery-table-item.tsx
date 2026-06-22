@@ -250,7 +250,7 @@ const DeliveryTableItem = ({
           }`}
           onClick={hasSubscription() ? () => onItemClick(data) : undefined}
         >
-          <p className=" text-dg Me_Body-1 truncate" title={productName || '-'}>
+          <p className=" text-dg Me_Body-3 truncate" title={productName || '-'}>
             {productName || '-'}
           </p>
           {hasSubscription() && (
@@ -260,25 +260,25 @@ const DeliveryTableItem = ({
           )}
         </div>
         <p
-          className="flex-1 px-3 text-dg Me_Body-1 truncate cursor-default"
+          className="flex-1 px-3 text-dg Me_Body-3 truncate cursor-default"
           title={productCode || '-'}
         >
           {productCode || '-'}
         </p>
         <p
-          className="flex-1 px-3 text-dg Me_Body-1 truncate cursor-default"
+          className="flex-1 px-3 text-dg Me_Body-3 truncate cursor-default"
           title={productSpec || '-'}
         >
           {productSpec || '-'}
         </p>
         <p
-          className="flex-1 px-3 text-dg Me_Body-1 truncate cursor-default"
+          className="flex-1 px-3 text-dg Me_Body-3 truncate cursor-default"
           title={productUnit || '-'}
         >
           {productUnit || '-'}
         </p>
         <p
-          className="flex-1 px-3 text-dg Me_Body-1 truncate cursor-default"
+          className="flex-1 px-3 text-dg Me_Body-3 truncate cursor-default"
           title={quantity.toLocaleString()}
         >
           {quantity.toLocaleString()}
@@ -299,7 +299,7 @@ const DeliveryTableItem = ({
                 {...field}
                 type="text"
                 placeholder="YYYY-MM-DD"
-                className="text-dg Me_Body-1 focus:outline-none w-full"
+                className="text-dg Me_Body-3 focus:outline-none w-full"
                 disabled={
                   projectStatus === 'completed' ||
                   isLoading ||

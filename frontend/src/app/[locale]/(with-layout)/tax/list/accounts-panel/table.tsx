@@ -123,7 +123,7 @@ const Table = ({
       ) : (
         <>
           {/* 표 헤더 */}
-          <div className="text-sv flex items-center w-full h-12 border-t border-b border-lg Me_Body-1 cursor-default">
+          <div className="text-sv flex items-center w-full h-12 border-t border-b border-lg Me_Body-3 cursor-default">
             <p className="flex-1 px-3">{expectedDateHeader}</p>
             <p className="flex-1 px-3">{dateHeader}</p>
             <p className="flex-[1.2] px-3">{paidHeader}</p>

@@ -36,7 +36,7 @@ export const DocumentSection = ({
           <div key={projectName} className="flex flex-col gap-3">
             <h3 className="Heading-3 h-10 items-center flex">{projectName}</h3>
             <div>
-              <div className="w-full h-12 flex items-center bg-bg Me_Body-1 rounded text-sv cursor-default">
+              <div className="w-full h-12 flex items-center bg-bg Me_Body-3 rounded text-sv cursor-default">
                 <p className="flex-[1.4] px-3">{tCommon('productName')}</p>
                 <p className="flex-1 px-3">{tCommon('specification')}</p>
                 <p className="flex-1 px-3">{tCommon('unit')}</p>

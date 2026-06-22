@@ -29,7 +29,7 @@ const ProductStockLog = ({
   return (
     <>
       <div className="cursor-default">
-        <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1">
+        <div className="flex items-center h-12 border-t border-b border-lg Me_Body-3">
           <p className="flex-1 py-1 px-3 text-sv">
             {t('tableHeader.processDate')}
           </p>

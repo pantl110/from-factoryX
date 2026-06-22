@@ -35,7 +35,7 @@ export const UnitTableHeader = ({
   };
 
   return (
-    <div className="flex h-12 items-center px-3 w-full border-t border-b border-lg Me_Body-1 text-sv">
+    <div className="flex h-12 items-center px-3 w-full border-t border-b border-lg Me_Body-3 text-sv">
       {hasItems && (
         <Checkbox
           isChecked={isAllSelected}

@@ -143,7 +143,7 @@ const Unit = ({
               hasItems={unitList.length > 0}
             />
             {unitList.length === 0 ? (
-              <div className="flex h-14 items-center px-3 w-full border-b border-lg Me_Body-1 text-dg hover:bg-bg transition-colors duration-200 cursor-pointer">
+              <div className="flex h-14 items-center px-3 w-full border-b border-lg Me_Body-3 text-dg hover:bg-bg transition-colors duration-200 cursor-pointer">
                 <p className="text-gr w-full px-3">
                   {tUnit('noConversionInfo')}
                 </p>

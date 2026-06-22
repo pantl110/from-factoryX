@@ -40,7 +40,7 @@ export const UsageHistory = ({ repackagingId }: UsageHistoryProps) => {
           <div className="h-50" />
         ) : usageList.length > 0 ? (
           <>
-            <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 cursor-default">
+            <div className="flex items-center h-12 border-t border-b border-lg Me_Body-3 cursor-default">
               <p className="flex-1 px-3 text-sv">{tStockOut('processDate')}</p>
               <div className="flex-1 px-3 flex items-center justify-between">
                 <p className="text-sv">{tCommon('clientName')}</p>

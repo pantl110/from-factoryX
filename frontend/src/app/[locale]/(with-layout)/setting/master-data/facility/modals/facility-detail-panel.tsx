@@ -295,7 +295,7 @@ const FacilityDetailPanel = ({
             <div className="flex flex-col">
               {facility && facility.plans && facility.plans.length > 0 ? (
                 <>
-                  <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 text-sv rounded-sm cursor-default">
+                  <div className="flex items-center h-12 border-t border-b border-lg Me_Body-3 text-sv rounded-sm cursor-default">
                     <p className="px-3 flex-1">{tCommon('productName')}</p>
                     <p className="px-3 flex-1">{tCommon('productionQty')}</p>
                     <p className="px-3 flex-1">{tCommon('productionDate')}</p>

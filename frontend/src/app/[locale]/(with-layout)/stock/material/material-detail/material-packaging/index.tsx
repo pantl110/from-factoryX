@@ -108,7 +108,7 @@ export const MaterialPackaging = ({
           <div className="h-50" />
         ) : repackagings && repackagings.length > 0 ? (
           <>
-            <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 cursor-default">
+            <div className="flex items-center h-12 border-t border-b border-lg Me_Body-3 cursor-default">
               {/* <p className="flex-[0.8] px-3 text-sv">상태</p> */}
               <p className="flex-[1.5] px-3 text-sv">
                 {t('tableHeader.masterLotNumber')}

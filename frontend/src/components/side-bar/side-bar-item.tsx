@@ -77,7 +77,7 @@ const SideBarItem = ({
               onClick={() => handleDropdownItemClick(item.path)}
             >
               <p
-                className={`Me_Body-1 text-dg hover:text-primary ${pathname === item.path ? 'text-primary' : ''}`}
+                className={`Me_Body-3 text-dg hover:text-primary ${pathname === item.path ? 'text-primary' : ''}`}
               >
                 {item.label}
               </p>

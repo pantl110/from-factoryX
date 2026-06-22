@@ -37,7 +37,7 @@ const MoToast = ({
       >
         <div className="flex items-center gap-1">
           {icon}
-          <p className="Me_Body-1">{text}</p>
+          <p className="Me_Body-3">{text}</p>
         </div>
         <p className="Re_Body-1 text-[#363636]">{subtext}</p>
       </div>

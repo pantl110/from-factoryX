@@ -53,12 +53,12 @@ const FindPasswordPage = () => {
           </h2>
           {verification.isVerificationSent &&
             !verification.isVerificationComplete && (
-              <p className="text-sv Me_Body-1">
+              <p className="text-sv Me_Body-3">
                 {t('subtitle.emailVerification')}
               </p>
             )}
           {verification.isVerificationComplete && (
-            <p className="text-sv Me_Body-1">{t('subtitle.setPassword')}</p>
+            <p className="text-sv Me_Body-3">{t('subtitle.setPassword')}</p>
           )}
         </div>
         <div className="flex flex-col w-full items-center">

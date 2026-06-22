@@ -87,7 +87,7 @@ const DocumentTable = ({
         />
       ) : (
         <>
-          <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
+          <div className="flex items-center h-12 border-t border-b border-lg Me_Body-3 text-sv rounded-sm">
             {/* 세금계산서 일 때 */}
             {selectedType === '매출 세금계산서' ||
             selectedType === '매입 세금계산서' ? (

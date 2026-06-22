@@ -119,7 +119,7 @@ const ProductionLogTableItem = ({
 
   return (
     <>
-      <div className="flex items-center h-14 min-w-[1960px] border-b border-lg group Me_Body-1 text-dg">
+      <div className="flex items-center h-14 min-w-[1960px] border-b border-lg group Me_Body-3 text-dg">
         <p
           className="flex-[1.6] px-3 truncate cursor-default"
           title={isFirstOfProduct ? plan.quotation_product.product.name : ''}

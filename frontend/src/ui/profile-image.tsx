@@ -57,7 +57,7 @@ const ProfileImage = ({
     return (
       <div
         className={`flex items-center justify-center rounded-full shrink-0 bg-${color}-8 border border-${color} text-${color} ${
-          size === 'small' ? 'w-8 h-8 text-[12px]' : 'w-18 h-18 Me_Body-3'
+          size === 'small' ? 'w-8 h-8 text-[12px]' : 'w-18 h-18 Me_Body-1'
         }`}
       >
         {text.slice(0, 2).toUpperCase()}
@@ -88,7 +88,7 @@ const ProfileImage = ({
   return (
     <div
       className={`flex items-center justify-center rounded-full bg-${color}-8 border border-${color} text-${color} ${
-        size === 'small' ? 'w-8 h-8 text-[12px]' : 'w-18 h-18 Me_Body-3'
+        size === 'small' ? 'w-8 h-8 text-[12px]' : 'w-18 h-18 Me_Body-1'
       }`}
     >
       {getInitials(userInfo.email)}

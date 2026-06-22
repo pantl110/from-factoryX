@@ -25,7 +25,7 @@ const ProductionTableItem = ({ item }: ProductionTableItemProps) => {
       onClick={() => {
         router.push(`/production/${item.project_id}`);
       }}
-      className="flex min-w-[1421px] h-14 items-center Me_Body-1 text-dg border-b border-lg cursor-pointer hover:bg-bg transition-colors ease-in-out duration-200"
+      className="flex min-w-[1421px] h-14 items-center Me_Body-3 text-dg border-b border-lg cursor-pointer hover:bg-bg transition-colors ease-in-out duration-200"
     >
       <p className="px-3 flex-2 truncate" title={item.company_name}>
         {item.company_name}

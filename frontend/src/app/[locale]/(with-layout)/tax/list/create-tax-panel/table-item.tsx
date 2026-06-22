@@ -92,7 +92,7 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
 
   return (
     <>
-      <div className="group flex items-center h-14 border-b border-lg Me_Body-1 cursor-default">
+      <div className="group flex items-center h-14 border-b border-lg Me_Body-3 cursor-default">
         <div className="flex-1 px-3 flex items-center justify-between gap-1 min-w-0 relative">
           {productNameValue ? (
             <p className="text-dg w-full truncate" title={productNameValue}>

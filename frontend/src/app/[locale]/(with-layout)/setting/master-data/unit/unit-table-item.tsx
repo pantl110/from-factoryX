@@ -64,7 +64,7 @@ export const UnitTableItem = ({
   return (
     <>
       <div
-        className="flex h-14 items-center px-3 w-full border-b border-lg Me_Body-1 text-dg hover:bg-bg transition-colors duration-200 cursor-pointer"
+        className="flex h-14 items-center px-3 w-full border-b border-lg Me_Body-3 text-dg hover:bg-bg transition-colors duration-200 cursor-pointer"
         onClick={() => onRowClick?.(unit)}
       >
         <Checkbox

@@ -43,7 +43,7 @@ const DropdownItem = ({
       {children}
       {text && (
         <h4
-          className={`${search ? 'Me_Body-1' : mobile ? 'm-Heading-5c' : 'Heading-4'} ${textColor} transition-colors duration-200 ease-in-out ${search ? 'text-left px-2' : mobile ? 'text-left px-4' : 'px-4'} w-full min-w-0 ${breakWords ? 'break-words' : ''}`}
+          className={`${search ? 'Me_Body-3' : mobile ? 'm-Heading-5c' : 'Heading-4'} ${textColor} transition-colors duration-200 ease-in-out ${search ? 'text-left px-2' : mobile ? 'text-left px-4' : 'px-4'} w-full min-w-0 ${breakWords ? 'break-words' : ''}`}
         >
           {text}
         </h4>

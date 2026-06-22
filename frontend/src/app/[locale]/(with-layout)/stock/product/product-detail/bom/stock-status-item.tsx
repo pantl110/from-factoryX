@@ -153,7 +153,7 @@ const StockStatusItem = ({
   };
 
   return (
-    <div className="flex items-center h-14 border-b border-lg Me_Body-1">
+    <div className="flex items-center h-14 border-b border-lg Me_Body-3">
       <div
         className="h-full flex-1 px-3 text-dg truncate flex items-center justify-between gap-1"
         title={connection.material_name}

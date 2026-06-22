@@ -83,12 +83,12 @@ const SignupPage = () => {
             <h2 className="Heading-2">{t('title')}</h2>
             {verification.isVerificationSent &&
               !verification.isVerificationComplete && (
-                <p className="text-sv Me_Body-1">
+                <p className="text-sv Me_Body-3">
                   {t('steps.emailVerification')}
                 </p>
               )}
             {verification.isVerificationComplete && (
-              <p className="text-sv Me_Body-1">{t('steps.passwordSetup')}</p>
+              <p className="text-sv Me_Body-3">{t('steps.passwordSetup')}</p>
             )}
           </div>
           <form

@@ -25,7 +25,7 @@ const OrderItemInfo = ({
       </h3>
 
       <div className="w-full">
-        <div className="flex items-center h-12 w-full border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
+        <div className="flex items-center h-12 w-full border-t border-b border-lg Me_Body-3 text-sv rounded-sm">
           <p className="px-3 flex-[1.6]">{tCommon('productName')}</p>
           <p className="px-3 flex-1">{tCommon('specification')}</p>
           <p className="px-3 flex-1">{tCommon('quantity')}</p>

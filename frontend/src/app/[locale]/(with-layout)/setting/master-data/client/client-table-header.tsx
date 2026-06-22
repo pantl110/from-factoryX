@@ -21,7 +21,7 @@ const ClientTableHeader = ({
   );
 
   return (
-    <div className="flex h-12 min-w-[1740px] items-center border-t border-b border-lg Me_Body-1 text-sv">
+    <div className="flex h-12 min-w-[1740px] items-center border-t border-b border-lg Me_Body-3 text-sv">
       {!isViewer && hasSubscription() && (
         <Checkbox
           isChecked={isAllChecked || false}

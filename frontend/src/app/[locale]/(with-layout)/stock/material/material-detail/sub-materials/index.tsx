@@ -99,7 +99,7 @@ export const SubMaterials = forwardRef<SubMaterialsRefModel, SubMaterialsProps>(
           <div className="h-50" />
         ) : !error && targetMaterials.length > 0 ? (
           <div className="flex flex-col">
-            <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 cursor-default">
+            <div className="flex items-center h-12 border-t border-b border-lg Me_Body-3 cursor-default">
               <p className="flex-1 px-3 text-sv">{tCommon('materialName')}</p>
               <p className="flex-1 px-3 text-sv">{tCommon('materialCode')}</p>
               <p className="flex-1 px-3 text-sv">{tCommon('specification')}</p>

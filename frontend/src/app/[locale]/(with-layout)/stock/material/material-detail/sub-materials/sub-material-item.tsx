@@ -106,7 +106,7 @@ export const SubMaterialItem = ({
 
   return (
     <>
-      <div className="flex items-center h-14 border-b border-lg transition-colors duration-200 ease-in-out Me_Body-1 cursor-default">
+      <div className="flex items-center h-14 border-b border-lg transition-colors duration-200 ease-in-out Me_Body-3 cursor-default">
         <div
           className="flex-1 px-3 flex items-center justify-between gap-1 min-w-0"
           title={material.name}
@@ -133,7 +133,7 @@ export const SubMaterialItem = ({
               color={stockStatus.color}
             />
           ) : (
-            <span className="text-dg Me_Body-1">-</span>
+            <span className="text-dg Me_Body-3">-</span>
           )}
         </div>
 

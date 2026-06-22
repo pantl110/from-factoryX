@@ -52,7 +52,7 @@ const Pagination = ({
   };
 
   return (
-    <div className="flex items-center justify-center py-3 px-6 gap-1 Me_Body-1">
+    <div className="flex items-center justify-center py-3 px-6 gap-1 Me_Body-3">
       <div
         className={`flex items-center justify-center w-9 h-9 ${
           currentPage === 1 ? 'cursor-default' : 'cursor-pointer'
@@ -72,7 +72,7 @@ const Pagination = ({
       {getPageNumbers().map((page) => (
         <div
           key={page}
-          className={`flex items-center justify-center w-9 h-9 rounded-[8px] Me_Body-1 transition-colors duration-200 ${
+          className={`flex items-center justify-center w-9 h-9 rounded-[8px] Me_Body-3 transition-colors duration-200 ${
             currentPage === page
               ? 'text-primary'
               : 'text-dg hover:bg-[#F5F5F5] cursor-pointer'

@@ -289,7 +289,7 @@ const ReceiptList = ({ className = '' }: ReceiptListProps) => {
                     hasItems={cashReceipts.length > 0}
                   />
                   {cashReceipts.length === 0 ? (
-                    <div className="flex h-14 items-center px-3 w-full min-w-[1192px] border-b border-lg Me_Body-1 text-dg">
+                    <div className="flex h-14 items-center px-3 w-full min-w-[1192px] border-b border-lg Me_Body-3 text-dg">
                       <p className="text-gr w-full">
                         {t('empty.noStatusReceipts')}
                       </p>

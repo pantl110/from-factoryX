@@ -179,7 +179,7 @@ const ProductRequiringMaterial = forwardRef<
             <div className="h-50" />
           ) : productConnections.length > 0 ? (
             <>
-              <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 cursor-default">
+              <div className="flex items-center h-12 border-t border-b border-lg Me_Body-3 cursor-default">
                 <p className="flex-1 py-1 px-3 text-sv">
                   {tCommon('productName')}
                 </p>

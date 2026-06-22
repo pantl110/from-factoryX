@@ -107,7 +107,7 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
   return (
     <>
       <div
-        className="flex items-center h-14 border-b border-lg Me_Body-1 cursor-pointer hover:bg-bg transition-colors duration-200"
+        className="flex items-center h-14 border-b border-lg Me_Body-3 cursor-pointer hover:bg-bg transition-colors duration-200"
         role="button"
         tabIndex={0}
         onClick={handleItemClick}

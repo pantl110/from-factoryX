@@ -26,7 +26,7 @@ const SubstituteMaterialItem = ({
 
   return (
     <>
-      <div className="flex items-center h-14 border-b border-lg Me_Body-1">
+      <div className="flex items-center h-14 border-b border-lg Me_Body-3">
         <div
           className="flex-[1.4] px-3 flex items-center justify-between gap-1 min-w-0 truncate cursor-default"
           title={material.name}

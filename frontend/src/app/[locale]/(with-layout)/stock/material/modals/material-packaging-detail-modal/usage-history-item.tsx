@@ -21,7 +21,7 @@ export const UsageHistoryItem = ({ usage }: UsageHistoryItemProps) => {
     : '-';
 
   return (
-    <div className="flex items-center h-14 border-b border-lg Me_Body-1 cursor-default group">
+    <div className="flex items-center h-14 border-b border-lg Me_Body-3 cursor-default group">
       <p className="flex-1 px-3 text-dg">{formattedDate}</p>
       <div
         className="flex-1 px-3 flex items-center justify-between gap-1 min-w-0"

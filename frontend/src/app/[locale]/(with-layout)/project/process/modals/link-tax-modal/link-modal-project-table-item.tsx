@@ -31,7 +31,7 @@ const LinkModalProjectTableItem = ({
 
   return (
     <div
-      className={`flex items-center h-14 w-full text-bl Me_Body-1 transition-colors duration-200 cursor-pointer ${
+      className={`flex items-center h-14 w-full text-bl Me_Body-3 transition-colors duration-200 cursor-pointer ${
         isSelected
           ? 'border border-primary bg-secondary'
           : 'border-b border-lg hover:bg-bg'

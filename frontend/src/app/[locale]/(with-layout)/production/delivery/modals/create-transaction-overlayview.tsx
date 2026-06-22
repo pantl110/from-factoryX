@@ -51,7 +51,7 @@ const CreateTransactionOverlayview = ({
             <h2 className="Heading-2">
               {tDelivery('transactionStatementPrintTitle')}
             </h2>
-            <div className="mt-2.5 Me_Body-3 text-gr">
+            <div className="mt-2.5 Me_Body-1 text-gr">
               {tDelivery('transactionStatementPrintDescription')}
             </div>
           </div>

@@ -36,7 +36,7 @@ const QuotationHistory = ({
 
   return (
     <div className="flex flex-col">
-      <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 cursor-default">
+      <div className="flex items-center h-12 border-t border-b border-lg Me_Body-3 cursor-default">
         <p className="flex-1 px-3 text-sv">{tCommon('clientName')}</p>
         <p className="flex-1 px-3 text-sv">
           {t('tableHeader.recentTransactionDate')}

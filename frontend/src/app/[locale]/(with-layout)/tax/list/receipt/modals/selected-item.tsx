@@ -9,7 +9,7 @@ const SelectedItem = ({ item, onRemove }: SelectedItemProps) => {
   return (
     <div className="flex items-center py-2 pr-1 pl-3 bg-wh border border-lg rounded-[8px]">
       <div className="flex-1 h-13 flex flex-col justify-between">
-        <p className="Me_Body-1 text-dg">{item.material_name}</p>
+        <p className="Me_Body-3 text-dg">{item.material_name}</p>
         <div className="flex gap-1 items-center">
           <p className="Re_Body-2 text-gr">{item.material_spec}</p>
           <div className="w-1 h-[60%] border-r border-lg" />

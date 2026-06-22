@@ -52,7 +52,7 @@ const MiniBtn = ({
   variant,
   justifyBetween = false,
   padding = 'px-4',
-  textStyle = 'Me_Body-1',
+  textStyle = 'Me_Body-3',
   ...rest
 }: MiniBtnProps) => {
   const borderClass = borderColor ? `border ${borderColor}` : '';

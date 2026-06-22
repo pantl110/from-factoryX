@@ -19,7 +19,7 @@ const DeliveryTableHeader = ({
     (state) => state.hasSubscription
   );
   return (
-    <div className="flex items-center h-12 min-w-[1305px] Me_Body-1 rounded bg-lg-table cursor-default">
+    <div className="flex items-center h-12 min-w-[1305px] Me_Body-3 rounded bg-lg-table cursor-default">
       {hasSubscription() && (
         <Checkbox isChecked={isAllChecked} onToggle={onToggleAll} />
       )}

@@ -242,7 +242,7 @@ export const LogSection = ({ workInstructionId }: LogSectionProps) => {
           {t('productionPlanEditLog')}
         </h3>
 
-        <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
+        <div className="flex items-center h-12 border-t border-b border-lg Me_Body-3 text-sv rounded-sm">
           <p className="flex-[0.5] px-3 text-sv">{t('editDateTime')}</p>
           <p className="flex-[1.2] px-3 text-sv">{tCommon('clientName')}</p>
           <p className="flex-[1.2] px-3 text-sv">{tCommon('productName')}</p>
@@ -259,7 +259,7 @@ export const LogSection = ({ workInstructionId }: LogSectionProps) => {
             return changedItems.map((item, index) => (
               <div
                 key={`${history.id}-${item}-${index}`}
-                className="flex items-start border-b border-lg Me_Body-1 cursor-default"
+                className="flex items-start border-b border-lg Me_Body-3 cursor-default"
               >
                 <p className="flex-[0.5] px-3 py-[15px] text-dg">
                   {index === 0

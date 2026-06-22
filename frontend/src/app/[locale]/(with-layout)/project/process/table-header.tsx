@@ -29,7 +29,7 @@ const TableHeader = ({
     <div
       className={`flex items-center h-12 ${
         isArchived ? 'w-full' : 'min-w-[1448px]'
-      } border-t border-b border-lg Me_Body-1`}
+      } border-t border-b border-lg Me_Body-3`}
     >
       {!isViewer && hasSubscription() && (
         <Checkbox

@@ -35,7 +35,7 @@ const LinkModalTaxTable = ({
         </div>
       ) : items && items.length > 0 ? (
         <>
-          <div className="text-sv flex items-center w-full h-12 border-t border-b border-lg Me_Body-1">
+          <div className="text-sv flex items-center w-full h-12 border-t border-b border-lg Me_Body-3">
             <p className="flex-[1.5] px-3">{tCommon('materialName')}</p>
             <p className="flex-1 px-3">{tCommon('specification')}</p>
             <p className="flex-[0.7] px-3">{tCommon('quantity')}</p>

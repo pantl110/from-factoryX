@@ -6,7 +6,7 @@ const SubscriptionTableHeader = () => {
   );
 
   return (
-    <div className="flex items-center justify-between w-full h-12 text-sv Me_Body-1 border-t border-b border-lg">
+    <div className="flex items-center justify-between w-full h-12 text-sv Me_Body-3 border-t border-b border-lg">
       <p className="flex-1">{t('date')}</p>
       <p className="flex-[2]">{t('card')}</p>
       <p className="flex-1">{t('amount')}</p>

@@ -22,7 +22,7 @@ const ProductionLogTableHeader = ({
   );
 
   return (
-    <div className="flex items-center h-12 min-w-[1960px] Me_Body-1 text-sv rounded bg-lg-table cursor-default">
+    <div className="flex items-center h-12 min-w-[1960px] Me_Body-3 text-sv rounded bg-lg-table cursor-default">
       <p className="flex-[1.6] px-3">{tCommon('productName')}</p>
       <p className="flex-1 px-3">{tCommon('productCode')}</p>
       <p className="flex-1 px-3">{tCommon('specification')}</p>

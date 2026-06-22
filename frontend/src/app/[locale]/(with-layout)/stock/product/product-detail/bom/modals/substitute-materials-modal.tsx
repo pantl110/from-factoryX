@@ -48,7 +48,7 @@ const SubstituteMaterialsModal = ({
         <div className="h-50" />
       ) : (
         <>
-          <div className="mt-4 flex items-center h-12 border-t border-b border-lg Me_Body-1 cursor-default">
+          <div className="mt-4 flex items-center h-12 border-t border-b border-lg Me_Body-3 cursor-default">
             <p className="flex-[1.4] px-3 text-sv">{tCommon('materialName')}</p>
             <p className="flex-1 px-3 text-sv">{tCommon('materialCode')}</p>
             <p className="flex-1 px-3 text-sv">{tCommon('specification')}</p>

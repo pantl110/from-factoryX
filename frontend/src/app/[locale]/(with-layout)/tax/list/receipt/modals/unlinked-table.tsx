@@ -54,7 +54,7 @@ const UnlinkedTable = ({
 
   return (
     <div ref={containerRef} className="h-[496px] overflow-y-auto">
-      <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1">
+      <div className="flex items-center h-12 border-t border-b border-lg Me_Body-3">
         <Checkbox
           isChecked={
             selectedIds.length === unlinkedMaterialHistory.length &&

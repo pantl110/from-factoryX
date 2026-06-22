@@ -58,7 +58,7 @@ const StockStatus = ({
         Array.isArray(connections) &&
         connections.length > 0 ? (
         <div>
-          <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 cursor-default">
+          <div className="flex items-center h-12 border-t border-b border-lg Me_Body-3 cursor-default">
             <p className="flex-1 px-3 text-sv">{tCommon('materialName')}</p>
             <p className="flex-[0.8] px-3 text-sv">
               {tCommon('specification')}

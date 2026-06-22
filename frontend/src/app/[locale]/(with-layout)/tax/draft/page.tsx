@@ -274,7 +274,7 @@ const TaxDraftPage = () => {
           ) : (
             <>
               <div className="w-full overflow-y-auto">
-                <div className="flex items-center h-12 min-w-[1272px] border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
+                <div className="flex items-center h-12 min-w-[1272px] border-t border-b border-lg Me_Body-3 text-sv rounded-sm">
                   <Checkbox
                     isChecked={isAllChecked}
                     onToggle={toggleAll}

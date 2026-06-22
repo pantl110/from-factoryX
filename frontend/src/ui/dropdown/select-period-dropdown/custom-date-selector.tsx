@@ -24,7 +24,7 @@ const CustomDateSelector = ({
         type="text"
         inputMode="numeric"
         placeholder="YYYY-MM-DD"
-        className="Me_Body-1 text-dg border-none outline-none focus:outline-none w-fit"
+        className="Me_Body-3 text-dg border-none outline-none focus:outline-none w-fit"
         value={customStartDate}
         onChange={(e) => onDateAutoHyphen(e.target.value, onStartDateChange)}
         maxLength={10}
@@ -36,7 +36,7 @@ const CustomDateSelector = ({
         type="text"
         inputMode="numeric"
         placeholder="YYYY-MM-DD"
-        className="Me_Body-1 text-dg border-none outline-none focus:outline-none w-fit"
+        className="Me_Body-3 text-dg border-none outline-none focus:outline-none w-fit"
         value={customEndDate}
         onChange={(e) => onDateAutoHyphen(e.target.value, onEndDateChange)}
         maxLength={10}

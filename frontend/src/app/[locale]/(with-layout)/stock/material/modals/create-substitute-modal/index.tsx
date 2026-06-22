@@ -145,7 +145,7 @@ const CreateSubstituteModal = ({
           <NoHistoryBox text={t('empty')} />
         ) : (
           <>
-            <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1 cursor-default">
+            <div className="flex items-center h-12 border-t border-b border-lg Me_Body-3 cursor-default">
               <Checkbox
                 isChecked={isAllChecked}
                 onToggle={

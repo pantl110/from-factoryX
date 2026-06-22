@@ -27,7 +27,7 @@ const ClientTableItem = ({
 
   return (
     <div
-      className="flex h-14 items-center min-w-[1740px] border-b border-lg Me_Body-1 text-dg cursor-pointer hover:bg-bg transition-colors duration-200"
+      className="flex h-14 items-center min-w-[1740px] border-b border-lg Me_Body-3 text-dg cursor-pointer hover:bg-bg transition-colors duration-200"
       onClick={onClick}
     >
       {!isViewer && hasSubscription() && (

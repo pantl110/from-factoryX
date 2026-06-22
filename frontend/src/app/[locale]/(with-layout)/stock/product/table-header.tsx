@@ -17,7 +17,7 @@ const TableHeader = ({ isAllChecked, onToggleAll }: TableHeaderProps) => {
   );
 
   return (
-    <div className="flex items-center h-12 border-t border-b border-lg Me_Body-1">
+    <div className="flex items-center h-12 border-t border-b border-lg Me_Body-3">
       {!isViewer && hasSubscription() && (
         <Checkbox
           isChecked={isAllChecked}

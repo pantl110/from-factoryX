@@ -54,7 +54,7 @@ const ProductItem = ({
   return (
     <>
       <tr
-        className={`flex Me_Body-1 text-dg border-b border-lg transition-all duration-200 ease-in-out ${
+        className={`flex Me_Body-3 text-dg border-b border-lg transition-all duration-200 ease-in-out ${
           !onlyRead
             ? 'group hover:border hover:border-primary cursor-pointer h-14 items-center'
             : 'items-start py-[15px]'

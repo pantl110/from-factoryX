@@ -28,7 +28,7 @@ const ProductListInfo = ({
 
       <table>
         <thead>
-          <tr className="flex items-center h-12 border-t border-b border-lg Me_Body-1 text-sv rounded-sm">
+          <tr className="flex items-center h-12 border-t border-b border-lg Me_Body-3 text-sv rounded-sm">
             <th className="text-left px-3 flex-1">{tCommon('productName')}</th>
             <th className="text-left px-3 flex-1">{tCommon('productCode')}</th>
             <th className="text-left px-3 flex-1">

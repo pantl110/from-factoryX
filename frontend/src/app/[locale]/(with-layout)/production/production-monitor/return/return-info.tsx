@@ -233,7 +233,7 @@ const ReturnInfo = ({
           </div>
           <div className="border-b border-lg">
             {isEditing ? (
-              <div className="flex w-full Me_Body-1 border-t border-lg">
+              <div className="flex w-full Me_Body-3 border-t border-lg">
                 <div className="w-[137px] bg-lg-table flex gap-2 p-3">
                   <div className="text-sv">{t('returnDate')}</div>
                 </div>
@@ -263,7 +263,7 @@ const ReturnInfo = ({
           </div>
           <div className="border-b border-lg">
             {isEditing ? (
-              <div className="flex w-full Me_Body-1 border-t border-lg">
+              <div className="flex w-full Me_Body-3 border-t border-lg">
                 <div className="w-[137px] bg-lg-table flex gap-2 p-3">
                   <div className="text-sv">{t('returnQuantity')}</div>
                 </div>
@@ -301,7 +301,7 @@ const ReturnInfo = ({
           </div>
           <div className="border-b border-lg">
             {isEditing ? (
-              <div className="flex w-full Me_Body-1 border-t border-lg">
+              <div className="flex w-full Me_Body-3 border-t border-lg">
                 <div className="w-[137px] bg-lg-table flex gap-2 p-3">
                   <div className="text-sv">{t('productionQuantity')}</div>
                 </div>

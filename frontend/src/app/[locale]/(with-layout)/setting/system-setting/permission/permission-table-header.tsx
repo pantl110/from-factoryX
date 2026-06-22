@@ -21,7 +21,7 @@ const PermissionTableHeader = ({
   const t = useTranslations('setting.systemSetting.permission.tableHeader');
 
   return (
-    <div className="flex items-center justify-between w-full h-12 text-sv Me_Body-1 border-t border-b border-lg cursor-default">
+    <div className="flex items-center justify-between w-full h-12 text-sv Me_Body-3 border-t border-b border-lg cursor-default">
       {!isViewer && !isProdManager && hasSubscription() && (
         <Checkbox isChecked={isAllChecked} onToggle={onToggleAll} />
       )}

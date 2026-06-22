@@ -10,7 +10,7 @@ interface MaterialItemProps {
 const MaterialItem = ({ material, isChecked, onToggle }: MaterialItemProps) => {
   return (
     <div
-      className="flex items-center h-14 border-b border-lg transition-colors duration-200 ease-in-out Me_Body-1 cursor-pointer hover:bg-bg"
+      className="flex items-center h-14 border-b border-lg transition-colors duration-200 ease-in-out Me_Body-3 cursor-pointer hover:bg-bg"
       onClick={onToggle}
     >
       <Checkbox isChecked={isChecked} onToggle={onToggle} />
