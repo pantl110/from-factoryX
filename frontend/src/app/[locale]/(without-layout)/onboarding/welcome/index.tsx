@@ -1,9 +1,11 @@
 import Image from 'next/image';
 import onboardingImage from '@/assets/onboarding.png';
 import MiniBtn from '@/ui/mini-btn';
-import useMemberStore from '@/store/member-store';
-import useAuthStore from '@/store/auth-store';
-import { useGetFactoryList, useCreateFactory, useGetMember } from '@/hooks';
+import {
+  useGetFactoryList,
+  useCreateFactory,
+  useSetFactoryMember,
+} from '@/hooks';
 import { useTranslations } from 'next-intl';
 
 interface WelcomeProps {
@@ -13,52 +15,11 @@ interface WelcomeProps {
 
 const Welcome = ({ onNextStep, onPrevStep }: WelcomeProps) => {
   const t = useTranslations('onboarding.welcome');
-  const tThirdStep = useTranslations('onboarding.thirdStep');
   const tCommon = useTranslations('common');
   const tFirstStep = useTranslations('onboarding.firstStep');
   const { createFactory, isLoading } = useCreateFactory();
   const { getFactoryList } = useGetFactoryList();
-  const { userInfo, setUserInfo } = useAuthStore();
-  const { getMember } = useGetMember();
-  const setFactoryId = useMemberStore((state) => state.setFactoryId);
-  const setRole = useMemberStore((state) => state.setRole);
-  const setIsBarobillUser = useMemberStore((state) => state.setIsBarobillUser);
-
-  const setFactoryAndMember = async (factoryId: number) => {
-    setFactoryId(factoryId);
-    let memberId = userInfo?.member_id;
-    if (!memberId) {
-      // 공장 생성 직후 me 정보를 갱신하여 member_id 확보
-      try {
-        const meRes = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/v1/auth/me`,
-          {
-            method: 'GET',
-            credentials: 'include',
-            headers: { 'Content-Type': 'application/json' },
-          }
-        );
-        if (meRes.ok) {
-          const meData = await meRes.json();
-          setUserInfo(meData);
-          memberId = meData?.member_id;
-        }
-      } catch {
-        // Handle error silently
-      }
-    }
-
-    if (memberId) {
-      const res = await getMember({
-        factory_id: factoryId,
-        member_id: memberId,
-      });
-      if (res.success && res.data) {
-        setRole(res.data.role);
-        setIsBarobillUser(res.data.is_barobill_user);
-      }
-    }
-  };
+  const { setFactoryAndMember } = useSetFactoryMember();
 
   const handleFactoryOwnerStart = async () => {
     try {
@@ -99,24 +60,14 @@ const Welcome = ({ onNextStep, onPrevStep }: WelcomeProps) => {
     <div className="bg-wh z-1 w-[600px] py-10 px-8 flex flex-col items-center rounded-lg">
       <h3 className="Heading-3 text-primary mb-1">{t('title')}</h3>
       <div className="Me_Body-2 text-bl text-center">
-        {tThirdStep('description.part1')}
-        {tThirdStep('description.part2') && (
-          <>
-            <br />
-            {tThirdStep('description.part2')}
-          </>
-        )}
-        <br />
-        {tThirdStep('description.part3')}
-        <br />
-        <br />
-        {tThirdStep('description.part4')}{' '}
-        <span className="text-primary">
-          {tThirdStep('description.highlight')}
-        </span>{' '}
-        {tThirdStep('description.part5')}
-        <br />
-        {tThirdStep('description.part6')}
+        {t('description')
+          .split('\n')
+          .map((line, index) => (
+            <span key={index}>
+              {index > 0 && <br />}
+              {line}
+            </span>
+          ))}
       </div>
       <div className="p-7">
         <Image src={onboardingImage} alt="onboarding" />

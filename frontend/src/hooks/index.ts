@@ -27,6 +27,7 @@ export { useWithdraw } from './users/use-withdraw';
 // Factory related hooks
 export { default as useCreateFactory } from './factory/use-create-factory';
 export { useGetFactoryList, useGetFactory } from './factory/use-get-factory';
+export { default as useSetFactoryMember } from './factory/use-set-factory-member';
 export { default as useUpdateFactory } from './factory/use-update-factory';
 export { default as useDeleteFactory } from './factory/use-delete-factory';
 

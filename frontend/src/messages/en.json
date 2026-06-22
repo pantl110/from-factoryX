@@ -17,7 +17,12 @@
     "success": "Completed successfully",
     "errors": {
       "serverConnectionFailed": "Failed to connect to server.",
-      "factoryIdNotSet": "Factory ID is not set."
+      "factoryIdNotSet": "Factory ID is not set.",
+      "certRegisterError": "An error occurred while registering the certificate. Please try again.",
+      "invalidDate": "The date is not valid.",
+      "invalidStartDate": "The start date is not valid.",
+      "invalidEndDate": "The end date is not valid.",
+      "startDateAfterEndDate": "The start date cannot be later than the end date."
     },
     "clientName": "Client Name",
     "client": "Client",
@@ -200,7 +205,18 @@
     "moveToDeliveryFailed": "Failed to move to delivery stage."
   },
   "cloudUpload": {
-    "subtitle": "Selecting an upload location will save files to that repository."
+    "subtitle": "Selecting an upload location will save files to that repository.",
+    "title": "Upload File",
+    "uploadLocation": "Upload Location",
+    "internalRepository": "Internal Repository",
+    "internalRepositoryDesc": "Saved to the internal repository",
+    "clientRepository": "Client Repository",
+    "clientRepositoryDesc": "Saved to the selected client's repository",
+    "searchClientPlaceholder": "Search for a client",
+    "selectFile": "Select File",
+    "uploading": "Uploading...",
+    "selectClientAlert": "Please select a client.",
+    "uploadFailed": "Upload failed."
   },
   "dropzone": {
     "dragAndDrop": "You can drag and drop files\nor upload them using the button below.",

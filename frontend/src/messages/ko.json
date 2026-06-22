@@ -16,7 +16,12 @@
     "success": "성공적으로 완료되었습니다",
     "errors": {
       "serverConnectionFailed": "서버 연결에 실패했습니다.",
-      "factoryIdNotSet": "공장 ID가 설정되지 않았습니다."
+      "factoryIdNotSet": "공장 ID가 설정되지 않았습니다.",
+      "certRegisterError": "인증서 등록 진행 중 오류가 발생했어요. 다시 시도해주세요.",
+      "invalidDate": "날짜가 유효하지 않습니다.",
+      "invalidStartDate": "시작일이 유효하지 않습니다.",
+      "invalidEndDate": "종료일이 유효하지 않습니다.",
+      "startDateAfterEndDate": "시작일이 종료일보다 늦을 수 없습니다."
     },
     "clientName": "거래처명",
     "client": "거래처",
@@ -200,7 +205,18 @@
     "moveToDeliveryFailed": "납품 단계로 이동하는데 실패했습니다."
   },
   "cloudUpload": {
-    "subtitle": "파일을 업로드할 위치를 선택하면 해당 자료실에 저장됩니다."
+    "subtitle": "파일을 업로드할 위치를 선택하면 해당 자료실에 저장됩니다.",
+    "title": "파일 업로드",
+    "uploadLocation": "업로드 위치",
+    "internalRepository": "내부 자료실",
+    "internalRepositoryDesc": "내부 자료실에 저장됩니다",
+    "clientRepository": "거래처 자료실",
+    "clientRepositoryDesc": "선택한 거래처의 자료실에 저장됩니다",
+    "searchClientPlaceholder": "거래처를 검색하세요",
+    "selectFile": "파일 선택",
+    "uploading": "업로드 중...",
+    "selectClientAlert": "거래처를 선택해주세요.",
+    "uploadFailed": "업로드에 실패했습니다."
   },
   "dropzone": {
     "dragAndDrop": "파일을 끌어다 놓거나,\n아래 버튼으로 업로드 할 수 있어요.",

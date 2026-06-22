@@ -6,8 +6,10 @@ import {
   EmailVerificationResponseModel,
 } from '@/types/data-model';
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 export const useEmailVerification = () => {
+  const t = useTranslations('emailVerification');
   const [isChecking, setIsChecking] = useState(false);
   const [isSending, setIsSending] = useState(false);
 
@@ -36,7 +38,7 @@ export const useEmailVerification = () => {
       try {
         data = await response.json();
       } catch {
-        data = { message: '서버에서 오류가 발생했습니다.' };
+        data = { message: t('serverError') };
       }
 
       // 400 상태코드 - 등록되지 않은 이메일
@@ -45,7 +47,7 @@ export const useEmailVerification = () => {
         if (errorMessage.includes('등록되지 않은 이메일입니다')) {
           return {
             success: false,
-            message: '입력하신 이메일로 가입된 계정이 존재하지 않습니다.',
+            message: t('emailNotRegistered'),
           };
         }
       }
@@ -53,21 +55,17 @@ export const useEmailVerification = () => {
       if (response.ok) {
         return {
           success: true,
-          message: '이메일이 확인되었습니다.',
+          message: t('emailVerified'),
         };
       }
 
       // 기타 오류 처리
-      const errorMessage =
-        data.message || data.detail || '이메일 확인 중 오류가 발생했습니다.';
+      const errorMessage = data.message || data.detail || t('emailCheckError');
       throw new Error(errorMessage);
     } catch (error) {
       return {
         success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : '이메일 확인 중 오류가 발생했습니다.',
+        message: error instanceof Error ? error.message : t('emailCheckError'),
       };
     } finally {
       setIsChecking(false);
@@ -99,7 +97,7 @@ export const useEmailVerification = () => {
       try {
         data = await response.json();
       } catch {
-        data = { message: '서버에서 오류가 발생했습니다.' };
+        data = { message: t('serverError') };
       }
 
       // 400 상태코드 // 이미 등록된 이메일
@@ -108,14 +106,14 @@ export const useEmailVerification = () => {
         if (errorMessage.includes('이미 등록된 이메일입니다')) {
           return {
             success: false,
-            message: '이미 가입된 이메일입니다.',
+            message: t('emailAlreadyRegistered'),
           };
         }
         // 비밀번호 찾기에서 등록되지 않은 이메일 처리
         if (errorMessage.includes('등록되지 않은 이메일입니다')) {
           return {
             success: false,
-            message: '입력하신 이메일로 가입된 계정이 존재하지 않습니다.',
+            message: t('emailNotRegistered'),
           };
         }
       }
@@ -123,22 +121,18 @@ export const useEmailVerification = () => {
       if (response.ok) {
         return {
           success: true,
-          message: data.detail || '인증코드가 발송되었습니다.',
+          message: data.detail || t('codeSent'),
           expires_at: data.expires_at,
         };
       }
 
       // 오류 처리
-      const errorMessage =
-        data.message || data.detail || '인증코드 발송 중 오류가 발생했습니다.';
+      const errorMessage = data.message || data.detail || t('codeSendError');
       throw new Error(errorMessage);
     } catch (error) {
       return {
         success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : '인증코드 발송 중 오류가 발생했습니다.',
+        message: error instanceof Error ? error.message : t('codeSendError'),
       };
     } finally {
       setIsSending(false);
@@ -170,35 +164,33 @@ export const useEmailVerification = () => {
       try {
         data = await response.json();
       } catch {
-        data = { message: '서버에서 오류가 발생했습니다.' };
+        data = { message: t('serverError') };
       }
 
       if (response.ok) {
         return {
           success: true,
-          message: data.detail || '인증이 완료되었습니다.',
+          message: data.detail || t('verificationComplete'),
         };
       }
 
       // 오류 처리
-      let errorMessage =
-        data.message || data.detail || '인증코드 확인 중 오류가 발생했습니다.';
+      let errorMessage = data.message || data.detail || t('codeVerifyError');
 
-      // 백엔드 메시지를 프론트엔드 메시지로 매핑
+      // 백엔드 메시지(한국어)를 프론트엔드 번역 메시지로 매핑
+      // NOTE: includes() 비교 문자열은 백엔드 응답 한국어에 의존한다.
+      // 백엔드가 에러 코드를 제공하면 코드 기반 분기로 교체해야 한다.
       if (errorMessage.includes('인증 코드가 만료되었습니다.')) {
-        errorMessage = '인증 시간이 만료되었습니다. 다시 인증을 요청해 주세요.';
+        errorMessage = t('codeExpired');
       } else if (errorMessage.includes('유효하지 않은 인증 코드입니다.')) {
-        errorMessage = '인증 코드가 일치하지 않습니다.';
+        errorMessage = t('codeMismatch');
       }
 
       throw new Error(errorMessage);
     } catch (error) {
       return {
         success: false,
-        message:
-          error instanceof Error
-            ? error.message
-            : '인증코드 확인 중 오류가 발생했습니다.',
+        message: error instanceof Error ? error.message : t('codeVerifyError'),
       };
     } finally {
       setIsChecking(false);

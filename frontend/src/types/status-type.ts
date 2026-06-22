@@ -82,28 +82,44 @@ export type ProjectStatusType =
 
 export const ProjectStatusColorMap: Record<string, StatusColorModel> = {
   // 영어 상태
-  quotation: { bgColor: 'bg-yellow-8', textColor: 'text-yellow', color: 'yellow' },
+  quotation: {
+    bgColor: 'bg-yellow-8',
+    textColor: 'text-yellow',
+    color: 'yellow',
+  },
   confirmed: {
     bgColor: 'bg-[#FF6C17]/8',
     textColor: 'text-[#FF6C17]',
     color: 'orange',
   },
   pending: { bgColor: 'bg-bg', textColor: 'text-dg', color: 'gray' },
-  production: { bgColor: 'bg-purple-8', textColor: 'text-purple', color: 'purple' },
+  production: {
+    bgColor: 'bg-purple-8',
+    textColor: 'text-purple',
+    color: 'purple',
+  },
   manufactured: { bgColor: 'bg-blue-8', textColor: 'text-blue', color: 'blue' },
   delivery: { bgColor: 'bg-green-8', textColor: 'text-green', color: 'green' },
   completed: { bgColor: 'bg-primary', textColor: 'text-wh', color: 'primary' },
   suspended: { bgColor: 'bg-red-8', textColor: 'text-red', color: 'red' },
 
   // 한글 상태 (기존 호환성 유지)
-  '견적 협의중': { bgColor: 'bg-yellow-8', textColor: 'text-yellow', color: 'yellow' },
+  '견적 협의중': {
+    bgColor: 'bg-yellow-8',
+    textColor: 'text-yellow',
+    color: 'yellow',
+  },
   '주문 확정': {
     bgColor: 'bg-[#FF6C17]/8',
     textColor: 'text-[#FF6C17]',
     color: 'orange',
   },
   '생산 대기': { bgColor: 'bg-bg', textColor: 'text-dg', color: 'gray' },
-  '생산 중': { bgColor: 'bg-purple-8', textColor: 'text-purple', color: 'purple' },
+  '생산 중': {
+    bgColor: 'bg-purple-8',
+    textColor: 'text-purple',
+    color: 'purple',
+  },
   '생산 완료': { bgColor: 'bg-blue-8', textColor: 'text-blue', color: 'blue' },
   납품: { bgColor: 'bg-green-8', textColor: 'text-green', color: 'green' },
   '프로젝트 완료': {
@@ -345,6 +361,11 @@ export const AccountsStatusColorMap: Record<
   },
   overdue: { textColor: 'text-red', bgColor: 'bg-red-8', color: 'red' },
 };
+
+export const getAccountsStatusColor = (
+  status: string | null | undefined
+): NonNullable<StatusColorModel['color']> =>
+  AccountsStatusColorMap[status as AccountsStatusType]?.color || 'gray';
 
 // 세금계산서 채권/채무 수금 조건
 export type CollectionTermsType = 'INVOICE_30' | 'INVOICE_EOM_NEXT' | 'CUSTOM';

@@ -68,7 +68,7 @@ const CloudUploadModal = ({ onClose }: CloudUploadModalProps) => {
 
     // 거래처 클라우드 선택 시 거래처가 선택되지 않았으면 업로드 불가
     if (uploadTarget === 'client' && !selectedClient) {
-      alert('거래처를 선택해주세요.');
+      alert(t('selectClientAlert'));
       return;
     }
 
@@ -97,7 +97,7 @@ const CloudUploadModal = ({ onClose }: CloudUploadModalProps) => {
       }, 500);
     } catch (error) {
       console.error('Upload failed:', error);
-      alert('업로드에 실패했습니다.');
+      alert(t('uploadFailed'));
       setIsUploading(false);
       setUploadProgress(0);
     }
@@ -130,14 +130,14 @@ const CloudUploadModal = ({ onClose }: CloudUploadModalProps) => {
     <Modal
       onClose={handleClose}
       width="w-[800px]"
-      title="파일 업로드"
+      title={t('title')}
       subtitle={t('subtitle')}
       scroll={true}
     >
       <div className="mt-4 mx-6 pb-6 flex flex-col">
         {/* 1단계: 업로드 대상 선택 */}
         <div className="flex flex-col gap-3">
-          <h4 className="Heading-4 text-dg">업로드 위치</h4>
+          <h4 className="Heading-4 text-dg">{t('uploadLocation')}</h4>
           <div className="flex flex-col gap-3">
             {/* 공장 클라우드 카드 */}
             <div
@@ -163,8 +163,12 @@ const CloudUploadModal = ({ onClose }: CloudUploadModalProps) => {
               }}
             >
               <div className="flex flex-col">
-                <h5 className="Heading-5 text-dg mb-1">내부 자료실</h5>
-                <p className="Re_Body-2 text-gr">내부 자료실에 저장됩니다</p>
+                <h5 className="Heading-5 text-dg mb-1">
+                  {t('internalRepository')}
+                </h5>
+                <p className="Re_Body-2 text-gr">
+                  {t('internalRepositoryDesc')}
+                </p>
               </div>
             </div>
 
@@ -195,9 +199,11 @@ const CloudUploadModal = ({ onClose }: CloudUploadModalProps) => {
                 className={`p-4 rounded-[8px] ${uploadTarget === 'client' ? 'bg-secondary' : ''}`}
               >
                 <div className="flex flex-col">
-                  <h5 className="Heading-5 text-dg mb-1">거래처 자료실</h5>
+                  <h5 className="Heading-5 text-dg mb-1">
+                    {t('clientRepository')}
+                  </h5>
                   <p className="Re_Body-2 text-gr">
-                    선택한 거래처의 자료실에 저장됩니다
+                    {t('clientRepositoryDesc')}
                   </p>
                 </div>
               </div>
@@ -212,7 +218,7 @@ const CloudUploadModal = ({ onClose }: CloudUploadModalProps) => {
                     {!selectedClient ? (
                       <>
                         <SearchInput
-                          placeholder="거래처를 검색하세요"
+                          placeholder={t('searchClientPlaceholder')}
                           value={clientSearchTerm}
                           onChange={handleClientSearchChange}
                           onFocus={() => {
@@ -273,7 +279,7 @@ const CloudUploadModal = ({ onClose }: CloudUploadModalProps) => {
         {/* 2단계: 파일 선택 영역 */}
         {!isUploading && (
           <div className="flex flex-col gap-3 mt-5">
-            <h4 className="Heading-4 text-dg">파일 선택</h4>
+            <h4 className="Heading-4 text-dg">{t('selectFile')}</h4>
             <div className="max-h-[calc(85vh-536px)] overflow-y-auto">
               <DropzoneArea
                 variant="default"
@@ -289,7 +295,7 @@ const CloudUploadModal = ({ onClose }: CloudUploadModalProps) => {
         {/* 3단계: 업로드 진행 */}
         {isUploading && (
           <div className="flex flex-col gap-3">
-            <h4 className="Heading-4 text-dg">업로드 중...</h4>
+            <h4 className="Heading-4 text-dg">{t('uploading')}</h4>
             <div className="flex flex-col gap-2">
               <div className="w-full bg-bg rounded-full h-2">
                 <div

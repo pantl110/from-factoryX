@@ -79,7 +79,9 @@
       },
       "employee": {
         "title": "Start as Employee",
-        "description": "If you've been invited to a factory, you'll be automatically connected."
+        "description": "If you've been invited to a factory, you'll be automatically connected.",
+        "noInvitedFactory": "You have no invited factory. Please ask the factory owner for an invitation.",
+        "connectError": "An error occurred while connecting to the factory. Please try again."
       }
     },
     "firstStep": {
@@ -128,7 +130,7 @@
     },
     "welcome": {
       "title": "Ready to start operating your factory?",
-      "description": "To get started, you need to register products and equipment first.\nOnce registration is complete, you can manage everything from production to inventory at a glance!",
+      "description": "To get started, you need to register products, materials, and equipment first.\nOnce registration is complete, you can manage everything from production to inventory at a glance!",
       "errors": {
         "factoryCreateFailed": "Failed to create factory.",
         "factoryCheckError": "An error occurred while checking/creating the factory."
@@ -383,6 +385,27 @@
         "resend": "Resend",
         "complete": "Complete Verification",
         "sendVerification": "Verify Email"
+      }
+    },
+    "passwordStep": {
+      "password": {
+        "label": "Password",
+        "placeholder": "Please enter your password.",
+        "required": "Please enter your password.",
+        "length": "Password must be between 8 and 20 characters.",
+        "uppercase": "Must include an uppercase letter (A-Z).",
+        "lowercase": "Must include a lowercase letter (a-z).",
+        "number": "Must include a number (0-9).",
+        "consecutive": "Consecutive letters or numbers are not allowed."
+      },
+      "passwordConfirm": {
+        "label": "Confirm Password",
+        "placeholder": "Please re-enter your password.",
+        "required": "Please enter the password confirmation.",
+        "mismatch": "Passwords do not match."
+      },
+      "buttons": {
+        "complete": "Complete Sign Up"
       }
     },
     "agreeArea": {
@@ -646,5 +669,18 @@
     "buttons": {
       "retry": "Try again"
     }
+  },
+  "emailVerification": {
+    "serverError": "A server error occurred.",
+    "emailNotRegistered": "No account exists for the email you entered.",
+    "emailVerified": "Your email has been verified.",
+    "emailCheckError": "An error occurred while verifying the email.",
+    "emailAlreadyRegistered": "This email is already registered.",
+    "codeSent": "A verification code has been sent.",
+    "codeSendError": "An error occurred while sending the verification code.",
+    "verificationComplete": "Verification complete.",
+    "codeVerifyError": "An error occurred while verifying the code.",
+    "codeExpired": "Your verification time has expired. Please request verification again.",
+    "codeMismatch": "The verification code does not match."
   }
 }

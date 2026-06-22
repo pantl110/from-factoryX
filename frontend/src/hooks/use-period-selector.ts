@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 
 export type PeriodType = '1개월' | '3개월' | '6개월' | '1년' | '직접 설정';
 
@@ -19,6 +20,7 @@ export const usePeriodSelector = ({
   page = 1,
   pageSize = 5,
 }: PeriodSelectorOptionsModel = {}) => {
+  const tErrors = useTranslations('common.errors');
   const [selectedPeriod, setSelectedPeriod] = useState<PeriodType>('1개월');
   const [customStartDate, setCustomStartDate] = useState('');
   const [customEndDate, setCustomEndDate] = useState('');
@@ -75,10 +77,10 @@ export const usePeriodSelector = ({
     endDate: string
   ): { isValid: boolean; message?: string } => {
     if (!validateDate(startDate)) {
-      return { isValid: false, message: '시작일이 유효하지 않습니다.' };
+      return { isValid: false, message: tErrors('invalidStartDate') };
     }
     if (!validateDate(endDate)) {
-      return { isValid: false, message: '종료일이 유효하지 않습니다.' };
+      return { isValid: false, message: tErrors('invalidEndDate') };
     }
 
     const start = new Date(startDate);
@@ -87,7 +89,7 @@ export const usePeriodSelector = ({
     if (start > end) {
       return {
         isValid: false,
-        message: '시작일이 종료일보다 늦을 수 없습니다.',
+        message: tErrors('startDateAfterEndDate'),
       };
     }
 
@@ -111,7 +113,7 @@ export const usePeriodSelector = ({
       const validation = validateDateRange(customStartDate, customEndDate);
       if (!validation.isValid) {
         // 유효하지 않은 날짜 범위일 때는 에러를 throw하여 요청을 중단
-        alert(validation.message || '날짜가 유효하지 않습니다.');
+        alert(validation.message || tErrors('invalidDate'));
         return filters; // Return the partial filters object instead of undefined
       }
       filters.start_date = customStartDate;

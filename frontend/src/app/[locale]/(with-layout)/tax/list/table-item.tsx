@@ -1,4 +1,4 @@
-import { TaxDocumentType, AccountsStatusColorMap } from '@/types/status-type';
+import { TaxDocumentType, getAccountsStatusColor } from '@/types/status-type';
 import Checkbox from '@/ui/checkbox';
 import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
 import { getProductNamesDisplay } from '@/hooks';
@@ -39,9 +39,7 @@ const TableItem = ({
   // 채권 상태 가져오기
   const accountStatus = item.account.status || 'waiting';
   const statusText = tStatus(accountStatus);
-  const statusColor =
-    AccountsStatusColorMap[accountStatus as keyof typeof AccountsStatusColorMap]
-      ?.color || 'gray';
+  const statusColor = getAccountsStatusColor(accountStatus);
 
   const handleRowClick = () => {
     onItemClick?.();

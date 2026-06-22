@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import {
   useBarobillRegister,
   useBarobillCorpCertUrl,
@@ -15,6 +16,7 @@ import { UpdateMemberResponseModel } from '@/types/data-model';
 ////// api 가져와서 사용하는 로직
 
 export const useCheckBarobill = () => {
+  const tErrors = useTranslations('common.errors');
   const { register: registerBarobill } = useBarobillRegister();
   const { getCertUrl } = useBarobillCorpCertUrl();
   const { checkCert } = useBarobillCertCheck();
@@ -69,10 +71,10 @@ export const useCheckBarobill = () => {
         }
       } catch {
         // 인증서 등록 진행 중 오류 발생 시 무시하고 계속 진행
-        alert('인증서 등록 진행 중 오류가 발생했어요. 다시 시도해주세요.');
+        alert(tErrors('certRegisterError'));
       }
     }
-  }, [memberId, factoryId, getMember, getCertification]);
+  }, [memberId, factoryId, getMember, getCertification, tErrors]);
 
   const checkBarobill = useCallback(async () => {
     // 1. 바로빌 사용자 등록 여부 확인
