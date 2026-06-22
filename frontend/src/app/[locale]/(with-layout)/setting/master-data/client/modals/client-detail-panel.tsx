@@ -11,7 +11,8 @@ import { ClientInfo } from './client-info';
 import { AccountInfo } from './account-info';
 import { DepositorInfo } from './depositor-info';
 import { useTranslations } from 'next-intl';
-import ClientDocuments, { ClientDocumentItemModel } from './client-documents';
+// 임시 주석처리: 자료실 섹션
+// import ClientDocuments, { ClientDocumentItemModel } from './client-documents';
 
 interface ClientDetailPanelProps {
   clientId: number;
@@ -28,9 +29,10 @@ const ClientDetailPanel = ({
   const { clientDetail, isLoading } = useGetClientDetail(clientId, factoryId);
   const { updateClient, isLoading: isUpdateLoading } = useUpdateClient();
 
-  const [clientDocuments, setClientDocuments] = useState<
-    ClientDocumentItemModel[]
-  >([]);
+  // 임시 주석처리: 자료실 섹션
+  // const [clientDocuments, setClientDocuments] = useState<
+  //   ClientDocumentItemModel[]
+  // >([]);
 
   const tCommon = useTranslations('common');
   const role = useMemberStore((state) => state.role);
@@ -112,22 +114,23 @@ const ClientDetailPanel = ({
     }
   };
 
-  const handleClientFilesSelected = (files: File[]) => {
-    if (!files.length) return;
-
-    const now = new Date();
-    const newItems: ClientDocumentItemModel[] = files.map((file, index) => ({
-      id: `${now.getTime()}-${file.name}-${index}`,
-      name: file.name,
-      size: file.size,
-      mimeType: file.type,
-      uploadedAt: now.toISOString(),
-      uploaderName: undefined,
-    }));
-
-    // 최신 업로드가 위로 오도록 prepend
-    setClientDocuments((prev) => [...newItems, ...prev]);
-  };
+  // 임시 주석처리: 자료실 섹션
+  // const handleClientFilesSelected = (files: File[]) => {
+  //   if (!files.length) return;
+  //
+  //   const now = new Date();
+  //   const newItems: ClientDocumentItemModel[] = files.map((file, index) => ({
+  //     id: `${now.getTime()}-${file.name}-${index}`,
+  //     name: file.name,
+  //     size: file.size,
+  //     mimeType: file.type,
+  //     uploadedAt: now.toISOString(),
+  //     uploaderName: undefined,
+  //   }));
+  //
+  //   // 최신 업로드가 위로 오도록 prepend
+  //   setClientDocuments((prev) => [...newItems, ...prev]);
+  // };
 
   return (
     <Panel
@@ -172,6 +175,7 @@ const ClientDetailPanel = ({
             />
           )}
 
+          {/* 임시 주석처리: 자료실 섹션
           <ClientDocuments
             documents={clientDocuments}
             isLoading={false}
@@ -179,6 +183,7 @@ const ClientDetailPanel = ({
             hasSubscription={hasSubscription}
             onFilesSelected={handleClientFilesSelected}
           />
+          */}
         </div>
       )}
     </Panel>

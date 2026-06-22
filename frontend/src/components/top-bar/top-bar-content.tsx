@@ -1,7 +1,7 @@
 'use client';
 
 import MiniBtn from '@/ui/mini-btn';
-import { BellSimple, ChatCircle, FilePlus } from '@phosphor-icons/react';
+import { BellSimple } from '@phosphor-icons/react'; // ChatCircle, FilePlus 임시 주석처리
 import { ProductionTabType } from './types';
 import ProfileImage from '@/ui/profile-image';
 import { usePathname } from 'next/navigation';
@@ -596,6 +596,7 @@ const TopBarContent = ({
             <span className="absolute top-[9px] left-[29px] w-1 h-1 bg-primary rounded-full " />
           )}
         </div>
+        {/* 임시 주석처리: 파일 업로드 아이콘
         <div
           className="flex items-center justify-center w-11 h-11 cursor-pointer hover:bg-bg rounded-lg"
           onClick={onCloudUploadClick}
@@ -603,6 +604,8 @@ const TopBarContent = ({
         >
           <FilePlus size={20} className="text-dg" />
         </div>
+        */}
+        {/* 임시 주석처리: 챗봇(AI 어시스턴트) 아이콘
         <div
           className="flex items-center justify-center w-11 h-11 cursor-pointer hover:bg-bg rounded-lg"
           onClick={onNoraClick}
@@ -610,6 +613,7 @@ const TopBarContent = ({
         >
           <ChatCircle size={20} className="text-dg" />
         </div>
+        */}
         <div
           className="flex items-center justify-center w-10 h-10 cursor-pointer relative"
           onClick={() => setIsProfileModalOpen(true)}
