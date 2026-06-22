@@ -55,7 +55,7 @@ const PurchaseTableTiem = ({
       </p>
       {canLink && (
         <div className="px-3 flex-[1.9]">
-          <MiniBtn variant="whiteOutline"
+          <MiniBtn variant="outline"
             text={tList('tableHeader.projectLink.purchase')}
             onClick={() => {
               setIsLinkModalOpen?.(true);

@@ -3,7 +3,7 @@
 @theme inline {
   --color-primary: #02d677;
   /* --color-primary-8: rgba(2, 214, 119, 0.08); */
-  /* --color-primary-hover: #02b464; */
+  --color-primary-hover: #00b865;
   --color-secondary: #a9eac8;
   --color-secondary-hover: #9ed9bb;
   --color-yellow: #f5a524;
@@ -19,6 +19,7 @@
   --color-green-8: rgba(23, 201, 100, 0.08);
   --color-green-hover: rgba(23, 201, 100, 0.12);
   --color-red: #f31260;
+  --color-red-4: rgba(243, 18, 96, 0.04);
   --color-red-8: rgba(243, 18, 96, 0.08);
   --color-red-hover: rgba(243, 18, 96, 0.12);
   --color-lg-table: #f4f4f5;

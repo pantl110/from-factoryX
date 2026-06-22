@@ -95,7 +95,7 @@ export const Account = () => {
 
           <MiniBtn
             text={tCommon('more')}
-            variant="whiteOutline"
+            variant="outline"
             onClick={() => {
               router.push('/tax/list');
             }}

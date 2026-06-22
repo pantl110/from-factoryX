@@ -133,7 +133,7 @@ const TableItem = ({
         ) : (
           <MiniBtn
             text="연결하기"
-            variant="hoverWhite"
+            variant="outline"
             height="h-8"
             onClick={
               taxType === 'purchase' || taxType === null

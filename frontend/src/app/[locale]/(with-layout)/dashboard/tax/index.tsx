@@ -42,7 +42,7 @@ const Tax = ({ taxInvoicesData, isLoading }: TaxProps) => {
       <div className="flex flex-col flex-1 min-w-0 gap-3">
         <div className="flex items-center justify-between">
           <h3 className="Heading-3">{t('title')}</h3>
-          <MiniBtn variant="whiteOutline"
+          <MiniBtn variant="outline"
             text={tCommon('more')}
             onClick={() => {
               router.push('/tax/list');

@@ -167,7 +167,7 @@ const ProductRequiringMaterial = forwardRef<
           {productConnections.length > 0 && (
             <MiniBtn
               text={tStock('connectButton.product')}
-              variant="whiteOutline"
+              variant="outline"
               onClick={() => setIsProductEnrollmentModalOpen(true)}
               disabled={isViewer || !hasSubscription()}
             />

@@ -165,7 +165,7 @@ export const MaterialPackagingDetailModal = ({
             <div className="flex justify-end gap-2.5 mt-5">
               <MiniBtn
                 text={tCommon('cancel')}
-                variant="white"
+                variant="gray"
                 onClick={onClose}
               />
               <MiniBtn
@@ -181,7 +181,7 @@ export const MaterialPackagingDetailModal = ({
             <div className="flex justify-end gap-2.5 mt-5">
               <MiniBtn
                 text={tCommon('cancel')}
-                variant="white"
+                variant="gray"
                 onClick={onClose}
               />
               <MiniBtn

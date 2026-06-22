@@ -77,7 +77,7 @@ export const MaterialPackaging = ({
               ? t('orderBy.expirationDate')
               : t('orderBy.lotNumber')
           }
-          variant="whiteOutline"
+          variant="outline"
           icon={CaretDown}
           iconSize={16}
           iconWeight="fill"

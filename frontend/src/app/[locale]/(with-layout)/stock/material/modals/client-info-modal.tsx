@@ -236,7 +236,7 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
         <div className="flex justify-end gap-2.5">
           <MiniBtn
             text={tCommon('cancel')}
-            variant="white"
+            variant="gray"
             type="button"
             onClick={onClose}
           />

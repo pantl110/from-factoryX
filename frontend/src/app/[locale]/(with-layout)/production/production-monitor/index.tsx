@@ -147,7 +147,7 @@ const ProductionMonitor = ({
               <div className="flex flex-col gap-4 h-full min-h-0">
                 {projectStatus !== 'completed' && (
                   <div>
-                    <MiniBtn variant="whiteOutline"
+                    <MiniBtn variant="outline"
                       text={t('writeButton')}
                       onClick={() => setIsCreateMemoModalOpen(true)}
                       disabled={isViewer || !hasSubscription()}

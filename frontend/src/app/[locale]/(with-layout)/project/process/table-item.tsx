@@ -217,7 +217,7 @@ const TableItem = ({
             project.tax_invoice.publish_status === undefined ? (
               <MiniBtn
                 text={tCommon('link')}
-                variant="hoverWhite"
+                variant="outline"
                 height="h-8"
                 onClick={(e) => {
                   e.stopPropagation();

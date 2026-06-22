@@ -432,7 +432,7 @@ const TableItem = ({
     '': (
       <div className="w-full h-full flex justify-between items-center">
         {operationStatus === 'pending' && !isViewer && hasSubscription() && (
-          <MiniBtn variant="whiteOutline"
+          <MiniBtn variant="outline"
             text={tCommon('save')}
             onClick={handleSave}
             disabled={!isSaveButtonEnabled}

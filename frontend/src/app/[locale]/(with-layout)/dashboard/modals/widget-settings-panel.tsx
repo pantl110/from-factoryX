@@ -90,7 +90,7 @@ const WidgetSettingsPanel = ({
               <MiniBtn
                 text={t('reset')}
                 icon={ArrowCounterClockwise}
-                variant="white"
+                variant="gray"
                 onClick={onReset}
               />
               <IconBtn icon={X} onClick={handleClose} />

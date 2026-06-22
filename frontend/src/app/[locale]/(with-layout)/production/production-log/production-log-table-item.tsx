@@ -275,7 +275,7 @@ const ProductionLogTableItem = ({
           <div className="w-[260px] px-3 flex gap-2">
             <MiniBtn
               text={tCommon('save')}
-              variant="whiteOutline"
+              variant="outline"
               height="h-8"
               onClick={onSave}
               disabled={!hasChanges || !formState.isValid}
@@ -294,7 +294,7 @@ const ProductionLogTableItem = ({
                 plan.defective_quantity !== undefined &&
                 plan.defective_quantity !== null &&
                 plan.defective_quantity > 0
-                  ? 'whiteOutline'
+                  ? 'outline'
                   : 'secondary'
               }
               height="h-8"

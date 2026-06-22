@@ -28,7 +28,7 @@ const NoHistoryBox = ({
       {button && (
         <MiniBtn
           text={button}
-          variant="whiteOutline"
+          variant="outline"
           onClick={onClick}
           disabled={disabled}
         />

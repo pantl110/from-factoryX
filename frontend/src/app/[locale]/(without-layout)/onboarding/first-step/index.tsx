@@ -176,7 +176,7 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
           <div className="w-full flex justify-end gap-2.5">
             <MiniBtn
               text={t('buttons.previous')}
-              variant="white"
+              variant="gray"
               type="button"
               onClick={() => handlePrevStep(getValues())}
             />

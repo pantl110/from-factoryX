@@ -21,7 +21,7 @@ const NeedInfoModal = ({
   return (
     <Modal title={t('title')} subtitle={t('subtitle')} onClose={onClose}>
       <div className="flex justify-end gap-[5px] mt-4">
-        <MiniBtn text={tCommon('close')} variant="white" onClick={onClose} />
+        <MiniBtn text={tCommon('close')} variant="gray" onClick={onClose} />
         <MiniBtn
           text={t('goToCompanyInfo')}
           variant="primary"

@@ -271,7 +271,7 @@ const Subscription = () => {
         <h3 className="Heading-3">{t('title')}</h3>
         <MiniBtn
           text={t('refundPolicyButton')}
-          variant="whiteOutline"
+          variant="outline"
           onClick={() => setIsRefundPolicyModalOpen(true)}
         />
       </div>

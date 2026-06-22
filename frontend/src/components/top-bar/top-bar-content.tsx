@@ -121,7 +121,7 @@ const TopBarContent = ({
       <div className="flex gap-2">
         <MiniBtn
           text={t('switchToProgress')}
-          variant="whiteOutline"
+          variant="outline"
           onClick={() => {
             if (handleChangeStatus) {
               handleChangeStatus('delivery');
@@ -139,7 +139,7 @@ const TopBarContent = ({
         <div className="relative" {...taxButtonMouseEvents}>
           <MiniBtn
             text={taxId ? t('viewTaxInvoice') : t('createTaxInvoice')}
-            variant="whiteOutline"
+            variant="outline"
             onClick={() => {
               if (
                 isPartnersSubscription() &&
@@ -198,7 +198,7 @@ const TopBarContent = ({
           <div className="relative" {...taxButtonMouseEvents}>
             <MiniBtn
               text={taxId ? t('viewTaxInvoice') : t('createTaxInvoice')}
-              variant="whiteOutline"
+              variant="outline"
               onClick={() => {
                 if (
                   isPartnersSubscription() &&
@@ -266,7 +266,7 @@ const TopBarContent = ({
           <div className="relative" {...taxButtonMouseEvents}>
             <MiniBtn
               text={taxId ? t('viewTaxInvoice') : t('createTaxInvoice')}
-              variant="whiteOutline"
+              variant="outline"
               onClick={() => {
                 if (
                   isPartnersSubscription() &&
@@ -338,7 +338,7 @@ const TopBarContent = ({
           <div className="relative" {...taxButtonMouseEvents}>
             <MiniBtn
               text={taxId ? t('viewTaxInvoice') : t('createTaxInvoice')}
-              variant="whiteOutline"
+              variant="outline"
               onClick={() => {
                 if (
                   isPartnersSubscription() &&
@@ -407,7 +407,7 @@ const TopBarContent = ({
           <div className="relative" {...taxButtonMouseEvents}>
             <MiniBtn
               text={taxId ? t('viewTaxInvoice') : t('createTaxInvoice')}
-              variant="whiteOutline"
+              variant="outline"
               onClick={() => {
                 if (
                   isPartnersSubscription() &&
@@ -503,7 +503,7 @@ const TopBarContent = ({
           <div className="relative" {...taxButtonMouseEvents}>
             <MiniBtn
               text={taxId ? t('viewTaxInvoice') : t('createTaxInvoice')}
-              variant="whiteOutline"
+              variant="outline"
               onClick={() => {
                 if (
                   isPartnersSubscription() &&

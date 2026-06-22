@@ -87,7 +87,7 @@ const NotificationItem = ({
       </div>
       {!item.is_read && (
         <div className="shrink-0 ml-2">
-          <MiniBtn variant="whiteOutline"
+          <MiniBtn variant="outline"
             text={t('markAsRead')}
             height="h-8"
             onClick={handleRead}

@@ -715,7 +715,7 @@ const CreatTaxPanel = ({
             <h3 className="Heading-3 h-10 items-center flex">
               {tCommon('orderProductInfo')}
             </h3>
-            <MiniBtn variant="whiteOutline"
+            <MiniBtn variant="outline"
               text={`${tCommon('product')} ${tCommon('add')}`}
               icon={CaretDown}
               iconPosition="right"

@@ -62,13 +62,13 @@ const SearchDeleteTable = ({
         (!disableForProdManager || role !== 'prod_manager') &&
         hasSubscription() && (
           <div className="flex gap-1">
-            {/* <MiniBtn variant="whiteOutline"
+            {/* <MiniBtn variant="outline"
             text="취소"
             onClick={onCancel}
           /> */}
             <MiniBtn
               text={deleteButtonText}
-              variant={checkedCount > 0 ? 'red' : 'whiteOutline'}
+              variant={checkedCount > 0 ? 'red' : 'outline'}
               onClick={checkedCount > 0 ? onDelete : () => {}}
             />
           </div>

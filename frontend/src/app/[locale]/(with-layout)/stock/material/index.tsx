@@ -185,12 +185,12 @@ const Material = ({
           <div className="flex gap-1">
             {/* <MiniBtn
               text="취소"
-              variant="whiteOutline"
+              variant="outline"
               onClick={() => setAllChecked(false)}
             /> */}
             <MiniBtn
               text={getDeleteButtonText()}
-              variant={checkedCount > 0 ? 'red' : 'whiteOutline'}
+              variant={checkedCount > 0 ? 'red' : 'outline'}
               onClick={
                 checkedCount > 0 ? () => setIsDeleteModalOpen(true) : () => {}
               }

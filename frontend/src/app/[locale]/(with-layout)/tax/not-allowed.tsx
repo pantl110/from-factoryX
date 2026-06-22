@@ -25,7 +25,7 @@ const NotAllowed = () => {
         <div className="flex gap-2.5 w-full justify-end">
           <MiniBtn
             text={t('backToDashboard')}
-            variant={factoryId ? 'white' : 'primary'}
+            variant={factoryId ? 'gray' : 'primary'}
             onClick={() => {
               router.push('/dashboard');
             }}

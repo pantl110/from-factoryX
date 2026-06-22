@@ -273,7 +273,7 @@ ${t('emailTemplate.closing')}`;
             <MiniBtn
               type="button"
               text={tCommon('cancel')}
-              variant="white"
+              variant="gray"
               onClick={onClose}
               disabled={isLoading}
             />

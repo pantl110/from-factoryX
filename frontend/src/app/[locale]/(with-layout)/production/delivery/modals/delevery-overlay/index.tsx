@@ -41,7 +41,7 @@ const DeliveryOverlay = ({ onClose, data }: DeliveryOverlayProps) => {
             </div>
           </div>
           <div className="flex gap-2.5">
-            <MiniBtn variant="white"
+            <MiniBtn variant="gray"
               text={tCommon('cancel')}
               onClick={onClose}
             />

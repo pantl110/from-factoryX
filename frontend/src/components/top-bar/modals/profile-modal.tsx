@@ -82,7 +82,7 @@ const ProfileModal = ({ onClose }: ProfileModalProps) => {
       {/* 버튼 영역 */}
       <div className="flex gap-2.5">
         <div className="flex-1">
-          <MiniBtn variant="whiteOutline"
+          <MiniBtn variant="outline"
             text={t('manageProfile')}
             width="w-full"
             onClick={() => {
@@ -92,7 +92,7 @@ const ProfileModal = ({ onClose }: ProfileModalProps) => {
           />
         </div>
         <div className="flex-1">
-          <MiniBtn variant="whiteOutline"
+          <MiniBtn variant="outline"
             text={t('logout')}
             width="w-full"
             onClick={async () => {

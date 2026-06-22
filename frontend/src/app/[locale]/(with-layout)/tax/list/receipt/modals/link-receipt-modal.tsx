@@ -187,7 +187,7 @@ const LinkReceiptModal = ({
                   placeholder={t('searchPlaceholder')}
                   onChange={(value) => setSearchKeyword(value)}
                 />
-                <MiniBtn variant="whiteOutline"
+                <MiniBtn variant="outline"
                   text={t('buttons.addSelected')}
                   disabled={selectedUnlinkedIds.length === 0}
                   onClick={handleAddSelected}
@@ -212,7 +212,7 @@ const LinkReceiptModal = ({
                 <p className="Heading-5 text-dg">
                   {t('selectedCount', { count: linkedMaterialHistory.length })}
                 </p>
-                <MiniBtn variant="whiteOutline"
+                <MiniBtn variant="outline"
                   text={tCommon('deleteAll')}
                   onClick={async () => {
                     // 오른쪽 모든 항목을 다시 왼쪽으로 되돌림
@@ -266,7 +266,7 @@ const LinkReceiptModal = ({
 
           {/* 버튼 영역 */}
           <div className={`flex gap-2.5 pt-2 justify-end`}>
-            <MiniBtn variant="white"
+            <MiniBtn variant="gray"
               text={tCommon('cancel')}
               onClick={onClose}
             />

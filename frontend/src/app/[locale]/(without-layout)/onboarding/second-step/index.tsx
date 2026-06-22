@@ -361,7 +361,7 @@ const SecondStep = ({ onNextStep, onPrevStep }: SecondStepProps) => {
           <div className="w-full flex justify-end gap-2.5 mb-10">
             <MiniBtn
               text={tCommon('previous')}
-              variant="white"
+              variant="gray"
               onClick={onPrevStep}
               type="button"
             />

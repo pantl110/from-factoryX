@@ -79,7 +79,7 @@ const TodayProductionSchedule = ({
       <div className="flex flex-col h-full">
         <div className="flex justify-between items-center">
           <h3 className="Heading-3">{t('title')}</h3>
-          <MiniBtn variant="whiteOutline"
+          <MiniBtn variant="outline"
             text={t('printButton')}
             onClick={() => {
               setIsPrintOverlayOpen(true);

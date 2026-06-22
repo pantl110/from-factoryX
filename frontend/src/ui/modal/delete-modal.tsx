@@ -23,7 +23,7 @@ const DeleteModal = ({
       onClose={onClose}
     >
       <div className="flex gap-[5px] justify-end mt-4">
-        <MiniBtn variant="white"
+        <MiniBtn variant="gray"
           text={t('cancel')}
           onClick={onClose}
         />

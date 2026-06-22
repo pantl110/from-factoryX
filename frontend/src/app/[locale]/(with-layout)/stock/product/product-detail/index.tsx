@@ -649,7 +649,7 @@ const ProductDetail = ({
                   locationListData.locations.length > 0)) && (
                 <MiniBtn
                   text={tCommon('add')}
-                  variant="whiteOutline"
+                  variant="outline"
                   disabled={isViewer || !hasSubscription()}
                   onClick={() => {
                     setSelectedLocation(null);

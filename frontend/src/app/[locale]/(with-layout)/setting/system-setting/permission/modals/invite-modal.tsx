@@ -232,7 +232,7 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
             </div>
 
             <div onClick={(e) => openAuthBtnDropdown(e)} ref={authBtnDivRef}>
-              <MiniBtn variant="whiteOutline"
+              <MiniBtn variant="outline"
                 text={tInviteModal('authButton')}
                 icon={CaretDown}
                 iconPosition="right"
@@ -324,7 +324,7 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
               </div>
             )}
             <div className="flex justify-end gap-2.5 mb-6">
-              <MiniBtn variant="white"
+              <MiniBtn variant="gray"
                 text={tCommon('cancel')}
                 onClick={onClose}
               />
@@ -343,7 +343,7 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
           onClose={handleSuccessClose}
         >
           <div className="flex justify-end mt-4 gap-[5px]">
-            <MiniBtn variant="white"
+            <MiniBtn variant="gray"
               text={tCommon('close')}
               onClick={handleSuccessClose}
             />

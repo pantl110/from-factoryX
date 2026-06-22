@@ -198,14 +198,14 @@ const Permission = () => {
                   <>
                     {/* <MiniBtn
                     text="취소"
-                    variant="whiteOutline"
+                    variant="outline"
                     onClick={() => {
                       setAllChecked(false);
                     }}
                   /> */}
                     <MiniBtn
                       text={getDeleteButtonTextInternal()}
-                      variant={checkedCount === 0 ? 'whiteOutline' : 'red'}
+                      variant={checkedCount === 0 ? 'outline' : 'red'}
                       onClick={() => {
                         if (checkedCount > 0) {
                           setIsDeleteModalOpen(true);

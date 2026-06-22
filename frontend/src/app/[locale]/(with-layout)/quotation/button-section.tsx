@@ -84,7 +84,7 @@ const ButtonSection = ({
         >
           <MiniBtn
             text={taxId ? t('viewTaxInvoice') : t('createTaxInvoice')}
-            variant="whiteOutline"
+            variant="outline"
             disabled={
               !isPartnersSubscription() ||
               !hasSubscription() ||
@@ -119,13 +119,13 @@ const ButtonSection = ({
         </div>
         <MiniBtn
           text={tCommon('print')}
-          variant="whiteOutline"
+          variant="outline"
           onClick={onPrintClick}
           disabled={!hasSubscription()}
         />
         <MiniBtn
           text={t('sendEmail')}
-          variant="whiteOutline"
+          variant="outline"
           onClick={
             hasFactoryName ? onEmailClick : () => setIsNeedInfoModalOpen(true)
           }

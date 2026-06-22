@@ -189,7 +189,7 @@ const ReturnInfo = ({
           <h3 className="Heading-3 text-dg flex items-center">{t('title')}</h3>
           <div className="flex gap-2.5">
             {!isEditing && (
-              <MiniBtn variant="whiteOutline"
+              <MiniBtn variant="outline"
                 text={tCommon('edit')}
                 onClick={() => setIsEditing(true)}
                 disabled={

@@ -296,7 +296,7 @@ const ManualAddMaterial = ({
         <div className="flex gap-2 justify-end mt-3">
           <MiniBtn
             text={tCommon('cancel')}
-            variant="white"
+            variant="gray"
             type="button"
             onClick={() => setIsManualAddMode(false)}
           />

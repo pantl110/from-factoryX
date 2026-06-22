@@ -529,7 +529,7 @@ const MasterData = () => {
             {settingChip === 'equipment' && (
               <MiniBtn
                 text={tCommon('add')}
-                variant="whiteOutline"
+                variant="outline"
                 onClick={handleAddBtnClick}
                 disabled={!factoryId || isViewer || !hasSubscription()}
               />
@@ -545,12 +545,12 @@ const MasterData = () => {
                 <>
                   {/* <MiniBtn
                     text="취소"
-                    variant="whiteOutline"
+                    variant="outline"
                     onClick={handleClearAllChecked}
                   /> */}
                   <MiniBtn
                     text={getDeleteButtonText()}
-                    variant={checkedCount > 0 ? 'red' : 'whiteOutline'}
+                    variant={checkedCount > 0 ? 'red' : 'outline'}
                     onClick={handleDeleteBtnClick}
                     disabled={isDeleteLoading || isDeleteClientLoading}
                   />

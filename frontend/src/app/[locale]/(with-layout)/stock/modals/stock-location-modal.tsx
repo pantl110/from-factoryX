@@ -295,7 +295,7 @@ const StockLocationModal = ({
           <div className="flex justify-end gap-2.5 mt-2.5">
             <MiniBtn
               text={tCommon('cancel')}
-              variant="white"
+              variant="gray"
               onClick={onClose}
               type="button"
             />

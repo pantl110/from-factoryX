@@ -124,7 +124,7 @@ const Welcome = ({ onNextStep, onPrevStep }: WelcomeProps) => {
       <div className="w-full flex justify-end gap-2.5">
         <MiniBtn
           text={tFirstStep('buttons.previous')}
-          variant="white"
+          variant="gray"
           onClick={onPrevStep}
         />
         <MiniBtn

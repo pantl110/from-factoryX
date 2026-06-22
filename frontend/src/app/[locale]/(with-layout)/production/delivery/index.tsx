@@ -254,13 +254,13 @@ const Delivery = ({
           <div className="flex gap-2">
             <MiniBtn
               text={t('printAllButton')}
-              variant="whiteOutline"
+              variant="outline"
               onClick={() => setIsPrintAllDeliveryOverlayOpen(true)}
               disabled={!hasSubscription()}
             />
             <MiniBtn
               text={t('printButton')}
-              variant="whiteOutline"
+              variant="outline"
               onClick={handlePrintDelivery}
               disabled={checkedIds.length === 0 || !hasSubscription()}
             />
@@ -268,7 +268,7 @@ const Delivery = ({
           <div className="flex gap-2">
             <MiniBtn
               text={t('transactionStatementPrintButton')}
-              variant="whiteOutline"
+              variant="outline"
               onClick={() => setIsCreateTransactionOverlayviewOpen(true)}
               disabled={!hasSubscription()}
             />

@@ -246,7 +246,7 @@ const MaterialEnrollmentModal = ({
                 </div>
               )}
             </div>
-            <MiniBtn variant="whiteOutline"
+            <MiniBtn variant="outline"
               text={tStock('manualAddButton')}
               height="h-12"
               onClick={() => setIsManualAddMode(true)}
@@ -480,7 +480,7 @@ const MaterialEnrollmentModal = ({
           <MiniBtn
             text={tCommon('cancel')}
             onClick={onClose}
-            variant="white"
+            variant="gray"
             type="button"
           />
         )}

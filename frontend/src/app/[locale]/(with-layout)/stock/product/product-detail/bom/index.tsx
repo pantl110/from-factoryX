@@ -103,7 +103,7 @@ const Bom = ({
         {hasData && (
           <MiniBtn
             text={tStock('connectButton.material')}
-            variant="whiteOutline"
+            variant="outline"
             onClick={onMaterialModalOpen}
             disabled={isViewer || !hasSubscription()}
           />

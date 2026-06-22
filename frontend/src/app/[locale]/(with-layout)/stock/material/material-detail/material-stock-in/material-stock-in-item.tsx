@@ -38,7 +38,7 @@ export const MaterialStockInItem = ({
         {!isViewer && hasSubscription() && (
           <MiniBtn
             text={t('repackagingButton')}
-            variant="whiteOutline"
+            variant="outline"
             height="h-8"
             padding="px-3"
             textStyle="Re_body-2"

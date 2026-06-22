@@ -164,12 +164,12 @@ const Product = ({
         />
         {productList.length > 0 && !isViewer && hasSubscription() && (
           <div className="flex gap-1">
-            {/* <MiniBtn variant="whiteOutline"
+            {/* <MiniBtn variant="outline"
               text="취소"
               onClick={() => setAllChecked(false)}
             /> */}
             <MiniBtn
-              variant={checkedCount > 0 ? 'red' : 'whiteOutline'}
+              variant={checkedCount > 0 ? 'red' : 'outline'}
               text={getDeleteButtonText()}
               onClick={
                 checkedCount > 0 ? () => setIsDeleteModalOpen(true) : () => {}

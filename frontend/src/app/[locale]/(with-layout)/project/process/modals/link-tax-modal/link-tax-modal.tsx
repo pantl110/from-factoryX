@@ -302,13 +302,13 @@ const LinkTaxModal = ({
               canCreate ? 'justify-between' : 'justify-end'
             }`}
           >
-            <MiniBtn variant="white"
+            <MiniBtn variant="gray"
               text={tCommon('cancel')}
               onClick={onClose}
             />
             <div className="flex gap-2.5">
               {canCreate && (
-                <MiniBtn variant="whiteOutline"
+                <MiniBtn variant="outline"
                   text={t('buttons.createTaxInvoice')}
                   onClick={() => {
                     setIsTaxPanelOpen?.(true);

@@ -147,14 +147,14 @@ const Info = React.forwardRef<InfoHandleModel, InfoProps>(
             {type === 'tax' && (
               <MiniBtn
                 text={t('buttons.viewTaxInvoice')}
-                variant="whiteOutline"
+                variant="outline"
                 onClick={handleOpenTaxDetail}
               />
             )}
             {type === 'cash-receipt' && (
               <MiniBtn
                 text={t('buttons.viewCashReceipt')}
-                variant="whiteOutline"
+                variant="outline"
                 onClick={handleOpenCashReceiptDetail}
               />
             )}
@@ -165,7 +165,7 @@ const Info = React.forwardRef<InfoHandleModel, InfoProps>(
                     ? t('buttons.goToProject')
                     : tLinkProject('linkButton')
                 }
-                variant="whiteOutline"
+                variant="outline"
                 onClick={handleProjectClick}
               />
             )}
@@ -221,7 +221,7 @@ const Info = React.forwardRef<InfoHandleModel, InfoProps>(
                     {onOpenSendEmailModal && (
                       <MiniBtn
                         text={tTableArea('buttons.sendEmail')}
-                        variant="whiteOutline"
+                        variant="outline"
                         onClick={onOpenSendEmailModal}
                         disabled={account?.status === 'completed'}
                       />

@@ -36,7 +36,7 @@ const SearchSection = ({
       />
       <MiniBtn
         text={deleteButtonText || tCommon('delete')}
-        variant={hasSelectedItems ? 'red' : 'whiteOutline'}
+        variant={hasSelectedItems ? 'red' : 'outline'}
         onClick={hasSelectedItems ? onDeleteClick : undefined}
       />
     </div>

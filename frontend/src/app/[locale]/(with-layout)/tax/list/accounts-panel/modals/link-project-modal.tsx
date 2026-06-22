@@ -121,7 +121,7 @@ const LinkProjectModal = ({
           <div className="flex gap-2.5 pt-2 justify-end">
             <MiniBtn
               text={tCommon('cancel')}
-              variant="white"
+              variant="gray"
               onClick={onClose}
             />
             <MiniBtn

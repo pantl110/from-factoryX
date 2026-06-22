@@ -26,9 +26,10 @@ interface MiniBtnProps
     | 'primary'
     | 'secondary'
     | 'red'
+    | 'gray'
     | 'white'
-    | 'whiteOutline'
-    | 'hoverWhite'
+    | 'outline'
+    | 'redOutline'
     | 'ghost';
   justifyBetween?: boolean;
   padding?: string;
@@ -67,13 +68,13 @@ const MiniBtn = ({
       case 'primary':
         return {
           bg: 'bg-primary',
-          text: 'text-white',
+          text: 'text-wh',
           hover: 'hover:bg-primary-hover',
         };
       case 'secondary':
         return {
-          bg: 'bg-primary-8',
-          text: 'text-primary',
+          bg: 'bg-secondary',
+          text: 'text-bl',
           hover: 'hover:bg-secondary-hover',
         };
       case 'red':
@@ -82,25 +83,31 @@ const MiniBtn = ({
           text: 'text-red',
           hover: 'hover:bg-red-hover',
         };
-      case 'white':
+      case 'gray':
         return {
-          bg: '',
-          text: 'text-sv',
-          hover: 'hover:bg-bg',
+          bg: 'bg-bg',
+          text: 'text-primary',
+          hover: 'hover:bg-lg',
         };
-      case 'whiteOutline':
+      case 'white':
         return {
           bg: 'bg-wh',
           text: 'text-dg',
           hover: 'hover:bg-bg',
+        };
+      case 'outline':
+        return {
+          bg: 'bg-wh',
+          text: 'text-dg',
+          hover: 'hover:bg-lg',
           border: 'border border-lg',
         };
-      case 'hoverWhite':
+      case 'redOutline':
         return {
           bg: '',
-          text: 'text-dg',
-          hover: 'hover:bg-wh',
-          border: 'border border-lg',
+          text: 'text-red',
+          hover: 'hover:bg-red-4',
+          border: 'border border-red',
         };
       case 'ghost':
         return {

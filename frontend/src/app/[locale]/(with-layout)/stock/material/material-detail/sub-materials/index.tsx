@@ -85,7 +85,7 @@ export const SubMaterials = forwardRef<SubMaterialsRefModel, SubMaterialsProps>(
           {targetMaterials.length > 0 && (
             <MiniBtn
               text={tStock('connectButton.material')}
-              variant="whiteOutline"
+              variant="outline"
               disabled={isViewer || !hasSubscription()}
               onClick={() => {
                 setIsCreateSubstituteModalOpen(true);

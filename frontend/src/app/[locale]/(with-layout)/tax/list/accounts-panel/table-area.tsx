@@ -42,7 +42,7 @@ const TableArea = ({
         {/* 버튼 */}
         <MiniBtn
           text={inputButtonText}
-          variant="whiteOutline"
+          variant="outline"
           onClick={onOpenCreateAccountPaymentModal}
           disabled={isCompleted}
         />

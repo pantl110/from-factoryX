@@ -26,7 +26,7 @@ const RegisterCard = ({
         <h3 className="Heading-3">{t('title')}</h3>
         <MiniBtn
           text={paymentAuth?.billing_key ? t('changeCard') : t('addCard')}
-          variant="whiteOutline"
+          variant="outline"
           onClick={
             paymentAuth?.billing_key
               ? () => setIsChangeModalOpen(true)

@@ -23,7 +23,7 @@ const PendingQuote = ({ projects, isLoading }: PendingQuoteProps) => {
     <>
       <div className="flex justify-between items-center">
         <h3 className="Heading-3">{t('title')}</h3>
-        <MiniBtn variant="whiteOutline"
+        <MiniBtn variant="outline"
           text={tCommon('more')}
           onClick={() => {
             router.push('/project/process?tab=quote');

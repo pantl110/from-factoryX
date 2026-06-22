@@ -32,7 +32,7 @@ const ClaimReceiptTaxModal = ({
     <>
       <Modal title={getTitle()} subtitle={getSubtitle()} onClose={onClose}>
         <div className="flex justify-end gap-[5px] mt-4">
-          <MiniBtn variant="white"
+          <MiniBtn variant="gray"
             text={tCommon('cancel')}
             onClick={onClose}
           />

@@ -357,7 +357,7 @@ export const AddUnitModal = ({
         </div>
 
         <div className="flex justify-end gap-2.5">
-          <MiniBtn text={tCommon('close')} variant="white" onClick={onClose} />
+          <MiniBtn text={tCommon('close')} variant="gray" onClick={onClose} />
           <MiniBtn
             text={tUnit('convert')}
             variant="primary"

@@ -312,7 +312,7 @@ const CloudUploadModal = ({ onClose }: CloudUploadModalProps) => {
           <div className="flex justify-end gap-1.5 mt-5">
             <MiniBtn
               text={tCommon('cancel')}
-              variant="white"
+              variant="gray"
               onClick={handleClose}
             />
             <MiniBtn
