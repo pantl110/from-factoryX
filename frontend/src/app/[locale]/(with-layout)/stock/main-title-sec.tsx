@@ -97,7 +97,6 @@ const MainTitleSec = ({
               }
               icon={CaretDown}
               iconPosition="right"
-              iconColor="text-white"
               onClick={() =>
                 selectedTab === 'product'
                   ? onProductAddDropdownOpen(true)

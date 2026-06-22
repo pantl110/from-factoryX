@@ -26,6 +26,7 @@ const TableItem = ({
   const { account } = item;
   const tList = useTranslations('tax.list');
   const tCommon = useTranslations('common');
+  const tRoot = useTranslations();
 
   // 채권 상태 가져오기
   const accountStatus = account?.status || 'waiting';
@@ -62,13 +63,15 @@ const TableItem = ({
         title={getProductNamesDisplay(
           item.item_name
             ? item.item_name.split(',').map((s: string) => s.trim())
-            : []
+            : [],
+          tRoot
         )}
       >
         {getProductNamesDisplay(
           item.item_name
             ? item.item_name.split(',').map((s: string) => s.trim())
-            : []
+            : [],
+          tRoot
         )}
       </p>
       <p

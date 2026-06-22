@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
-import { usePathname } from '@/i18n/navigation';
 import SideBar from '@/components/side-bar';
 import TopBar from '@/components/top-bar';
 import useAuthStore from '@/store/auth-store';
@@ -10,13 +9,9 @@ import { useAuthGuard } from '@/hooks';
 import Spinner from '@/ui/spinner';
 
 const Layout = ({ children }: { children: React.ReactNode }) => {
-  const pathname = usePathname();
   const { isLoading: isAuthLoading } = useAuthGuard();
   const [isSidebarVisible, setIsSidebarVisible] = useState(true);
   const isLoggingOut = useAuthStore((state) => state.isLoggingOut);
-
-  // Production 페이지 여부 확인 (locale 포함 경로 고려)
-  const isProductionPage = pathname.includes('/production/');
 
   // 인증 확인 중이면 로딩 스피너 표시
   if (isAuthLoading) {
@@ -48,7 +43,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         {/* 메인 콘텐츠 영역 */}
         <div
           className={`flex flex-col min-h-screen transition-all duration-300 ease-in-out ${
-            isProductionPage && !isSidebarVisible ? 'ml-0' : 'ml-0 sm:ml-60'
+            isSidebarVisible ? 'ml-0 sm:ml-60' : 'ml-0'
           }`}
         >
           {/* 데스크톱 탑바 */}

@@ -39,6 +39,7 @@ interface DocumentTableItemProps {
 const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
   const tDocumentType = useTranslations('document.type');
   const tList = useTranslations('tax.list');
+  const tRoot = useTranslations();
   const [isOrderPanelOpen, setIsOrderPanelOpen] = useState(false);
   const [isTransactionPanelOpen, setIsTransactionPanelOpen] = useState(false);
   const [isWorkInstructionPanelOpen, setIsWorkInstructionPanelOpen] =
@@ -136,11 +137,13 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
             <p
               className="px-3 flex-[1.2] truncate"
               title={getProductNamesDisplay(
-                taxData.line_items?.map((p) => p.name) || []
+                taxData.line_items?.map((p) => p.name) || [],
+                tRoot
               )}
             >
               {getProductNamesDisplay(
-                taxData.line_items?.map((p) => p.name) || []
+                taxData.line_items?.map((p) => p.name) || [],
+                tRoot
               )}
             </p>
             <p
@@ -184,7 +187,8 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
                   ? publishedDocumentData.item_name
                       .split(',')
                       .map((s: string) => s.trim())
-                  : []
+                  : [],
+                tRoot
               )}
             >
               {getProductNamesDisplay(
@@ -192,7 +196,8 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
                   ? publishedDocumentData.item_name
                       .split(',')
                       .map((s: string) => s.trim())
-                  : []
+                  : [],
+                tRoot
               )}
             </p>
             <p
@@ -301,7 +306,8 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
                   workInstructionData.plan_info.length > 0
                     ? workInstructionData.plan_info
                     : workInstructionData.plans || []
-                  ).map((plan) => plan.product_name)
+                  ).map((plan) => plan.product_name),
+                  tRoot
                 ) || '-'
               }
             >
@@ -310,7 +316,8 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
                 workInstructionData.plan_info.length > 0
                   ? workInstructionData.plan_info
                   : workInstructionData.plans || []
-                ).map((plan) => plan.product_name)
+                ).map((plan) => plan.product_name),
+                tRoot
               ) || '-'}
             </p>
             <p
@@ -341,9 +348,9 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
             </p>
             <p
               className="px-3 flex-1 truncate"
-              title={getProductNames(projectData) || '-'}
+              title={getProductNames(projectData, tRoot) || '-'}
             >
-              {getProductNames(projectData) || '-'}
+              {getProductNames(projectData, tRoot) || '-'}
             </p>
             <p
               className="px-3 flex-[0.8] truncate"
@@ -437,7 +444,8 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
           onClose={() => setIsTaxPanelOpen(false)}
           headerButton={
             taxData.tax_invoice_type === 'sales' ? (
-              <MiniBtn variant="outline"
+              <MiniBtn
+                variant="outline"
                 text={tList('tableHeader.projectLink.sales')}
                 onClick={() => {
                   setIsLinkProjectModalOpen(true);

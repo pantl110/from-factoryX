@@ -67,6 +67,7 @@ const TableItem = ({
   const tOperationStatus = useTranslations('production.operationStatus');
   const tCommon = useTranslations('common');
   const tInventoryStatus = useTranslations('common.inventoryStatus');
+  const tRoot = useTranslations();
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
@@ -393,7 +394,7 @@ const TableItem = ({
               ? calculatedAvgTime
               : (item.avg_production_time ?? null);
 
-          const formatted = formatSecondsToDuration(displayTime);
+          const formatted = formatSecondsToDuration(displayTime, tRoot);
 
           return formatted ?? '-';
         })()}
@@ -432,7 +433,8 @@ const TableItem = ({
     '': (
       <div className="w-full h-full flex justify-between items-center">
         {operationStatus === 'pending' && !isViewer && hasSubscription() && (
-          <MiniBtn variant="outline"
+          <MiniBtn
+            variant="outline"
             text={tCommon('save')}
             onClick={handleSave}
             disabled={!isSaveButtonEnabled}

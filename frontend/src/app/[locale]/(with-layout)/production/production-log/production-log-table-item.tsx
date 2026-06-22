@@ -42,6 +42,7 @@ const ProductionLogTableItem = ({
   const t = useTranslations('production.productionLog');
   const tCommon = useTranslations('common');
   const tProductionInfo = useTranslations('production.productionInfo');
+  const tRoot = useTranslations();
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const hasSubscription = useSubscriptionStore(
@@ -220,7 +221,7 @@ const ProductionLogTableItem = ({
                 ? calculatedAvgTime
                 : (plan.avg_production_time ?? null);
 
-            const formatted = formatSecondsToDuration(displayTime);
+            const formatted = formatSecondsToDuration(displayTime, tRoot);
 
             return formatted ?? '-';
           })()}

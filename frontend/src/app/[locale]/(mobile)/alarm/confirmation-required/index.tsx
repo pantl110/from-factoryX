@@ -29,6 +29,7 @@ const ConfirmationRequired = ({
 }: ConfirmationRequiredProps) => {
   const t = useTranslations('mobile.alarm.tabs');
   const tAlarm = useTranslations('mobile.alarm');
+  const tRoot = useTranslations();
   const router = useRouter();
   const {
     data: projects = [],
@@ -78,7 +79,7 @@ const ConfirmationRequired = ({
         chipText={formatChipText(project.days_since_confirmed, tAlarm)}
         chipVariant="secondary"
         name={project.client_name ?? '-'}
-        subText={getProductNamesDisplay(project.product_names ?? [])}
+        subText={getProductNamesDisplay(project.product_names ?? [], tRoot)}
         onClick={() => {
           if (!project.project_id) {
             return;

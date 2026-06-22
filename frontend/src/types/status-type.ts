@@ -22,8 +22,8 @@ export type MemberStatusType = 'invited' | 'active'; // 초대됨, 활성
 export const MemberRoleColorMap: Record<MemberRoleType, StatusColorModel> = {
   admin: { bgColor: 'bg-purple-8', textColor: 'text-purple', color: 'purple' },
   manager: {
-    bgColor: 'bg-green-8',
-    textColor: 'text-primary',
+    bgColor: 'bg-blue-8',
+    textColor: 'text-blue',
     color: 'blue',
   },
   viewer: { bgColor: 'bg-yellow-8', textColor: 'text-yellow', color: 'yellow' },
@@ -149,8 +149,8 @@ export const InventoryStatusColorMap: Record<
 > = {
   과재고: { textColor: 'text-red', bgColor: 'bg-red-8', color: 'red' },
   충분: {
-    textColor: 'text-primary',
-    bgColor: 'bg-green-8',
+    textColor: 'text-blue',
+    bgColor: 'bg-blue-8',
     color: 'blue',
   },
   위험: { textColor: 'text-orange', bgColor: 'bg-orange-8', color: 'orange' },
@@ -214,19 +214,25 @@ export const TaxStatusColorMap: Record<
   NonNullable<TaxStatusType>,
   StatusColorModel
 > = {
-  temporary: { textColor: 'text-gr' },
-  pending: { textColor: 'text-yellow' },
-  processing: { textColor: 'text-purple' },
-  published: { textColor: 'text-primary' },
-  cancled: { textColor: 'text-red' },
-  failed: { textColor: 'text-red' },
+  temporary: { textColor: 'text-gr', color: 'gray' },
+  pending: { textColor: 'text-yellow', color: 'yellow' },
+  processing: { textColor: 'text-purple', color: 'purple' },
+  published: { textColor: 'text-blue', color: 'blue' },
+  cancled: { textColor: 'text-red', color: 'red' },
+  failed: { textColor: 'text-red', color: 'red' },
 };
 
 // Helper function to get status color with null handling
 export const getTaxStatusColor = (status: TaxStatusType): StatusColorModel => {
-  if (!status) return { textColor: 'text-dg' };
+  if (!status) return { textColor: 'text-dg', color: 'gray' };
   return TaxStatusColorMap[status];
 };
+
+// 발송여부(세금계산서 발송 횟수) 색: 0회=gray, 1회 이상=blue
+export const getInvoiceSentColor = (sentCount: number): StatusColorModel =>
+  sentCount === 0
+    ? { textColor: 'text-dg', color: 'gray' }
+    : { textColor: 'text-blue', color: 'blue' };
 
 // Tax Invoice State Types
 // 바로빌 상태 (백엔드에서 실제로 사용하는 값들만)
@@ -331,8 +337,8 @@ export const ExpiryStatusColorMap: Record<ExpiryStatusType, StatusColorModel> =
   {
     warning: { textColor: 'text-red', bgColor: 'bg-red-8', color: 'red' },
     safe: {
-      textColor: 'text-primary',
-      bgColor: 'bg-green-8',
+      textColor: 'text-blue',
+      bgColor: 'bg-blue-8',
       color: 'blue',
     },
   };

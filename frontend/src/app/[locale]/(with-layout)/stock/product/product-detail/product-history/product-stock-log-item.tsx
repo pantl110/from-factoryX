@@ -30,7 +30,7 @@ const ProductStockLogItem = ({
       <div className="flex items-center h-14 border-b border-lg Me_Body-3">
         <p className="flex-1 px-3 text-dg">{formatISODate(createdAt)}</p>
         <p className="flex-1 px-3 text-dg">{clientName}</p>
-        <p className="flex-1 px-3 text-primary">
+        <p className="flex-1 px-3 text-blue">
           {productionQuantity ? '+' + productionQuantity.toLocaleString() : '-'}
         </p>
         <p className="flex-1 px-3 text-red">

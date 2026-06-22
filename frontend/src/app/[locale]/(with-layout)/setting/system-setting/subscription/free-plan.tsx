@@ -30,8 +30,7 @@ const FreePlan = ({ endDate }: FreePlanProps) => {
         <h3 className="Heading-3 text-primary">{t('title')}</h3>
         <Chip
           text={t('daysUntilEnd', { days: remainingDays })}
-          textColor="text-primary"
-          bgColor="bg-[#e3f0ff]"
+          color="gray"
         />
       </div>
       <p className="text-dg Re_Body-1 whitespace-pre-line">

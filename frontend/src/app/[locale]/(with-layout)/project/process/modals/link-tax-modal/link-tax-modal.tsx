@@ -21,6 +21,12 @@ import {
 import MaterialInfoTable from './material-info-table';
 import LinkModalTaxTable from './link-modal-tax-table';
 
+const PERIOD_OPTIONS = [
+  { value: '1', labelKey: 'period.1month' },
+  { value: '6', labelKey: 'period.6months' },
+  { value: '12', labelKey: 'period.12months' },
+] as const;
+
 interface LinkTaxModalProps {
   onClose: () => void;
   type: 'project' | 'tax';
@@ -228,21 +234,14 @@ const LinkTaxModal = ({
         {/* 프로적트 연결 시 기간 선택 */}
         {type === 'project' && (
           <div className="flex gap-2">
-            <MiniBtn
-              text={t('period.1month')}
-              variant={selectedPeriod === '1' ? 'gray' : 'outline'}
-              onClick={() => setSelectedPeriod('1')}
-            />
-            <MiniBtn
-              text={t('period.6months')}
-              variant={selectedPeriod === '6' ? 'gray' : 'outline'}
-              onClick={() => setSelectedPeriod('6')}
-            />
-            <MiniBtn
-              text={t('period.12months')}
-              variant={selectedPeriod === '12' ? 'gray' : 'outline'}
-              onClick={() => setSelectedPeriod('12')}
-            />
+            {PERIOD_OPTIONS.map((option) => (
+              <MiniBtn
+                key={option.value}
+                text={t(option.labelKey)}
+                variant={selectedPeriod === option.value ? 'gray' : 'outline'}
+                onClick={() => setSelectedPeriod(option.value)}
+              />
+            ))}
           </div>
         )}
 

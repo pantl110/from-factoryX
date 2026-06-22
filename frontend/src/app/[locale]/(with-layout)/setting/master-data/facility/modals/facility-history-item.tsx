@@ -1,5 +1,6 @@
 import { FacilityPlanResponseModel } from '@/types/data-model';
 import { calculateAvgProductionTime, formatISODateTime } from '@/utils';
+import { useTranslations } from 'next-intl';
 import { useState } from 'react';
 import IconBtn from '@/ui/icon-btn';
 import { ArrowLineUpRight } from '@phosphor-icons/react';
@@ -11,6 +12,7 @@ interface FacilityHistoryItemProps {
 }
 
 const FacilityHistoryItem = ({ plan }: FacilityHistoryItemProps) => {
+  const t = useTranslations();
   const [isProductDetailOpen, setIsProductDetailOpen] = useState(false);
   const avgProductionTime = calculateAvgProductionTime(
     plan.start_date,
@@ -42,7 +44,7 @@ const FacilityHistoryItem = ({ plan }: FacilityHistoryItemProps) => {
           className="flex-1 px-3 truncate"
           title={
             avgProductionTime !== null
-              ? (formatSecondsToDuration(avgProductionTime) ?? '-')
+              ? (formatSecondsToDuration(avgProductionTime, t) ?? '-')
               : '-'
           }
         >

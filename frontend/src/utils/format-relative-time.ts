@@ -1,7 +1,7 @@
 // 상대적 시간 포맷팅 함수 (상대적 시간은 UTC 기준, 절대 시간 표시는 한국 시간 기준)
 export const formatRelativeTime = (
   dateString: string,
-  t?: (key: string, values?: Record<string, unknown>) => string
+  t?: (key: string, values?: Record<string, string | number | Date>) => string
 ): string => {
   if (!dateString) return '';
 

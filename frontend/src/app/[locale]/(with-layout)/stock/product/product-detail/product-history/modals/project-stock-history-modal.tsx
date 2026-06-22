@@ -88,7 +88,7 @@ const ProjectStockHistoryModal = ({
                     <p className="flex-1 px-3 text-dg">
                       {formatISODate(history.created_at)}
                     </p>
-                    <p className="flex-1 px-3 text-primary">
+                    <p className="flex-1 px-3 text-blue">
                       {history.production_quantity
                         ? '+' + history.production_quantity.toLocaleString()
                         : '-'}

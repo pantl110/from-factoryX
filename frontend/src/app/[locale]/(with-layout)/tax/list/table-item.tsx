@@ -1,4 +1,8 @@
-import { TaxDocumentType, getAccountsStatusColor } from '@/types/status-type';
+import {
+  TaxDocumentType,
+  getAccountsStatusColor,
+  getInvoiceSentColor,
+} from '@/types/status-type';
 import Checkbox from '@/ui/checkbox';
 import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
 import { getProductNamesDisplay } from '@/hooks';
@@ -28,6 +32,7 @@ const TableItem = ({
   const t = useTranslations('tax.list.sentStatus');
   const tStatus = useTranslations('tax.list.status');
   const tCommon = useTranslations('common');
+  const tRoot = useTranslations();
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const isProdManager = role === 'prod_manager';
@@ -75,12 +80,14 @@ const TableItem = ({
         className="flex-[1.5] px-3 text-dg truncate"
         title={
           getProductNamesDisplay(
-            item.line_items?.map((product) => product.name) || []
+            item.line_items?.map((product) => product.name) || [],
+            tRoot
           ) || '-'
         }
       >
         {getProductNamesDisplay(
-          item.line_items?.map((product) => product.name) || []
+          item.line_items?.map((product) => product.name) || [],
+          tRoot
         ) || '-'}
       </p>
       <p
@@ -104,7 +111,10 @@ const TableItem = ({
                 : t('sentCount', { count: item.account.invoice_sent_count })
             }
             variant="sm"
-            color={item.account.invoice_sent_count === 0 ? 'gray' : 'blue'}
+            color={
+              getInvoiceSentColor(item.account.invoice_sent_count).color ??
+              'gray'
+            }
           />
         </div>
       )}

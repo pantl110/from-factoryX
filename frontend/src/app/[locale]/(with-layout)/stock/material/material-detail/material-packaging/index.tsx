@@ -48,6 +48,7 @@ export const MaterialPackaging = ({
 
   const repackagings = repackagingsData?.data || [];
   const totalPages = repackagingsData?.pageCnt ?? 0;
+  const hasRepackagings = repackagings.length > 0;
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
@@ -55,37 +56,37 @@ export const MaterialPackaging = ({
 
   // 페이지 유효성 관리 (삭제 등으로 비는 경우 포함)
   useEffect(() => {
-    const hasData = repackagings.length > 0;
-
     if (totalPages > 0 && page > totalPages) {
       setPage(totalPages);
       return;
     }
 
-    if (!isLoading && page > 1 && !hasData) {
+    if (!isLoading && page > 1 && !hasRepackagings) {
       setPage((prev) => Math.max(prev - 1, 1));
     }
-  }, [totalPages, page, repackagings.length, isLoading]);
+  }, [totalPages, page, hasRepackagings, isLoading]);
 
   return (
     <div className="flex flex-col gap-3">
       <div className="h-10 flex items-center justify-between relative">
         <h3 className="Heading-3 text-dg">{t('title')}</h3>
-        <MiniBtn
-          text={
-            orderBy === 'expiration_date'
-              ? t('orderBy.expirationDate')
-              : t('orderBy.lotNumber')
-          }
-          variant="outline"
-          icon={CaretDown}
-          iconSize={16}
-          iconWeight="fill"
-          iconPosition="right"
-          onClick={() => {
-            setIsOrderDropdownOpen(true);
-          }}
-        />
+        {hasRepackagings && (
+          <MiniBtn
+            text={
+              orderBy === 'expiration_date'
+                ? t('orderBy.expirationDate')
+                : t('orderBy.lotNumber')
+            }
+            variant="outline"
+            icon={CaretDown}
+            iconSize={16}
+            iconWeight="fill"
+            iconPosition="right"
+            onClick={() => {
+              setIsOrderDropdownOpen(true);
+            }}
+          />
+        )}
         {isOrderDropdownOpen && (
           <div className="absolute mt-2 top-full right-0.5">
             <OrderDropdown
@@ -106,7 +107,7 @@ export const MaterialPackaging = ({
       <div className="flex flex-col">
         {isLoading ? (
           <div className="h-50" />
-        ) : repackagings && repackagings.length > 0 ? (
+        ) : hasRepackagings ? (
           <>
             <div className="flex items-center h-12 border-t border-b border-lg Me_Body-3 cursor-default">
               {/* <p className="flex-[0.8] px-3 text-sv">상태</p> */}

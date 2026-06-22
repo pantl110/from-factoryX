@@ -1,4 +1,8 @@
-import { AccountsStatusType, CollectionTermsType } from '@/types/status-type';
+import {
+  AccountsStatusType,
+  CollectionTermsType,
+  getInvoiceSentColor,
+} from '@/types/status-type';
 import { IconBtn, InfoLabelValue, MiniBtn, RoundChip } from '@/ui';
 import React, { useState, useEffect, useImperativeHandle } from 'react';
 import { ArrowLineUpRight, CaretDown } from '@phosphor-icons/react';
@@ -213,9 +217,8 @@ const Info = React.forwardRef<InfoHandleModel, InfoProps>(
                       }
                       variant="sm"
                       color={
-                        (account?.invoice_sent_count ?? 0) === 0
-                          ? 'gray'
-                          : 'blue'
+                        getInvoiceSentColor(account?.invoice_sent_count ?? 0)
+                          .color ?? 'gray'
                       }
                     />
                     {onOpenSendEmailModal && (

@@ -11,6 +11,7 @@ import {
   AccountsStatusColorMap,
   AccountsStatusType,
   CollectionTermsType,
+  getInvoiceSentColor,
 } from '@/types/status-type';
 import MoChip from '@/ui/mo-chip';
 import { useQuery } from '@tanstack/react-query';
@@ -176,8 +177,9 @@ const AccountInfo = ({ type, account }: AccountInfoProps) => {
     invoiceSentCount === 0
       ? tTax('invoiceSent.notSent')
       : tTax('invoiceSent.sentCount', { count: invoiceSentCount });
-  // 채권채무관리 판넬과 동일하게: 0이면 gray(text-dg), 그 외는 secondary(text-primary)
-  const invoiceSentColor = invoiceSentCount === 0 ? 'text-dg' : 'text-primary';
+  // 채권채무관리 판넬과 동일하게: 0이면 gray(text-dg), 그 외는 blue(text-blue)
+  const invoiceSentColor =
+    getInvoiceSentColor(invoiceSentCount).textColor ?? 'text-dg';
 
   return (
     <div className="px-7 py-8 flex flex-col gap-8">

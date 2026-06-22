@@ -26,6 +26,7 @@ export const ProductionInfo = ({
 }: ProductionInfoProps) => {
   const t = useTranslations('production.productionInfo');
   const tCommon = useTranslations('common');
+  const tRoot = useTranslations();
   const { control, watch, formState } = useForm({
     defaultValues: {
       quantity: plan.quantity || 0,
@@ -126,7 +127,7 @@ export const ProductionInfo = ({
                   ? calculatedAvgTime
                   : (plan.avg_production_time ?? null);
 
-              const formatted = formatSecondsToDuration(displayTime);
+              const formatted = formatSecondsToDuration(displayTime, tRoot);
 
               return formatted ?? '-';
             })()}

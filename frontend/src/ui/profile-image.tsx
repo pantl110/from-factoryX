@@ -32,9 +32,9 @@ const ProfileImage = ({
 
   // 이메일 기반으로 고정 색상 결정
   const getColorClass = (email: string | null | undefined) => {
-    if (!email) return 'primary';
+    if (!email) return 'blue';
 
-    const colors = ['yellow', 'purple', 'green', 'red', 'primary'];
+    const colors = ['yellow', 'purple', 'green', 'red', 'blue'];
 
     // 이메일 문자열을 숫자로 변환해서 색상 인덱스 결정
     const hash = email.split('').reduce((acc, char) => {

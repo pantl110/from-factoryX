@@ -13,7 +13,7 @@ import { ProjectResponseModel } from '@/types/data-model';
  */
 export const getProductNamesDisplay = (
   productNames: string[],
-  t?: (key: string, values?: Record<string, unknown>) => string
+  t?: (key: string, values?: Record<string, string | number | Date>) => string
 ): string => {
   if (!productNames || productNames.length === 0) {
     return '-';
@@ -31,7 +31,7 @@ export const getProductNamesDisplay = (
 
 export const getProductNames = (
   project: ProjectResponseModel,
-  t?: (key: string, values?: Record<string, unknown>) => string
+  t?: (key: string, values?: Record<string, string | number | Date>) => string
 ) => {
   const productsName =
     project.status === 'quotation' ||

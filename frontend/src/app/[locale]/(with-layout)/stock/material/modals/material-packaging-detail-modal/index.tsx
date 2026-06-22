@@ -186,7 +186,7 @@ export const MaterialPackagingDetailModal = ({
               />
               <MiniBtn
                 text={tCommon('confirm')}
-                variant="secondary"
+                variant="gray"
                 type="submit"
                 form={formId}
                 disabled={!isQuantityFilled}

@@ -54,7 +54,7 @@ const ReceiptDetailPanel = ({
             <h3 className="Heading-3 h-10 items-center flex">
               {t('transactionInfo')}
             </h3>
-            <div>
+            <div className="width-full border-b border-lg">
               <InfoLabelValue
                 label={t('transactionDate')}
                 value={cashReceipt?.transaction_date}
@@ -78,7 +78,7 @@ const ReceiptDetailPanel = ({
             <h3 className="Heading-3 h-10 items-center flex">
               {tTax('buyerInfo')}
             </h3>
-            <div>
+            <div className="width-full border-b border-lg">
               <InfoLabelValue
                 label={tCommon('clientName')}
                 value={cashReceipt?.client_info.name}

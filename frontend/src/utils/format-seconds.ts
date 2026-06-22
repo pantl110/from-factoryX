@@ -1,5 +1,6 @@
 export const formatSecondsToDuration = (
-  seconds: number | null | undefined
+  seconds: number | null | undefined,
+  t?: (key: string, values?: Record<string, string | number | Date>) => string
 ): string | null => {
   if (seconds === null || seconds === undefined || isNaN(Number(seconds))) {
     return null;
@@ -14,13 +15,19 @@ export const formatSecondsToDuration = (
   const parts: string[] = [];
 
   if (hours > 0) {
-    parts.push(`${hours}시간`);
+    parts.push(t ? t('common.duration.hours', { n: hours }) : `${hours}시간`);
   }
   if (minutes > 0) {
-    parts.push(`${minutes}분`);
+    parts.push(
+      t ? t('common.duration.minutes', { n: minutes }) : `${minutes}분`
+    );
   }
   if (remainingSeconds > 0 || parts.length === 0) {
-    parts.push(`${remainingSeconds}초`);
+    parts.push(
+      t
+        ? t('common.duration.seconds', { n: remainingSeconds })
+        : `${remainingSeconds}초`
+    );
   }
 
   return parts.join(' ');

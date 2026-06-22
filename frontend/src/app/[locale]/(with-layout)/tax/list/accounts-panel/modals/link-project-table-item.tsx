@@ -18,6 +18,7 @@ const LinkProjectTableItem = ({
   item,
 }: LinkProjectTableItemProps) => {
   const t = useTranslations('project.status');
+  const tRoot = useTranslations();
 
   const displayText = t(item.status as ProjectStatusType) || t('quotation');
   const chipColor = getProjectStatusColor(item.status);
@@ -44,7 +45,7 @@ const LinkProjectTableItem = ({
             .filter((name) => name?.trim()) || []
         : [];
 
-  const productsName = getProductNamesDisplay(productNames);
+  const productsName = getProductNamesDisplay(productNames, tRoot);
 
   return (
     <div

@@ -18,6 +18,7 @@ interface ProcessProjectItemProps {
 const ProcessProjectItem = ({ project, onClick }: ProcessProjectItemProps) => {
   const tCommon = useTranslations('common');
   const tStatus = useTranslations('project.status');
+  const tRoot = useTranslations();
 
   return (
     <div
@@ -34,7 +35,7 @@ const ProcessProjectItem = ({ project, onClick }: ProcessProjectItemProps) => {
       </div>
       <div className="flex items-center">
         <p className="flex-1 Me_Body-3 text-dg">
-          {formatRelativeTime(getStartDate(project))}
+          {formatRelativeTime(getStartDate(project), tRoot)}
         </p>
         <RoundChip
           text={tStatus(project.status as ProjectStatusType)}

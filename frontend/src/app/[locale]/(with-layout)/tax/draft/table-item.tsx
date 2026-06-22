@@ -2,6 +2,7 @@ import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
 import Checkbox from '@/ui/checkbox';
 import useMemberStore from '@/store/member-store';
 import { RoundChip } from '@/ui';
+import { getTaxStatusColor } from '@/types/status-type';
 import { useTranslations } from 'next-intl';
 
 interface TableItemProps {
@@ -29,21 +30,7 @@ const TableItem = ({
       : item.publish_status === 'pending'
         ? t('pending')
         : '-';
-  const chipColor:
-    | 'red'
-    | 'green'
-    | 'orange'
-    | 'yellow'
-    | 'purple'
-    | 'gray'
-    | 'white'
-    | 'whiteOutline'
-    | 'blue' =
-    item.publish_status === 'temporary'
-      ? 'blue'
-      : item.publish_status === 'pending'
-        ? 'blue'
-        : 'gray';
+  const chipColor = getTaxStatusColor(item.publish_status).color ?? 'gray';
 
   return (
     <div

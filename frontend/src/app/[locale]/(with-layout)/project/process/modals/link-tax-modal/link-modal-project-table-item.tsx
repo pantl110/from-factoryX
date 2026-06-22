@@ -17,6 +17,7 @@ const LinkModalProjectTableItem = ({
   item,
 }: LinkModalProjectTableItemProps) => {
   const t = useTranslations('tax');
+  const tRoot = useTranslations();
   const taxTypeMap: Record<string, TaxDocumentType> = {
     [t('sales')]: 'sales',
     [t('purchase')]: 'purchase',
@@ -57,13 +58,15 @@ const LinkModalProjectTableItem = ({
         title={getProductNamesDisplay(
           item.line_items
             ?.map((lineItem) => lineItem.name)
-            .filter((name) => name?.trim()) || []
+            .filter((name) => name?.trim()) || [],
+          tRoot
         )}
       >
         {getProductNamesDisplay(
           item.line_items
             ?.map((lineItem) => lineItem.name)
-            .filter((name) => name?.trim()) || []
+            .filter((name) => name?.trim()) || [],
+          tRoot
         )}
       </p>
       <p

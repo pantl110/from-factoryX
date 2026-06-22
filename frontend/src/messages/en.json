@@ -195,6 +195,11 @@
       "yesterday": "Yesterday",
       "monthDay": "{month}/{day}"
     },
+    "duration": {
+      "hours": "{n}h",
+      "minutes": "{n}m",
+      "seconds": "{n}s"
+    },
     "excelParser": {
       "noData": "No data to upload.",
       "parseFailed": "Failed to parse Excel file.",
@@ -729,7 +734,9 @@
       "list": "Receivables & Payables"
     },
     "document": "Documents",
-    "setting": "Settings"
+    "setting": "Settings",
+    "collapseSidebar": "Collapse menu",
+    "expandSidebar": "Expand menu"
   },
   "notification": {
     "title": "Notifications",

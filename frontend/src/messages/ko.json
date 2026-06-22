@@ -195,6 +195,11 @@
       "yesterday": "어제",
       "monthDay": "{month}월 {day}일"
     },
+    "duration": {
+      "hours": "{n}시간",
+      "minutes": "{n}분",
+      "seconds": "{n}초"
+    },
     "excelParser": {
       "noData": "업로드할 데이터가 없습니다.",
       "parseFailed": "엑셀 파일 파싱에 실패했습니다.",
@@ -730,7 +735,9 @@
       "list": "채권 · 채무 관리"
     },
     "document": "문서함",
-    "setting": "설정"
+    "setting": "설정",
+    "collapseSidebar": "메뉴 접기",
+    "expandSidebar": "메뉴 펼치기"
   },
   "notification": {
     "title": "알림함",
@@ -1854,7 +1861,7 @@
         "standardUnit": "기준단위",
         "conversionUnit": "변환단위",
         "conversionFormula": "변환식",
-        "convert": "단위 변환하기",
+        "convert": "단위 변환 추가",
         "placeholders": {
           "standardUnit": "기준단위를 입력하세요.",
           "conversionUnit": "변환단위를 입력하세요.",

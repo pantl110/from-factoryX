@@ -53,7 +53,7 @@ const PriceInfoSection = ({
           <div className="flex justify-between items-center h-7.5">
             <p className="Me_Body-3 text-dg">{t('differenceAmount')}</p>
             <p
-              className={`Me_Body-2 ${differenceAmount < 0 ? 'text-red' : 'text-primary'}`}
+              className={`Me_Body-2 ${differenceAmount < 0 ? 'text-red' : 'text-blue'}`}
             >
               {differenceAmount.toLocaleString()}
               {tCommon('won')}

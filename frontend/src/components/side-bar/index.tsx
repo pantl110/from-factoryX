@@ -7,12 +7,16 @@ import {
   MoneyWavy,
   Files,
   Gear,
+  CaretDoubleLeft,
+  CaretDoubleRight,
 } from '@phosphor-icons/react/dist/ssr';
 import SideBarItem from '@/components/side-bar/side-bar-item';
 import PantlLogo from '@/ui/icons/pantl-logo';
-import { usePathname, useRouter } from '@/i18n/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+
+const SIDEBAR_COLLAPSED_KEY = 'sidebar-collapsed';
 
 interface SideBarProps {
   onVisibilityChange?: (visible: boolean) => void;
@@ -21,35 +25,48 @@ interface SideBarProps {
 const SideBar = ({ onVisibilityChange }: SideBarProps) => {
   const t = useTranslations('navigation');
   const router = useRouter();
-  const pathname = usePathname();
-  const [isHovered, setIsHovered] = useState(false);
-  const isProductionPage = pathname.startsWith('/production/'); // production 페이지인지 확인
-  const shouldHide = isProductionPage && !isHovered; // production 페이지이고 호버되지 않았으면 숨김
+  const [isCollapsed, setIsCollapsed] = useState(false); // 사용자가 직접 접은 상태
+
+  // 접힘 상태 localStorage에서 복원
+  useEffect(() => {
+    if (localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === 'true') {
+      setIsCollapsed(true);
+    }
+  }, []);
+
+  // 접힘 상태 변경 시 저장
+  useEffect(() => {
+    localStorage.setItem(SIDEBAR_COLLAPSED_KEY, String(isCollapsed));
+  }, [isCollapsed]);
 
   // 사이드바 상태가 변경될 때마다 부모 컴포넌트에 알림
   useEffect(() => {
     if (onVisibilityChange) {
-      onVisibilityChange(!shouldHide);
+      onVisibilityChange(!isCollapsed);
     }
-  }, [shouldHide, onVisibilityChange]);
+  }, [isCollapsed, onVisibilityChange]);
 
   return (
     <>
-      {/* Production 페이지에서 마우스 감지 영역 */}
-      {isProductionPage && (
-        <div
-          className="fixed left-0 top-0 w-7 h-screen z-40" // width가 40px 미만이어야 함! // 사이드바 사라졌을 때 여백이 40px
-          onMouseEnter={() => setIsHovered(true)}
-        />
+      {/* 접힌 상태일 때 펼치기 버튼 */}
+      {isCollapsed && (
+        <button
+          type="button"
+          onClick={() => setIsCollapsed(false)}
+          aria-label={t('expandSidebar')}
+          title={t('expandSidebar')}
+          className="fixed left-3 top-4 z-50 flex items-center justify-center w-8 h-8 rounded-md border border-lg bg-wh text-dg hover:bg-bg transition-colors"
+        >
+          <CaretDoubleRight size={18} />
+        </button>
       )}
 
       <aside
         className={`fixed left-0 top-0 bottom-0 w-60 flex flex-col border-r border-lg bg-bg z-50 transition-transform duration-300 ease-in-out ${
-          shouldHide ? '-translate-x-full' : 'translate-x-0'
+          isCollapsed ? '-translate-x-full' : 'translate-x-0'
         }`}
-        onMouseLeave={() => isProductionPage && setIsHovered(false)}
       >
-        <div className="flex items-center pt-6 pb-6 px-6">
+        <div className="relative flex items-center pt-6 pb-6 px-6">
           <div
             className="cursor-pointer w-full flex justify-start"
             onClick={() => {
@@ -58,6 +75,15 @@ const SideBar = ({ onVisibilityChange }: SideBarProps) => {
           >
             <PantlLogo className="w-[70%] h-auto" />
           </div>
+          <button
+            type="button"
+            onClick={() => setIsCollapsed(true)}
+            aria-label={t('collapseSidebar')}
+            title={t('collapseSidebar')}
+            className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-8 h-8 rounded-md text-sv hover:bg-lg transition-colors"
+          >
+            <CaretDoubleLeft size={18} />
+          </button>
         </div>
         <div className="flex flex-col gap-1 px-2">
           <SideBarItem

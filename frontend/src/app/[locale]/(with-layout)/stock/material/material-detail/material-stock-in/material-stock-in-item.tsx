@@ -55,7 +55,7 @@ export const MaterialStockInItem = ({
         )}
       </div>
       <p
-        className="flex-1 px-3 text-primary truncate"
+        className="flex-1 px-3 text-blue truncate"
         title={`+${removeTrailingZeros(history.quantity)}`}
       >
         {`+${removeTrailingZeros(history.quantity)}`}
