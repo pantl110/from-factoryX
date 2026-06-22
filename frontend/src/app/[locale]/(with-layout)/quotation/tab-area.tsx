@@ -1,5 +1,6 @@
 import { OcrDataModel, ProjectStatusType } from '@/types/data-model';
 import { useTranslations } from 'next-intl';
+import { getTabItemClass } from '@/utils';
 
 interface TabAreaProps {
   activeTab: 'quotation' | 'history';
@@ -20,14 +21,12 @@ const TabArea = ({
   const tTabArea = useTranslations('quotation.tabArea');
 
   return (
-    <div className="flex gap-4 items-center Heading-3 pb-1 pr-10 border-b border-lg">
+    <div className="flex gap-4 items-center Heading-3 pr-10 border-b border-lg">
       {(ocrData || hasUploadedFile) && (
         <button
-          className={`${
+          className={`pb-1 ${getTabItemClass(
             activeTab === 'quotation'
-              ? 'text-primary underline decoration-primary decoration-2 underline-offset-8'
-              : 'text-gr'
-          } cursor-pointer`}
+          )} cursor-pointer`}
           onClick={activateQuotationTab}
         >
           {projectStatus === 'confirmed'
@@ -36,11 +35,7 @@ const TabArea = ({
         </button>
       )}
       <div
-        className={`${
-          activeTab === 'history'
-            ? 'text-primary underline decoration-primary decoration-2 underline-offset-8'
-            : 'text-gr'
-        }`}
+        className={`pb-1 ${getTabItemClass(activeTab === 'history')}`}
       >
         {tTabArea('history')}
       </div>

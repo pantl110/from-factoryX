@@ -49,7 +49,7 @@ const CloneProjectModal = ({
           <div className="flex justify-end gap-2.5 mt-5">
             <MiniBtn
               text={tCommon('cancel')}
-              variant="gray"
+              variant="white"
               onClick={(e) => {
                 e.stopPropagation();
                 onClose();
@@ -57,7 +57,7 @@ const CloneProjectModal = ({
             />
             <MiniBtn
               text={t('cloneButton')}
-              variant="primary"
+              variant="secondary"
               onClick={handleConfirm}
               disabled={!dueDate.trim()}
             />

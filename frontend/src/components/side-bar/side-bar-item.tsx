@@ -49,12 +49,14 @@ const SideBarItem = ({
   return (
     <div>
       <button
-        className="flex items-center justify-between h-[52px] px-4 bg-wh hover:bg-bg rounded cursor-pointer w-full"
+        className={`flex items-center justify-between h-[52px] px-4 rounded cursor-pointer w-full ${
+          isActive ? 'bg-bg hover:bg-lg' : 'bg-bg hover:bg-lg'
+        }`}
         onClick={handleClick}
       >
         <div className="flex items-center gap-2">
           <Icon size={20} className={isActive ? 'text-primary' : 'text-gr'} />
-          <p className={`Heading-4 ${isActive ? 'text-bl' : 'text-dg'}`}>
+          <p className={`Heading-4 ${isActive ? 'text-primary' : 'text-dg'}`}>
             {label}
           </p>
         </div>

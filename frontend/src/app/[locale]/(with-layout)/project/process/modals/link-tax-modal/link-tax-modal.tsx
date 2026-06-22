@@ -230,32 +230,32 @@ const LinkTaxModal = ({
           <div className="flex gap-2">
             <MiniBtn
               text={t('period.1month')}
-              hoverColor="hover:bg-bg"
+              hoverColor="hover:bg-lg"
               borderColor={
                 selectedPeriod === '1' ? 'border-primary' : 'border-lg'
               }
               textColor={selectedPeriod === '1' ? 'text-primary' : 'text-dg'}
-              bgColor={selectedPeriod === '1' ? 'bg-primary-8' : 'bg-white'}
+              bgColor="bg-wh"
               onClick={() => setSelectedPeriod('1')}
             />
             <MiniBtn
               text={t('period.6months')}
-              hoverColor="hover:bg-bg"
+              hoverColor="hover:bg-lg"
               borderColor={
                 selectedPeriod === '6' ? 'border-primary' : 'border-lg'
               }
               textColor={selectedPeriod === '6' ? 'text-primary' : 'text-dg'}
-              bgColor={selectedPeriod === '6' ? 'bg-primary-8' : 'bg-white'}
+              bgColor="bg-wh"
               onClick={() => setSelectedPeriod('6')}
             />
             <MiniBtn
               text={t('period.12months')}
-              hoverColor="hover:bg-bg"
+              hoverColor="hover:bg-lg"
               borderColor={
                 selectedPeriod === '12' ? 'border-primary' : 'border-lg'
               }
               textColor={selectedPeriod === '12' ? 'text-primary' : 'text-dg'}
-              bgColor={selectedPeriod === '12' ? 'bg-primary-8' : 'bg-white'}
+              bgColor="bg-wh"
               onClick={() => setSelectedPeriod('12')}
             />
           </div>
@@ -302,7 +302,7 @@ const LinkTaxModal = ({
               canCreate ? 'justify-between' : 'justify-end'
             }`}
           >
-            <MiniBtn variant="gray"
+            <MiniBtn variant="white"
               text={tCommon('cancel')}
               onClick={onClose}
             />
@@ -316,7 +316,7 @@ const LinkTaxModal = ({
                   }}
                 />
               )}
-              <MiniBtn variant="primary"
+              <MiniBtn variant="secondary"
                 text={t('buttons.linkHistory')}
                 disabled={!selectedId || isLinking || isConnecting}
                 onClick={handleLinkButtonClick}

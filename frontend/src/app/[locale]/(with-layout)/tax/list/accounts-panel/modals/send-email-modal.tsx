@@ -273,14 +273,14 @@ ${t('emailTemplate.closing')}`;
             <MiniBtn
               type="button"
               text={tCommon('cancel')}
-              variant="gray"
+              variant="white"
               onClick={onClose}
               disabled={isLoading}
             />
             <MiniBtn
               type="submit"
               text={t('sendButton')}
-              variant="primary"
+              variant="secondary"
               disabled={isLoading}
             />
           </div>

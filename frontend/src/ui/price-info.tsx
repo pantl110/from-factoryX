@@ -16,7 +16,7 @@ const PriceInfo = ({
   const tCommon = useTranslations('common');
 
   return (
-    <div className="flex flex-col gap-4 bg-lg-table px-4 py-4 rounded-lg w-full">
+    <div className="flex flex-col gap-4 bg-bg px-4 py-4 rounded-lg w-full">
       <div className="flex w-full justify-between items-center">
         <span className="w-[200 px] Me_Body-3 text-sv">
           {tCommon('supplyAmount')}

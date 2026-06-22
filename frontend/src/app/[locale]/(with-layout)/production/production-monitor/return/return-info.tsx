@@ -202,7 +202,7 @@ const ReturnInfo = ({
               />
             )}
 
-            <MiniBtn variant="primary"
+            <MiniBtn variant="secondary"
               text={t('registerProductionButton')}
               onClick={() => setIsRegisterProductionModalOpen(true)}
               disabled={
@@ -228,7 +228,7 @@ const ReturnInfo = ({
           <div className="border-b border-lg">
             {isEditing ? (
               <div className="flex w-full Me_Body-3 border-t border-lg">
-                <div className="w-[137px] bg-lg-table flex gap-2 p-3">
+                <div className="w-[137px] bg-bg flex gap-2 p-3">
                   <div className="text-sv">{t('returnDate')}</div>
                 </div>
                 <div className="flex-1 flex items-center">
@@ -258,7 +258,7 @@ const ReturnInfo = ({
           <div className="border-b border-lg">
             {isEditing ? (
               <div className="flex w-full Me_Body-3 border-t border-lg">
-                <div className="w-[137px] bg-lg-table flex gap-2 p-3">
+                <div className="w-[137px] bg-bg flex gap-2 p-3">
                   <div className="text-sv">{t('returnQuantity')}</div>
                 </div>
                 <div className="flex-1 flex items-center">
@@ -296,7 +296,7 @@ const ReturnInfo = ({
           <div className="border-b border-lg">
             {isEditing ? (
               <div className="flex w-full Me_Body-3 border-t border-lg">
-                <div className="w-[137px] bg-lg-table flex gap-2 p-3">
+                <div className="w-[137px] bg-bg flex gap-2 p-3">
                   <div className="text-sv">{t('productionQuantity')}</div>
                 </div>
                 <div className="flex-1 flex items-center">

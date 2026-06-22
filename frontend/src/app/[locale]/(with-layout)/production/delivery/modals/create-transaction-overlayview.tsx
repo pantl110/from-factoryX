@@ -56,11 +56,11 @@ const CreateTransactionOverlayview = ({
             </div>
           </div>
           <div className="flex gap-2.5">
-            <MiniBtn variant="gray"
+            <MiniBtn variant="white"
               text={tCommon('cancel')}
               onClick={onClose}
             />
-            <MiniBtn variant="primary"
+            <MiniBtn variant="secondary"
               text={tCommon('print')}
               onClick={handlePrint}
             />

@@ -206,13 +206,13 @@ export const MaterialStockInDetailModal = ({
           <div className="flex justify-end gap-2.5 mt-5">
             <MiniBtn
               text={tCommon('cancel')}
-              variant="gray"
+              variant="white"
               onClick={onClose}
               disabled={isUpdating}
             />
             <MiniBtn
               text={tCommon('confirm')}
-              variant="primary"
+              variant="secondary"
               type="submit"
               disabled={!isDirty || isUpdating}
             />

@@ -36,7 +36,7 @@ const MainTitleSec = ({ selectedTab, setSelectedTab }: MainTitleSecProps) => {
           </div>
           <MiniBtn
             text={t('createButton')}
-            variant="primary"
+            variant="secondary"
             onClick={() => {
               setIsCreatTaxPanelOpen(true);
             }}

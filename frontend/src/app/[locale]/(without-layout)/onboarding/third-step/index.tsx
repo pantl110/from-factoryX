@@ -46,7 +46,7 @@ const ThirdStep = ({ onNextStep, onPrevStep }: ThirdStepProps) => {
         />
         <MiniBtn
           text={t('buttons.start')}
-          variant="primary"
+          variant="secondary"
           onClick={onNextStep}
         />
       </div>

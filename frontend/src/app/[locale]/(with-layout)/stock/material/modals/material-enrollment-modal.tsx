@@ -480,13 +480,13 @@ const MaterialEnrollmentModal = ({
           <MiniBtn
             text={tCommon('cancel')}
             onClick={onClose}
-            variant="gray"
+            variant="white"
             type="button"
           />
         )}
         <MiniBtn
           text={isSuccessModalOpen ? tCommon('confirm') : tCommon('add')}
-          variant="primary"
+          variant="secondary"
           disabled={
             isSuccessModalOpen
               ? false

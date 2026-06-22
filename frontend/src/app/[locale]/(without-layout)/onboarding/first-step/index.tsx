@@ -182,7 +182,7 @@ const FirstStep = ({ onNextStep, onPrevStep }: FirstStepProps) => {
             />
             <MiniBtn
               text={tCommon('next')}
-              variant="primary"
+              variant="secondary"
               type="submit"
               disabled={!isValid || isLoading}
             />

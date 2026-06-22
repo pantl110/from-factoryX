@@ -102,8 +102,7 @@ const MemoSection = ({
             ) : (
               <>
                 <MiniBtn
-                  variant="gray"
-                  borderColor="border-lg"
+                  variant="white"
                   text={tCommon('cancel')}
                   onClick={() => {
                     setIsEditMode(false);
@@ -111,7 +110,7 @@ const MemoSection = ({
                     setMemoContent(content);
                   }}
                 />
-                <MiniBtn variant="primary"
+                <MiniBtn variant="secondary"
                   text={tCommon('save')}
                   onClick={handleMemoSave}
                   disabled={isLoading}

@@ -1,5 +1,5 @@
 import FooterText from '@/ui/footer-text';
-import FactoryXLogo from '@/ui/icons/factory-x-logo';
+import PantlLogo from '@/ui/icons/pantl-logo';
 import { useTranslations } from 'next-intl';
 
 const Footer = () => {
@@ -37,7 +37,7 @@ const Footer = () => {
           />
         </div>
         <div className="pb-4">
-          <FactoryXLogo width={95} />
+          <PantlLogo width={95} />
         </div>
       </div>
       <div className="flex justify-between gap-2">

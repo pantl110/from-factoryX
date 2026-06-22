@@ -4,7 +4,7 @@ import { Link, useRouter } from '@/i18n/navigation';
 import { useForm } from 'react-hook-form';
 import { useVerification } from '@/hooks/users/use-verification';
 import { useSignup } from '@/hooks/users/use-signup';
-import FactoryXLogo from '@/ui/icons/factory-x-logo';
+import AuthBrandPanel from '../auth-brand-panel';
 import { SignupFormDataModel } from '@/types/data-model';
 import { useState } from 'react';
 import AgreeArea from './agree-area';
@@ -75,9 +75,7 @@ const SignupPage = () => {
   return (
     <>
       <div className="flex min-h-screen">
-        <div className="flex-[0.8] bg-primary flex flex-col items-center justify-center">
-          <FactoryXLogo width={168.908} height={30.558} color="white" />
-        </div>
+        <AuthBrandPanel />
         <div className="flex flex-col flex-[1.2] gap-5 items-center justify-center w-full">
           <div className="flex flex-col items-center">
             <h2 className="Heading-2">{t('title')}</h2>

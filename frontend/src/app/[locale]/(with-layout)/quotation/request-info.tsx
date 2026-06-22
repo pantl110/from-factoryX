@@ -362,7 +362,7 @@ const RequestInfo = ({
             <PriceInfo
               supplyAmount={supplyAmount}
               taxAmount={supplyAmount * 0.1}
-              textColor="text-primary"
+              textColor="text-blue"
             />
           </div>
         </>

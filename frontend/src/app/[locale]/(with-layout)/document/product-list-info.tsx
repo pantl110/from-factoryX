@@ -52,7 +52,7 @@ const ProductListInfo = ({
       <PriceInfo
         supplyAmount={supplyAmount}
         taxAmount={taxAmount}
-        textColor="text-primary"
+        textColor="text-blue"
       />
     </div>
   );

@@ -266,12 +266,12 @@ const LinkReceiptModal = ({
 
           {/* 버튼 영역 */}
           <div className={`flex gap-2.5 pt-2 justify-end`}>
-            <MiniBtn variant="gray"
+            <MiniBtn variant="white"
               text={tCommon('cancel')}
               onClick={onClose}
             />
             <div className="flex gap-2.5">
-              <MiniBtn variant="primary"
+              <MiniBtn variant="secondary"
                 text={t('buttons.link')}
                 disabled={isUpdating || differenceAmount !== 0}
                 onClick={async () => {

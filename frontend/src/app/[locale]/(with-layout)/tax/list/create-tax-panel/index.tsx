@@ -668,7 +668,7 @@ const CreatTaxPanel = ({
         }
       />
       <div className="relative">
-        <MiniBtn variant="primary"
+        <MiniBtn variant="secondary"
           text={t('buttons.selectIssueType')}
           icon={CaretDown}
           iconPosition="right"

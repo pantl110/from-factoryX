@@ -35,7 +35,7 @@ const SettingPageContent = () => {
                 <div className="relative">
                   <MiniBtn
                     text={t('masterData.unit.convert')}
-                    variant="primary"
+                    variant="secondary"
                     onClick={() => setIsAddUnitDropdownOpen(true)}
                   />
 

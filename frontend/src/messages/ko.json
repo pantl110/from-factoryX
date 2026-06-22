@@ -151,7 +151,7 @@
         "title": "통신판매업 신고번호",
         "content": "제2025-세종-0541호"
       },
-      "copyright": "© 팩토리엑스 2024 All Rights Reserved.",
+      "copyright": "© 판틀110 2024 All Rights Reserved.",
       "termsOfService": "서비스 이용약관",
       "privacyPolicy": "개인정보처리방침"
     },
@@ -703,7 +703,7 @@
     "noNotifications": "아직 알림이 없어요."
   },
   "dashboard": {
-    "mainTitle": "팩토리엑스 현황판",
+    "mainTitle": "판틀110 현황판",
     "summaryKPITitle": "Summary KPI",
     "widgetSettings": {
       "title": "위젯 설정",
@@ -712,7 +712,7 @@
     "noSummaryData": "요약할 데이터가 없어요.",
     "noSummaryDataDescription": "시스템을 계속 사용하면 주요 지표가 자동으로 요약돼요.",
     "deliveryScheduleTitle": "납품 예정 현황",
-    "onboardingToastText": "이제 팩토리엑스를 시작해볼까요?",
+    "onboardingToastText": "이제 판틀110를 시작해볼까요?",
     "onboardingToastSubtext": "가입이 완료되었어요!",
     "deliverySchedule": {
       "noSchedule": "납품 일정이 없어요.",
@@ -1923,7 +1923,7 @@
           "viewer": "데이터를 열람만 할 수 있어요. 생성, 수정, 삭제 권한은 없어요."
         },
         "inviteModal": {
-          "title": "팩토리엑스에 팀원을 초대하세요.",
+          "title": "판틀110에 팀원을 초대하세요.",
           "subtitle": "초대할 분의 이메일과 권한을 설정해주세요.",
           "authButton": "권한",
           "memberTitle": "멤버",
@@ -1944,7 +1944,7 @@
         },
         "deleteTeamMemberModal": {
           "title": "해당 팀원을 삭제하시겠어요?",
-          "subtitle": "삭제하시면 해당 팀원은 더 이상 팩토리엑스를 이용할 수 없게 돼요."
+          "subtitle": "삭제하시면 해당 팀원은 더 이상 판틀110를 이용할 수 없게 돼요."
         },
         "title": "팀원 권한",
         "tooltip": {

@@ -32,11 +32,11 @@ const ClaimReceiptTaxModal = ({
     <>
       <Modal title={getTitle()} subtitle={getSubtitle()} onClose={onClose}>
         <div className="flex justify-end gap-[5px] mt-4">
-          <MiniBtn variant="gray"
+          <MiniBtn variant="white"
             text={tCommon('cancel')}
             onClick={onClose}
           />
-          <MiniBtn variant="primary"
+          <MiniBtn variant="secondary"
             text={tCommon('confirm')}
             onClick={() =>
               onConfirm(issueType === 'invoice' ? 'invoice' : 'receipt')
@@ -53,7 +53,7 @@ const ClaimReceiptTaxModal = ({
           onClose={() => setIsNextModalOpen(false)}
         >
           <div className="flex justify-end gap-[5px] mt-4">
-            <MiniBtn variant="primary"
+            <MiniBtn variant="secondary"
               text="확인"
               onClick={() => {
                 setIsNextModalOpen(false);

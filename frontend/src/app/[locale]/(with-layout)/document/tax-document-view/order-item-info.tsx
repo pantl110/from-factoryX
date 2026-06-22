@@ -41,7 +41,7 @@ const OrderItemInfo = ({
       <PriceInfo
         supplyAmount={transactionAmount}
         taxAmount={taxAmount}
-        textColor={'text-primary'}
+        textColor={'text-blue'}
       />
     </div>
   );

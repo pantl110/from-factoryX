@@ -54,5 +54,8 @@ export { calculateAvgProductionTime } from './calculate-production-time';
 // Project utilities
 export { getProjectStatusColor } from './get-project-status-color';
 
+// Tab utilities
+export { getTabItemClass } from './get-tab-item-class';
+
 // String utilities
 export { normalizeForMatch } from './normalize-for-match';

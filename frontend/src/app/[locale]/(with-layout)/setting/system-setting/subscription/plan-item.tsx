@@ -132,7 +132,7 @@ const PlanItem = ({
             // isSubscribedType이 아니면 구독 버튼
             <MiniBtn
               text={t('planItem.buttons.subscribe')}
-              variant="primary"
+              variant="secondary"
               onClick={() => setIsSubscribeModalOpen(true)}
               disabled={!isAdmin}
             />

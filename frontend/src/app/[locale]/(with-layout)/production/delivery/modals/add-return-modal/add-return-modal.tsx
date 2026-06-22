@@ -178,11 +178,11 @@ const AddReturnModal = ({
         />
       </div>
       <div className="flex gap-2.5 mt-4 justify-end">
-        <MiniBtn variant="gray"
+        <MiniBtn variant="white"
           text={tCommon('cancel')}
           onClick={onClose}
         />
-        <MiniBtn variant="primary"
+        <MiniBtn variant="secondary"
           text={tProduction('register')}
           onClick={handleSubmitRefund}
           disabled={

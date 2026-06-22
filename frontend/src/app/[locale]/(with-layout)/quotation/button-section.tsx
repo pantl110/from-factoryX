@@ -141,7 +141,7 @@ const ButtonSection = ({
           <>
             <MiniBtn
               text={tStartProduction('startButton')}
-              variant="primary"
+              variant="secondary"
               icon={ArrowRight}
               iconPosition="right"
               onClick={onStartProductionClick}
@@ -174,7 +174,7 @@ const ButtonSection = ({
             />
             <MiniBtn
               text={t('confirmOrder')}
-              variant="primary"
+              variant="secondary"
               onClick={async () => {
                 try {
                   const isSuccess = await onSaveDraft?.(true);

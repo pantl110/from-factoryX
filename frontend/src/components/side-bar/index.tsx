@@ -9,7 +9,7 @@ import {
   Gear,
 } from '@phosphor-icons/react/dist/ssr';
 import SideBarItem from '@/components/side-bar/side-bar-item';
-import FactoryXLogo from '@/ui/icons/factory-x-logo';
+import PantlLogo from '@/ui/icons/pantl-logo';
 import { usePathname, useRouter } from '@/i18n/navigation';
 import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
@@ -44,19 +44,19 @@ const SideBar = ({ onVisibilityChange }: SideBarProps) => {
       )}
 
       <aside
-        className={`fixed left-0 top-0 bottom-0 w-52 flex flex-col border-r border-lg bg-white z-50 transition-transform duration-300 ease-in-out ${
+        className={`fixed left-0 top-0 bottom-0 w-60 flex flex-col border-r border-lg bg-bg z-50 transition-transform duration-300 ease-in-out ${
           shouldHide ? '-translate-x-full' : 'translate-x-0'
         }`}
         onMouseLeave={() => isProductionPage && setIsHovered(false)}
       >
-        <div className="flex items-center h-[68px] pt-6 pr-4 pb-5 pl-6">
+        <div className="flex items-center pt-6 pb-6 px-6">
           <div
-            className="cursor-pointer"
+            className="cursor-pointer w-full flex justify-start"
             onClick={() => {
               router.push('/dashboard');
             }}
           >
-            <FactoryXLogo />
+            <PantlLogo className="w-[70%] h-auto" />
           </div>
         </div>
         <div className="flex flex-col gap-1 px-2">

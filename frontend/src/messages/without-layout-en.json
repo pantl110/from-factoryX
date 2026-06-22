@@ -135,7 +135,7 @@
       }
     },
     "thirdStep": {
-      "title": "Welcome to Factory X!",
+      "title": "Welcome to Pantl110!",
       "description": {
         "part1": "Now you can easily manage everything from production to inventory all in one place.",
         "part2": "",
@@ -143,7 +143,7 @@
         "part4": "By",
         "highlight": "pre-registering products and materials",
         "part5": "you're already using,",
-        "part6": "you can use Factory X more efficiently."
+        "part6": "you can use Pantl110 more efficiently."
       },
       "buttons": {
         "start": "Start"
@@ -163,7 +163,7 @@
       },
       "article1": {
         "title": "Article 1 (Purpose)",
-        "paragraph1": "These terms and conditions (the \"Terms\") govern the use of <strong>FactoryX</strong> and related services (web/mobile/API/agent/plugin, hereinafter \"Services\") provided by <strong>Amplab Inc.</strong> (hereinafter \"Company\") and establish the rights, obligations, responsibilities, personal information and data processing, fees and refunds, and dispute resolution between the Company and <strong>Users</strong> (individuals/sole proprietors/corporations/public institutions)."
+        "paragraph1": "These terms and conditions (the \"Terms\") govern the use of <strong>Pantl110</strong> and related services (web/mobile/API/agent/plugin, hereinafter \"Services\") provided by <strong>Amplab Inc.</strong> (hereinafter \"Company\") and establish the rights, obligations, responsibilities, personal information and data processing, fees and refunds, and dispute resolution between the Company and <strong>Users</strong> (individuals/sole proprietors/corporations/public institutions)."
       },
       "article2": {
         "title": "Article 2 (Definitions)",
@@ -424,7 +424,7 @@
       "article1": {
         "title": "Article 1 (General Provisions and Scope of Application)",
         "paragraph1": "This Privacy Policy applies to",
-        "factoryX": "FactoryX",
+        "factoryX": "Pantl110",
         "paragraph1Continued": "and all related services (web, mobile, API, cloud, on-device agents, etc.) provided by Amplab Inc. (hereinafter referred to as \"the Company\").",
         "paragraph2": "The Company complies with relevant laws and regulations such as the Personal Information Protection Act and strives to safely protect users' personal information."
       },
@@ -577,7 +577,7 @@
       },
       "article10": {
         "title": "Article 10 (Protection of Children's Personal Information)",
-        "paragraph1": "FactoryX does not provide services to children under the age of 14.",
+        "paragraph1": "Pantl110 does not provide services to children under the age of 14.",
         "paragraph2": "Upon confirmation, service restrictions and personal information are immediately deleted."
       },
       "article11": {

@@ -27,7 +27,7 @@ const ProfitGraph = ({
           <div className="h-full w-full flex flex-col min-h-0">
             <div className="flex items-center gap-4 mb-2 mt-2 justify-end">
               <div className="flex items-center gap-2">
-                <span className="inline-block w-8 h-4 bg-[#016fee]" />
+                <span className="inline-block w-8 h-4 bg-primary" />
                 <span className="text-[#888] text-[16px] font-medium">
                   {t('thisYear')}
                 </span>

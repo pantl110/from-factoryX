@@ -58,7 +58,7 @@ const PrintView = ({
           </div>
           <MiniBtn
             text={t('printButton', { documentTitle })}
-            variant="primary"
+            variant="secondary"
             onClick={reactToPrintFn}
           />
         </div>

@@ -320,7 +320,7 @@ const DropzoneArea = ({
             {variant !== 'location' && !hideUploadButton && (
               <MiniBtn
                 text={t('upload')}
-                variant="primary"
+                variant="secondary"
                 onClick={onComplete ? () => onComplete(files) : onClose}
               />
             )}

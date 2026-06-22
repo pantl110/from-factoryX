@@ -35,8 +35,8 @@ const pretendard = localFont({
 });
 
 export const metadata = {
-  title: 'FactoryX',
-  description: 'FactoryX',
+  title: '판틀110',
+  description: '판틀110',
   icons: {
     icon: '/favicon.svg',
   },

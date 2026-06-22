@@ -270,7 +270,7 @@ const CompanyInfo = () => {
             <div className="flex justify-end">
               <MiniBtn
                 text={tCommon('save')}
-                variant="primary"
+                variant="secondary"
                 type="submit"
                 disabled={isProcessing || !factoryId}
               />

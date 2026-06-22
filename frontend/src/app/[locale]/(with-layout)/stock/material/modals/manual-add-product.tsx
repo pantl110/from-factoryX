@@ -197,13 +197,13 @@ const ManualAddProduct = ({
         <div className="flex gap-2 justify-end mt-3">
           <MiniBtn
             text={tCommon('cancel')}
-            variant="gray"
+            variant="white"
             type="button"
             onClick={() => setIsManualAddMode(false)}
           />
           <MiniBtn
             text={tCommon('add')}
-            variant="primary"
+            variant="secondary"
             type="submit"
             disabled={!isFormValid()}
           />

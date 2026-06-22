@@ -24,7 +24,7 @@ const NeedInfoModal = ({
         <MiniBtn text={tCommon('close')} variant="gray" onClick={onClose} />
         <MiniBtn
           text={t('goToCompanyInfo')}
-          variant="primary"
+          variant="secondary"
           onClick={() => {
             onSaveDraft(isOrderStatus);
             onClose();

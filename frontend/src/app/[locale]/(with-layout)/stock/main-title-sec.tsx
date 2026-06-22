@@ -89,7 +89,7 @@ const MainTitleSec = ({
             onClick={handleExcelDownload}
           />
           <div className="relative">
-            <MiniBtn variant="primary"
+            <MiniBtn variant="secondary"
               text={
                 selectedTab === 'product'
                   ? t('addProductButton')

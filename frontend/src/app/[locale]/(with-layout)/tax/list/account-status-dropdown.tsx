@@ -42,7 +42,7 @@ const AccountStatusDropdown = ({
     {
       label: tList('status.completed'),
       value: 'completed',
-      textColor: AccountsStatusColorMap.completed.textColor || 'text-primary',
+      textColor: AccountsStatusColorMap.completed.textColor || 'text-blue',
     },
   ];
 

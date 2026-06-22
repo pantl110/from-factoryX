@@ -360,7 +360,7 @@ export const AddUnitModal = ({
           <MiniBtn text={tCommon('close')} variant="gray" onClick={onClose} />
           <MiniBtn
             text={tUnit('convert')}
-            variant="primary"
+            variant="secondary"
             onClick={handleSubmit(onSubmit)}
             disabled={createMutation.isPending}
           />

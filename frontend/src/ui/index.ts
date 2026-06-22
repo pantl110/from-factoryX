@@ -35,7 +35,7 @@ export { default as SelectPeriodDropdown } from './dropdown/select-period-dropdo
 export { default as CustomDateSelector } from './dropdown/select-period-dropdown/custom-date-selector';
 
 // Icons 컴포넌트
-export { default as FactoryXLogo } from './icons/factory-x-logo';
+export { default as PantlLogo } from './icons/pantl-logo';
 
 // Modal 컴포넌트
 export { default as Modal } from './modal/modal';

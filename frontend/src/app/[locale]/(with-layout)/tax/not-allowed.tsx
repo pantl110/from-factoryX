@@ -33,7 +33,7 @@ const NotAllowed = () => {
           {factoryId && (
             <MiniBtn
               text={t('viewDetails')}
-              variant="primary"
+              variant="secondary"
               onClick={() => {
                 router.push('/setting?chip=subscription');
               }}

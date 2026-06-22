@@ -60,10 +60,10 @@ const SubscribeModal = ({
   return (
     <Modal title={title} subtitle={getSubtitle()} onClose={onClose}>
       <div className="flex justify-end gap-[5px] mt-4">
-        <MiniBtn text={tCommon('cancel')} variant="gray" onClick={onClose} />
+        <MiniBtn text={tCommon('cancel')} variant="white" onClick={onClose} />
         <MiniBtn
           text={t('subscribeButton')}
-          variant="primary"
+          variant="secondary"
           onClick={async () => {
             await onSubscribe();
             onClose();

@@ -2,10 +2,9 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
-import { X, ArrowCounterClockwise } from '@phosphor-icons/react';
+import { ArrowLineRight, ArrowCounterClockwise } from '@phosphor-icons/react';
 import { widgetMetadata, WidgetIdType } from '../utils';
 import Checkbox from '@/ui/checkbox';
-import IconBtn from '@/ui/icon-btn';
 import MiniBtn from '@/ui/mini-btn';
 
 interface WidgetSettingsPanelProps {
@@ -85,16 +84,21 @@ const WidgetSettingsPanel = ({
         <div className="w-[360px] bg-wh h-full flex flex-col shadow-[-4px_0_24px_rgba(0,0,0,0.08)]">
           {/* Header */}
           <div className="flex justify-between items-center px-6 py-4 border-b border-lg">
-            <h3 className="Heading-3">{t('title')}</h3>
-            <div className="flex items-center gap-2">
-              <MiniBtn
-                text={t('reset')}
-                icon={ArrowCounterClockwise}
-                variant="gray"
-                onClick={onReset}
-              />
-              <IconBtn icon={X} onClick={handleClose} />
+            <div className="flex gap-2 items-center">
+              <h3 className="Heading-3">{t('title')}</h3>
+              <button
+                onClick={handleClose}
+                className="flex items-center justify-center w-10 h-10 cursor-pointer hover:bg-bg rounded-lg transition-all duration-200"
+              >
+                <ArrowLineRight size={20} className="text-sv" />
+              </button>
             </div>
+            <MiniBtn
+              text={t('reset')}
+              icon={ArrowCounterClockwise}
+              variant="outline"
+              onClick={onReset}
+            />
           </div>
 
           {/* Widget List */}

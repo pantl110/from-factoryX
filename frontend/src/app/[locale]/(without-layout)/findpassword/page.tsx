@@ -8,7 +8,7 @@ import { ResetPasswordModel } from '@/types/data-model';
 import EmailStep from './email-step';
 import PasswordStep from './password-step';
 import { useTranslations } from 'next-intl';
-import FactoryXLogo from '@/ui/icons/factory-x-logo';
+import AuthBrandPanel from '../auth-brand-panel';
 
 const FindPasswordPage = () => {
   const {
@@ -41,9 +41,7 @@ const FindPasswordPage = () => {
 
   return (
     <div className="flex min-h-screen">
-      <div className="flex-[0.8] bg-primary flex flex-col items-center justify-center">
-        <FactoryXLogo width={168.908} height={30.558} color="white" />
-      </div>
+      <AuthBrandPanel />
       <div className="flex flex-col flex-[1.2] gap-5 items-center justify-center w-full">
         <div className="flex flex-col items-center">
           <h2 className="Heading-2">

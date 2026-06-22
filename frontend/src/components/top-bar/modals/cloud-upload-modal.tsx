@@ -312,12 +312,12 @@ const CloudUploadModal = ({ onClose }: CloudUploadModalProps) => {
           <div className="flex justify-end gap-1.5 mt-5">
             <MiniBtn
               text={tCommon('cancel')}
-              variant="gray"
+              variant="white"
               onClick={handleClose}
             />
             <MiniBtn
               text={tCommon('upload')}
-              variant="primary"
+              variant="secondary"
               onClick={handleUpload}
               disabled={
                 !hasFiles || (uploadTarget === 'client' && !selectedClient)

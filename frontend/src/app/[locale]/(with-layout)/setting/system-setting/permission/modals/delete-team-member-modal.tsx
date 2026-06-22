@@ -19,7 +19,7 @@ const DeleteTeamMemberModal = ({
   return (
     <Modal title={t('title')} subtitle={t('subtitle')} onClose={onClose}>
       <div className="flex justify-end mt-4 gap-[5px]">
-        <MiniBtn variant="gray"
+        <MiniBtn variant="white"
           text={tCommon('cancel')}
           onClick={onClose}
         />

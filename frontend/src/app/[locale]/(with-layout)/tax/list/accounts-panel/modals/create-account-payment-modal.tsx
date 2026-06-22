@@ -424,12 +424,12 @@ const CreateAccountPaymentModal = ({
             <MiniBtn
               text={tCommon('cancel')}
               onClick={onClose}
-              variant="gray"
+              variant="white"
               type="button"
             />
             <MiniBtn
               text={tCommon('save')}
-              variant="primary"
+              variant="secondary"
               disabled={isLoading}
               type="submit"
             />

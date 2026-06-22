@@ -1,7 +1,9 @@
 import { CaretDown } from '@phosphor-icons/react';
+import { chipColorClasses, ChipColor } from './chip-colors';
 
 interface ChipProps {
   text: string;
+  color?: ChipColor;
   bgColor?: string;
   textColor?: string;
   borderColor?: string;
@@ -20,6 +22,7 @@ interface ChipProps {
 
 const Chip = ({
   text,
+  color,
   bgColor,
   textColor,
   borderColor,
@@ -67,6 +70,7 @@ const Chip = ({
   };
 
   const sizeStyles = getSizeStyles();
+  const colorClass = color ? chipColorClasses[color] : '';
 
   return (
     <div
@@ -86,7 +90,7 @@ const Chip = ({
       }
     >
       <div
-        className={`flex gap-1 items-center justify-center ${width} ${sizeStyles.height} ${sizeStyles.padding} ${sizeStyles.radius} ${bgColor} ${hover} ${borderColor ? `border ${borderColor}` : ''} ${
+        className={`flex gap-1 items-center justify-center ${width} ${sizeStyles.height} ${sizeStyles.padding} ${sizeStyles.radius} ${colorClass} ${bgColor} ${hover} ${borderColor ? `border ${borderColor}` : ''} ${
           state ? 'cursor-pointer' : cursor
         }`}
       >

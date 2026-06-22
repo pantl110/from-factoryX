@@ -1,7 +1,7 @@
 import type { User, Theme, NoraConfig } from '@teamwise/nora-sdk';
 
 export const noraUser: User = {
-  name: 'FactoryX',
+  name: '판틀110',
   desc: '',
   image: '/favicon-white-bg.svg',
 };

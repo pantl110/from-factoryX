@@ -65,7 +65,7 @@ export const Account = () => {
               <Chip
                 text={tAccount('chips.receivable')}
                 textColor={
-                  selectedChip === 'receivable' ? 'text-bg' : 'text-primary'
+                  selectedChip === 'receivable' ? 'text-bg' : 'text-blue'
                 }
                 bgColor={
                   selectedChip === 'receivable' ? 'bg-dg' : 'bg-transparent'

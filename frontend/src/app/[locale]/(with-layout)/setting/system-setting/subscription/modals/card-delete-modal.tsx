@@ -16,7 +16,7 @@ const CardDeleteModal = ({ onClose, onConfirm }: CardDeleteModalProps) => {
   return (
     <Modal title={t('title')} subtitle={t('subtitle')} onClose={onClose}>
       <div className="flex justify-end gap-[5px] mt-4">
-        <MiniBtn text={tCommon('cancel')} variant="gray" onClick={onClose} />
+        <MiniBtn text={tCommon('cancel')} variant="white" onClick={onClose} />
         <MiniBtn text={tCommon('delete')} variant="red" onClick={onConfirm} />
       </div>
     </Modal>

@@ -151,7 +151,7 @@
         "title": "Telecom Sales Report Number",
         "content": "2025-Sejong-0541"
       },
-      "copyright": "© FactoryX 2024 All Rights Reserved.",
+      "copyright": "© Pantl110 2024 All Rights Reserved.",
       "termsOfService": "Terms of Service",
       "privacyPolicy": "Privacy Policy"
     },
@@ -702,7 +702,7 @@
     "noNotifications": "No notifications yet."
   },
   "dashboard": {
-    "mainTitle": "Factory X Dashboard",
+    "mainTitle": "Pantl110 Dashboard",
     "summaryKPITitle": "Summary KPI",
     "widgetSettings": {
       "title": "Widget Settings",
@@ -711,7 +711,7 @@
     "noSummaryData": "No data to summarize.",
     "noSummaryDataDescription": "Key indicators will be automatically summarized as you continue using the system.",
     "deliveryScheduleTitle": "Delivery Schedule",
-    "onboardingToastText": "Ready to start with Factory X?",
+    "onboardingToastText": "Ready to start with Pantl110?",
     "onboardingToastSubtext": "Registration completed!",
     "deliverySchedule": {
       "noSchedule": "No delivery schedule.",
@@ -1922,7 +1922,7 @@
           "viewer": "Can only view data. No permission to create, modify, or delete."
         },
         "inviteModal": {
-          "title": "Invite team members to Factory X.",
+          "title": "Invite team members to Pantl110.",
           "subtitle": "Enter the email and set permissions for the person you want to invite.",
           "authButton": "Permission",
           "memberTitle": "Members",
@@ -1943,7 +1943,7 @@
         },
         "deleteTeamMemberModal": {
           "title": "Delete this team member?",
-          "subtitle": "If deleted, this team member will no longer be able to use Factory X."
+          "subtitle": "If deleted, this team member will no longer be able to use Pantl110."
         },
         "title": "Team Member Permissions",
         "tooltip": {

@@ -12,7 +12,8 @@ export interface StatusColorModel {
     | 'gray'
     | 'white'
     | 'whiteOutline'
-    | 'blue';
+    | 'blue'
+    | 'primary';
 }
 
 // 팩토리 멤버 type
@@ -90,25 +91,37 @@ export const ProjectStatusMap: Record<ProjectStatusType, string> = {
 
 export const ProjectStatusColorMap: Record<string, StatusColorModel> = {
   // 영어 상태
-  quotation: { bgColor: 'bg-yellow-8', textColor: 'text-yellow' },
-  confirmed: { bgColor: 'bg-[#FF6C17]/8', textColor: 'text-[#FF6C17]' },
-  pending: { bgColor: 'bg-bg', textColor: 'text-dg' },
-  production: { bgColor: 'bg-purple-8', textColor: 'text-purple' },
-  manufactured: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
-  delivery: { bgColor: 'bg-green-8', textColor: 'text-green' },
-  completed: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
-  suspended: { bgColor: 'bg-red-8', textColor: 'text-red' },
+  quotation: { bgColor: 'bg-yellow-8', textColor: 'text-yellow', color: 'yellow' },
+  confirmed: {
+    bgColor: 'bg-[#FF6C17]/8',
+    textColor: 'text-[#FF6C17]',
+    color: 'orange',
+  },
+  pending: { bgColor: 'bg-bg', textColor: 'text-dg', color: 'gray' },
+  production: { bgColor: 'bg-purple-8', textColor: 'text-purple', color: 'purple' },
+  manufactured: { bgColor: 'bg-blue-8', textColor: 'text-blue', color: 'blue' },
+  delivery: { bgColor: 'bg-green-8', textColor: 'text-green', color: 'green' },
+  completed: { bgColor: 'bg-primary', textColor: 'text-wh', color: 'primary' },
+  suspended: { bgColor: 'bg-red-8', textColor: 'text-red', color: 'red' },
 
   // 한글 상태 (기존 호환성 유지)
-  '견적 협의중': { bgColor: 'bg-yellow-8', textColor: 'text-yellow' },
-  '주문 확정': { bgColor: 'bg-[#FF6C17]/8', textColor: 'text-[#FF6C17]' },
-  '생산 대기': { bgColor: 'bg-bg', textColor: 'text-dg' },
-  '생산 중': { bgColor: 'bg-purple-8', textColor: 'text-purple' },
-  '생산 완료': { bgColor: 'bg-primary-8', textColor: 'text-primary' },
-  납품: { bgColor: 'bg-green-8', textColor: 'text-green' },
-  '프로젝트 완료': { bgColor: 'bg-primary-8', textColor: 'text-primary' },
-  완료: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
-  중단: { bgColor: 'bg-red-8', textColor: 'text-red' },
+  '견적 협의중': { bgColor: 'bg-yellow-8', textColor: 'text-yellow', color: 'yellow' },
+  '주문 확정': {
+    bgColor: 'bg-[#FF6C17]/8',
+    textColor: 'text-[#FF6C17]',
+    color: 'orange',
+  },
+  '생산 대기': { bgColor: 'bg-bg', textColor: 'text-dg', color: 'gray' },
+  '생산 중': { bgColor: 'bg-purple-8', textColor: 'text-purple', color: 'purple' },
+  '생산 완료': { bgColor: 'bg-blue-8', textColor: 'text-blue', color: 'blue' },
+  납품: { bgColor: 'bg-green-8', textColor: 'text-green', color: 'green' },
+  '프로젝트 완료': {
+    bgColor: 'bg-primary',
+    textColor: 'text-wh',
+    color: 'primary',
+  },
+  완료: { bgColor: 'bg-primary', textColor: 'text-wh', color: 'primary' },
+  중단: { bgColor: 'bg-red-8', textColor: 'text-red', color: 'red' },
 };
 
 // 완료된 프로젝트 상태
@@ -340,8 +353,8 @@ export const AccountsStatusColorMap: Record<
     color: 'orange',
   },
   completed: {
-    textColor: 'text-primary',
-    bgColor: 'bg-primary-8',
+    textColor: 'text-blue',
+    bgColor: 'bg-blue-8',
     color: 'blue',
   },
   overdue: { textColor: 'text-red', bgColor: 'bg-red-8', color: 'red' },

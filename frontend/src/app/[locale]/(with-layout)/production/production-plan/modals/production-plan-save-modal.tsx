@@ -23,11 +23,11 @@ const ProductionPlanSaveModal = ({
       onClose={isLoading ? () => {} : onClose}
     >
       <div className="flex justify-end gap-[5px] mt-4">
-        <MiniBtn variant="gray"
+        <MiniBtn variant="white"
           text={tCommon('cancel')}
           onClick={onClose}
         />
-        <MiniBtn variant="primary"
+        <MiniBtn variant="secondary"
           text={tCommon('save')}
           onClick={onSave}
           disabled={isLoading}

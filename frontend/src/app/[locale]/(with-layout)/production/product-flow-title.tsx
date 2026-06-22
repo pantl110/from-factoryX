@@ -2,7 +2,7 @@ import { useTranslations } from 'next-intl';
 import Chip from '@/ui/chip';
 import Input from '@/ui/input';
 import { ProjectStatusType, ProjectStatusColorMap } from '@/types/status-type';
-import { formatISODate } from '@/utils';
+import { formatISODate, getTabItemClass } from '@/utils';
 
 export interface ProductFlowTitleProps {
   status: ProjectStatusType;
@@ -28,7 +28,7 @@ const ProductFlowTitle = ({
   const tProjectStatus = useTranslations('project.status');
   const tCommon = useTranslations('common');
   const tProductionInfo = useTranslations('production.productionInfo');
-  const { bgColor, textColor } = ProjectStatusColorMap[status];
+  const { color } = ProjectStatusColorMap[status];
 
   return (
     <>
@@ -36,8 +36,7 @@ const ProductFlowTitle = ({
         <div className="flex flex-col gap-2">
           <Chip
             text={tProjectStatus(status)}
-            textColor={textColor}
-            bgColor={bgColor}
+            color={color}
             radius="rounded-full"
             padding="px-2.5 py-1"
             textStyle="Re_Body-2"
@@ -77,11 +76,9 @@ const ProductFlowTitle = ({
               key={tab}
               type="button"
               onClick={() => setSelectedTab(idx)}
-              className={`Heading-3 pb-3 transition-colors duration-150 cursor-pointer ${
+              className={`Heading-3 pb-3 transition-colors duration-150 cursor-pointer ${getTabItemClass(
                 selectedTab === idx
-                  ? 'text-primary border-b-2 border-primary'
-                  : 'text-gr border-b-2 border-transparent'
-              }`}
+              )}`}
             >
               {tab}
             </button>

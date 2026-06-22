@@ -67,7 +67,7 @@ const Chart = ({ monthlyProfits, lastYearMonthlyProfits }: ChartProps) => {
       {
         label: t('thisYear'),
         data: thisYearData,
-        backgroundColor: '#016fee',
+        backgroundColor: '#02d677',
         barPercentage: 0.8, // 막대 너비(0~1, 기본값 0.9)
         categoryPercentage: 0.5, // 카테고리 내 막대 비율(0~1, 기본값 0.8)
       },

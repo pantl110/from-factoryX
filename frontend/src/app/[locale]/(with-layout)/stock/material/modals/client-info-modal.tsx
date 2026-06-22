@@ -236,13 +236,13 @@ const ClientInfoModal = ({ onClose, onNext }: ClientInfoModalProps) => {
         <div className="flex justify-end gap-2.5">
           <MiniBtn
             text={tCommon('cancel')}
-            variant="gray"
+            variant="white"
             type="button"
             onClick={onClose}
           />
           <MiniBtn
             text={tCommon('next')}
-            variant="primary"
+            variant="secondary"
             type="submit"
             disabled={!isFormValid}
           />

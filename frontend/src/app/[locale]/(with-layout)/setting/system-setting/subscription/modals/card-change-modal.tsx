@@ -16,10 +16,10 @@ const CardChangeModal = ({ onClose, onConfirm }: CardChangeModalProps) => {
   return (
     <Modal title={t('title')} subtitle={t('subtitle')} onClose={onClose}>
       <div className="flex justify-end gap-[5px] mt-4">
-        <MiniBtn text={tCommon('cancel')} variant="gray" onClick={onClose} />
+        <MiniBtn text={tCommon('cancel')} variant="white" onClick={onClose} />
         <MiniBtn
           text={t('changeButton')}
-          variant="primary"
+          variant="secondary"
           onClick={onConfirm}
         />
       </div>

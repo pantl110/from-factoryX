@@ -324,11 +324,11 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
               </div>
             )}
             <div className="flex justify-end gap-2.5 mb-6">
-              <MiniBtn variant="gray"
+              <MiniBtn variant="white"
                 text={tCommon('cancel')}
                 onClick={onClose}
               />
-              <MiniBtn variant="primary"
+              <MiniBtn variant="secondary"
                 text={tInviteModal('inviteButton')}
                 onClick={handleInviteMembers}
                 disabled={members.length === 0 || isInviteLoading}
@@ -347,7 +347,7 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
               text={tCommon('close')}
               onClick={handleSuccessClose}
             />
-            <MiniBtn variant="primary"
+            <MiniBtn variant="secondary"
               text={tCommon('confirm')}
               onClick={handleSuccessClose}
             />

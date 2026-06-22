@@ -452,11 +452,11 @@ const ConnectMaterialModal = ({
           )}
 
           <div className="flex gap-2.5 justify-end">
-            <MiniBtn variant="gray"
+            <MiniBtn variant="white"
               text={tCommon('cancel')}
               onClick={onClose}
             />
-            <MiniBtn variant="primary"
+            <MiniBtn variant="secondary"
               text={tCommon('add')}
               disabled={
                 (selectedMaterials.length === 0 && newMaterials.length === 0) ||

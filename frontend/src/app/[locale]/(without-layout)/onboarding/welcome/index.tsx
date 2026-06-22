@@ -124,12 +124,12 @@ const Welcome = ({ onNextStep, onPrevStep }: WelcomeProps) => {
       <div className="w-full flex justify-end gap-2.5">
         <MiniBtn
           text={tFirstStep('buttons.previous')}
-          variant="gray"
+          variant="white"
           onClick={onPrevStep}
         />
         <MiniBtn
           text={tCommon('next')}
-          variant="primary"
+          variant="secondary"
           onClick={handleFactoryOwnerStart}
           disabled={isLoading}
         />

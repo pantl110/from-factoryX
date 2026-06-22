@@ -8,7 +8,7 @@ import { useForm } from 'react-hook-form';
 import { validateEmail } from '@/utils/validation';
 import { useRouter } from '@/i18n/navigation';
 import { useTranslations, useLocale } from 'next-intl';
-import FactoryXLogo from '@/ui/icons/factory-x-logo';
+import AuthBrandPanel from '../auth-brand-panel';
 import { LoginFormDataModel } from '@/types/data-model';
 import { useLogin } from '@/hooks/users/use-login';
 import useAuthStore from '@/store/auth-store';
@@ -103,9 +103,7 @@ const LoginPage = () => {
         </div>
       )}
       <div className="flex min-h-screen">
-        <div className="flex-[0.8] bg-primary flex flex-col items-center justify-center">
-          <FactoryXLogo width={168.908} height={30.558} color="white" />
-        </div>
+        <AuthBrandPanel />
         <div className="flex flex-col flex-[1.2] gap-5 items-center justify-center w-full">
           <h2 className="Heading-2">{t('title')}</h2>
           <form
@@ -157,7 +155,7 @@ const LoginPage = () => {
                 )}
               </div>
             </div>
-            <MiniBtn variant="primary"
+            <MiniBtn variant="secondary"
               text={t('button')}
               height="h-12"
               type="submit"

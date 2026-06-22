@@ -121,12 +121,12 @@ const LinkProjectModal = ({
           <div className="flex gap-2.5 pt-2 justify-end">
             <MiniBtn
               text={tCommon('cancel')}
-              variant="gray"
+              variant="white"
               onClick={onClose}
             />
             <MiniBtn
               text={t('linkButton')}
-              variant="primary"
+              variant="secondary"
               disabled={!selectedId || isLinking}
               onClick={handleLinkButtonClick}
             />
