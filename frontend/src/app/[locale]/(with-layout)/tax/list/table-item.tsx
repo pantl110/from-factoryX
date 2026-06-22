@@ -1,8 +1,4 @@
-import {
-  TaxDocumentType,
-  AccountsStatusMap,
-  AccountsStatusColorMap,
-} from '@/types/status-type';
+import { TaxDocumentType, AccountsStatusColorMap } from '@/types/status-type';
 import Checkbox from '@/ui/checkbox';
 import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
 import { getProductNamesDisplay } from '@/hooks';
@@ -30,6 +26,7 @@ const TableItem = ({
   taxType,
 }: TableItemProps) => {
   const t = useTranslations('tax.list.sentStatus');
+  const tStatus = useTranslations('tax.list.status');
   const tCommon = useTranslations('common');
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
@@ -41,9 +38,7 @@ const TableItem = ({
 
   // 채권 상태 가져오기
   const accountStatus = item.account.status || 'waiting';
-  const statusText =
-    AccountsStatusMap[accountStatus as keyof typeof AccountsStatusMap] ||
-    '대기';
+  const statusText = tStatus(accountStatus);
   const statusColor =
     AccountsStatusColorMap[accountStatus as keyof typeof AccountsStatusColorMap]
       ?.color || 'gray';

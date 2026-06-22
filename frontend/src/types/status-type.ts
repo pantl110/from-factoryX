@@ -78,16 +78,7 @@ export type ProjectStatusType =
 // | '프로젝트 완료' // completed
 // | '중단'; // suspended
 
-export const ProjectStatusMap: Record<ProjectStatusType, string> = {
-  quotation: '견적 요청',
-  confirmed: '주문 확정',
-  pending: '생산 대기',
-  production: '생산 중',
-  manufactured: '생산 완료',
-  delivery: '납품',
-  completed: '프로젝트 완료',
-  suspended: '중단',
-};
+// 프로젝트 상태 표시 텍스트는 messages의 번역 키로 처리한다.
 
 export const ProjectStatusColorMap: Record<string, StatusColorModel> = {
   // 영어 상태
@@ -336,12 +327,7 @@ export type AccountsStatusType =
   | 'partial'
   | 'completed'
   | 'overdue';
-export const AccountsStatusMap: Record<AccountsStatusType, string> = {
-  waiting: '대기',
-  partial: '일부',
-  completed: '완료',
-  overdue: '연체',
-};
+// 채권채무 상태 표시 텍스트는 messages의 tax.list.status 번역 키로 처리한다.
 export const AccountsStatusColorMap: Record<
   AccountsStatusType,
   StatusColorModel

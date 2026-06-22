@@ -1,6 +1,6 @@
 import { PublishedDocumentOutModel } from '@/types/data-model';
 import { getProductNamesDisplay } from '@/utils/get-product-names-display';
-import { AccountsStatusMap, AccountsStatusColorMap } from '@/types/status-type';
+import { AccountsStatusColorMap } from '@/types/status-type';
 import { RoundChip, MiniBtn, IconBtn } from '@/ui';
 import { ArrowLineUpRight } from '@phosphor-icons/react';
 import useMemberStore from '@/store/member-store';
@@ -29,9 +29,7 @@ const TableItem = ({
 
   // 채권 상태 가져오기
   const accountStatus = account?.status || 'waiting';
-  const statusText =
-    AccountsStatusMap[accountStatus as keyof typeof AccountsStatusMap] ||
-    tList('status.waiting');
+  const statusText = tList(`status.${accountStatus}`);
   const statusColor =
     AccountsStatusColorMap[accountStatus as keyof typeof AccountsStatusColorMap]
       ?.color || 'gray';
