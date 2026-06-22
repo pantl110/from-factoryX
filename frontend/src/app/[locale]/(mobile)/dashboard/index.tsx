@@ -41,7 +41,7 @@ const MobileDashboardPage = () => {
         {/* 오늘의 할일 */}
         <div className="flex flex-col gap-3">
           <div className="flex gap-1.5 items-center">
-            <div className="w-8 h-8 flex items-center justify-center bg-primary-8 rounded-full ">
+            <div className="w-8 h-8 flex items-center justify-center bg-green-8 rounded-full ">
               <Calendar size={20} className="text-primary" />
             </div>
             <h4 className="m-Heading-4b">{t('todayTasks')}</h4>
@@ -52,7 +52,7 @@ const MobileDashboardPage = () => {
         {/* 메모 */}
         {/* <div className="flex flex-col gap-3">
           <div className="flex gap-1.5 items-center">
-            <div className="w-8 h-8 flex items-center justify-center bg-primary-8 rounded-full ">
+            <div className="w-8 h-8 flex items-center justify-center bg-green-8 rounded-full ">
               <Note size={20} className="text-primary" />
             </div>
             <h4 className="m-Heading-4b">{t('memo')}</h4>

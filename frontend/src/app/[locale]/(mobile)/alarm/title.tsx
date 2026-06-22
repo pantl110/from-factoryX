@@ -44,7 +44,7 @@ const Title = ({
           }
         )}
         <h4 className="m-Heading-4b">{title}</h4>
-        <div className="flex items-center justify-center w-[22px] h-[22px] rounded-full bg-primary-8">
+        <div className="flex items-center justify-center w-[22px] h-[22px] rounded-full bg-green-8">
           <h6 className="m-Heading-6 text-primary">{count}</h6>
         </div>
       </div>

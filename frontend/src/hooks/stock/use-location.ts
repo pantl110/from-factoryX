@@ -16,16 +16,22 @@ const useLocation = () => {
     LocationListResponseModel | LocationModel | null
   >(null);
 
+  const fail = useCallback(
+    (key: string) => {
+      const message = tErrors(key);
+      setError(message);
+      return { success: false, error: message };
+    },
+    [tErrors]
+  );
+
   // 창고 위치 생성
   // material id/product id에 창고 위치를 생성
   const createLocation = async (payload: LocationModel) => {
     setIsLoading(true);
     setError(null);
 
-    if (!factoryId) {
-      setError(tErrors('factoryIdRequired'));
-      return { success: false, error: tErrors('factoryIdRequired') };
-    }
+    if (!factoryId) return fail('factoryIdRequired');
 
     try {
       const res = await fetch(
@@ -46,8 +52,7 @@ const useLocation = () => {
         return { success: false, error: result.detail };
       }
     } catch {
-      setError(tErrors('serverConnectionFailed'));
-      return { success: false, error: tErrors('serverConnectionFailed') };
+      return fail('serverConnectionFailed');
     } finally {
       setIsLoading(false);
     }
@@ -60,10 +65,7 @@ const useLocation = () => {
       setIsLoading(true);
       setError(null);
 
-      if (!factoryId) {
-        setError(tErrors('factoryIdRequired'));
-        return { success: false, error: tErrors('factoryIdRequired') };
-      }
+      if (!factoryId) return fail('factoryIdRequired');
 
       try {
         const params = new URLSearchParams({
@@ -92,13 +94,12 @@ const useLocation = () => {
           return { success: false, error: result.detail };
         }
       } catch {
-        setError(tErrors('serverConnectionFailed'));
-        return { success: false, error: tErrors('serverConnectionFailed') };
+        return fail('serverConnectionFailed');
       } finally {
         setIsLoading(false);
       }
     },
-    [factoryId, tErrors]
+    [factoryId, tErrors, fail]
   );
 
   // 창고 위치 수정
@@ -109,10 +110,7 @@ const useLocation = () => {
     setIsLoading(true);
     setError(null);
 
-    if (!factoryId) {
-      setError(tErrors('factoryIdRequired'));
-      return { success: false, error: tErrors('factoryIdRequired') };
-    }
+    if (!factoryId) return fail('factoryIdRequired');
 
     try {
       const res = await fetch(
@@ -133,8 +131,7 @@ const useLocation = () => {
         return { success: false, error: result.detail };
       }
     } catch {
-      setError(tErrors('serverConnectionFailed'));
-      return { success: false, error: tErrors('serverConnectionFailed') };
+      return fail('serverConnectionFailed');
     } finally {
       setIsLoading(false);
     }
@@ -148,10 +145,7 @@ const useLocation = () => {
     setIsLoading(true);
     setError(null);
 
-    if (!factoryId) {
-      setError(tErrors('factoryIdRequired'));
-      return { success: false, error: tErrors('factoryIdRequired') };
-    }
+    if (!factoryId) return fail('factoryIdRequired');
 
     try {
       const params = new URLSearchParams({
@@ -174,8 +168,7 @@ const useLocation = () => {
         return { success: false, error: result.detail };
       }
     } catch {
-      setError(tErrors('serverConnectionFailed'));
-      return { success: false, error: tErrors('serverConnectionFailed') };
+      return fail('serverConnectionFailed');
     } finally {
       setIsLoading(false);
     }

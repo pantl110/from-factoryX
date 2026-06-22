@@ -32,7 +32,7 @@ export const MaterialPackagingItem = ({
   return (
     <div className="flex items-center h-14 border-b border-lg Me_Body-3 cursor-default">
       {/* <div className="flex-[0.8] px-3">
-        <Chip text="사용중" textColor="text-primary" bgColor="bg-primary-8" />
+        <Chip text="사용중" textColor="text-primary" bgColor="bg-green-8" />
       </div> */}
       <p className="flex-[1.5] px-3 text-dg truncate" title={parentLotNumber}>
         {parentLotNumber}

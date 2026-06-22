@@ -24,17 +24,28 @@ const useMaterialProduct = () => {
   >(null);
   const factoryId = useMemberStore((state) => state.factoryId);
 
+  const fail = useCallback(
+    (key: string) => {
+      const message = tErrors(key);
+      setError(message);
+      return { success: false, error: message };
+    },
+    [tErrors]
+  );
+
+  const factoryGuard = useCallback(() => {
+    setError(tErrors('factoryInfoMissing'));
+    setIsLoading(false);
+    return { success: false, error: tErrors('factoryInfoMissingShort') };
+  }, [tErrors]);
+
   // 연결 생성
   const createMaterialProduct = async (payload: CreateMaterialProductModel) => {
     setIsLoading(true);
     setError(null);
     setIsSuccess(false);
 
-    if (!factoryId) {
-      setError(tErrors('factoryInfoMissing'));
-      setIsLoading(false);
-      return { success: false, error: tErrors('factoryInfoMissingShort') };
-    }
+    if (!factoryId) return factoryGuard();
 
     try {
       const response = await fetch(
@@ -56,8 +67,7 @@ const useMaterialProduct = () => {
         return { success: false, error: result.detail };
       }
     } catch {
-      setError(tErrors('serverConnectionFailed'));
-      return { success: false, error: tErrors('serverConnectionFailed') };
+      return fail('serverConnectionFailed');
     } finally {
       setIsLoading(false);
     }
@@ -71,11 +81,7 @@ const useMaterialProduct = () => {
       setError(null);
       setIsSuccess(false);
 
-      if (!factoryId) {
-        setError(tErrors('factoryInfoMissing'));
-        setIsLoading(false);
-        return { success: false, error: tErrors('factoryInfoMissingShort') };
-      }
+      if (!factoryId) return factoryGuard();
 
       try {
         const response = await fetch(
@@ -95,13 +101,12 @@ const useMaterialProduct = () => {
           return { success: false, error: result.detail };
         }
       } catch {
-        setError(tErrors('serverConnectionFailed'));
-        return { success: false, error: tErrors('serverConnectionFailed') };
+        return fail('serverConnectionFailed');
       } finally {
         setIsLoading(false);
       }
     },
-    [factoryId, tErrors]
+    [factoryId, tErrors, fail, factoryGuard]
   );
 
   // 연결 삭제
@@ -110,11 +115,7 @@ const useMaterialProduct = () => {
     setError(null);
     setIsSuccess(false);
 
-    if (!factoryId) {
-      setError(tErrors('factoryInfoMissing'));
-      setIsLoading(false);
-      return { success: false, error: tErrors('factoryInfoMissingShort') };
-    }
+    if (!factoryId) return factoryGuard();
 
     try {
       const response = await fetch(
@@ -134,8 +135,7 @@ const useMaterialProduct = () => {
         return { success: false, error: result.detail };
       }
     } catch {
-      setError(tErrors('serverConnectionFailed'));
-      return { success: false, error: tErrors('serverConnectionFailed') };
+      return fail('serverConnectionFailed');
     } finally {
       setIsLoading(false);
     }
@@ -157,11 +157,7 @@ const useMaterialProduct = () => {
     setError(null);
     setIsSuccess(false);
 
-    if (!factoryId) {
-      setError(tErrors('factoryInfoMissing'));
-      setIsLoading(false);
-      return { success: false, error: tErrors('factoryInfoMissingShort') };
-    }
+    if (!factoryId) return factoryGuard();
 
     try {
       const response = await fetch(
@@ -183,8 +179,7 @@ const useMaterialProduct = () => {
         return { success: false, error: result.detail };
       }
     } catch {
-      setError(tErrors('serverConnectionFailed'));
-      return { success: false, error: tErrors('serverConnectionFailed') };
+      return fail('serverConnectionFailed');
     } finally {
       setIsLoading(false);
     }

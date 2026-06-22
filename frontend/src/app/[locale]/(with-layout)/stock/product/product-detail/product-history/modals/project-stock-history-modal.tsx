@@ -116,7 +116,7 @@ const ProjectStockHistoryModal = ({
                 <div className="flex justify-end mt-4">
                   <MiniBtn
                     text={tCommon('close')}
-                    variant="secondary"
+                    variant="white"
                     onClick={onClose}
                   />
                 </div>
@@ -128,7 +128,7 @@ const ProjectStockHistoryModal = ({
               <div className="flex justify-end mt-4 mb-4">
                 <MiniBtn
                   text={tCommon('close')}
-                  variant="secondary"
+                  variant="white"
                   onClick={onClose}
                 />
               </div>

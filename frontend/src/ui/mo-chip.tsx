@@ -31,7 +31,7 @@ const MoChip = ({
       case 'primary':
         return 'bg-primary text-wh';
       case 'secondary':
-        return 'bg-primary-8 text-primary';
+        return 'bg-green-8 text-primary';
       case 'red':
         return 'bg-red text-wh';
       case 'red-secondary':

@@ -52,7 +52,7 @@ const DeliveryStateDropdown = ({
       >
         <Chip
           text={tDelivery('completed')}
-          bgColor="bg-primary-8"
+          bgColor="bg-green-8"
           textColor="text-primary"
           hover="hover:bg-secondary-hover"
           onClick={onCompletedClick}

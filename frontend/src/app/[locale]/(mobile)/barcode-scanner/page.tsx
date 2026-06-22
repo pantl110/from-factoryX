@@ -575,7 +575,7 @@ const BarcodeScannerContent = () => {
                 setIsScanning(true);
                 window.location.reload();
               }}
-              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-8 transition-colors m-Body-1"
+              className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-green-8 transition-colors m-Body-1"
             >
               {t('retry')}
             </button>

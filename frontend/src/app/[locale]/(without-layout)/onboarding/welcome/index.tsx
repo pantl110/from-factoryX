@@ -60,14 +60,10 @@ const Welcome = ({ onNextStep, onPrevStep }: WelcomeProps) => {
     <div className="bg-wh z-1 w-[600px] py-10 px-8 flex flex-col items-center rounded-lg">
       <h3 className="Heading-3 text-primary mb-1">{t('title')}</h3>
       <div className="Me_Body-2 text-bl text-center">
-        {t('description')
-          .split('\n')
-          .map((line, index) => (
-            <span key={index}>
-              {index > 0 && <br />}
-              {line}
-            </span>
-          ))}
+        {t.rich('description', {
+          b: (chunks) => <span className="font-bold">{chunks}</span>,
+          br: () => <br />,
+        })}
       </div>
       <div className="p-7">
         <Image src={onboardingImage} alt="onboarding" />

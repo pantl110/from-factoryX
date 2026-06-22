@@ -52,7 +52,7 @@ const ChoosingRole = ({ onNextStep }: ChoosingRoleProps) => {
       <div className="w-full flex flex-col mt-7 gap-2">
         <button
           onClick={onNextStep}
-          className="p-3 border border-lg rounded-[8px] flex flex-col gap-1 items-center justify-center hover:bg-primary-8 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="p-3 border border-lg rounded-[8px] flex flex-col gap-1 items-center justify-center hover:bg-green-8 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <h4 className="Heading-4 text-dg">{t('owner.title')}</h4>
           <p className="Re_Body-2 text-sv">{t('owner.description')}</p>
@@ -60,7 +60,7 @@ const ChoosingRole = ({ onNextStep }: ChoosingRoleProps) => {
         <button
           onClick={handleEmployeeStart}
           disabled={isConnecting}
-          className="p-3 border border-lg rounded-[8px] flex flex-col gap-1 items-center justify-center hover:bg-primary-8 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="p-3 border border-lg rounded-[8px] flex flex-col gap-1 items-center justify-center hover:bg-green-8 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <h4 className="Heading-4 text-dg">{t('employee.title')}</h4>
           <p className="Re_Body-2 text-sv">{t('employee.description')}</p>

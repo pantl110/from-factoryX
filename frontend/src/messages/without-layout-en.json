@@ -130,7 +130,7 @@
     },
     "welcome": {
       "title": "Ready to start operating your factory?",
-      "description": "To get started, you need to register products, materials, and equipment first.\nOnce registration is complete, you can manage everything from production to inventory at a glance!",
+      "description": "To get started, you need to register <b>products</b>, <b>materials</b>, and <b>equipment</b> first.<br></br>Once registration is complete, you can manage everything from production to inventory at a glance!",
       "errors": {
         "factoryCreateFailed": "Failed to create factory.",
         "factoryCheckError": "An error occurred while checking/creating the factory."

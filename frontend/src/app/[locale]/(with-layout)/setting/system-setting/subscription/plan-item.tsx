@@ -95,7 +95,7 @@ const PlanItem = ({
   return (
     <>
       <div
-        className={`flex flex-col gap-1 py-4 px-6 rounded-xl ${isSubscribedType ? 'bg-primary-8' : 'border border-lg'}`}
+        className={`flex flex-col gap-1 py-4 px-6 rounded-xl ${isSubscribedType ? 'bg-green-8' : 'border border-lg'}`}
       >
         <div className="flex items-center justify-between">
           <h3 className="Heading-3">{t(`planItem.plans.${type}.title`)}</h3>

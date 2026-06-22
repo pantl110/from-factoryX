@@ -70,30 +70,35 @@ const MiniBtn = ({
           bg: 'bg-primary',
           text: 'text-wh',
           hover: 'hover:bg-primary-hover',
+          border: 'border-transparent',
         };
       case 'secondary':
         return {
           bg: 'bg-secondary',
           text: 'text-bl',
           hover: 'hover:bg-secondary-hover',
+          border: 'border-transparent',
         };
       case 'red':
         return {
           bg: 'bg-red-8',
           text: 'text-red',
           hover: 'hover:bg-red-hover',
+          border: 'border-transparent',
         };
       case 'gray':
         return {
           bg: 'bg-bg',
           text: 'text-primary',
           hover: 'hover:bg-lg',
+          border: 'border-transparent',
         };
       case 'white':
         return {
           bg: 'bg-wh',
           text: 'text-dg',
           hover: 'hover:bg-bg',
+          border: 'border-transparent',
         };
       case 'outline':
         return {
@@ -114,6 +119,7 @@ const MiniBtn = ({
           bg: '',
           text: 'text-sv',
           hover: 'hover:text-red',
+          border: 'border-transparent',
         };
       default:
         return {};

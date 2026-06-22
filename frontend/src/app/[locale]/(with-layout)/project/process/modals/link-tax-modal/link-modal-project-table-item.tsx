@@ -3,6 +3,7 @@ import { UnlinkedTaxInvoiceResponseModel } from '@/types/data-model';
 import { TaxDocumentType, TaxDocumentTypeColorMap } from '@/types/status-type';
 import Chip from '@/ui/chip';
 import { getProductNamesDisplay } from '@/utils/get-product-names-display';
+import SelectableTableRow from './selectable-table-row';
 
 interface LinkModalProjectTableItemProps {
   onItemClick: () => void;
@@ -30,19 +31,7 @@ const LinkModalProjectTableItem = ({
   const { bgColor, textColor } = TaxDocumentTypeColorMap[mappedTaxType];
 
   return (
-    <div
-      className={`flex items-center h-14 w-full text-bl Me_Body-3 transition-colors duration-200 cursor-pointer ${
-        isSelected
-          ? 'border border-primary bg-secondary'
-          : 'border-b border-lg hover:bg-bg'
-      }`}
-      onClick={onItemClick}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') onItemClick();
-      }}
-    >
+    <SelectableTableRow isSelected={isSelected} onClick={onItemClick}>
       <div className="px-3 flex-1">
         <Chip
           text={
@@ -95,7 +84,7 @@ const LinkModalProjectTableItem = ({
       >
         {item.total_amount?.toLocaleString() || '0'}
       </p>
-    </div>
+    </SelectableTableRow>
   );
 };
 

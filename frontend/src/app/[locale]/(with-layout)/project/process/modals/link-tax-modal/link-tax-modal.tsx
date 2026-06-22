@@ -230,32 +230,17 @@ const LinkTaxModal = ({
           <div className="flex gap-2">
             <MiniBtn
               text={t('period.1month')}
-              hoverColor="hover:bg-lg"
-              borderColor={
-                selectedPeriod === '1' ? 'border-primary' : 'border-lg'
-              }
-              textColor={selectedPeriod === '1' ? 'text-primary' : 'text-dg'}
-              bgColor="bg-wh"
+              variant={selectedPeriod === '1' ? 'gray' : 'outline'}
               onClick={() => setSelectedPeriod('1')}
             />
             <MiniBtn
               text={t('period.6months')}
-              hoverColor="hover:bg-lg"
-              borderColor={
-                selectedPeriod === '6' ? 'border-primary' : 'border-lg'
-              }
-              textColor={selectedPeriod === '6' ? 'text-primary' : 'text-dg'}
-              bgColor="bg-wh"
+              variant={selectedPeriod === '6' ? 'gray' : 'outline'}
               onClick={() => setSelectedPeriod('6')}
             />
             <MiniBtn
               text={t('period.12months')}
-              hoverColor="hover:bg-lg"
-              borderColor={
-                selectedPeriod === '12' ? 'border-primary' : 'border-lg'
-              }
-              textColor={selectedPeriod === '12' ? 'text-primary' : 'text-dg'}
-              bgColor="bg-wh"
+              variant={selectedPeriod === '12' ? 'gray' : 'outline'}
               onClick={() => setSelectedPeriod('12')}
             />
           </div>

@@ -28,7 +28,7 @@ const MoBtn = ({
     ghost: 'bg-wh text-dg hover:bg-lg',
     outline: 'bg-wh text-dg border border-lg hover:bg-lg',
     primary: 'bg-primary text-white hover:bg-primary-hover',
-    secondary: 'bg-primary-8 text-primary hover:bg-secondary-hover',
+    secondary: 'bg-green-8 text-primary hover:bg-secondary-hover',
     'outline-primary': 'text-primary border border-primary',
   };
 

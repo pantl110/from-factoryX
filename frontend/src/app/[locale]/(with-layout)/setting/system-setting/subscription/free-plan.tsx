@@ -25,7 +25,7 @@ const FreePlan = ({ endDate }: FreePlanProps) => {
   const remainingDays = endDate ? getRemainingDays(endDate) : 0;
 
   return (
-    <div className="flex flex-col gap-1 py-4 px-6 bg-primary-8 rounded-xl">
+    <div className="flex flex-col gap-1 py-4 px-6 bg-green-8 rounded-xl">
       <div className="flex gap-2 items-center justify-between">
         <h3 className="Heading-3 text-primary">{t('title')}</h3>
         <Chip

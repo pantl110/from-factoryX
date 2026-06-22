@@ -27,7 +27,7 @@ export const DocumentTypeColorMap: Record<
     color: 'green',
   },
   '매출 세금계산서': {
-    bgColor: 'bg-primary-8',
+    bgColor: 'bg-green-8',
     textColor: 'text-primary',
     color: 'blue',
   },

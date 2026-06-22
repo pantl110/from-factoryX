@@ -116,8 +116,8 @@
     "issuedDate": "발행일자",
     "registeredDate": "등록일자",
     "date": "날짜",
-    "print": "출력하기",
-    "add": "추가하기",
+    "print": "출력",
+    "add": "추가",
     "note": "비고",
     "preview": "미리보기",
     "deleteAll": "전체 삭제",
@@ -209,12 +209,12 @@
     "logout": "로그아웃"
   },
   "topBar": {
-    "switchToProgress": "진행 상태로 전환하기",
+    "switchToProgress": "진행 상태로 전환",
     "viewTaxInvoice": "세금계산서 보기",
-    "createTaxInvoice": "세금계산서 생성하기",
+    "createTaxInvoice": "세금계산서 생성",
     "upgradeTooltip": "Partners 플랜으로 업그레이드하면\n세무/회계 기능을 사용할 수 있어요.",
-    "registerReturn": "반품 등록하기",
-    "moveToStorage": "보관함으로 이동하기",
+    "registerReturn": "반품 등록",
+    "moveToStorage": "보관함으로 이동",
     "aiAssistant": "AI 어시스턴트",
     "moveToDeliveryFailed": "납품 단계로 이동하는데 실패했습니다."
   },
@@ -339,7 +339,7 @@
         "12months": "12개월"
       },
       "buttons": {
-        "createTaxInvoice": "세금계산서 생성하기",
+        "createTaxInvoice": "세금계산서 생성",
         "linkHistory": "내역 연결하기"
       },
       "errors": {
@@ -370,7 +370,7 @@
       "failed": "발행 실패"
     },
     "draft": {
-      "createButton": "세금계산서 생성하기",
+      "createButton": "세금계산서 생성",
       "tabs": {
         "all": "전체",
         "temporary": "임시 저장",
@@ -419,11 +419,11 @@
       },
       "buttons": {
         "showHidden": "숨긴 목록 보기",
-        "restore": "복구하기",
+        "restore": "복구",
         "hide": "숨기기",
-        "restoreAll": "전체 항목 복구하기",
+        "restoreAll": "전체 항목 복구",
         "hideAll": "전체 항목 숨기기",
-        "restoreItems": "{count}개 항목 복구하기",
+        "restoreItems": "{count}개 항목 복구",
         "hideItems": "{count}개 항목 숨기기"
       },
       "empty": {
@@ -519,13 +519,13 @@
           "withFactory": "[{factoryName}] {month}월 정산 금액 입금 요청드립니다",
           "withoutFactory": "{month}월 정산 금액 입금 요청드립니다"
         },
-        "sendButton": "이메일 전송하기"
+        "sendButton": "이메일 전송"
       },
       "linkProjectModal": {
         "title": "세금계산서에 연결할 프로젝트를 선택해주세요.",
         "subtitle": "프로젝트를 세금계산서와 연동하면, 거래 내역이 자동으로 반영돼요.",
         "searchPlaceholder": "연결할 프로젝트의 거래처명이나 제품명을 입력해 검색하세요.",
-        "linkButton": "프로젝트 연결하기",
+        "linkButton": "프로젝트 연결",
         "empty": {
           "text": "연결할 프로젝트가 없어요."
         }
@@ -559,7 +559,7 @@
           "empty": "연결할 자재가 없어요.",
           "selectedCount": "{count}개 선택",
           "buttons": {
-            "addSelected": "선택 항목 추가하기",
+            "addSelected": "선택 항목 추가",
             "link": "내역 연결하기"
           },
           "priceInfo": {
@@ -628,9 +628,9 @@
           "deposit": "회수 상세 내역"
         },
         "buttons": {
-          "sendEmail": "이메일 전송하기",
-          "enterPayment": "지급 정보 입력하기",
-          "enterDeposit": "입금 정보 입력하기"
+          "sendEmail": "이메일 전송",
+          "enterPayment": "지급 정보 입력",
+          "enterDeposit": "입금 정보 입력"
         },
         "table": {
           "headers": {
@@ -680,7 +680,7 @@
         }
       },
       "buttons": {
-        "selectIssueType": "발행 방식 선택하기"
+        "selectIssueType": "발행 방식 선택"
       },
       "toast": {
         "createSuccessTitle": "세금계산서가 생성되었어요.",
@@ -819,7 +819,7 @@
       "title": "오늘의 생산 일정",
       "noHistory": "히스토리가 아직 없어요.",
       "noHistoryDescription": "오늘 생산할 제품을 여기에서 확인할 수 있어요.",
-      "printButton": "생산지시서 출력하기",
+      "printButton": "생산지시서 출력",
       "printConfirmTitle": "생산지시서를 출력하시겠어요?",
       "printConfirmDescription": "출력 전, 생산지시서 내용을 한 번 더 확인해 주세요."
     }
@@ -837,7 +837,7 @@
     },
     "process": {
       "title": "진행 중인 프로젝트",
-      "createButton": "프로젝트 생성하기",
+      "createButton": "프로젝트 생성",
       "filters": {
         "all": "전체"
       },
@@ -920,7 +920,7 @@
       "returnDate": "반품 일자",
       "returnDatePlaceholder": "반품할 일자를 입력해 주세요.",
       "returnDateError": "반품 일자를 입력해 주세요.",
-      "register": "반품 등록하기",
+      "register": "반품 등록",
       "selectProductError": "제품을 선택해주세요.",
       "inputError": "반품 수량과 반품 일자를 입력해주세요.",
       "registerError": "반품 등록에 실패했습니다.",
@@ -929,7 +929,7 @@
     },
     "returnInfo": {
       "title": "반품 정보",
-      "registerProductionButton": "생산 등록하기",
+      "registerProductionButton": "생산 등록",
       "returnProduct": "반품 제품",
       "returnDate": "반품 일자",
       "returnQuantity": "반품 수량",
@@ -939,7 +939,7 @@
     "registerProductionModal": {
       "title": "생산 대기열에 등록되었습니다.",
       "subtitle": "반품된 제품의 추가 생산이 등록되었습니다.\n지금 바로 생산을 시작하시겠어요?",
-      "startButton": "생산 시작하기",
+      "startButton": "생산 시작",
       "error": {
         "registerFailed": "생산 등록에 오류가 발생했어요.",
         "materialShortage": "자재를 먼저 등록해주세요.",
@@ -1003,12 +1003,12 @@
       "title": "납품표",
       "printConfirmTitle": "납품표를 출력하시겠어요?",
       "printConfirmDescription": "출력 전, 납품서 내용을 한 번 더 확인해 주세요.",
-      "printButton": "납품표 출력하기",
-      "printAllButton": "납품표 일괄 출력하기",
+      "printButton": "납품표 출력",
+      "printAllButton": "납품표 일괄 출력",
       "titleWithNumber": "납품표 {number}",
       "transactionStatementPrintTitle": "거래명세서를 출력하시겠어요?",
       "transactionStatementPrintDescription": "출력 전, 거래명세서 내용을 한 번 더 확인해 주세요.",
-      "transactionStatementPrintButton": "거래명세서 출력하기",
+      "transactionStatementPrintButton": "거래명세서 출력",
       "statusLabel": "납품 상태",
       "viewDeliveryNote": "납품표 보기",
       "errors": {
@@ -1028,7 +1028,7 @@
       "moveToStorage": {
         "title": "프로젝트를 보관하시겠습니까?",
         "subtitle": "납품 예정인 제품이 모두 완료 처리되며,\n프로젝트는 보관함으로 이동돼요.",
-        "button": "보관함으로 이동하기"
+        "button": "보관함으로 이동"
       },
       "status": {
         "pending": "예정",
@@ -1105,11 +1105,11 @@
       },
       "buttons": {
         "viewDetails": "상세 보기",
-        "enterResult": "결과 입력하기"
+        "enterResult": "결과 입력"
       },
       "memo": {
         "title": "메모",
-        "writeButton": "메모 작성하기",
+        "writeButton": "메모 작성",
         "create": {
           "title": "생산 메모를 등록해 주세요.",
           "subtitle": "입력된 메모는 생산 현황에서 확인할 수 있어요.",
@@ -1117,7 +1117,7 @@
           "contentPlaceholder": "메모를 입력하세요.",
           "titleRequired": "제목을 입력해주세요.",
           "contentRequired": "내용을 입력해주세요.",
-          "createButton": "메모 생성하기",
+          "createButton": "메모 생성",
           "projectNotFound": "프로젝트 정보를 찾을 수 없습니다.",
           "createFailed": "메모 생성에 실패했습니다: {error}",
           "unknownError": "알 수 없는 오류가 발생했습니다."
@@ -1153,8 +1153,8 @@
     "title": "재고 관리",
     "excelDownloadButtonProduct": "제품 엑셀 양식 다운로드",
     "excelDownloadButtonMaterial": "자재 엑셀 양식 다운로드",
-    "addProductButton": "제품 추가하기",
-    "addMaterialButton": "자재 추가하기",
+    "addProductButton": "제품 추가",
+    "addMaterialButton": "자재 추가",
     "tabs": {
       "product": "제품",
       "material": "자재"
@@ -1176,12 +1176,12 @@
       "product": "제품_등록_양식.xlsx",
       "material": "자재_등록_양식.xlsx"
     },
-    "manualAddButton": "직접 추가하기",
+    "manualAddButton": "직접 추가",
     "productionQuantity": "생산 수량",
     "deliveryQuantity": "납품 수량",
     "connectButton": {
-      "material": "자재 연결하기",
-      "product": "제품 연결하기"
+      "material": "자재 연결",
+      "product": "제품 연결"
     },
     "material": {
       "searchPlaceholder": "자재명 또는 자재코드를 입력해 검색하세요.",
@@ -1636,8 +1636,8 @@
       "empty": {
         "title": "등록된 창고 위치가 아직 없어요.",
         "description": {
-          "material": "[추가하기] 버튼을 눌러 자재가 보관된 창고를 등록해보세요.",
-          "product": "[추가하기] 버튼을 눌러 제품이 보관된 창고를 등록해보세요."
+          "material": "[추가] 버튼을 눌러 자재가 보관된 창고를 등록해보세요.",
+          "product": "[추가] 버튼을 눌러 제품이 보관된 창고를 등록해보세요."
         }
       },
       "placeholders": {
@@ -1669,7 +1669,7 @@
       "emailSendFailed": "이메일 전송에 실패했습니다.",
       "sendEmailTitle": "이메일로 {documentTitle}를 보내시겠어요?",
       "sendEmailDescription": "받는 사람과 제목을 확인한 후, 이메일을 전송해 주세요.",
-      "sendButton": "{documentTitle} 전송하기"
+      "sendButton": "{documentTitle} 전송"
     },
     "enlargeImage": {
       "alt": "확대 이미지"
@@ -1682,7 +1682,7 @@
     "printView": {
       "printTitle": "{documentTitle}를 출력하시겠어요?",
       "printDescription": "출력 전, {documentTitle} 내용을 한 번 더 확인해 주세요.",
-      "printButton": "{documentTitle} 출력하기"
+      "printButton": "{documentTitle} 출력"
     },
     "productEnrollment": {
       "addExistingProduct": "기존 제품 추가",
@@ -1690,15 +1690,15 @@
     },
     "startProductionModal": {
       "title": "이 주문서로 생산을 시작할까요?",
-      "subtitle": "확정된 주문서가 맞다면 '생산 시작하기'를 눌러주세요.",
-      "startButton": "생산 시작하기"
+      "subtitle": "확정된 주문서가 맞다면 '생산 시작'을 눌러주세요.",
+      "startButton": "생산 시작"
     },
     "buttonSection": {
       "viewTaxInvoice": "세금계산서 보기",
-      "createTaxInvoice": "세금계산서 생성하기",
-      "sendEmail": "이메일 전송하기",
+      "createTaxInvoice": "세금계산서 생성",
+      "sendEmail": "이메일 전송",
       "saveDraft": "임시 저장",
-      "confirmOrder": "주문 확정하기",
+      "confirmOrder": "주문 확정",
       "tooltip": {
         "upgradeToPartners": "Partners 플랜으로 업그레이드하면\n세무/회계 기능을 사용할 수 있어요.",
         "confirmOrderFirst": "세금계산서는 주문을 확정한 후에 생성할 수 있어요."
@@ -1737,7 +1737,7 @@
     "requestInfo": {
       "title": "요청 정보",
       "orderTitle": "주문 정보",
-      "addProduct": "제품 추가하기",
+      "addProduct": "제품 추가",
       "empty": {
         "title": "요청 정보가 아직 없어요.",
         "description": "제품을 추가해서 단가를 측정해 보세요."
@@ -2046,7 +2046,7 @@
         "cardChangeModal": {
           "title": "결제 카드를 변경하시겠어요?",
           "subtitle": "변경된 카드는 다음 결제부터 자동으로 사용돼요.",
-          "changeButton": "결제 카드 변경하기"
+          "changeButton": "결제 카드 변경"
         },
         "cardDeleteModal": {
           "title": "이 카드를 삭제하시겠어요?",
@@ -2196,7 +2196,7 @@
       "productDetailInfo": "제품에 대한 자세한 정보는 PC에서 확인하실 수 있습니다."
     },
     "account": {
-      "sendPaymentRequest": "입금 요청서 전송하기",
+      "sendPaymentRequest": "입금 요청서 전송",
       "sales": "매출",
       "purchase": "매입",
       "taxInvoicePcOnly": "{type} 세금계산서는 PC 버전에서 확인하실 수 있습니다.",
@@ -2206,8 +2206,8 @@
       "title": "주문 내역 확정",
       "description1": "PC에서 이메일 발송과 계산서 발행이 가능해요.",
       "description2": "또한, 주문확정서로 고객이 내용을 확인할 수 있어 주문 내역을 더욱 명확하게 전달 할 수 있어요!",
-      "confirm": "확정하기",
-      "confirmOrder": "주문 확정하기"
+      "confirm": "확정",
+      "confirmOrder": "주문 확정"
     },
     "stockInfo": {
       "title": "재고 정보"

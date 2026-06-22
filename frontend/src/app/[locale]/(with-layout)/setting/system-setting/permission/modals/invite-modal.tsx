@@ -343,7 +343,7 @@ const InviteModal = ({ onClose }: InviteModalProps) => {
           onClose={handleSuccessClose}
         >
           <div className="flex justify-end mt-4 gap-[5px]">
-            <MiniBtn variant="gray"
+            <MiniBtn variant="white"
               text={tCommon('close')}
               onClick={handleSuccessClose}
             />

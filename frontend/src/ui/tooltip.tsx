@@ -9,7 +9,7 @@ interface TooltipProps {
 const Tooltip = ({ text, color, position }: TooltipProps) => {
   const colorMap = {
     red: 'text-red bg-[#FFF0F5]',
-    primary: 'text-primary bg-primary-8',
+    primary: 'text-primary bg-green-8',
     white: 'text-dg bg-wh',
     black: 'text-wh bg-dg',
   };

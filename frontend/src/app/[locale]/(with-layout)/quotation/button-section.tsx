@@ -157,7 +157,7 @@ const ButtonSection = ({
           <>
             <MiniBtn
               text={t('saveDraft')}
-              variant="secondary"
+              variant="gray"
               onClick={async () => {
                 try {
                   const isSuccess = await onSaveDraft?.(false);

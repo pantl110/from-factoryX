@@ -39,7 +39,7 @@ export const Result = ({
 
   return (
     <>
-      <div className="mt-5 flex gap-2.5 bg-primary-8 rounded-[8px] p-4">
+      <div className="mt-5 flex gap-2.5 bg-green-8 rounded-[8px] p-4">
         <div className="flex-[0.6]">
           <Input
             label={t('theoreticalUsage')}

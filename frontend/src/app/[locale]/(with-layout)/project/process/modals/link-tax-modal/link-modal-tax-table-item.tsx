@@ -1,5 +1,6 @@
 import { MaterialHistoryResponseModel } from '@/types/data-model';
 import { formatISODate } from '@/utils';
+import SelectableTableRow from './selectable-table-row';
 
 interface LinkModalTaxTableItemProps {
   item: MaterialHistoryResponseModel;
@@ -12,19 +13,7 @@ const LinkModalTaxTableItem = ({
   onItemClick,
 }: LinkModalTaxTableItemProps) => {
   return (
-    <div
-      className={`flex items-center h-14 w-full text-bl Me_Body-3 transition-colors duration-200 cursor-pointer ${
-        isSelected
-          ? 'border border-primary bg-secondary'
-          : 'border-b border-lg hover:bg-bg'
-      }`}
-      onClick={onItemClick}
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter' || e.key === ' ') onItemClick?.();
-      }}
-    >
+    <SelectableTableRow isSelected={isSelected} onClick={onItemClick}>
       <p
         className="flex-[1.5] px-3 text-dg truncate"
         title={item.material_name}
@@ -67,7 +56,7 @@ const LinkModalTaxTableItem = ({
       >
         {formatISODate(item.date) || '-'}
       </p>
-    </div>
+    </SelectableTableRow>
   );
 };
 export default LinkModalTaxTableItem;

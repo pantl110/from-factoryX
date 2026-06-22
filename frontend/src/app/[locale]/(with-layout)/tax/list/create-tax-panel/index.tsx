@@ -648,7 +648,7 @@ const CreatTaxPanel = ({
   // 헤더 버튼 구성
   const headerButton = (
     <div className="flex gap-2">
-      <MiniBtn variant="secondary"
+      <MiniBtn variant="gray"
         text={tTax('publishStatus.temporary')}
         onClick={async () => {
           const isSuccess = await handleTemporarySave('receipt', projectId);

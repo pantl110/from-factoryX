@@ -47,7 +47,7 @@ export const PermissionRoleInfo: Record<PermissionRoleType, AuthInfoModel> = {
     color: 'blue',
     chipColor: {
       text: 'text-primary',
-      bg: 'bg-primary-8',
+      bg: 'bg-green-8',
       hover: 'hover:bg-secondary-hover',
     },
   },

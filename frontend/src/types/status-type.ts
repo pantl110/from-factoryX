@@ -22,7 +22,7 @@ export type MemberStatusType = 'invited' | 'active'; // 초대됨, 활성
 export const MemberRoleColorMap: Record<MemberRoleType, StatusColorModel> = {
   admin: { bgColor: 'bg-purple-8', textColor: 'text-purple', color: 'purple' },
   manager: {
-    bgColor: 'bg-primary-8',
+    bgColor: 'bg-green-8',
     textColor: 'text-primary',
     color: 'blue',
   },
@@ -55,7 +55,7 @@ export const ClientTypeColorMap: Record<
   { bgColor: string; textColor: string }
 > = {
   supplier: { bgColor: 'bg-red-8', textColor: 'text-red' },
-  customer: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
+  customer: { bgColor: 'bg-green-8', textColor: 'text-primary' },
 };
 
 // 프로젝트 상태
@@ -137,7 +137,7 @@ export const CompletedProjectStatusColorMap: Record<
   CompletedProjectStatusType,
   StatusColorModel
 > = {
-  완료: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
+  완료: { bgColor: 'bg-green-8', textColor: 'text-primary' },
   중단: { bgColor: 'bg-red-8', textColor: 'text-red' },
 };
 
@@ -150,7 +150,7 @@ export const InventoryStatusColorMap: Record<
   과재고: { textColor: 'text-red', bgColor: 'bg-red-8', color: 'red' },
   충분: {
     textColor: 'text-primary',
-    bgColor: 'bg-primary-8',
+    bgColor: 'bg-green-8',
     color: 'blue',
   },
   위험: { textColor: 'text-orange', bgColor: 'bg-orange-8', color: 'orange' },
@@ -184,8 +184,8 @@ export const TaxDocumentTypeColorMap: Record<
   StatusColorModel
 > = {
   sales: {
-    bgColor: 'bg-primary-8',
-    textColor: 'text-primary',
+    bgColor: 'bg-blue-8',
+    textColor: 'text-blue',
     color: 'blue',
   },
   purchase: { bgColor: 'bg-red-8', textColor: 'text-red', color: 'red' },
@@ -196,7 +196,7 @@ export type TransactionType = 'receipt' | 'invoice'; // 영수, 청구
 //   TransactionType,
 //   StatusColorModel
 // > = {
-//   영수: { bgColor: 'bg-primary-8', textColor: 'text-primary' },
+//   영수: { bgColor: 'bg-green-8', textColor: 'text-primary' },
 //   청구: { bgColor: 'bg-red-8', textColor: 'text-red' },
 // };
 
@@ -279,7 +279,7 @@ export const OperationStatusColorMap: Record<
   },
   completed: {
     textColor: 'text-primary',
-    bgColor: 'bg-primary-8',
+    bgColor: 'bg-green-8',
     hover: 'hover:bg-secondary-hover',
   },
 };
@@ -297,7 +297,7 @@ export const DeliveryStatusColorMap: Record<
   },
   완료: {
     textColor: 'text-primary',
-    bgColor: 'bg-primary-8',
+    bgColor: 'bg-green-8',
   },
 };
 
@@ -332,7 +332,7 @@ export const ExpiryStatusColorMap: Record<ExpiryStatusType, StatusColorModel> =
     warning: { textColor: 'text-red', bgColor: 'bg-red-8', color: 'red' },
     safe: {
       textColor: 'text-primary',
-      bgColor: 'bg-primary-8',
+      bgColor: 'bg-green-8',
       color: 'blue',
     },
   };
