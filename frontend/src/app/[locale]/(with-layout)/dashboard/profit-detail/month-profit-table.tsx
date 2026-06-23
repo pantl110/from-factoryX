@@ -10,9 +10,10 @@ import MonthProfitTableItem from './month-profit-table-item';
 
 interface MonthProfitTableProps {
   rows: MonthlyProfitDetailModel[];
+  onSelect?: (row: MonthlyProfitDetailModel) => void;
 }
 
-const MonthProfitTable = ({ rows }: MonthProfitTableProps) => {
+const MonthProfitTable = ({ rows, onSelect }: MonthProfitTableProps) => {
   const t = useTranslations('dashboard.profitDetail');
   const sorted = [...rows].sort((a, b) => b.month.localeCompare(a.month));
   const { currentItems, currentPage, totalPages, setCurrentPage } =
@@ -25,7 +26,7 @@ const MonthProfitTable = ({ rows }: MonthProfitTableProps) => {
         <ProfitValueHeaderCells />
       </div>
       {currentItems.map((row) => (
-        <MonthProfitTableItem key={row.month} row={row} />
+        <MonthProfitTableItem key={row.month} row={row} onSelect={onSelect} />
       ))}
       {totalPages > 1 && (
         <div className="flex justify-center mt-3">

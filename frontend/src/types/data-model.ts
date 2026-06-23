@@ -1271,6 +1271,8 @@ export interface MonthlyProfitDetailModel {
   profit: number;
   profit_rate: number;
   is_estimated?: boolean;
+  clients?: ClientProfitModel[];
+  products?: ProductProfitModel[];
 }
 
 export interface ClientProfitModel {
@@ -1294,6 +1296,7 @@ export interface ProfitDetailResponseModel {
   total_profit_rate: number;
   by_client: ClientProfitModel[];
   by_month: MonthlyProfitDetailModel[];
+  by_month_last_year: MonthlyProfitDetailModel[];
 }
 
 export interface MobileDashboardCountsResponseModel {

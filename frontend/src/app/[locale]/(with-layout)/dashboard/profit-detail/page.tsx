@@ -1,81 +1,45 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { CaretLeftIcon } from '@phosphor-icons/react/dist/ssr';
 import { useRouter } from '@/i18n/navigation';
 import {
   ClientProfitModel,
-  ProfitDetailResponseModel,
+  MonthlyProfitDetailModel,
 } from '@/types/data-model';
-import useGetProfitDetail from '@/hooks/dashboard/use-get-profit-detail';
-import Spinner from '@/ui/spinner';
-import SearchInput from '@/ui/search-input';
 import NoHistoryBox from '@/ui/no-history-box';
-import { normalizeForMatch } from '@/utils';
-import { parseMonth } from './utils';
+import { getRecentRange } from './utils';
+import useProfitRange from './use-profit-range';
 import ProfitSummaryCards from './profit-summary-cards';
 import ClientProfitTable from './client-profit-table';
 import ClientDetailPanel from './client-detail-panel';
-import MonthProfitSection from './month-profit-section';
+import MonthDetailPanel from './month-detail-panel';
+import RangeSectionHeader from './range-section-header';
+import MonthTrendSection from './month-trend-section';
+import MonthDetailTableSection from './month-detail-table-section';
+import SectionLoading from './section-loading';
 
 type ProfitTabType = 'client' | 'month';
 
 const ProfitDetailPage = () => {
   const t = useTranslations('dashboard.profitDetail');
   const router = useRouter();
-  const { getProfitDetail } = useGetProfitDetail();
 
-  const [data, setData] = useState<ProfitDetailResponseModel | null>(null);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const summary = useProfitRange();
+  const trend = useProfitRange(getRecentRange(5));
+  const monthDetail = useProfitRange();
+
   const [tab, setTab] = useState<ProfitTabType>('month');
   const [selectedClient, setSelectedClient] =
     useState<ClientProfitModel | null>(null);
-  const [clientSearch, setClientSearch] = useState('');
-
-  useEffect(() => {
-    getProfitDetail().then((result) => {
-      if (result.success && result.data) {
-        setData(result.data);
-      }
-      setIsLoaded(true);
-    });
-  }, [getProfitDetail]);
-
-  if (!isLoaded) {
-    return (
-      <div className="flex items-center justify-center h-[60vh]">
-        <Spinner />
-      </div>
-    );
-  }
-
-  if (!data) {
-    return (
-      <div className="p-10">
-        <NoHistoryBox
-          title={t('noData')}
-          text={t('noDataDescription')}
-          height="h-[60vh]"
-        />
-      </div>
-    );
-  }
-
-  const start = parseMonth(data.period_start);
-  const end = parseMonth(data.period_end);
+  const [selectedMonth, setSelectedMonth] =
+    useState<MonthlyProfitDetailModel | null>(null);
 
   const tabs: { key: ProfitTabType; label: string }[] = [
     { key: 'month', label: t('tabMonth') },
     { key: 'client', label: t('tabClient') },
   ];
-
-  const query = clientSearch.trim();
-  const filteredClients = query
-    ? data.by_client.filter((c) =>
-        normalizeForMatch(c.client_name).includes(normalizeForMatch(query))
-      )
-    : data.by_client;
 
   return (
     <>
@@ -88,16 +52,29 @@ const ProfitDetailPage = () => {
           {t('back')}
         </button>
         <h1 className="Heading-1">{t('title')}</h1>
-        <p className="mt-2 Re_Body-1 text-sv">
-          {t('monthLabel', { year: start.year, month: start.month })} ~{' '}
-          {t('monthLabel', { year: end.year, month: end.month })} ·{' '}
-          {t('subtitle')}
-        </p>
       </div>
 
       <div className="flex flex-col gap-8 p-10">
-        <ProfitSummaryCards data={data} />
+        {/* 전체 수익 요약 */}
+        <div className="flex flex-col gap-3">
+          <RangeSectionHeader
+            title={t('summaryTitle')}
+            period={summary.period}
+          />
+          {summary.isLoading ? (
+            <SectionLoading height="h-[120px]" />
+          ) : summary.data ? (
+            <ProfitSummaryCards data={summary.data} />
+          ) : (
+            <NoHistoryBox
+              title={t('noData')}
+              text={t('noDataDescription')}
+              height="h-[120px]"
+            />
+          )}
+        </div>
 
+        {/* 탭 */}
         <div className="flex gap-1 p-1 bg-bg rounded-lg w-fit">
           {tabs.map((item) => (
             <button
@@ -114,40 +91,49 @@ const ProfitDetailPage = () => {
           ))}
         </div>
 
-        {tab === 'client' && (
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center justify-between">
-              <h3 className="Heading-3">{t('tabClient')}</h3>
-              <SearchInput
-                width="w-[320px]"
-                value={clientSearch}
-                onChange={setClientSearch}
-                placeholder={t('searchClientPlaceholder')}
-              />
-            </div>
-            {filteredClients.length > 0 ? (
-              <ClientProfitTable
-                rows={filteredClients}
-                onSelect={setSelectedClient}
-              />
-            ) : (
-              <NoHistoryBox text={t('noClientResult')} />
-            )}
+        {tab === 'month' && (
+          <div className="flex flex-col gap-6">
+            <MonthTrendSection
+              rows={trend.data?.by_month ?? []}
+              lastYearRows={trend.data?.by_month_last_year}
+              isLoading={trend.isLoading}
+              period={trend.period}
+            />
+            <MonthDetailTableSection
+              rows={monthDetail.data?.by_month ?? []}
+              isLoading={monthDetail.isLoading}
+              period={monthDetail.period}
+              onSelectMonth={setSelectedMonth}
+            />
           </div>
         )}
 
-        {tab === 'month' && (
-          <MonthProfitSection
-            rows={data.by_month}
-            chartBoxClassName="border border-lg rounded-lg p-6 h-[320px] shadow-[2px_2px_22px_rgba(0,0,0,0.1)]"
-          />
-        )}
+        {tab === 'client' &&
+          (summary.isLoading ? (
+            <SectionLoading height="h-[200px]" />
+          ) : (
+            <ClientProfitTable
+              rows={summary.data?.by_client ?? []}
+              onSelect={setSelectedClient}
+              searchable
+              title={t('tabClient')}
+            />
+          ))}
       </div>
 
       {selectedClient && (
         <ClientDetailPanel
           client={selectedClient}
+          initialFrom={summary.from}
+          initialTo={summary.to}
           onClose={() => setSelectedClient(null)}
+        />
+      )}
+
+      {selectedMonth && (
+        <MonthDetailPanel
+          month={selectedMonth}
+          onClose={() => setSelectedMonth(null)}
         />
       )}
     </>

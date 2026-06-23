@@ -5,82 +5,79 @@ import { X } from '@phosphor-icons/react/dist/ssr';
 import { ClientProfitModel } from '@/types/data-model';
 import OverlayView from '@/ui/ovelay-view';
 import IconBtn from '@/ui/icon-btn';
-import NoHistoryBox from '@/ui/no-history-box';
-import { formatMoney, formatRate } from './utils';
+import { getRecentRange } from './utils';
+import useProfitRange from './use-profit-range';
 import ProductProfitTable from './product-profit-table';
-import MonthProfitSection from './month-profit-section';
+import ProfitStatRow from './profit-stat-row';
+import MonthTrendSection from './month-trend-section';
+import MonthDetailTableSection from './month-detail-table-section';
 
 interface ClientDetailPanelProps {
   client: ClientProfitModel;
+  initialFrom: string;
+  initialTo: string;
   onClose: () => void;
 }
 
-const Stat = ({
-  label,
-  value,
-  valueColor = 'text-dg',
-}: {
-  label: string;
-  value: string;
-  valueColor?: string;
-}) => (
-  <div className="flex-1 pt-4 pb-3 px-4 rounded-lg border border-lg">
-    <p className="Re_Body-1 text-sv">{label}</p>
-    <p className={`mt-1 Heading-3 ${valueColor}`}>{value}</p>
-  </div>
-);
-
-const ClientDetailPanel = ({ client, onClose }: ClientDetailPanelProps) => {
+const ClientDetailPanel = ({
+  client,
+  initialFrom,
+  initialTo,
+  onClose,
+}: ClientDetailPanelProps) => {
   const t = useTranslations('dashboard.profitDetail');
-  const won = t('won');
+  const tCommon = useTranslations('common');
+
+  const summary = useProfitRange({ from: initialFrom, to: initialTo });
+  const trend = useProfitRange(getRecentRange(5));
+  const monthDetail = useProfitRange();
+
+  const findClient = (data: typeof summary.data) =>
+    data?.by_client.find((c) => c.client_id === client.client_id) ?? null;
+
+  const figures = findClient(summary.data) ?? client;
+  const trendMonthly = findClient(trend.data)?.monthly ?? [];
+  const monthDetailMonthly = findClient(monthDetail.data)?.monthly ?? [];
 
   return (
     <OverlayView onClose={onClose}>
       <div className="w-full flex flex-col gap-6 px-8 pb-8">
         <div className="sticky pt-8 top-0 z-10 bg-wh">
           <div className="flex justify-between items-center h-13 border-b border-lg">
-            <h3 className="Heading-3">{client.client_name}</h3>
+            <div className="flex items-center gap-3">
+              <h3 className="Heading-3">{client.client_name}</h3>
+              {summary.isLoading && (
+                <span className="Re_Body-2 text-sv">{tCommon('loading')}</span>
+              )}
+            </div>
             <IconBtn icon={X} onClick={onClose} />
           </div>
         </div>
 
-        <div className="flex gap-3">
-          <Stat
-            label={t('totalRevenue')}
-            value={`${formatMoney(client.revenue)}${won}`}
-          />
-          <Stat
-            label={t('materialCost')}
-            value={`${formatMoney(client.material_cost)}${won}`}
-            valueColor="text-sv"
-          />
-          <Stat
-            label={t('totalProfit')}
-            value={`${formatMoney(client.profit)}${won}`}
-            valueColor="text-primary"
-          />
-          <Stat
-            label={t('profitRate')}
-            value={formatRate(client.profit_rate)}
-            valueColor="text-primary"
-          />
-        </div>
+        <ProfitStatRow
+          revenue={figures.revenue}
+          materialCost={figures.material_cost}
+          profit={figures.profit}
+          profitRate={figures.profit_rate}
+        />
 
-        <div className="flex flex-col gap-3">
-          <h3 className="Heading-3">{t('productDetailTitle')}</h3>
-          {client.products && client.products.length > 0 ? (
-            <ProductProfitTable rows={client.products} />
-          ) : (
-            <NoHistoryBox text={t('noProductData')} />
-          )}
-        </div>
+        <ProductProfitTable
+          rows={findClient(summary.data)?.products ?? client.products ?? []}
+          searchable
+          title={t('productDetailTitle')}
+        />
 
-        {client.monthly && client.monthly.length > 0 && (
-          <MonthProfitSection
-            rows={client.monthly}
-            chartBoxClassName="border border-lg rounded-lg p-6 h-[280px]"
-          />
-        )}
+        <MonthTrendSection
+          rows={trendMonthly}
+          isLoading={trend.isLoading}
+          period={trend.period}
+        />
+
+        <MonthDetailTableSection
+          rows={monthDetailMonthly}
+          isLoading={monthDetail.isLoading}
+          period={monthDetail.period}
+        />
       </div>
     </OverlayView>
   );

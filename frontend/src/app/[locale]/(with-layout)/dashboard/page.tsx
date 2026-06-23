@@ -403,7 +403,7 @@ const DashboardPageContent = () => {
                       </div>
                     )}
 
-                    {/* 생산 이익 그래프 */}
+                    {/* 생산 수익 그래프 */}
                     {isWidgetVisible('profitGraph') && (
                       <div
                         key="profitGraph"

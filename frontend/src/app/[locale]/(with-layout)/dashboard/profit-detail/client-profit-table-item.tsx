@@ -7,7 +7,7 @@ import { NameShortcutCell, ProfitValueCells } from './profit-table-cells';
 
 interface ClientProfitTableItemProps {
   client: ClientProfitModel;
-  onSelect: (client: ClientProfitModel) => void;
+  onSelect?: (client: ClientProfitModel) => void;
 }
 
 const ClientProfitTableItem = ({
@@ -19,8 +19,12 @@ const ClientProfitTableItem = ({
   return (
     <>
       <div
-        onClick={() => onSelect(client)}
-        className="h-14 flex items-center Me_Body-3 text-dg border-b border-lg cursor-pointer hover:bg-bg transition-colors ease-in-out duration-200"
+        onClick={onSelect ? () => onSelect(client) : undefined}
+        className={`h-14 flex items-center Me_Body-3 text-dg border-b border-lg ${
+          onSelect
+            ? 'cursor-pointer hover:bg-bg transition-colors ease-in-out duration-200'
+            : 'cursor-default'
+        }`}
       >
         <NameShortcutCell
           name={client.client_name}
