@@ -1,9 +1,14 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { CaretUpIcon, CaretDownIcon } from '@phosphor-icons/react/dist/ssr';
+import {
+  CaretUpIcon,
+  CaretDownIcon,
+  CaretRightIcon,
+} from '@phosphor-icons/react/dist/ssr';
 import { MonthlyProfitModel } from '@/types/data-model';
 import { removeTrailingZeros } from '@/utils';
+import { useRouter } from '@/i18n/navigation';
 
 interface ProductionYieldProps {
   monthlyProfits: MonthlyProfitModel[];
@@ -11,6 +16,7 @@ interface ProductionYieldProps {
 
 const ProductionYield = ({ monthlyProfits }: ProductionYieldProps) => {
   const t = useTranslations('dashboard.summaryKPI');
+  const router = useRouter();
 
   // 데이터가 없거나 빈 배열인 경우 기본값 사용
   const currentProfit =
@@ -37,7 +43,16 @@ const ProductionYield = ({ monthlyProfits }: ProductionYieldProps) => {
   return (
     <div className="pt-5 pb-4 px-5 rounded-lg border border-lg flex-1 shadow-[2px_2px_22px_rgba(0,0,0,0.1)]">
       <div className="flex flex-col gap-1">
-        <p className="Heading-4 text-sv">{t('productionRevenue')}</p>
+        <div className="flex items-center justify-between">
+          <p className="Heading-4 text-sv">{t('productionRevenue')}</p>
+          <button
+            onClick={() => router.push('/dashboard/profit-detail')}
+            className="flex items-center gap-0.5 Re_Body-1 text-primary cursor-pointer"
+          >
+            {t('viewDetail')}
+            <CaretRightIcon size={14} />
+          </button>
+        </div>
         <p className="flex gap-1 Heading-1">
           {formatProfit(currentProfit)} <span>{t('tenThousandWon')}</span>
         </p>

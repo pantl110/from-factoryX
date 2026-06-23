@@ -1252,6 +1252,50 @@ export interface DashboardResponseModel {
   last_year_monthly_profits: MonthlyProfitModel[];
 }
 
+// 수익률 자세히 보기 (자재원가는 소모 LOT의 실제 구매 단가 기준)
+export interface ProductProfitModel {
+  product_id: number;
+  product_name: string;
+  quantity: number;
+  revenue: number;
+  material_cost: number;
+  profit: number;
+  profit_rate: number;
+  is_estimated?: boolean;
+}
+
+export interface MonthlyProfitDetailModel {
+  month: string;
+  revenue: number;
+  material_cost: number;
+  profit: number;
+  profit_rate: number;
+  is_estimated?: boolean;
+}
+
+export interface ClientProfitModel {
+  client_id: number;
+  client_name: string;
+  revenue: number;
+  material_cost: number;
+  profit: number;
+  profit_rate: number;
+  is_estimated?: boolean;
+  monthly?: MonthlyProfitDetailModel[];
+  products?: ProductProfitModel[];
+}
+
+export interface ProfitDetailResponseModel {
+  period_start: string;
+  period_end: string;
+  total_revenue: number;
+  total_material_cost: number;
+  total_profit: number;
+  total_profit_rate: number;
+  by_client: ClientProfitModel[];
+  by_month: MonthlyProfitDetailModel[];
+}
+
 export interface MobileDashboardCountsResponseModel {
   undelivered_quotation_products: number;
   shortage_materials: number;

@@ -779,9 +779,43 @@
       "noData": "생산 이익 데이터가 없어요.",
       "noDataDescription": "제품을 생산하고 판매하면, 그에 따른 실적 정보가 자동으로 정리돼요."
     },
+    "profitDetail": {
+      "title": "수익 자세히 보기",
+      "subtitle": "자재원가는 소모된 LOT의 실제 구매 단가 기준으로 계산됩니다.",
+      "back": "현황판",
+      "tabClient": "거래처별 수익",
+      "tabMonth": "월별 수익",
+      "searchClientPlaceholder": "거래처명으로 검색",
+      "noClientResult": "검색 결과가 없어요.",
+      "totalRevenue": "총 매출",
+      "materialCost": "자재원가",
+      "materialCostBasis": "LOT 추적 기반",
+      "totalProfit": "총 수익",
+      "profitRate": "수익률",
+      "colClient": "거래처",
+      "colMonth": "월",
+      "colRevenue": "매출",
+      "colMaterialCost": "자재원가",
+      "colProfit": "수익",
+      "colProfitRate": "수익률",
+      "estimated": "추정",
+      "trendTitle": "월별 수익 추이",
+      "monthDetailTitle": "월별 상세",
+      "productDetailTitle": "제품별 수익",
+      "colProduct": "제품",
+      "colQuantity": "수량",
+      "noProductData": "제품 수익 데이터가 없어요.",
+      "legendRevenue": "매출",
+      "legendProfit": "수익",
+      "won": "원",
+      "monthLabel": "{year}년 {month}월",
+      "noData": "수익 데이터가 없어요.",
+      "noDataDescription": "제품을 생산하고 판매하면, 고객사별 수익과 월별 수익이 자동으로 정리돼요."
+    },
     "summaryKPI": {
       "activeProjects": "진행 프로젝트 수",
       "comparedToLastMonth": "전월 대비",
+      "viewDetail": "자세히 보기",
       "productionRevenue": "생산 수익",
       "tenThousandWon": "만원",
       "shortageMaterials": "부족한 자재 수",
@@ -1810,7 +1844,7 @@
           "description": "거래처 정보를 생성하면 이곳에 표시돼요."
         },
         "tableHeader": {
-          "clientType": "고객 유형"
+          "clientType": "거래처 유형"
         },
         "documents": {
           "title": "자료실"
