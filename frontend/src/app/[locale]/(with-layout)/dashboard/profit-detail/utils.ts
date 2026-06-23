@@ -1,3 +1,5 @@
+export const TABLE_PAGE_SIZE = 5;
+
 export const formatMoney = (value: number) => value.toLocaleString('ko-KR');
 
 export const formatRate = (rate: number) => `${rate.toFixed(1)}%`;

@@ -718,6 +718,7 @@
   },
   "navigation": {
     "dashboard": "Dashboard",
+    "profitDetail": "Production Revenue",
     "project": "Projects",
     "projectDropdown": {
       "process": "Active Projects",

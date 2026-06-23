@@ -719,6 +719,7 @@
   },
   "navigation": {
     "dashboard": "현황판",
+    "profitDetail": "생산 수익",
     "project": "프로젝트 관리",
     "projectDropdown": {
       "process": "진행 중인 프로젝트",
@@ -810,7 +811,7 @@
       "won": "원",
       "monthLabel": "{year}년 {month}월",
       "noData": "수익 데이터가 없어요.",
-      "noDataDescription": "제품을 생산하고 판매하면, 고객사별 수익과 월별 수익이 자동으로 정리돼요."
+      "noDataDescription": "제품을 생산하고 판매하면, 거래처별 수익과 월별 수익이 자동으로 정리돼요."
     },
     "summaryKPI": {
       "activeProjects": "진행 프로젝트 수",

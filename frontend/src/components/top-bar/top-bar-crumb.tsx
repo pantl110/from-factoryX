@@ -1,4 +1,4 @@
-import { usePathname } from '@/i18n/navigation';
+import { usePathname, useRouter } from '@/i18n/navigation';
 import { CaretRight } from '@phosphor-icons/react';
 import {
   SettingTabType,
@@ -23,11 +23,17 @@ const TopBarCrumb = ({
   const tNav = useTranslations('navigation');
   const tSetting = useTranslations('setting');
   const pathname = usePathname();
+  const router = useRouter();
+
+  const crumbHrefMap: Record<string, string> = {
+    dashboard: '/dashboard',
+  };
   const allCrumbs = pathname.split('/').filter(Boolean);
 
   const getCrumbName = (crumb: string): string => {
     const crumbMap: Record<string, () => string> = {
       dashboard: () => tNav('dashboard'),
+      'profit-detail': () => tNav('profitDetail'),
       project: () => tNav('project'),
       completed: () => tNav('projectDropdown.completed'),
       process: () => tNav('projectDropdown.process'),
@@ -123,12 +129,23 @@ const TopBarCrumb = ({
           displayText = getCrumbName(crumb);
         }
 
+        const href = crumbHrefMap[crumb];
+        const isLast = idx === finalCrumbs.length - 1;
+
         return (
           <div key={idx} className="flex items-center gap-1">
-            <p className="Re_Body-1 text-dg">{displayText}</p>
-            {idx < finalCrumbs.length - 1 && (
-              <CaretRight size={16} className="text-[#8c8c8c]" />
+            {href && !isLast ? (
+              <button
+                type="button"
+                onClick={() => router.push(href)}
+                className="Re_Body-1 text-dg cursor-pointer hover:underline"
+              >
+                {displayText}
+              </button>
+            ) : (
+              <p className="Re_Body-1 text-dg">{displayText}</p>
             )}
+            {!isLast && <CaretRight size={16} className="text-[#8c8c8c]" />}
           </div>
         );
       })}

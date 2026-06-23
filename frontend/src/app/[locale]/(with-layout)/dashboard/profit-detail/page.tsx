@@ -14,7 +14,6 @@ import SearchInput from '@/ui/search-input';
 import NoHistoryBox from '@/ui/no-history-box';
 import { normalizeForMatch } from '@/utils';
 import { parseMonth } from './utils';
-import { MOCK_PROFIT_DETAIL } from './mock';
 import ProfitSummaryCards from './profit-summary-cards';
 import ClientProfitTable from './client-profit-table';
 import ClientDetailPanel from './client-detail-panel';
@@ -29,6 +28,7 @@ const ProfitDetailPage = () => {
   const { getProfitDetail } = useGetProfitDetail();
 
   const [data, setData] = useState<ProfitDetailResponseModel | null>(null);
+  const [isLoaded, setIsLoaded] = useState(false);
   const [tab, setTab] = useState<ProfitTabType>('month');
   const [selectedClient, setSelectedClient] =
     useState<ClientProfitModel | null>(null);
@@ -36,15 +36,29 @@ const ProfitDetailPage = () => {
 
   useEffect(() => {
     getProfitDetail().then((result) => {
-      // TODO(backend): 백엔드 연동 후 mock 폴백 제거
-      setData(result.success && result.data ? result.data : MOCK_PROFIT_DETAIL);
+      if (result.success && result.data) {
+        setData(result.data);
+      }
+      setIsLoaded(true);
     });
   }, [getProfitDetail]);
 
-  if (!data) {
+  if (!isLoaded) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
         <Spinner />
+      </div>
+    );
+  }
+
+  if (!data) {
+    return (
+      <div className="p-10">
+        <NoHistoryBox
+          title={t('noData')}
+          text={t('noDataDescription')}
+          height="h-[60vh]"
+        />
       </div>
     );
   }

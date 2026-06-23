@@ -2,7 +2,10 @@
 
 import { useTranslations } from 'next-intl';
 import { MonthlyProfitDetailModel } from '@/types/data-model';
+import { usePagination } from '@/hooks';
+import Pagination from '@/components/pagination';
 import { ProfitValueHeaderCells } from './profit-table-cells';
+import { TABLE_PAGE_SIZE } from './utils';
 import MonthProfitTableItem from './month-profit-table-item';
 
 interface MonthProfitTableProps {
@@ -12,6 +15,8 @@ interface MonthProfitTableProps {
 const MonthProfitTable = ({ rows }: MonthProfitTableProps) => {
   const t = useTranslations('dashboard.profitDetail');
   const sorted = [...rows].sort((a, b) => b.month.localeCompare(a.month));
+  const { currentItems, currentPage, totalPages, setCurrentPage } =
+    usePagination({ items: sorted, itemsPerPage: TABLE_PAGE_SIZE });
 
   return (
     <div>
@@ -19,9 +24,18 @@ const MonthProfitTable = ({ rows }: MonthProfitTableProps) => {
         <p className="px-3 flex-1">{t('colMonth')}</p>
         <ProfitValueHeaderCells />
       </div>
-      {sorted.map((row) => (
+      {currentItems.map((row) => (
         <MonthProfitTableItem key={row.month} row={row} />
       ))}
+      {totalPages > 1 && (
+        <div className="flex justify-center mt-3">
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+          />
+        </div>
+      )}
     </div>
   );
 };

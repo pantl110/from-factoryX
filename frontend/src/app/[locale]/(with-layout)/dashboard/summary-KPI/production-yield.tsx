@@ -7,7 +7,6 @@ import {
   CaretRightIcon,
 } from '@phosphor-icons/react/dist/ssr';
 import { MonthlyProfitModel } from '@/types/data-model';
-import { removeTrailingZeros } from '@/utils';
 import { useRouter } from '@/i18n/navigation';
 
 interface ProductionYieldProps {
@@ -35,9 +34,9 @@ const ProductionYield = ({ monthlyProfits }: ProductionYieldProps) => {
       ? ((currentProfit - previousProfit) / previousProfit) * 100
       : undefined;
 
-  // 소수점이 0이면 제거 (유틸 함수 사용, 콤마 제거)
+  // 천 단위 콤마 + 소수점 0 제거 (locale)
   const formatProfit = (profit: number): string => {
-    return removeTrailingZeros(profit.toFixed(2)).replace(/,/g, '');
+    return profit.toLocaleString('ko-KR', { maximumFractionDigits: 2 });
   };
 
   return (

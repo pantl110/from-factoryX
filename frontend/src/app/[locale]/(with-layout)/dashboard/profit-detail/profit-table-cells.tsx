@@ -74,11 +74,11 @@ export const ProfitValueCells = ({
         {formatMoney(revenue)}
         {t('won')}
       </p>
-      <p className="px-3 flex-1">
+      <p className="px-3 flex-1 text-red">
         {formatMoney(materialCost)}
         {t('won')}
       </p>
-      <p className="px-3 flex-1">
+      <p className="px-3 flex-1 text-blue">
         {formatMoney(profit)}
         {t('won')}
       </p>
