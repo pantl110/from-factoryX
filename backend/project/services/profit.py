@@ -189,11 +189,12 @@ def build_profit_detail(factory_id, start=None, end=None):
     price_cache = {}
     clients = {}
     # 선택 기간의 모든 달을 0으로 미리 채워 빈 달도 차트/표에 노출되게 한다.
-    months = {}
+    month_keys = []
     month_cursor = start_month
     while month_cursor <= end_month:
-        months[_month_str(month_cursor)] = _blank_month()
+        month_keys.append(_month_str(month_cursor))
         month_cursor += relativedelta(months=1)
+    months = {ym: _blank_month() for ym in month_keys}
     total_revenue = 0
     total_material_cost = 0
     total_estimated = False
@@ -267,7 +268,7 @@ def build_profit_detail(factory_id, start=None, end=None):
                         "client_name": client.name,
                         "acc": _blank_acc(),
                         "products": {},
-                        "monthly": {},
+                        "monthly": {ym: _blank_acc() for ym in month_keys},
                     },
                 )
                 _add(client_entry["acc"], revenue, material_cost, estimated)
