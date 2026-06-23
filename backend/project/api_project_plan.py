@@ -18,7 +18,10 @@ from project.schemas.outbound import (
     ProjectPlanCreateOrUpdateOut,
     ProfitDetailOut,
 )
-from project.services.profit import build_profit_detail
+from project.services.profit import (
+    build_profit_detail,
+    build_profit_detail_with_last_year,
+)
 from document.schemas.outbound import TodayProductionPlanOut
 from project.models import Project, ProjectPlan, ProjectLog
 from document.models import Quotation, QuotationProduct
@@ -559,7 +562,7 @@ async def get_profit_detail(request):
     end = request.GET.get("end")  # "YYYY-MM" (선택)
 
     try:
-        result = await sync_to_async(build_profit_detail)(
+        result = await sync_to_async(build_profit_detail_with_last_year)(
             int(factory_id), start, end
         )
         return 200, ProfitDetailOut(**result)

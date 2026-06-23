@@ -407,5 +407,6 @@ class ProfitDetailOut(Schema):
     total_profit_rate: float
     by_client: List[ClientProfitOut]
     by_month: List[MonthlyProfitDetailOut]
+    by_month_last_year: List[MonthlyProfitDetailOut] = []
 
 

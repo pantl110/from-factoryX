@@ -277,3 +277,19 @@ def build_profit_detail(factory_id, start=None, end=None):
         "by_client": by_client,
         "by_month": by_month,
     }
+
+
+def build_profit_detail_with_last_year(factory_id, start=None, end=None):
+    result = build_profit_detail(factory_id, start, end)
+
+    def _shift_year(ym):
+        y, m = (int(x) for x in ym.split("-"))
+        return (date(y, m, 1) - relativedelta(years=1)).strftime("%Y-%m")
+
+    last_year = build_profit_detail(
+        factory_id,
+        _shift_year(result["period_start"]),
+        _shift_year(result["period_end"]),
+    )
+    result["by_month_last_year"] = last_year["by_month"]
+    return result
