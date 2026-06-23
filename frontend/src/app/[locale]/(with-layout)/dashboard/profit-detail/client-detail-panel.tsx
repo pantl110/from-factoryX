@@ -9,6 +9,7 @@ import { getRecentRange } from './utils';
 import useProfitRange from './use-profit-range';
 import ProductProfitTable from './product-profit-table';
 import ProfitStatRow from './profit-stat-row';
+import RangeSectionHeader from './range-section-header';
 import MonthTrendSection from './month-trend-section';
 import MonthDetailTableSection from './month-detail-table-section';
 
@@ -56,12 +57,18 @@ const ClientDetailPanel = ({
           </div>
         </div>
 
-        <ProfitStatRow
-          revenue={figures.revenue}
-          materialCost={figures.material_cost}
-          profit={figures.profit}
-          profitRate={figures.profit_rate}
-        />
+        <div className="flex flex-col gap-3">
+          <RangeSectionHeader
+            title={t('summaryTitle')}
+            period={summary.period}
+          />
+          <ProfitStatRow
+            revenue={figures.revenue}
+            materialCost={figures.material_cost}
+            profit={figures.profit}
+            profitRate={figures.profit_rate}
+          />
+        </div>
 
         <ProductProfitTable
           rows={findClient(summary.data)?.products ?? client.products ?? []}

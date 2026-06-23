@@ -865,7 +865,7 @@
     },
     "todayProductionSchedule": {
       "title": "Today's Production Schedule",
-      "noHistory": "No history yet.",
+      "noHistory": "No production scheduled for today.",
       "noHistoryDescription": "You can check the products to be produced today here.",
       "printButton": "Print Work Instruction",
       "printConfirmTitle": "Would you like to print the work instruction?",

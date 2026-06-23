@@ -866,7 +866,7 @@
     },
     "todayProductionSchedule": {
       "title": "오늘의 생산 일정",
-      "noHistory": "히스토리가 아직 없어요.",
+      "noHistory": "오늘 생산 일정이 없어요.",
       "noHistoryDescription": "오늘 생산할 제품을 여기에서 확인할 수 있어요.",
       "printButton": "생산지시서 출력",
       "printConfirmTitle": "생산지시서를 출력하시겠어요?",
