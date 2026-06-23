@@ -110,6 +110,40 @@ def _blank_acc():
     return {"revenue": 0, "material_cost": 0, "is_estimated": False}
 
 
+def _blank_month():
+    return {"acc": _blank_acc(), "clients": {}, "products": {}}
+
+
+def _add_product(bucket, product, revenue, material_cost, estimated, quantity):
+    entry = bucket.setdefault(
+        product.id,
+        {
+            "product_id": product.id,
+            "product_name": product.name,
+            "quantity": 0,
+            "acc": _blank_acc(),
+        },
+    )
+    entry["quantity"] += int(quantity or 0)
+    _add(entry["acc"], revenue, material_cost, estimated)
+
+
+def _finalize_products(bucket):
+    products = [
+        _finalize(
+            p["acc"],
+            {
+                "product_id": p["product_id"],
+                "product_name": p["product_name"],
+                "quantity": p["quantity"],
+            },
+        )
+        for p in bucket.values()
+    ]
+    products.sort(key=lambda x: x["revenue"], reverse=True)
+    return products
+
+
 def _add(acc, revenue, material_cost, estimated):
     acc["revenue"] += revenue
     acc["material_cost"] += material_cost
@@ -187,12 +221,37 @@ def build_profit_detail(factory_id, start=None, end=None):
                 total_material_cost += material_cost
                 total_estimated = total_estimated or estimated
 
-                # 월별 (전체)
-                _add(
-                    months.setdefault(ym, _blank_acc()),
+                product = qp.product
+                quantity = qp.quantity or 0
+
+                # 월별 (전체 + 그 달의 거래처별/제품별 분해)
+                month_entry = months.setdefault(ym, _blank_month())
+                _add(month_entry["acc"], revenue, material_cost, estimated)
+                _add_product(
+                    month_entry["products"],
+                    product,
                     revenue,
                     material_cost,
                     estimated,
+                    quantity,
+                )
+                month_client = month_entry["clients"].setdefault(
+                    client.id,
+                    {
+                        "client_id": client.id,
+                        "client_name": client.name,
+                        "acc": _blank_acc(),
+                        "products": {},
+                    },
+                )
+                _add(month_client["acc"], revenue, material_cost, estimated)
+                _add_product(
+                    month_client["products"],
+                    product,
+                    revenue,
+                    material_cost,
+                    estimated,
+                    quantity,
                 )
 
                 # 거래처별
@@ -209,18 +268,14 @@ def build_profit_detail(factory_id, start=None, end=None):
                 _add(client_entry["acc"], revenue, material_cost, estimated)
 
                 # 거래처 - 제품별
-                product = qp.product
-                product_acc = client_entry["products"].setdefault(
-                    product.id,
-                    {
-                        "product_id": product.id,
-                        "product_name": product.name,
-                        "quantity": 0,
-                        "acc": _blank_acc(),
-                    },
+                _add_product(
+                    client_entry["products"],
+                    product,
+                    revenue,
+                    material_cost,
+                    estimated,
+                    quantity,
                 )
-                product_acc["quantity"] += int(qp.quantity or 0)
-                _add(product_acc["acc"], revenue, material_cost, estimated)
 
                 # 거래처 - 월별
                 _add(
@@ -232,19 +287,6 @@ def build_profit_detail(factory_id, start=None, end=None):
 
     by_client = []
     for entry in clients.values():
-        products = [
-            _finalize(
-                p["acc"],
-                {
-                    "product_id": p["product_id"],
-                    "product_name": p["product_name"],
-                    "quantity": p["quantity"],
-                },
-            )
-            for p in entry["products"].values()
-        ]
-        products.sort(key=lambda x: x["revenue"], reverse=True)
-
         monthly = [
             _finalize(acc, {"month": ym}) for ym, acc in entry["monthly"].items()
         ]
@@ -256,14 +298,38 @@ def build_profit_detail(factory_id, start=None, end=None):
                 {
                     "client_id": entry["client_id"],
                     "client_name": entry["client_name"],
-                    "products": products,
+                    "products": _finalize_products(entry["products"]),
                     "monthly": monthly,
                 },
             )
         )
     by_client.sort(key=lambda x: x["revenue"], reverse=True)
 
-    by_month = [_finalize(acc, {"month": ym}) for ym, acc in months.items()]
+    by_month = []
+    for ym, entry in months.items():
+        month_clients = [
+            _finalize(
+                c["acc"],
+                {
+                    "client_id": c["client_id"],
+                    "client_name": c["client_name"],
+                    "products": _finalize_products(c["products"]),
+                },
+            )
+            for c in entry["clients"].values()
+        ]
+        month_clients.sort(key=lambda x: x["revenue"], reverse=True)
+
+        by_month.append(
+            _finalize(
+                entry["acc"],
+                {
+                    "month": ym,
+                    "clients": month_clients,
+                    "products": _finalize_products(entry["products"]),
+                },
+            )
+        )
     by_month.sort(key=lambda x: x["month"], reverse=True)
 
     total_profit = total_revenue - total_material_cost

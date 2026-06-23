@@ -387,8 +387,16 @@ class ProductProfitOut(ProfitFiguresOut):
     quantity: int
 
 
+class MonthClientProfitOut(ProfitFiguresOut):
+    client_id: int
+    client_name: str
+    products: List[ProductProfitOut] = []
+
+
 class MonthlyProfitDetailOut(ProfitFiguresOut):
     month: str
+    clients: List[MonthClientProfitOut] = []
+    products: List[ProductProfitOut] = []
 
 
 class ClientProfitOut(ProfitFiguresOut):
