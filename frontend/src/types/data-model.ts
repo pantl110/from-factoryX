@@ -1284,6 +1284,7 @@ export interface ClientProfitModel {
   profit_rate: number;
   is_estimated?: boolean;
   monthly?: MonthlyProfitDetailModel[];
+  monthly_last_year?: MonthlyProfitDetailModel[];
   products?: ProductProfitModel[];
 }
 

@@ -28,7 +28,7 @@ const useSearchablePagination = <T>(
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [query, setCurrentPage]);
+  }, [query, rows.length, setCurrentPage]);
 
   return { search, setSearch, filteredCount: filtered.length, ...pagination };
 };

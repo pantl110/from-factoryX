@@ -36,7 +36,9 @@ const ClientDetailPanel = ({
     data?.by_client.find((c) => c.client_id === client.client_id) ?? null;
 
   const figures = findClient(summary.data) ?? client;
-  const trendMonthly = findClient(trend.data)?.monthly ?? [];
+  const trendClient = findClient(trend.data);
+  const trendMonthly = trendClient?.monthly ?? [];
+  const trendLastYear = trendClient?.monthly_last_year ?? [];
   const monthDetailMonthly = findClient(monthDetail.data)?.monthly ?? [];
 
   return (
@@ -69,6 +71,7 @@ const ClientDetailPanel = ({
 
         <MonthTrendSection
           rows={trendMonthly}
+          lastYearRows={trendLastYear}
           isLoading={trend.isLoading}
           period={trend.period}
         />
