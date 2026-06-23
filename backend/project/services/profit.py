@@ -197,7 +197,6 @@ def build_profit_detail(factory_id, start=None, end=None):
     months = {ym: _blank_month() for ym in month_keys}
     total_revenue = 0
     total_material_cost = 0
-    total_estimated = False
 
     for project in projects:
         if not project.completed_at:
@@ -225,7 +224,6 @@ def build_profit_detail(factory_id, start=None, end=None):
 
                 total_revenue += revenue
                 total_material_cost += material_cost
-                total_estimated = total_estimated or estimated
 
                 product = qp.product
                 quantity = qp.quantity or 0
@@ -364,4 +362,11 @@ def build_profit_detail_with_last_year(factory_id, start=None, end=None):
         _shift_year(result["period_end"]),
     )
     result["by_month_last_year"] = last_year["by_month"]
+
+    # 거래처별 추이 YoY 비교용: 각 거래처의 작년 월별을 부착
+    last_year_by_client = {c["client_id"]: c for c in last_year["by_client"]}
+    for client_entry in result["by_client"]:
+        ly = last_year_by_client.get(client_entry["client_id"])
+        client_entry["monthly_last_year"] = ly["monthly"] if ly else []
+
     return result

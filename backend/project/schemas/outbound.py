@@ -404,6 +404,7 @@ class ClientProfitOut(ProfitFiguresOut):
     client_name: str
     products: List[ProductProfitOut] = []
     monthly: List[MonthlyProfitDetailOut] = []
+    monthly_last_year: List[MonthlyProfitDetailOut] = []
 
 
 class ProfitDetailOut(Schema):
