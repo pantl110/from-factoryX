@@ -64,6 +64,11 @@ class Project(BaseModel):
         blank=True,
         help_text="주문 확정 -> 생산 대기 일자",
     )
+    completed_at = models.DateField(
+        null=True,
+        blank=True,
+        help_text="프로젝트 완료 일자",
+    )
 
 
 # 생산 계획(내역)

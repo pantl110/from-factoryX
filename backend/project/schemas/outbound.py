@@ -372,3 +372,40 @@ class ProjectPlanCreateOrUpdateOut(Schema):
     action: str  # "created" 또는 "updated"
 
 
+# 수익 상세 (거래처별/월별/제품별, LOT 기반 자재원가)
+class ProfitFiguresOut(Schema):
+    revenue: int
+    material_cost: int
+    profit: int
+    profit_rate: float
+    is_estimated: bool = False
+
+
+class ProductProfitOut(ProfitFiguresOut):
+    product_id: int
+    product_name: str
+    quantity: int
+
+
+class MonthlyProfitDetailOut(ProfitFiguresOut):
+    month: str
+
+
+class ClientProfitOut(ProfitFiguresOut):
+    client_id: int
+    client_name: str
+    products: List[ProductProfitOut] = []
+    monthly: List[MonthlyProfitDetailOut] = []
+
+
+class ProfitDetailOut(Schema):
+    period_start: str
+    period_end: str
+    total_revenue: int
+    total_material_cost: int
+    total_profit: int
+    total_profit_rate: float
+    by_client: List[ClientProfitOut]
+    by_month: List[MonthlyProfitDetailOut]
+
+

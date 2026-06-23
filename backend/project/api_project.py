@@ -631,6 +631,11 @@ async def update_project_status(
         project.status = payload.status
         if payload.status == Project.ProjectStatus.pending:
             project.pending_at = date.today()
+        if (
+            payload.status == Project.ProjectStatus.completed
+            and old_status != Project.ProjectStatus.completed
+        ):
+            project.completed_at = date.today()
         if payload.is_printed is True:
             project.printed_at = date.today()
         await project.asave()
