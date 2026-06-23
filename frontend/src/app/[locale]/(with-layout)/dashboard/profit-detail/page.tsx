@@ -17,8 +17,7 @@ import { parseMonth } from './utils';
 import ProfitSummaryCards from './profit-summary-cards';
 import ClientProfitTable from './client-profit-table';
 import ClientDetailPanel from './client-detail-panel';
-import MonthProfitChart from './month-profit-chart';
-import MonthProfitTable from './month-profit-table';
+import MonthProfitSection from './month-profit-section';
 
 type ProfitTabType = 'client' | 'month';
 
@@ -138,18 +137,10 @@ const ProfitDetailPage = () => {
         )}
 
         {tab === 'month' && (
-          <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-3">
-              <h3 className="Heading-3">{t('trendTitle')}</h3>
-              <div className="border border-lg rounded-lg p-6 h-[320px] shadow-[2px_2px_22px_rgba(0,0,0,0.1)]">
-                <MonthProfitChart rows={data.by_month} />
-              </div>
-            </div>
-            <div className="flex flex-col gap-3">
-              <h3 className="Heading-3">{t('monthDetailTitle')}</h3>
-              <MonthProfitTable rows={data.by_month} />
-            </div>
-          </div>
+          <MonthProfitSection
+            rows={data.by_month}
+            chartBoxClassName="border border-lg rounded-lg p-6 h-[320px] shadow-[2px_2px_22px_rgba(0,0,0,0.1)]"
+          />
         )}
       </div>
 

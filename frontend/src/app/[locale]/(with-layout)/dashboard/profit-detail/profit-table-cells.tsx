@@ -17,6 +17,7 @@ interface NameShortcutCellProps {
   name: string;
   isEstimated?: boolean;
   onShortcut: (e?: React.MouseEvent<HTMLButtonElement>) => void;
+  widthClass?: string;
 }
 
 export const EstimatedChip = () => {
@@ -32,8 +33,11 @@ export const NameShortcutCell = ({
   name,
   isEstimated,
   onShortcut,
+  widthClass = 'flex-1',
 }: NameShortcutCellProps) => (
-  <div className="flex-1 px-3 flex items-center justify-between gap-1 min-w-0">
+  <div
+    className={`${widthClass} px-3 flex items-center justify-between gap-1 min-w-0`}
+  >
     <div className="flex items-center gap-2 min-w-0">
       <p className="text-dg truncate" title={name}>
         {name}
@@ -56,7 +60,7 @@ export const ProfitValueHeaderCells = () => {
       <p className="px-3 flex-1">{t('colRevenue')}</p>
       <p className="px-3 flex-1">{t('colMaterialCost')}</p>
       <p className="px-3 flex-1">{t('colProfit')}</p>
-      <p className="px-3 flex-1">{t('colProfitRate')}</p>
+      <p className="px-3 flex-[0.8]">{t('colProfitRate')}</p>
     </>
   );
 };
@@ -82,7 +86,7 @@ export const ProfitValueCells = ({
         {formatMoney(profit)}
         {t('won')}
       </p>
-      <p className="px-3 flex-1">{formatRate(profitRate)}</p>
+      <p className="px-3 flex-[0.8]">{formatRate(profitRate)}</p>
     </>
   );
 };

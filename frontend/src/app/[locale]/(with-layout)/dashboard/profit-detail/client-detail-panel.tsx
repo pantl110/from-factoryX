@@ -8,8 +8,7 @@ import IconBtn from '@/ui/icon-btn';
 import NoHistoryBox from '@/ui/no-history-box';
 import { formatMoney, formatRate } from './utils';
 import ProductProfitTable from './product-profit-table';
-import MonthProfitChart from './month-profit-chart';
-import MonthProfitTable from './month-profit-table';
+import MonthProfitSection from './month-profit-section';
 
 interface ClientDetailPanelProps {
   client: ClientProfitModel;
@@ -77,18 +76,10 @@ const ClientDetailPanel = ({ client, onClose }: ClientDetailPanelProps) => {
         </div>
 
         {client.monthly && client.monthly.length > 0 && (
-          <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-3">
-              <h3 className="Heading-3">{t('trendTitle')}</h3>
-              <div className="border border-lg rounded-lg p-6 h-[280px]">
-                <MonthProfitChart rows={client.monthly} />
-              </div>
-            </div>
-            <div className="flex flex-col gap-3">
-              <h3 className="Heading-3">{t('monthDetailTitle')}</h3>
-              <MonthProfitTable rows={client.monthly} />
-            </div>
-          </div>
+          <MonthProfitSection
+            rows={client.monthly}
+            chartBoxClassName="border border-lg rounded-lg p-6 h-[280px]"
+          />
         )}
       </div>
     </OverlayView>

@@ -20,6 +20,7 @@ const ProductProfitTableItem = ({ row }: ProductProfitTableItemProps) => {
           name={row.product_name}
           isEstimated={row.is_estimated}
           onShortcut={() => setIsProductDetailOpen(true)}
+          widthClass="flex-[2]"
         />
         <p className="px-3 w-[90px]">{formatMoney(row.quantity)}</p>
         <ProfitValueCells {...row} />

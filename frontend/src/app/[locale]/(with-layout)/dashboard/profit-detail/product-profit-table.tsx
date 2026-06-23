@@ -20,7 +20,7 @@ const ProductProfitTable = ({ rows }: ProductProfitTableProps) => {
   return (
     <div>
       <div className="flex items-center h-12 border-t border-b border-lg Me_Body-3 text-sv rounded-sm cursor-default">
-        <p className="px-3 flex-1">{t('colProduct')}</p>
+        <p className="px-3 flex-[2]">{t('colProduct')}</p>
         <p className="px-3 w-[90px]">{t('colQuantity')}</p>
         <ProfitValueHeaderCells />
       </div>
