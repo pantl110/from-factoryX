@@ -37,13 +37,19 @@ const MonthDetailPanel = ({ month, onClose }: MonthDetailPanelProps) => {
         />
 
         <ProductProfitTable
-          rows={month.products ?? []}
+          scope="month_products"
+          from={month.month}
+          to={month.month}
+          parentId={month.month}
           searchable
           title={t('productDetailTitle')}
         />
 
         <ClientProfitTable
-          rows={month.clients ?? []}
+          scope="month_clients"
+          from={month.month}
+          to={month.month}
+          parentId={month.month}
           searchable
           title={t('tabClient')}
         />

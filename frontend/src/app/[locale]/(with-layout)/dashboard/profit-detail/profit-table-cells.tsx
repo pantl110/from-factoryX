@@ -1,10 +1,51 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { ArrowLineUpRight } from '@phosphor-icons/react';
+import { ArrowLineUpRight, CaretUpDown } from '@phosphor-icons/react';
 import { RoundChip } from '@/ui/round-chip';
 import IconBtn from '@/ui/icon-btn';
 import { formatMoney, formatRate } from './utils';
+
+export type ProfitSortKeyType =
+  | 'month'
+  | 'client_name'
+  | 'product_name'
+  | 'quantity'
+  | 'revenue'
+  | 'material_cost'
+  | 'profit'
+  | 'profit_rate';
+
+export interface ProfitSortConfigModel {
+  sortKey: ProfitSortKeyType;
+  sortOrder: 'asc' | 'desc';
+  onSort: (key: ProfitSortKeyType) => void;
+}
+
+export const SortableHeaderCell = ({
+  label,
+  columnKey,
+  widthClass,
+  sort,
+}: {
+  label: string;
+  columnKey: ProfitSortKeyType;
+  widthClass: string;
+  sort?: ProfitSortConfigModel;
+}) => {
+  if (!sort) {
+    return <p className={`px-3 ${widthClass}`}>{label}</p>;
+  }
+  return (
+    <div
+      className={`px-3 ${widthClass} h-full flex items-center gap-1 hover:bg-bg cursor-pointer`}
+      onClick={() => sort.onSort(columnKey)}
+    >
+      <p>{label}</p>
+      <CaretUpDown size={18} className="text-sv" />
+    </div>
+  );
+};
 
 interface ProfitValueCellsProps {
   revenue: number;
@@ -53,14 +94,37 @@ export const NameShortcutCell = ({
   </div>
 );
 
-export const ProfitValueHeaderCells = () => {
+export const ProfitValueHeaderCells = ({
+  sort,
+}: {
+  sort?: ProfitSortConfigModel;
+}) => {
   const t = useTranslations('dashboard.profitDetail');
   return (
     <>
-      <p className="px-3 flex-1">{t('colRevenue')}</p>
-      <p className="px-3 flex-1">{t('colMaterialCost')}</p>
-      <p className="px-3 flex-1">{t('colProfit')}</p>
-      <p className="px-3 flex-[0.8]">{t('colProfitRate')}</p>
+      <SortableHeaderCell
+        label={t('colRevenue')}
+        columnKey="revenue"
+        widthClass="flex-1"
+        sort={sort}
+      />
+      <SortableHeaderCell
+        label={t('colMaterialCost')}
+        columnKey="material_cost"
+        widthClass="flex-1"
+      />
+      <SortableHeaderCell
+        label={t('colProfit')}
+        columnKey="profit"
+        widthClass="flex-1"
+        sort={sort}
+      />
+      <SortableHeaderCell
+        label={t('colProfitRate')}
+        columnKey="profit_rate"
+        widthClass="flex-[0.8]"
+        sort={sort}
+      />
     </>
   );
 };

@@ -1,70 +1,68 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { ClientProfitModel } from '@/types/data-model';
-import Pagination from '@/components/pagination';
-import { ProfitValueHeaderCells } from './profit-table-cells';
+import { ClientProfitModel, ProfitListScopeType } from '@/types/data-model';
+import {
+  ProfitValueHeaderCells,
+  SortableHeaderCell,
+} from './profit-table-cells';
 import ClientProfitTableItem from './client-profit-table-item';
-import SearchableTableShell from './searchable-table-shell';
-import useSearchablePagination from './use-searchable-pagination';
+import ProfitListTable from './profit-list-table';
 
 interface ClientProfitTableProps {
-  rows: ClientProfitModel[];
+  scope: ProfitListScopeType;
+  from: string;
+  to: string;
+  parentId?: string;
   onSelect?: (client: ClientProfitModel) => void;
   searchable?: boolean;
   title?: string;
 }
 
 const ClientProfitTable = ({
-  rows,
+  scope,
+  from,
+  to,
+  parentId,
   onSelect,
-  searchable = false,
+  searchable,
   title,
 }: ClientProfitTableProps) => {
   const t = useTranslations('dashboard.profitDetail');
-  const {
-    search,
-    setSearch,
-    filteredCount,
-    currentItems,
-    currentPage,
-    totalPages,
-    setCurrentPage,
-  } = useSearchablePagination(rows, searchable, (row) => row.client_name);
 
   return (
-    <SearchableTableShell
+    <ProfitListTable<ClientProfitModel>
+      scope={scope}
+      from={from}
+      to={to}
+      parentId={parentId}
+      defaultSort="profit"
       searchable={searchable}
-      search={search}
-      onSearchChange={setSearch}
-      searchPlaceholder={t('searchClientPlaceholder')}
-      isEmpty={filteredCount === 0}
-      emptyText={search.trim() ? t('noClientResult') : t('noClientData')}
       title={title}
-    >
-      <div>
-        <div className="flex items-center h-12 border-t border-b border-lg Me_Body-3 text-sv rounded-sm cursor-default">
-          <p className="px-3 flex-1">{t('colClient')}</p>
-          <ProfitValueHeaderCells />
-        </div>
-        {currentItems.map((row) => (
+      searchPlaceholder={t('searchClientPlaceholder')}
+      noResultText={t('noClientResult')}
+      noDataText={t('noClientData')}
+      renderHeader={(sort) => (
+        <>
+          <SortableHeaderCell
+            label={t('colClient')}
+            columnKey="client_name"
+            widthClass="flex-1"
+            sort={sort}
+          />
+          <ProfitValueHeaderCells sort={sort} />
+        </>
+      )}
+      renderRows={(rows) =>
+        rows.map((row) => (
           <ClientProfitTableItem
             key={row.client_id}
             client={row}
             onSelect={onSelect}
           />
-        ))}
-        {totalPages > 1 && (
-          <div className="flex justify-center mt-3">
-            <Pagination
-              currentPage={currentPage}
-              totalPages={totalPages}
-              onPageChange={setCurrentPage}
-            />
-          </div>
-        )}
-      </div>
-    </SearchableTableShell>
+        ))
+      }
+    />
   );
 };
 

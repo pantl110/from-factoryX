@@ -10,7 +10,8 @@ import {
 } from '@/types/data-model';
 import NoHistoryBox from '@/ui/no-history-box';
 import { getRecentRange } from './utils';
-import useProfitRange from './use-profit-range';
+import usePeriodRange from './use-period-range';
+import useProfitSummary from './use-profit-summary';
 import ProfitSummaryCards from './profit-summary-cards';
 import ClientProfitTable from './client-profit-table';
 import ClientDetailPanel from './client-detail-panel';
@@ -26,9 +27,13 @@ const ProfitDetailPage = () => {
   const t = useTranslations('dashboard.profitDetail');
   const router = useRouter();
 
-  const summary = useProfitRange();
-  const trend = useProfitRange(getRecentRange(5));
-  const monthDetail = useProfitRange();
+  const summaryRange = usePeriodRange();
+  const trendRange = usePeriodRange(getRecentRange(5));
+  const monthRange = usePeriodRange();
+  const summary = useProfitSummary({
+    from: summaryRange.from,
+    to: summaryRange.to,
+  });
 
   const [tab, setTab] = useState<ProfitTabType>('month');
   const [selectedClient, setSelectedClient] =
@@ -59,7 +64,7 @@ const ProfitDetailPage = () => {
         <div className="flex flex-col gap-3">
           <RangeSectionHeader
             title={t('summaryTitle')}
-            period={summary.period}
+            period={summaryRange.period}
           />
           {summary.isLoading ? (
             <SectionLoading height="h-[120px]" />
@@ -93,39 +98,32 @@ const ProfitDetailPage = () => {
 
         {tab === 'month' && (
           <div className="flex flex-col gap-6">
-            <MonthTrendSection
-              rows={trend.data?.by_month ?? []}
-              lastYearRows={trend.data?.by_month_last_year}
-              isLoading={trend.isLoading}
-              period={trend.period}
-            />
+            <MonthTrendSection period={trendRange.period} />
             <MonthDetailTableSection
-              rows={monthDetail.data?.by_month ?? []}
-              isLoading={monthDetail.isLoading}
-              period={monthDetail.period}
+              period={monthRange.period}
+              scope="months"
               onSelectMonth={setSelectedMonth}
             />
           </div>
         )}
 
-        {tab === 'client' &&
-          (summary.isLoading ? (
-            <SectionLoading height="h-[200px]" />
-          ) : (
-            <ClientProfitTable
-              rows={summary.data?.by_client ?? []}
-              onSelect={setSelectedClient}
-              searchable
-              title={t('tabClient')}
-            />
-          ))}
+        {tab === 'client' && (
+          <ClientProfitTable
+            scope="clients"
+            from={summaryRange.from}
+            to={summaryRange.to}
+            onSelect={setSelectedClient}
+            searchable
+            title={t('tabClient')}
+          />
+        )}
       </div>
 
       {selectedClient && (
         <ClientDetailPanel
           client={selectedClient}
-          initialFrom={summary.from}
-          initialTo={summary.to}
+          initialFrom={summaryRange.from}
+          initialTo={summaryRange.to}
           onClose={() => setSelectedClient(null)}
         />
       )}

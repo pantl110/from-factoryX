@@ -1,29 +1,27 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { MonthlyProfitDetailModel } from '@/types/data-model';
 import Spinner from '@/ui/spinner';
 import MonthProfitChart from './month-profit-chart';
 import { ProfitPeriodModel } from './period-range-picker';
 import RangeSectionHeader from './range-section-header';
+import useProfitTrend from './use-profit-trend';
 
 const CHART_BOX =
   'border border-lg rounded-lg p-6 h-[320px] shadow-[2px_2px_22px_rgba(0,0,0,0.1)]';
 
 interface MonthTrendSectionProps {
-  rows: MonthlyProfitDetailModel[];
-  isLoading: boolean;
   period: ProfitPeriodModel;
-  lastYearRows?: MonthlyProfitDetailModel[];
+  clientId?: string;
 }
 
-const MonthTrendSection = ({
-  rows,
-  isLoading,
-  period,
-  lastYearRows,
-}: MonthTrendSectionProps) => {
+const MonthTrendSection = ({ period, clientId }: MonthTrendSectionProps) => {
   const t = useTranslations('dashboard.profitDetail');
+  const { data, isLoading } = useProfitTrend({
+    from: period.from,
+    to: period.to,
+    clientId,
+  });
 
   return (
     <div className="flex flex-col gap-3">
@@ -34,7 +32,10 @@ const MonthTrendSection = ({
         </div>
       ) : (
         <div className={CHART_BOX}>
-          <MonthProfitChart rows={rows} lastYearRows={lastYearRows} />
+          <MonthProfitChart
+            rows={data?.by_month ?? []}
+            lastYearRows={data?.by_month_last_year}
+          />
         </div>
       )}
     </div>

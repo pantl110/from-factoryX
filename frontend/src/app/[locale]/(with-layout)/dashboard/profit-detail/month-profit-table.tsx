@@ -1,42 +1,67 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
-import { MonthlyProfitDetailModel } from '@/types/data-model';
-import { usePagination } from '@/hooks';
-import Pagination from '@/components/pagination';
-import { ProfitValueHeaderCells } from './profit-table-cells';
-import { TABLE_PAGE_SIZE } from './utils';
+import {
+  MonthlyProfitDetailModel,
+  ProfitListScopeType,
+} from '@/types/data-model';
+import {
+  ProfitValueHeaderCells,
+  SortableHeaderCell,
+} from './profit-table-cells';
 import MonthProfitTableItem from './month-profit-table-item';
+import SectionLoading from './section-loading';
+import TablePagination from './table-pagination';
+import useProfitList from './use-profit-list';
 
 interface MonthProfitTableProps {
-  rows: MonthlyProfitDetailModel[];
+  scope: ProfitListScopeType;
+  from: string;
+  to: string;
+  parentId?: string;
   onSelect?: (row: MonthlyProfitDetailModel) => void;
 }
 
-const MonthProfitTable = ({ rows, onSelect }: MonthProfitTableProps) => {
+const MonthProfitTable = ({
+  scope,
+  from,
+  to,
+  parentId,
+  onSelect,
+}: MonthProfitTableProps) => {
   const t = useTranslations('dashboard.profitDetail');
-  const sorted = [...rows].sort((a, b) => b.month.localeCompare(a.month));
-  const { currentItems, currentPage, totalPages, setCurrentPage } =
-    usePagination({ items: sorted, itemsPerPage: TABLE_PAGE_SIZE });
+  const { rows, totalPages, page, setPage, isLoading, sort } =
+    useProfitList<MonthlyProfitDetailModel>({
+      scope,
+      from,
+      to,
+      parentId,
+      defaultSort: 'month',
+    });
+
+  if (isLoading) {
+    return <SectionLoading height="h-[200px]" />;
+  }
 
   return (
     <div>
-      <div className="flex items-center h-12 border-t border-b border-lg Me_Body-3 text-sv rounded-sm cursor-default">
-        <p className="px-3 flex-1">{t('colMonth')}</p>
-        <ProfitValueHeaderCells />
+      <div className="flex items-center h-12 border-t border-b border-lg Me_Body-3 text-sv rounded-sm">
+        <SortableHeaderCell
+          label={t('colMonth')}
+          columnKey="month"
+          widthClass="flex-1"
+          sort={sort}
+        />
+        <ProfitValueHeaderCells sort={sort} />
       </div>
-      {currentItems.map((row) => (
+      {rows.map((row) => (
         <MonthProfitTableItem key={row.month} row={row} onSelect={onSelect} />
       ))}
-      {totalPages > 1 && (
-        <div className="flex justify-center mt-3">
-          <Pagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
-        </div>
-      )}
+      <TablePagination
+        page={page}
+        totalPages={totalPages}
+        onPageChange={setPage}
+      />
     </div>
   );
 };

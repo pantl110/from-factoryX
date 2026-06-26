@@ -6,7 +6,8 @@ import { ClientProfitModel } from '@/types/data-model';
 import OverlayView from '@/ui/ovelay-view';
 import IconBtn from '@/ui/icon-btn';
 import { getRecentRange } from './utils';
-import useProfitRange from './use-profit-range';
+import usePeriodRange from './use-period-range';
+import useProfitSummary from './use-profit-summary';
 import ProductProfitTable from './product-profit-table';
 import ProfitStatRow from './profit-stat-row';
 import RangeSectionHeader from './range-section-header';
@@ -28,19 +29,18 @@ const ClientDetailPanel = ({
 }: ClientDetailPanelProps) => {
   const t = useTranslations('dashboard.profitDetail');
   const tCommon = useTranslations('common');
+  const clientId = String(client.client_id);
 
-  const summary = useProfitRange({ from: initialFrom, to: initialTo });
-  const trend = useProfitRange(getRecentRange(5));
-  const monthDetail = useProfitRange();
+  const summaryRange = usePeriodRange({ from: initialFrom, to: initialTo });
+  const trendRange = usePeriodRange(getRecentRange(5));
+  const monthRange = usePeriodRange();
+  const summary = useProfitSummary({
+    from: summaryRange.from,
+    to: summaryRange.to,
+    clientId,
+  });
 
-  const findClient = (data: typeof summary.data) =>
-    data?.by_client.find((c) => c.client_id === client.client_id) ?? null;
-
-  const figures = findClient(summary.data) ?? client;
-  const trendClient = findClient(trend.data);
-  const trendMonthly = trendClient?.monthly ?? [];
-  const trendLastYear = trendClient?.monthly_last_year ?? [];
-  const monthDetailMonthly = findClient(monthDetail.data)?.monthly ?? [];
+  const figures = summary.data ?? client;
 
   return (
     <OverlayView onClose={onClose}>
@@ -60,7 +60,7 @@ const ClientDetailPanel = ({
         <div className="flex flex-col gap-3">
           <RangeSectionHeader
             title={t('summaryTitle')}
-            period={summary.period}
+            period={summaryRange.period}
           />
           <ProfitStatRow
             revenue={figures.revenue}
@@ -71,22 +71,20 @@ const ClientDetailPanel = ({
         </div>
 
         <ProductProfitTable
-          rows={findClient(summary.data)?.products ?? client.products ?? []}
+          scope="client_products"
+          from={summaryRange.from}
+          to={summaryRange.to}
+          parentId={clientId}
           searchable
           title={t('productDetailTitle')}
         />
 
-        <MonthTrendSection
-          rows={trendMonthly}
-          lastYearRows={trendLastYear}
-          isLoading={trend.isLoading}
-          period={trend.period}
-        />
+        <MonthTrendSection period={trendRange.period} clientId={clientId} />
 
         <MonthDetailTableSection
-          rows={monthDetailMonthly}
-          isLoading={monthDetail.isLoading}
-          period={monthDetail.period}
+          period={monthRange.period}
+          scope="client_months"
+          parentId={clientId}
         />
       </div>
     </OverlayView>

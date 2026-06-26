@@ -4,11 +4,11 @@ import { useTranslations } from 'next-intl';
 import { Info } from '@phosphor-icons/react';
 import { useTooltip } from '@/hooks';
 import Tooltip from '@/ui/tooltip';
-import { ProfitDetailResponseModel } from '@/types/data-model';
+import { ProfitSummaryResponseModel } from '@/types/data-model';
 import { formatMoney, formatRate } from './utils';
 
 interface ProfitSummaryCardsProps {
-  data: ProfitDetailResponseModel;
+  data: ProfitSummaryResponseModel;
 }
 
 interface CardProps {
@@ -66,24 +66,24 @@ const ProfitSummaryCards = ({ data }: ProfitSummaryCardsProps) => {
     <div className="flex gap-4">
       <Card
         label={t('totalRevenue')}
-        value={`${formatMoney(data.total_revenue)}${won}`}
+        value={`${formatMoney(data.revenue)}${won}`}
         tooltip={t('revenueBasisTooltip')}
       />
       <Card
         label={t('materialCost')}
-        value={`${formatMoney(data.total_material_cost)}${won}`}
+        value={`${formatMoney(data.material_cost)}${won}`}
         valueColor="text-sv"
         sub={t('materialCostBasis')}
         tooltip={t('subtitle')}
       />
       <Card
         label={t('totalProfit')}
-        value={`${formatMoney(data.total_profit)}${won}`}
+        value={`${formatMoney(data.profit)}${won}`}
         valueColor="text-primary"
       />
       <Card
         label={t('profitRate')}
-        value={formatRate(data.total_profit_rate)}
+        value={formatRate(data.profit_rate)}
         valueColor="text-primary"
       />
     </div>

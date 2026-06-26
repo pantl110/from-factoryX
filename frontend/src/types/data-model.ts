@@ -1300,6 +1300,34 @@ export interface ProfitDetailResponseModel {
   by_month_last_year: MonthlyProfitDetailModel[];
 }
 
+export interface ProfitSummaryResponseModel {
+  revenue: number;
+  material_cost: number;
+  profit: number;
+  profit_rate: number;
+  is_estimated?: boolean;
+  period_start: string;
+  period_end: string;
+}
+
+export interface ProfitTrendResponseModel {
+  by_month: MonthlyProfitDetailModel[];
+  by_month_last_year: MonthlyProfitDetailModel[];
+}
+
+export interface ProfitListResponseModel<T> {
+  data: T[];
+  total: number;
+}
+
+export type ProfitListScopeType =
+  | 'clients'
+  | 'months'
+  | 'client_products'
+  | 'client_months'
+  | 'month_clients'
+  | 'month_products';
+
 export interface MobileDashboardCountsResponseModel {
   undelivered_quotation_products: number;
   shortage_materials: number;
