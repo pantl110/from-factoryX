@@ -419,3 +419,18 @@ class ProfitDetailOut(Schema):
     by_month_last_year: List[MonthlyProfitDetailOut] = []
 
 
+class ProfitSummaryOut(ProfitFiguresOut):
+    period_start: str
+    period_end: str
+
+
+class ProfitTrendOut(Schema):
+    by_month: List[MonthlyProfitDetailOut]
+    by_month_last_year: List[MonthlyProfitDetailOut] = []
+
+
+class ProfitListOut(Schema):
+    data: List[dict]
+    total: int
+
+

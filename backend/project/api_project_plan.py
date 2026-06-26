@@ -17,10 +17,16 @@ from project.schemas.outbound import (
     DashboardOut,
     ProjectPlanCreateOrUpdateOut,
     ProfitDetailOut,
+    ProfitSummaryOut,
+    ProfitTrendOut,
+    ProfitListOut,
 )
 from project.services.profit import (
     build_profit_detail,
     build_profit_detail_with_last_year,
+    get_profit_summary,
+    get_profit_trend,
+    get_profit_list,
 )
 from document.schemas.outbound import TodayProductionPlanOut
 from project.models import Project, ProjectPlan, ProjectLog
@@ -570,6 +576,116 @@ async def get_profit_detail(request):
         raise
     except Exception as e:
         raise HttpError(500, f"수익 상세 조회 중 오류가 발생했습니다: {str(e)}")
+
+
+@router.get(
+    "/profit/summary",
+    summary="[C] 수익 요약 합계",
+    description="기간(+거래처) 수익 합계(총매출/원가/수익/수익률)",
+    response={200: ProfitSummaryOut, 400: dict, 404: dict, 500: dict},
+)
+async def get_profit_summary_api(request):
+    factory_id = request.GET.get("factory_id")
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+
+    start = request.GET.get("start")
+    end = request.GET.get("end")
+    client_id = request.GET.get("client_id")
+
+    try:
+        result = await sync_to_async(get_profit_summary)(
+            int(factory_id), start, end, client_id
+        )
+        return 200, ProfitSummaryOut(**result)
+    except HttpError:
+        raise
+    except Exception as e:
+        raise HttpError(500, f"수익 요약 조회 중 오류가 발생했습니다: {str(e)}")
+
+
+@router.get(
+    "/profit/trend",
+    summary="[C] 월별 수익 추이",
+    description="기간(+거래처) 월별 수익 추이(차트용, 작년 동기 포함)",
+    response={200: ProfitTrendOut, 400: dict, 404: dict, 500: dict},
+)
+async def get_profit_trend_api(request):
+    factory_id = request.GET.get("factory_id")
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+
+    start = request.GET.get("start")
+    end = request.GET.get("end")
+    client_id = request.GET.get("client_id")
+
+    try:
+        result = await sync_to_async(get_profit_trend)(
+            int(factory_id), start, end, client_id
+        )
+        return 200, ProfitTrendOut(**result)
+    except HttpError:
+        raise
+    except Exception as e:
+        raise HttpError(500, f"수익 추이 조회 중 오류가 발생했습니다: {str(e)}")
+
+
+@router.get(
+    "/profit/list",
+    summary="[C] 수익 목록(서버 페이지네이션)",
+    description="scope별 거래처/제품/월별 목록 (정렬·검색·페이지네이션)",
+    response={200: ProfitListOut, 400: dict, 404: dict, 500: dict},
+)
+async def get_profit_list_api(request):
+    factory_id = request.GET.get("factory_id")
+    if not factory_id:
+        raise HttpError(400, "factory_id를 입력해야 합니다.")
+
+    user = request.auth
+    await is_factory_member(int(factory_id), user)
+
+    scope = request.GET.get("scope")
+    if not scope:
+        raise HttpError(400, "scope를 입력해야 합니다.")
+
+    start = request.GET.get("start")
+    end = request.GET.get("end")
+    parent_id = request.GET.get("parent_id")
+    sort = request.GET.get("sort")
+    order = request.GET.get("order", "desc")
+    search = request.GET.get("search")
+    try:
+        page = int(request.GET.get("page", 1))
+        page_size = int(request.GET.get("page_size", 5))
+    except ValueError:
+        raise HttpError(400, "page/page_size는 정수여야 합니다.")
+
+    try:
+        result = await sync_to_async(get_profit_list)(
+            int(factory_id),
+            scope,
+            start,
+            end,
+            parent_id,
+            page,
+            page_size,
+            sort,
+            order,
+            search,
+        )
+        return 200, ProfitListOut(**result)
+    except ValueError as e:
+        raise HttpError(400, str(e))
+    except HttpError:
+        raise
+    except Exception as e:
+        raise HttpError(500, f"수익 목록 조회 중 오류가 발생했습니다: {str(e)}")
 
 
 @router.get(

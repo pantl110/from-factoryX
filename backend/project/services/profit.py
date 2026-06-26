@@ -370,3 +370,146 @@ def build_profit_detail_with_last_year(factory_id, start=None, end=None):
         client_entry["monthly_last_year"] = ly["monthly"] if ly else []
 
     return result
+
+
+# ---------------------------------------------------------------------------
+# 서버 페이지네이션/정렬/검색용 슬라이싱 계층
+# ---------------------------------------------------------------------------
+
+_STRING_SORT_KEYS = {"month", "client_name", "product_name"}
+
+# scope -> (목록 추출 방식, 검색 필드, 기본 정렬키)
+_LIST_DEFAULT_SORT = {
+    "clients": "profit",
+    "months": "month",
+    "client_products": "profit",
+    "client_months": "month",
+    "month_clients": "profit",
+    "month_products": "profit",
+}
+_LIST_SEARCH_FIELD = {
+    "clients": "client_name",
+    "months": None,
+    "client_products": "product_name",
+    "client_months": None,
+    "month_clients": "client_name",
+    "month_products": "product_name",
+}
+
+
+def _find_by(items, key, value):
+    for item in items:
+        if str(item.get(key)) == str(value):
+            return item
+    return None
+
+
+def _extract_scope_items(result, scope, parent_id):
+    if scope == "clients":
+        return result["by_client"]
+    if scope == "months":
+        return result["by_month"]
+    if scope == "client_products":
+        client = _find_by(result["by_client"], "client_id", parent_id)
+        return client["products"] if client else []
+    if scope == "client_months":
+        client = _find_by(result["by_client"], "client_id", parent_id)
+        return client["monthly"] if client else []
+    if scope == "month_clients":
+        month = _find_by(result["by_month"], "month", parent_id)
+        return month["clients"] if month else []
+    if scope == "month_products":
+        month = _find_by(result["by_month"], "month", parent_id)
+        return month["products"] if month else []
+    return []
+
+
+def _search_items(items, search, field):
+    if not search or not field:
+        return items
+    needle = search.strip().lower()
+    return [i for i in items if needle in str(i.get(field, "")).lower()]
+
+
+def _sort_items(items, sort, order):
+    if not sort:
+        return items
+    reverse = order != "asc"
+    if sort in _STRING_SORT_KEYS:
+        return sorted(items, key=lambda x: str(x.get(sort, "")), reverse=reverse)
+    return sorted(items, key=lambda x: x.get(sort, 0) or 0, reverse=reverse)
+
+
+def get_profit_list(
+    factory_id,
+    scope,
+    start=None,
+    end=None,
+    parent_id=None,
+    page=1,
+    page_size=5,
+    sort=None,
+    order="desc",
+    search=None,
+):
+    if scope not in _LIST_DEFAULT_SORT:
+        raise ValueError(f"지원하지 않는 scope입니다: {scope}")
+
+    result = build_profit_detail(factory_id, start, end)
+    items = _extract_scope_items(result, scope, parent_id)
+
+    items = _search_items(items, search, _LIST_SEARCH_FIELD[scope])
+    items = _sort_items(items, sort or _LIST_DEFAULT_SORT[scope], order)
+
+    total = len(items)
+    page = max(int(page), 1)
+    page_size = max(int(page_size), 1)
+    start_idx = (page - 1) * page_size
+    return {"data": items[start_idx : start_idx + page_size], "total": total}
+
+
+def get_profit_summary(factory_id, start=None, end=None, client_id=None):
+    result = build_profit_detail(factory_id, start, end)
+    if client_id:
+        client = _find_by(result["by_client"], "client_id", client_id)
+        if client:
+            return {
+                "revenue": client["revenue"],
+                "material_cost": client["material_cost"],
+                "profit": client["profit"],
+                "profit_rate": client["profit_rate"],
+                "period_start": result["period_start"],
+                "period_end": result["period_end"],
+            }
+        return {
+            "revenue": 0,
+            "material_cost": 0,
+            "profit": 0,
+            "profit_rate": 0.0,
+            "period_start": result["period_start"],
+            "period_end": result["period_end"],
+        }
+    return {
+        "revenue": result["total_revenue"],
+        "material_cost": result["total_material_cost"],
+        "profit": result["total_profit"],
+        "profit_rate": result["total_profit_rate"],
+        "period_start": result["period_start"],
+        "period_end": result["period_end"],
+    }
+
+
+def get_profit_trend(factory_id, start=None, end=None, client_id=None):
+    result = build_profit_detail_with_last_year(factory_id, start, end)
+    if client_id:
+        client = _find_by(result["by_client"], "client_id", client_id)
+        if client:
+            return {
+                "by_month": client["monthly"],
+                "by_month_last_year": client.get("monthly_last_year", []),
+            }
+        return {"by_month": [], "by_month_last_year": []}
+    return {
+        "by_month": result["by_month"],
+        "by_month_last_year": result["by_month_last_year"],
+    }
