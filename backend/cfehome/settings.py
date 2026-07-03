@@ -32,10 +32,12 @@ SECRET_KEY = config("DJANGO_SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DJANGO_DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS = [
-    ".railway.app",
-    "api.factoryx.work",
-]
+ALLOWED_HOSTS = [".railway.app"]
+ENV_ALLOWED_HOSTS = config("ALLOWED_HOSTS", cast=str, default="")
+for host in ENV_ALLOWED_HOSTS.split(","):
+    host = host.strip()
+    if host:
+        ALLOWED_HOSTS.append(host)
 
 ASGI_APPLICATION = "cfehome.asgi.application"
 
@@ -46,12 +48,12 @@ if DEBUG:
         "0.0.0.0",
     ]
 
-CSRF_TRUSTED_ORIGINS = [
-    "http://*.railway.app",
-    "https://*.railway.app",
-    "http://api.factoryx.work",
-    "https://api.factoryx.work",
-]
+CSRF_TRUSTED_ORIGINS = ["http://*.railway.app", "https://*.railway.app"]
+ENV_CSRF_TRUSTED_ORIGINS = config("CSRF_TRUSTED_ORIGINS", cast=str, default="")
+for origin in ENV_CSRF_TRUSTED_ORIGINS.split(","):
+    origin = origin.strip().rstrip("/")
+    if origin:
+        CSRF_TRUSTED_ORIGINS.append(origin)
 
 
 # Application definition
