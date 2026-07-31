@@ -12,7 +12,20 @@ const intlMiddleware = createMiddleware({
   defaultLocale: 'en',
 });
 
+// 이전 도메인(factoryx.work) -> 현재 도메인(pantl110.kr) 301 리다이렉트.
+// Namecheap URL Forwarding이 443(HTTPS)을 서빙하지 못해, Railway가 발급한
+// 인증서 위에서 앱 레벨로 처리한다. locale 처리보다 먼저 실행되어야 한다.
+const LEGACY_HOSTS = ['factoryx.work', 'www.factoryx.work'];
+const CANONICAL_ORIGIN = 'https://pantl110.kr';
+
 export default function middleware(request: NextRequest) {
+  const host = request.headers.get('host')?.split(':')[0].toLowerCase();
+
+  if (host && LEGACY_HOSTS.includes(host)) {
+    const { pathname, search } = request.nextUrl;
+    return NextResponse.redirect(`${CANONICAL_ORIGIN}${pathname}${search}`, 301);
+  }
+
   const response = intlMiddleware(request);
 
   // 혹시 모를 NEXT_LOCALE 쿠키 완전히 제거
