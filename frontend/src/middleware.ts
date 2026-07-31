@@ -23,7 +23,10 @@ export default function middleware(request: NextRequest) {
 
   if (host && LEGACY_HOSTS.includes(host)) {
     const { pathname, search } = request.nextUrl;
-    return NextResponse.redirect(`${CANONICAL_ORIGIN}${pathname}${search}`, 301);
+    return NextResponse.redirect(
+      `${CANONICAL_ORIGIN}${pathname}${search}`,
+      301
+    );
   }
 
   const response = intlMiddleware(request);
