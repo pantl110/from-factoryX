@@ -12,6 +12,11 @@ from typing import List
 from stock.models import Product, MaterialProduct
 from stock.schemas.inbound import SingleProductCreateIn, ProductCreateIn, ProductUpdateIn, ProductFilter, AssignProductIn
 from stock.schemas.outbound import SingleProductCreateOut, ProductListOut, ProductOut
+from stock.utils import (
+    drop_none_fields,
+    raise_for_failed_codes,
+    build_bulk_create_message,
+)
 
 from factory.utils import is_factory_member
 from factory.models import Factory
@@ -111,14 +116,10 @@ async def create_product(request, payload: List[ProductCreateIn]):
             continue
 
         # None인 선택 필드는 제거 (모델의 기본값 사용)
-        for optional_field in (
-            "current_stock",
-            "average_production_time",
-            "buffer_rate",
-            "note",
-        ):
-            if data.get(optional_field) is None:
-                data.pop(optional_field, None)
+        drop_none_fields(
+            data,
+            ("current_stock", "average_production_time", "buffer_rate", "note"),
+        )
 
         try:
             product = await Product.objects.acreate(factory=factory, **data)
@@ -151,18 +152,9 @@ async def create_product(request, payload: List[ProductCreateIn]):
             failed_codes.append(code)
 
     # 실제 오류는 중복으로 뭉뚱그리지 않고 에러로 알린다.
-    if failed_codes:
-        raise HttpError(
-            500,
-            f"{len(failed_codes)}개의 제품을 등록하지 못했습니다. "
-            f"(제품 코드: {', '.join(failed_codes)}) "
-            f"{len(result)}개는 등록되었습니다.",
-        )
+    raise_for_failed_codes(failed_codes, len(result), "제품을", "제품 코드")
 
-    # 메시지 생성
-    message = f"{len(result)}개의 제품이 성공적으로 생성되었습니다."
-    if duplicate_codes:
-        message += f" 중복된 코드가 있었습니다: {', '.join(duplicate_codes)}"
+    message = build_bulk_create_message(len(result), duplicate_codes, "제품이")
 
     return 201, {
         "data": result,

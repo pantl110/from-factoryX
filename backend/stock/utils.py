@@ -5,6 +5,38 @@ from datetime import timedelta, date, datetime
 from repackaging.models import MaterialRepackaging
 
 
+def drop_none_fields(data: dict, fields) -> dict:
+    """None인 선택 필드를 제거해 모델의 기본값이 적용되도록 합니다."""
+    for field in fields:
+        if data.get(field) is None:
+            data.pop(field, None)
+    return data
+
+
+def raise_for_failed_codes(
+    failed_codes: list, created_count: int, label: str, code_label: str
+):
+    """중복이 아닌 실제 생성 실패를 에러로 알립니다."""
+    if not failed_codes:
+        return
+    raise HttpError(
+        500,
+        f"{len(failed_codes)}개의 {label} 등록하지 못했습니다. "
+        f"({code_label}: {', '.join(failed_codes)}) "
+        f"{created_count}개는 등록되었습니다.",
+    )
+
+
+def build_bulk_create_message(
+    created_count: int, duplicate_codes: list, created_label: str
+) -> str:
+    """대량 생성 결과 메시지를 만듭니다."""
+    message = f"{created_count}개의 {created_label} 성공적으로 생성되었습니다."
+    if duplicate_codes:
+        message += f" 중복된 코드가 있었습니다: {', '.join(duplicate_codes)}"
+    return message
+
+
 async def verify_factory_ownership(factory_id: int, user=None):
     """공장 소유권을 검증합니다."""
     try:

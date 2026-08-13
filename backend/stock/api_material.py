@@ -22,7 +22,13 @@ from stock.schemas.outbound import (
     ShortageMaterialCountOut,
     ExpiryRiskMaterialOut,
 )
-from stock.utils import get_material_status, get_expiry_status
+from stock.utils import (
+    get_material_status,
+    get_expiry_status,
+    drop_none_fields,
+    raise_for_failed_codes,
+    build_bulk_create_message,
+)
 from factory.models import Factory
 from substitute.models import Substitute
 
@@ -84,20 +90,17 @@ async def create_materials(request, payload: List[SingleMaterialCreateIn]):
         # 기본값 설정
         if "unit" not in data or data["unit"] is None:
             data["unit"] = "EA"
-        # expiry_days가 None이면 제거 (모델의 기본값 사용)
-        if data.get("expiry_days") is None:
-            data.pop("expiry_days", None)
-        # current_stock과 standard_stock, rop, max_stock, memo는 None이면 제거 (모델의 기본값 사용)
-        if data.get("current_stock") is None:
-            data.pop("current_stock", None)
-        if data.get("standard_stock") is None:
-            data.pop("standard_stock", None)
-        if data.get("rop") is None:
-            data.pop("rop", None)
-        if data.get("max_stock") is None:
-            data.pop("max_stock", None)
-        if data.get("memo") is None:
-            data.pop("memo", None)
+        drop_none_fields(
+            data,
+            (
+                "expiry_days",
+                "current_stock",
+                "standard_stock",
+                "rop",
+                "max_stock",
+                "memo",
+            ),
+        )
 
         try:
             material = await Material.objects.acreate(factory=factory, **data)
@@ -114,18 +117,11 @@ async def create_materials(request, payload: List[SingleMaterialCreateIn]):
             failed_codes.append(code)
 
     # 실제 오류는 중복으로 뭉뚱그리지 않고 에러로 알린다.
-    if failed_codes:
-        raise HttpError(
-            500,
-            f"{len(failed_codes)}개의 자재를 등록하지 못했습니다. "
-            f"(자재 코드: {', '.join(failed_codes)}) "
-            f"{len(material_ids)}개는 등록되었습니다.",
-        )
+    raise_for_failed_codes(failed_codes, len(material_ids), "자재를", "자재 코드")
 
-    # 메시지 생성
-    message = f"{len(material_ids)}개의 원자재가 성공적으로 생성되었습니다."
-    if duplicate_codes:
-        message += f" 중복된 코드가 있었습니다: {', '.join(duplicate_codes)}"
+    message = build_bulk_create_message(
+        len(material_ids), duplicate_codes, "원자재가"
+    )
 
     return 201, {
         "material_ids": material_ids,
