@@ -1,6 +1,6 @@
 import { useRouter } from 'next/navigation';
 import { useCallback, useState } from 'react';
-import { UseFormWatch, UseFormReset } from 'react-hook-form';
+import { UseFormWatch, UseFormReset, UseFormTrigger } from 'react-hook-form';
 import { useTranslations } from 'next-intl';
 import {
   QuotationProductDetailResponseModel,
@@ -18,6 +18,7 @@ interface StartProductionResponseModel {
 interface QuotationHandlersProps {
   watch: UseFormWatch<QuotationFormModel>;
   reset: UseFormReset<QuotationFormModel>;
+  trigger: UseFormTrigger<QuotationFormModel>;
   quotationId?: number;
   quotationProducts: QuotationProductDetailResponseModel[];
   factoryId: number | null;
@@ -55,6 +56,7 @@ interface QuotationHandlersProps {
 export const useQuotationHandlers = ({
   watch,
   reset,
+  trigger,
   quotationId,
   quotationProducts,
   factoryId,
@@ -96,6 +98,32 @@ export const useQuotationHandlers = ({
         // 주문확정일 때만 에러 표시 활성화
         if (isConfirm) {
           setShowErrors(true);
+        }
+
+        // 저장 전 유효성 검사.
+        // 백엔드는 길이/형식을 검증하지 않고 그대로 INSERT하므로,
+        // 컬럼 길이를 넘긴 값이 올라가면 DB에서 DataError(500)가 난다.
+        //
+        // 주문확정은 전체 필드를 검사하고,
+        // 임시저장은 작성 중인 내용을 저장할 수 있어야 하므로 값이 있는 필드만 검사한다.
+        // (빈 필드를 검사 대상에서 빼면 required는 걸리지 않고 형식·길이 위반만 남는다)
+        const filledFields = (
+          Object.keys(formData) as (keyof QuotationFormModel)[]
+        ).filter((field) => {
+          const value = formData[field];
+          return typeof value === 'string'
+            ? value.trim() !== ''
+            : value !== null && value !== undefined;
+        });
+
+        const isFormValid = isConfirm
+          ? await trigger()
+          : filledFields.length === 0 || (await trigger(filledFields));
+
+        if (!isFormValid) {
+          // 어떤 필드가 문제인지는 각 입력 아래 메시지로 표시된다.
+          setShowErrors(true);
+          throw new Error(t('invalidFormValue'));
         }
 
         const draftData: SaveDraftDataModel = {
@@ -169,6 +197,7 @@ export const useQuotationHandlers = ({
     [
       watch,
       reset,
+      trigger,
       quotationId,
       quotationProducts,
       factoryId,

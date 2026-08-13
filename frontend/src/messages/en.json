@@ -1698,6 +1698,7 @@
       "factoryNotFound": "Factory information not found.",
       "unknownError": "Unknown error",
       "invalidDateFormat": "Invalid date format",
+      "invalidFormValue": "Please check your input again.",
       "saveDraftFailed": "Failed to save draft",
       "startProductionFailed": "Failed to start production.",
       "startProductionFailedSubtext": "The current input has been saved as a draft. Please try again.",
@@ -1769,7 +1770,8 @@
         "invalidDateFormat": "Please enter in YYYY-MM-DD format.",
         "invalidEmail": "Invalid email format.",
         "invalidPhone": "Invalid phone number format.",
-        "invalidFax": "Invalid fax number format."
+        "invalidFax": "Invalid fax number format.",
+        "maxLength": "You can enter up to {limit} characters."
       }
     },
     "productItem": {

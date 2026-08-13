@@ -15,6 +15,18 @@ interface ExcelUploadModalProps {
   onSuccess?: (hasDuplicates?: boolean) => void;
 }
 
+const extractNumber = (value: unknown): number => {
+  if (typeof value === 'number') return value;
+  if (typeof value === 'string') {
+    const match = value.match(/\d+\.?\d*/);
+    return match ? parseFloat(match[0]) : 0;
+  }
+  return 0;
+};
+
+const extractRoundedInt = (value: unknown): number =>
+  Math.round(extractNumber(value));
+
 const ExcelUploadModal = ({
   onClose,
   type = 'product',
@@ -41,6 +53,53 @@ const ExcelUploadModal = ({
   const { isToastOpen, isVisible, showToast } = useToast();
   const { createProduct } = useCreateProduct();
   const { createMaterial } = useCreateMaterial();
+
+  const readRow = (row: ExcelRowModel) => ({
+    name: String(
+      row[
+        type === 'product'
+          ? excelColumns.productName
+          : excelColumns.materialName
+      ] ?? ''
+    ).trim(),
+    code: String(
+      row[
+        type === 'product'
+          ? excelColumns.productCode
+          : excelColumns.materialCode
+      ] ?? ''
+    ).trim(),
+    spec: String(row[excelColumns.specification] ?? '').trim(),
+    unit: String(row[excelColumns.unit] ?? '').trim(),
+    currentStock: String(row[excelColumns.currentStock] ?? '').trim(),
+    minStock: String(row[excelColumns.minStock] ?? '').trim(),
+    avgProductionTime: String(row[excelColumns.avgProductionTime] ?? '').trim(),
+    note: String(row[excelColumns.note] ?? '').trim(),
+  });
+
+  // 자재/제품에 따라 다른 기준으로 빈 행을 판단한다
+  const isEmptyRow = (row: ExcelRowModel) => {
+    const {
+      name,
+      code,
+      spec,
+      unit,
+      currentStock,
+      minStock,
+      avgProductionTime,
+      note,
+    } = readRow(row);
+    const isCommonEmpty =
+      name === '' &&
+      code === '' &&
+      spec === '' &&
+      unit === '' &&
+      currentStock === '';
+
+    return type === 'material'
+      ? isCommonEmpty && minStock === ''
+      : isCommonEmpty && avgProductionTime === '' && note === '';
+  };
 
   const handleComplete = async (files: File[]) => {
     if (files && files.length > 0) {
@@ -90,90 +149,15 @@ const ExcelUploadModal = ({
   };
 
   const handleUpload = async (data: ExcelRowModel[]) => {
-    const dataToProcess = data;
-
     try {
-      // 숫자 추출 함수
-      const extractNumber = (value: unknown): number => {
-        if (typeof value === 'number') return value;
-        if (typeof value === 'string') {
-          // 문자열에서 숫자만 추출 (소수점 포함)
-          const match = value.match(/\d+\.?\d*/);
-          return match ? parseFloat(match[0]) : 0;
-        }
-        return 0;
-      };
-
-      // 정수 필드는 반올림 처리
-      const extractRoundedInt = (value: unknown): number => {
-        const num = extractNumber(value);
-        return Math.round(num);
-      };
-
-      // 원본 데이터에서 비어있는 데이터가 있는지 확인 (모든 필드가 비어있는 행은 제외)
-      const hasEmptyData = dataToProcess.some((row) => {
-        const name = String(
-          row[
-            type === 'product'
-              ? excelColumns.productName
-              : excelColumns.materialName
-          ] ?? ''
-        );
-        const code = String(
-          row[
-            type === 'product'
-              ? excelColumns.productCode
-              : excelColumns.materialCode
-          ] ?? ''
-        );
-        const spec = String(row[excelColumns.specification] ?? '');
-        const unit = String(row[excelColumns.unit] ?? '');
-
-        // 모든 필드가 비어있으면 건너뛰기 (자재/제품에 따라 다른 기준)
-        let isAllEmpty = false;
-        if (type === 'material') {
-          // 자재: 자재명, 자재 코드, 규격, 단위, 현재 재고, 최소 재고 모두 비어있어야 함
-          const currentStock = String(
-            row[excelColumns.currentStock] ?? ''
-          ).trim();
-          const minStock = String(row[excelColumns.minStock] ?? '').trim();
-          isAllEmpty =
-            name.trim() === '' &&
-            code.trim() === '' &&
-            spec.trim() === '' &&
-            unit.trim() === '' &&
-            currentStock === '' &&
-            minStock === '';
-        } else {
-          // 제품: 제품명, 제품 코드, 규격, 단위, 현재 재고, 평균 생산 시간(초), 특이 사항 모두 비어있어야 함
-          const currentStock = String(
-            row[excelColumns.currentStock] ?? ''
-          ).trim();
-          const avgProductionTime = String(
-            row[excelColumns.avgProductionTime] ?? ''
-          ).trim();
-          const note = String(row[excelColumns.note] ?? '').trim();
-          isAllEmpty =
-            name.trim() === '' &&
-            code.trim() === '' &&
-            spec.trim() === '' &&
-            unit.trim() === '' &&
-            currentStock === '' &&
-            avgProductionTime === '' &&
-            note === '';
+      // 빈 행은 검증에서 제외하고, 나머지 행만 필수 필드를 확인한다
+      const hasEmptyData = data.some((row) => {
+        if (isEmptyRow(row)) {
+          return false;
         }
 
-        if (isAllEmpty) {
-          return false; // 빈 행은 검증에서 제외
-        }
-
-        // 빈 행이 아닌 경우에만 필수 필드 검증
-        return (
-          name.trim() === '' ||
-          code.trim() === '' ||
-          unit.trim() === '' ||
-          spec.trim() === ''
-        );
+        const { name, code, spec, unit } = readRow(row);
+        return name === '' || code === '' || unit === '' || spec === '';
       });
 
       // 비어있는 데이터가 있으면 토스트 표시하고 멈춤
@@ -187,82 +171,13 @@ const ExcelUploadModal = ({
         return;
       }
 
-      // 빈 행을 필터링하는 함수
-      const isEmptyRow = (row: ExcelRowModel) => {
-        const name = String(
-          row[
-            type === 'product'
-              ? excelColumns.productName
-              : excelColumns.materialName
-          ] ?? ''
-        ).trim();
-        const code = String(
-          row[
-            type === 'product'
-              ? excelColumns.productCode
-              : excelColumns.materialCode
-          ] ?? ''
-        ).trim();
-        const spec = String(row[excelColumns.specification] ?? '').trim();
-        const unit = String(row[excelColumns.unit] ?? '').trim();
-
-        if (type === 'material') {
-          const currentStock = String(
-            row[excelColumns.currentStock] ?? ''
-          ).trim();
-          const minStock = String(row[excelColumns.minStock] ?? '').trim();
-          return (
-            name === '' &&
-            code === '' &&
-            spec === '' &&
-            unit === '' &&
-            currentStock === '' &&
-            minStock === ''
-          );
-        } else {
-          const currentStock = String(
-            row[excelColumns.currentStock] ?? ''
-          ).trim();
-          const avgProductionTime = String(
-            row[excelColumns.avgProductionTime] ?? ''
-          ).trim();
-          const note = String(row[excelColumns.note] ?? '').trim();
-          return (
-            name === '' &&
-            code === '' &&
-            spec === '' &&
-            unit === '' &&
-            currentStock === '' &&
-            avgProductionTime === '' &&
-            note === ''
-          );
-        }
-      };
-
       // 빈 행을 제외하고 엑셀 데이터를 ProductCreateExcelModel 형식으로 변환
-      const productData = dataToProcess
+      const productData = data
         .filter((row) => !isEmptyRow(row))
         .map((row) => {
-          const name = String(
-            row[
-              type === 'product'
-                ? t('excelColumns.productName')
-                : t('excelColumns.materialName')
-            ] ?? ''
-          ).trim();
-          const code = String(
-            row[
-              type === 'product'
-                ? t('excelColumns.productCode')
-                : t('excelColumns.materialCode')
-            ] ?? ''
-          ).trim();
-          const unit = String(row[t('excelColumns.unit')] ?? '').trim();
-          const spec = String(
-            row[t('excelColumns.specification')] ?? ''
-          ).trim();
+          const { name, code, unit, spec } = readRow(row);
           const currentStock = extractRoundedInt(
-            row[t('excelColumns.currentStock')]
+            row[excelColumns.currentStock]
           );
           const avgProductionTime =
             type === 'product'
@@ -310,10 +225,10 @@ const ExcelUploadModal = ({
           duplicateCodes = codes ?? [];
         } else {
           // 자재: result.data.duplicate_codes
-          const { data } = result as {
+          const { data: materialResult } = result as {
             data?: { duplicate_codes?: string[] };
           };
-          duplicateCodes = data?.duplicate_codes ?? [];
+          duplicateCodes = materialResult?.duplicate_codes ?? [];
         }
 
         onClose();

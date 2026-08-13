@@ -544,6 +544,7 @@ const QuotationPageContent = () => {
   } = useQuotationHandlers({
     watch,
     reset,
+    trigger,
     quotationId: effectiveQuotationId,
     quotationProducts,
     factoryId,

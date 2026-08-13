@@ -43,6 +43,7 @@ interface InputProps {
   textarea?: boolean;
   minRows?: number;
   autoComplete?: string;
+  maxLength?: number;
 }
 
 const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
@@ -73,6 +74,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
       textarea = false,
       minRows = 3,
       autoComplete,
+      maxLength,
     },
     ref
   ) => {
@@ -252,6 +254,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
                         : '#e3e3e3',
               }}
               minRows={minRows}
+              maxLength={maxLength}
             />
           </div>
         ) : (
@@ -283,6 +286,7 @@ const Input = forwardRef<HTMLInputElement | HTMLTextAreaElement, InputProps>(
               pattern={type === 'number' ? '[0-9.]*' : undefined}
               step={type === 'number' ? step || '0.1' : undefined}
               autoComplete={autoComplete}
+              maxLength={maxLength}
             />
 
             {isShowPasswordToggle && (

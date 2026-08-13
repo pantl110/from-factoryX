@@ -24,6 +24,7 @@ import {
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import { useTranslations } from 'next-intl';
+import { CLIENT_FIELD_LIMITS } from '@/utils/validation';
 
 interface InputSectionProps {
   setValue: UseFormSetValue<QuotationFormModel>;
@@ -50,6 +51,15 @@ const InputSection = ({
 
   const [searchTerm, setSearchTerm] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  // 백엔드 컬럼 길이를 넘기면 DB에서 500이 나므로, 입력 단계에서 잘라내고 규칙으로도 막는다.
+  const maxLengthRule = (limit: number) => ({
+    value: limit,
+    message: tInput('errors.maxLength', { limit }),
+  });
+
+  const errorMessageOf = (field: keyof QuotationFormModel) =>
+    showErrors ? errors[field]?.message : undefined;
 
   const handleSelectClient = (item: ClientResponseModel) => {
     // 선택한 거래처 정보로 폼 자동 채우기
@@ -82,7 +92,10 @@ const InputSection = ({
           <Controller
             name="name"
             control={control}
-            rules={{ required: true }}
+            rules={{
+              required: true,
+              maxLength: maxLengthRule(CLIENT_FIELD_LIMITS.name),
+            }}
             render={({ field }) => {
               const handleCompanyNameBlur = () =>
                 setTimeout(() => setIsDropdownOpen(false), 150);
@@ -112,6 +125,8 @@ const InputSection = ({
                   onBlur={handleCompanyNameBlur}
                   ref={field.ref}
                   name={field.name}
+                  maxLength={CLIENT_FIELD_LIMITS.name}
+                  errorMessage={errorMessageOf('name')}
                   disabledReadOnly={isViewer || !hasSubscription()}
                 />
               );
@@ -141,6 +156,9 @@ const InputSection = ({
                 value: /^\d{3}-\d{2}-\d{5}$/,
                 message: tInput('errors.invalidBusinessRegistrationNumber'),
               },
+              maxLength: maxLengthRule(
+                CLIENT_FIELD_LIMITS.business_registration_number
+              ),
             }}
             render={({ field }) => (
               <Input
@@ -156,6 +174,8 @@ const InputSection = ({
                 }}
                 ref={field.ref}
                 name={field.name}
+                maxLength={CLIENT_FIELD_LIMITS.business_registration_number}
+                errorMessage={errorMessageOf('business_registration_number')}
               />
             )}
           />
@@ -165,13 +185,18 @@ const InputSection = ({
         <Controller
           name="representative_name"
           control={control}
-          rules={{ required: true }}
+          rules={{
+            required: true,
+            maxLength: maxLengthRule(CLIENT_FIELD_LIMITS.representative_name),
+          }}
           render={({ field }) => (
             <Input
               label={tCommon('representativeName')}
               placeholder={`${tCommon('required')} ${tCommon('placeholders.representativeName')}`}
               required
               showError={showErrors && !!errors.representative_name}
+              maxLength={CLIENT_FIELD_LIMITS.representative_name}
+              errorMessage={errorMessageOf('representative_name')}
               disabledReadOnly={isViewer || !hasSubscription()}
               {...field}
             />
@@ -200,6 +225,7 @@ const InputSection = ({
               }}
               ref={field.ref}
               name={field.name}
+              errorMessage={errorMessageOf('due_date')}
               disabledReadOnly={isViewer || !hasSubscription()}
             />
           )}
@@ -209,12 +235,17 @@ const InputSection = ({
         <Controller
           name="business_type"
           control={control}
-          rules={{ required: true }}
+          rules={{
+            required: true,
+            maxLength: maxLengthRule(CLIENT_FIELD_LIMITS.business_type),
+          }}
           render={({ field }) => (
             <Input
               label={tCommon('businessType')}
               placeholder={`${tCommon('required')} ${tCommon('placeholders.businessType')}`}
               showError={showErrors && !!errors.business_type}
+              maxLength={CLIENT_FIELD_LIMITS.business_type}
+              errorMessage={errorMessageOf('business_type')}
               required
               disabledReadOnly={isViewer || !hasSubscription()}
               {...field}
@@ -224,13 +255,18 @@ const InputSection = ({
         <Controller
           name="business_category"
           control={control}
-          rules={{ required: true }}
+          rules={{
+            required: true,
+            maxLength: maxLengthRule(CLIENT_FIELD_LIMITS.business_category),
+          }}
           render={({ field }) => (
             <Input
               label={tCommon('businessCategory')}
               required
               placeholder={`${tCommon('required')} ${tCommon('placeholders.businessCategory')}`}
               showError={showErrors && !!errors.business_category}
+              maxLength={CLIENT_FIELD_LIMITS.business_category}
+              errorMessage={errorMessageOf('business_category')}
               disabledReadOnly={isViewer || !hasSubscription()}
               {...field}
             />
@@ -258,12 +294,15 @@ const InputSection = ({
         <Controller
           name="manager"
           control={control}
+          rules={{ maxLength: maxLengthRule(CLIENT_FIELD_LIMITS.manager) }}
           render={({ field }) => (
             <Input
               label={tCommon('managerName')}
               placeholder={`${tCommon('required')} ${tInput('placeholders.managerName')}`}
               required
               showError={showErrors && !!errors.manager}
+              maxLength={CLIENT_FIELD_LIMITS.manager}
+              errorMessage={errorMessageOf('manager')}
               disabledReadOnly={isViewer || !hasSubscription()}
               {...field}
             />
@@ -277,6 +316,7 @@ const InputSection = ({
               value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
               message: tInput('errors.invalidEmail'),
             },
+            maxLength: maxLengthRule(CLIENT_FIELD_LIMITS.email),
           }}
           render={({ field }) => (
             <Input
@@ -284,6 +324,8 @@ const InputSection = ({
               placeholder={`${tCommon('required')} ${tCommon('placeholders.email')}`}
               required
               showError={showErrors && !!errors.email}
+              maxLength={CLIENT_FIELD_LIMITS.email}
+              errorMessage={errorMessageOf('email')}
               disabledReadOnly={isViewer || !hasSubscription()}
               {...field}
             />
@@ -299,6 +341,7 @@ const InputSection = ({
               value: /^(01[016789]-\d{3,4}-\d{4}|0\d{1,2}-\d{3,4}-\d{4})$/,
               message: tInput('errors.invalidPhone'),
             },
+            maxLength: maxLengthRule(CLIENT_FIELD_LIMITS.phone),
           }}
           render={({ field }) => {
             return (
@@ -313,6 +356,8 @@ const InputSection = ({
                 }}
                 ref={field.ref}
                 name={field.name}
+                maxLength={CLIENT_FIELD_LIMITS.phone}
+                errorMessage={errorMessageOf('phone')}
                 disabledReadOnly={isViewer || !hasSubscription()}
               />
             );
@@ -326,6 +371,7 @@ const InputSection = ({
               value: /^(0\d{1,3}-\d{3,4}-\d{4})$/,
               message: tInput('errors.invalidFax'),
             },
+            maxLength: maxLengthRule(CLIENT_FIELD_LIMITS.fax),
           }}
           render={({ field }) => {
             return (
@@ -340,6 +386,8 @@ const InputSection = ({
                 }}
                 ref={field.ref}
                 name={field.name}
+                maxLength={CLIENT_FIELD_LIMITS.fax}
+                errorMessage={errorMessageOf('fax')}
                 disabledReadOnly={isViewer || !hasSubscription()}
               />
             );

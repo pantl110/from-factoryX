@@ -59,3 +59,23 @@ export const validatePassword = (
 
   return '';
 };
+
+/**
+ * 백엔드 FactoryClient 모델의 max_length를 그대로 옮긴 값.
+ * 서버는 길이 초과를 검증하지 않고 그대로 INSERT하므로, 초과 시 DB에서 DataError(500)가 난다.
+ * OCR 결과에는 "등록번호 123-45-67890-1"처럼 노이즈가 섞여 들어오기 때문에 저장 전에 여기서 막는다.
+ */
+export const CLIENT_FIELD_LIMITS = {
+  name: 100,
+  business_registration_number: 12, // "123-45-67890" 포맷 기준
+  representative_name: 50,
+  email: 100,
+  phone: 15,
+  fax: 15,
+  business_type: 100,
+  business_category: 100,
+  manager: 100,
+  // address는 백엔드가 TextField라 길이 제한 없음
+} as const;
+
+export type ClientLimitedFieldType = keyof typeof CLIENT_FIELD_LIMITS;
