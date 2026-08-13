@@ -10,6 +10,8 @@ import useMemberStore from '@/store/member-store';
 // 엑셀 대량등록 제품 등록 응답 (새로운 구조)
 export interface ProductCreateExcelApiResponseModel {
   data: ProductCreateExcelResponseModel[];
+  // 중복이라 등록되지 않은 제품 코드 목록
+  duplicate_codes?: string[];
   message: string;
 }
 
@@ -43,7 +45,12 @@ const useCreateProduct = () => {
       if (response.status === 201) {
         const result: ProductCreateExcelApiResponseModel =
           await response.json();
-        return { success: true, data: result.data, message: result.message };
+        return {
+          success: true,
+          data: result.data,
+          duplicateCodes: result.duplicate_codes ?? [],
+          message: result.message,
+        };
       } else {
         const errorData = await response.json();
         const errorMessage = errorData.detail || '제품 등록에 실패했습니다.';

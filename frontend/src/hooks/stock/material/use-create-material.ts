@@ -5,6 +5,8 @@ import useMemberStore from '@/store/member-store';
 // 원자재 생성 응답 모델
 export interface CreateMaterialResponseModel {
   material_ids: number[];
+  // 중복이라 등록되지 않은 자재 코드 목록
+  duplicate_codes?: string[];
   message: string;
 }
 

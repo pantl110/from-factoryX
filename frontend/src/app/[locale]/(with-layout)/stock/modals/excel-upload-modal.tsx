@@ -299,34 +299,25 @@ const ExcelUploadModal = ({
           : await createMaterial(productData as ProductCreateExcelModel[]);
 
       if (result.success) {
-        let message = '';
+        // 중복 코드는 응답의 duplicate_codes로 판단한다.
+        // (서버 메시지 문자열 매칭은 로케일에 따라 동작하지 않으므로 사용하지 않는다)
+        let duplicateCodes: string[] = [];
         if (type === 'product') {
-          // 제품: result.message
-          if (
-            'message' in result &&
-            typeof (result as { message?: unknown }).message === 'string'
-          ) {
-            message = (result as { message?: string }).message ?? '';
-          }
-        } else {
-          // 자재: result.data.message
-          const { data } = result as { data?: { message?: unknown } };
-          const { message: dataMessage } = (data || {}) as {
-            message?: unknown;
+          // 제품: result.duplicateCodes
+          const { duplicateCodes: codes } = result as {
+            duplicateCodes?: string[];
           };
-          if (typeof dataMessage === 'string') {
-            message = dataMessage;
-          }
+          duplicateCodes = codes ?? [];
+        } else {
+          // 자재: result.data.duplicate_codes
+          const { data } = result as {
+            data?: { duplicate_codes?: string[] };
+          };
+          duplicateCodes = data?.duplicate_codes ?? [];
         }
 
-        // 중복된 코드가 있다는 메시지가 포함되면 상위 컴포넌트에 알림
-        if (message && message.includes(t('duplicateCheck.keyword'))) {
-          onClose();
-          onSuccess?.(true); // 중복 코드가 있음을 알림
-        } else {
-          onClose();
-          onSuccess?.(false); // 중복 코드가 없음을 알림
-        }
+        onClose();
+        onSuccess?.(duplicateCodes.length > 0); // 중복 코드 유무를 알림
       } else {
         if (result.error.includes(t('duplicateCheck.alreadyExists'))) {
           // [] 안의 자재 코드 추출
