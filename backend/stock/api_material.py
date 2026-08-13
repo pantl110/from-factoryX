@@ -1,3 +1,5 @@
+import logging
+
 from ninja import Router
 from ninja.errors import HttpError
 from ninja.pagination import paginate
@@ -26,6 +28,8 @@ from substitute.models import Substitute
 
 from factory.utils import is_factory_member
 
+
+logger = logging.getLogger(__name__)
 
 router = Router(tags=["Material"], auth=jwt_auth)
 
@@ -59,7 +63,8 @@ async def create_materials(request, payload: List[SingleMaterialCreateIn]):
     )
 
     material_ids = []
-    has_duplicates = False
+    duplicate_codes = []
+    failed_codes = []
     processed_codes = set()  # 이미 처리한 코드들을 추적
 
     for item in payload:
@@ -68,12 +73,12 @@ async def create_materials(request, payload: List[SingleMaterialCreateIn]):
 
         # 요청 내 중복 코드 체크 (이미 처리한 코드인지 확인)
         if code in processed_codes:
-            has_duplicates = True
+            duplicate_codes.append(code)
             continue
 
         # 기존 코드와 중복 체크
         if code in existing_codes:
-            has_duplicates = True
+            duplicate_codes.append(code)
             continue
 
         # 기본값 설정
@@ -99,15 +104,32 @@ async def create_materials(request, payload: List[SingleMaterialCreateIn]):
             material_ids.append(material.id)
             processed_codes.add(code)  # 성공적으로 처리된 코드 추가
         except IntegrityError:
-            has_duplicates = True
+            # 중복은 위에서 이미 걸러졌으므로, 여기 걸리는 건 실제 DB 제약 위반이다.
+            logger.exception(
+                "원자재 생성 실패 (factory_id=%s, code=%s, data=%s)",
+                factory_id,
+                code,
+                data,
+            )
+            failed_codes.append(code)
+
+    # 실제 오류는 중복으로 뭉뚱그리지 않고 에러로 알린다.
+    if failed_codes:
+        raise HttpError(
+            500,
+            f"{len(failed_codes)}개의 자재를 등록하지 못했습니다. "
+            f"(자재 코드: {', '.join(failed_codes)}) "
+            f"{len(material_ids)}개는 등록되었습니다.",
+        )
 
     # 메시지 생성
     message = f"{len(material_ids)}개의 원자재가 성공적으로 생성되었습니다."
-    if has_duplicates:
-        message += " 중복된 코드가 있었습니다."
+    if duplicate_codes:
+        message += f" 중복된 코드가 있었습니다: {', '.join(duplicate_codes)}"
 
     return 201, {
         "material_ids": material_ids,
+        "duplicate_codes": duplicate_codes,
         "message": message,
     }
 

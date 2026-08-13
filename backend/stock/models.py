@@ -252,6 +252,9 @@ class Product(BaseModel):
         help_text="특이사항",
     )
 
+    class Meta:
+        unique_together = ["factory", "code"]
+
 
 class ProductHistory(BaseModel):
     # class ProductHistoryType(models.TextChoices):

@@ -1,3 +1,5 @@
+import logging
+
 from ninja import Router, Query
 from ninja.pagination import paginate
 from ninja.errors import HttpError
@@ -16,6 +18,8 @@ from factory.models import Factory
 from stock.models import Material
 
 
+
+logger = logging.getLogger(__name__)
 
 router = Router(tags=["Product"])
 
@@ -88,7 +92,8 @@ async def create_product(request, payload: List[ProductCreateIn]):
     )
 
     result: List[dict] = []
-    has_duplicates = False
+    duplicate_codes: List[str] = []
+    failed_codes: List[str] = []
     processed_codes = set()  # 이미 처리한 코드들을 추적
 
     for item in payload:
@@ -97,13 +102,23 @@ async def create_product(request, payload: List[ProductCreateIn]):
 
         # 요청 내 중복 코드 체크 (이미 처리한 코드인지 확인)
         if code in processed_codes:
-            has_duplicates = True
+            duplicate_codes.append(code)
             continue
 
         # 기존 코드와 중복 체크
         if code in existing_codes:
-            has_duplicates = True
+            duplicate_codes.append(code)
             continue
+
+        # None인 선택 필드는 제거 (모델의 기본값 사용)
+        for optional_field in (
+            "current_stock",
+            "average_production_time",
+            "buffer_rate",
+            "note",
+        ):
+            if data.get(optional_field) is None:
+                data.pop(optional_field, None)
 
         try:
             product = await Product.objects.acreate(factory=factory, **data)
@@ -126,15 +141,32 @@ async def create_product(request, payload: List[ProductCreateIn]):
             result.append(response_data)
             processed_codes.add(code)  # 성공적으로 처리된 코드 추가
         except IntegrityError:
-            has_duplicates = True
+            # 중복은 위에서 이미 걸러졌으므로, 여기 걸리는 건 실제 DB 제약 위반이다.
+            logger.exception(
+                "제품 생성 실패 (factory_id=%s, code=%s, data=%s)",
+                factory_id,
+                code,
+                data,
+            )
+            failed_codes.append(code)
+
+    # 실제 오류는 중복으로 뭉뚱그리지 않고 에러로 알린다.
+    if failed_codes:
+        raise HttpError(
+            500,
+            f"{len(failed_codes)}개의 제품을 등록하지 못했습니다. "
+            f"(제품 코드: {', '.join(failed_codes)}) "
+            f"{len(result)}개는 등록되었습니다.",
+        )
 
     # 메시지 생성
     message = f"{len(result)}개의 제품이 성공적으로 생성되었습니다."
-    if has_duplicates:
-        message += " 중복된 코드가 있었습니다."
+    if duplicate_codes:
+        message += f" 중복된 코드가 있었습니다: {', '.join(duplicate_codes)}"
 
     return 201, {
         "data": result,
+        "duplicate_codes": duplicate_codes,
         "message": message,
     }
 
