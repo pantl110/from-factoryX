@@ -11,7 +11,7 @@ class CustomPageNumberPagination(PageNumberPagination):
 
     class Input(Schema):
         page: int = Field(1, ge=1)
-        page_size: int = Field(settings.PAGINATION_PER_PAGE, ge=1)
+        page_size: int = Field(settings.PAGINATION_PER_PAGE, ge=1, le=100)
 
     class Output(Schema):
         count: int
