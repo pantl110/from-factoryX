@@ -44,13 +44,19 @@ from tax.api_cash_receipt import router as cashReceipt_router
 from notification.api import router as notification_router
 from django.contrib.admin.views.decorators import staff_member_required
 from cfehome.views import websocket_test, websocket_test_local
+from django.conf import settings
+
+def docs_auth_decorator(view):
+    if settings.DEBUG:
+        return view
+    return staff_member_required(view)
 
 base_api = NinjaAPI(
     title="Factory X API",
     version="0.1.0",
     description="공장 관리 시스템 API",
     docs_url="/<engine>/",
-    # docs_decorator=staff_member_required,  # 개발용으로 주석 처리
+    docs_decorator=docs_auth_decorator,  
     docs=MixedDocs(),
 )
 
