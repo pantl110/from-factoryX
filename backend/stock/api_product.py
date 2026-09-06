@@ -166,7 +166,7 @@ async def assign_product(request, payload: AssignProductIn):
     auth=jwt_auth,
 )
 @paginate
-async def list_products(request, filters: ProductFilter = Query(None), q: str = None):
+async def list_products(request, filters: ProductFilter = Query(None), q: str = None, factory_id: int = Query(...)):
     factory_id = request.GET.get('factory_id')
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
@@ -210,7 +210,7 @@ async def list_products(request, filters: ProductFilter = Query(None), q: str = 
     response={200: ProductOut},
     auth=jwt_auth,
 )
-async def get_product(request, product_id: int):
+async def get_product(request, product_id: int, factory_id: int = Query(...)):
     factory_id = request.GET.get('factory_id')
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")

@@ -18,7 +18,7 @@ router = Router(tags=["ProjectLog"], auth=jwt_auth)
     description="새로운 프로젝트 로그를 생성합니다.",
     response={200: ProjectLogCreateOut, 400: dict, 404: dict, 500: dict}
 )
-async def create_project_log(request, payload: ProjectLogCreateIn):
+async def create_project_log(request, payload: ProjectLogCreateIn, factory_id: int = Query(...)):
     factory_id = request.GET.get('factory_id')
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
@@ -65,7 +65,7 @@ async def create_project_log(request, payload: ProjectLogCreateIn):
     response={200: List[ProjectLogDetailOut], 404: dict, 500: dict}
 )
 @paginate
-async def list_project_logs(request, project_id: int = Query(...)):
+async def list_project_logs(request, project_id: int = Query(...), factory_id: int = Query(...)):
     factory_id = request.GET.get('factory_id')
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
@@ -126,7 +126,7 @@ async def list_project_logs(request, project_id: int = Query(...)):
     description="프로젝트 로그의 타입, 제목, 내용을 수정합니다.",
     response={200: ProjectLogUpdateOut, 400: dict, 404: dict, 500: dict}
 )
-async def update_project_log(request, log_id: int, payload: ProjectLogUpdateIn):
+async def update_project_log(request, log_id: int, payload: ProjectLogUpdateIn, factory_id: int = Query(...)):
     factory_id = request.GET.get('factory_id')
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")

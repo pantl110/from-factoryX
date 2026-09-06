@@ -174,7 +174,7 @@ async def create_material_history(request, payload: MaterialHistoryCreateIn):
     description="특정 원자재의 히스토리를 조회합니다. 기간 설정이 없으면 전체 히스토리를, 기간 설정이 있으면 해당 기간의 히스토리를 조회합니다.",
     response={ 200: dict, 404: dict, 500: dict }
     )
-async def get_material_history(request, material_id: int, filters: MaterialHistoryDetailFilter = Query(...), page: int = 1, page_size: int = 5):
+async def get_material_history(request, material_id: int, filters: MaterialHistoryDetailFilter = Query(...), page: int = 1, page_size: int = 5, factory_id: int = Query(...)):
     factory_id = request.GET.get('factory_id')
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
@@ -183,7 +183,7 @@ async def get_material_history(request, material_id: int, filters: MaterialHisto
     await is_factory_member(int(factory_id), user)
 
     try:
-        material = await Material.objects.aget(id=material_id)
+        material = await Material.objects.aget(id=material_id, factory_id=int(factory_id))
     except Material.DoesNotExist:
         raise HttpError(404, "원자재 정보를 찾을 수 없습니다.")
     

@@ -73,7 +73,7 @@ async def create_product_history(request, payload: ProductHistoryCreateIn):
     auth=jwt_auth,
 )
 @paginate
-async def list_product_histories(request, filters: ProductHistoryFilter = Query(...)):
+async def list_product_histories(request, filters: ProductHistoryFilter = Query(...), factory_id: int = Query(...)):
     factory_id = request.GET.get('factory_id')
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
@@ -117,7 +117,7 @@ async def list_product_histories(request, filters: ProductHistoryFilter = Query(
     response={200: ProductHistoryOut},
     auth=jwt_auth,
 )
-async def get_product_history(request, history_id: int):
+async def get_product_history(request, history_id: int, factory_id: int = Query(...)):
     factory_id = request.GET.get('factory_id')
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")

@@ -39,7 +39,7 @@ router = Router(tags=["Project"], auth=jwt_auth)
     description="프로젝트와 견적서를 동시에 생성합니다.",
     response={201: ProjectCreateOut, 500: dict},
 )
-async def create_project(request):
+async def create_project(request, factory_id: int = Query(...)):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
@@ -70,7 +70,7 @@ async def create_project(request):
     description="완료된 프로젝트를 복제하여 생산 대기 상태로 새 프로젝트를 생성합니다.",
     response={200: ProjectCloneOut, 400: dict, 404: dict, 500: dict},
 )
-async def clone_project(request, payload: ProjectCloneIn):
+async def clone_project(request, payload: ProjectCloneIn, factory_id: int = Query(...)):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
@@ -83,7 +83,7 @@ async def clone_project(request, payload: ProjectCloneIn):
         @sync_to_async
         def clone_project_data():
             try:
-                original_project = Project.objects.get(id=payload.project_id)
+                original_project = Project.objects.get(id=payload.project_id, quotations__factory_id=int(factory_id))
             except Project.DoesNotExist:
                 raise HttpError(404, "해당 프로젝트를 찾을 수 없습니다.")
 
@@ -159,7 +159,7 @@ async def clone_project(request, payload: ProjectCloneIn):
     response={200: ProjectStatusOut, 404: dict, 403: dict, 500: dict},
     auth=jwt_auth,
 )
-async def get_project_status(request, project_id: int):
+async def get_project_status(request, project_id: int, factory_id: int = Query(...)):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
@@ -169,7 +169,7 @@ async def get_project_status(request, project_id: int):
 
     try:
         # 프로젝트가 해당 공장에 속하는지 확인
-        project = await sync_to_async(Project.objects.get)(id=project_id)
+        project = await sync_to_async(Project.objects.get)(id=project_id, quotations__factory_id=int(factory_id))
 
         # 프로젝트의 견적서가 해당 공장에 속하는지 확인
         quotation_exists = await sync_to_async(
@@ -234,6 +234,7 @@ async def get_project_status(request, project_id: int):
 async def list_project(
     request,
     filters: ProjectListFilter = Query(...),
+    factory_id: int = Query(...),
 ):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
@@ -424,7 +425,7 @@ async def list_project(
     response={200: ProjectDetailOut, 400: dict, 404: dict, 500: dict},
 )
 async def update_project_status(
-    request, project_id: int, payload: ProjectStatusUpdateIn
+    request, project_id: int, payload: ProjectStatusUpdateIn, factory_id: int = Query(...)
 ):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
@@ -453,7 +454,7 @@ async def update_project_status(
         )
 
     try:
-        project = await Project.objects.aget(id=project_id)
+        project = await Project.objects.aget(id=project_id, quotations__factory_id=int(factory_id))
 
         project.status = payload.status
         await project.asave()
@@ -467,7 +468,7 @@ async def update_project_status(
                 from stock.models import MaterialProduct, Material, MaterialHistory
 
                 # 해당 프로젝트의 모든 생산 계획 조회
-                project_plans = ProjectPlan.objects.filter(project_id=project_id)
+                project_plans = ProjectPlan.objects.filter(project_id=project_id, product__quotation__factory_id=int(factory_id))
 
                 for plan in project_plans:
                     # 이미 완료된 계획은 건너뛰기
@@ -539,7 +540,7 @@ async def update_project_status(
     response={200: ProjectDetailOut, 404: dict, 500: dict},
 )
 async def update_project_transact_date(
-    request, project_id: int, payload: ProjectTransactDateUpdateIn
+    request, project_id: int, payload: ProjectTransactDateUpdateIn, factory_id: int = Query(...)
 ):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
@@ -549,7 +550,7 @@ async def update_project_transact_date(
     await is_factory_member(int(factory_id), user)
 
     try:
-        project = await Project.objects.aget(id=project_id)
+        project = await Project.objects.aget(id=project_id, quotations__factory_id=int(factory_id))
         project.transact_date = payload.transact_date
         await project.asave()
 
@@ -578,7 +579,7 @@ async def update_project_transact_date(
     description="프로젝트를 삭제합니다.",
     response={200: ProjectUpdateOut, 404: dict, 500: dict},
 )
-async def delete_project(request, project_id: int):
+async def delete_project(request, project_id: int, factory_id: int = Query(...)):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
@@ -587,7 +588,7 @@ async def delete_project(request, project_id: int):
     await is_factory_member(int(factory_id), user)
 
     try:
-        project = await Project.objects.aget(id=project_id)
+        project = await Project.objects.aget(id=project_id, quotations__factory_id=int(factory_id))
         await project.adelete()
 
         return 200, {"message": "프로젝트가 성공적으로 삭제되었습니다."}

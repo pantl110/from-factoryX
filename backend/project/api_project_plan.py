@@ -43,7 +43,7 @@ router = Router(tags=["ProjectPlan"], auth=jwt_auth)
     description="프로젝트에 연결된 견적서 품목들을 기반으로 생산 계획을 생성합니다.",
     response={200: ProjectPlansCreateOut, 400: dict, 404: dict, 500: dict},
 )
-async def create_project_plans(request, payload: ProjectPlanCreateIn):
+async def create_project_plans(request, payload: ProjectPlanCreateIn, factory_id: int = Query(...)):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
@@ -57,7 +57,7 @@ async def create_project_plans(request, payload: ProjectPlanCreateIn):
         raise HttpError(404, "해당 프로젝트를 찾을 수 없습니다.")
 
     try:
-        quotation = await Quotation.objects.aget(project=project)
+        quotation = await Quotation.objects.aget(project=project, factory_id=int(factory_id))
     except Quotation.DoesNotExist:
         raise HttpError(404, "해당 프로젝트에 연결된 견적서를 찾을 수 없습니다.")
 
@@ -194,7 +194,7 @@ async def create_project_plans(request, payload: ProjectPlanCreateIn):
 )
 @paginate
 async def list_ongoing_project_plans(
-    request, filters: ProjectPlanListFilter = Query(None)
+    request, filters: ProjectPlanListFilter = Query(None), factory_id: int = Query(...)
 ):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
@@ -212,7 +212,7 @@ async def list_ongoing_project_plans(
 
         @sync_to_async
         def get_ongoing_plans():
-            queryset = Project.objects.filter(status__in=ongoing_statuses)
+            queryset = Project.objects.filter(status__in=ongoing_statuses, quotations__factory_id=int(factory_id))
             if filters:
                 queryset = filters.filter(queryset)
             ongoing_projects = list(queryset)
@@ -285,7 +285,7 @@ async def list_ongoing_project_plans(
 )
 @paginate
 async def list_completed_project_plans(
-    request, filters: ProjectPlanListFilter = Query(None)
+    request, filters: ProjectPlanListFilter = Query(None), factory_id: int = Query(...)
 ):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
@@ -303,7 +303,7 @@ async def list_completed_project_plans(
 
         @sync_to_async
         def get_completed_plans():
-            queryset = Project.objects.filter(status__in=completed_statuses)
+            queryset = Project.objects.filter(status__in=completed_statuses, quotations__factory_id=int(factory_id))
             if filters:
                 queryset = filters.filter(queryset)
             completed_projects = list(queryset)
@@ -374,7 +374,7 @@ async def list_completed_project_plans(
     description="오늘이 생산 시작인 프로젝트 계획을 조회합니다. 페이지당 5개씩 반환됩니다.",
     response={200: list[TodayProductionPlanOut], 400: dict, 404: dict, 500: dict},
 )
-async def list_today_production_plans(request, page: int = Query(1, ge=1)):
+async def list_today_production_plans(request, page: int = Query(1, ge=1), factory_id: int = Query(...)):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
@@ -449,7 +449,7 @@ async def list_today_production_plans(request, page: int = Query(1, ge=1)):
     description="오늘 완료된 생산 계획의 품목 수를 조회합니다. 전월 대비 수치도 포함됩니다.",
     response={200: DailyProductionQuantityOut, 404: dict, 500: dict},
 )
-async def get_daily_production_quantity(request, target_date: str = Query(None)):
+async def get_daily_production_quantity(request, target_date: str = Query(None), factory_id: int = Query(...)):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
@@ -569,7 +569,7 @@ async def get_daily_production_quantity(request, target_date: str = Query(None))
     description="project_id로 해당 프로젝트의 모든 생산 계획을 조회합니다.",
     response={200: List[ProjectPlanDetailWithRelationsOut], 404: dict, 500: dict},
 )
-async def list_project_plans(request, project_id: int):
+async def list_project_plans(request, project_id: int, factory_id: int = Query(...)):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
@@ -578,7 +578,7 @@ async def list_project_plans(request, project_id: int):
     await is_factory_member(int(factory_id), user)
 
     try:
-        project = await Project.objects.aget(id=project_id)
+        project = await Project.objects.aget(id=project_id, quotations__factory_id=int(factory_id))
     except Project.DoesNotExist:
         raise HttpError(404, "해당 프로젝트를 찾을 수 없습니다.")
 
@@ -631,7 +631,7 @@ async def list_project_plans(request, project_id: int):
     description="프로젝트 완료 기준, 공급가액 기준으로 생산 수익률을 조회합니다. 가입 다음 달부터 전월 대비 수치를 표시합니다.",
     response={200: ProductionProfitRateOut, 404: dict, 500: dict},
 )
-async def get_production_profit_rate(request, target_date: str = Query(None)):
+async def get_production_profit_rate(request, target_date: str = Query(None), factory_id: int = Query(...)):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
@@ -797,7 +797,7 @@ async def get_production_profit_rate(request, target_date: str = Query(None)):
     description="생산 계획의 기기, 수량, 상태, 일정 등을 수정합니다. 수량 수정 시 견적서 수량과 일치하도록 자동으로 분할됩니다.",
     response={200: dict, 400: dict, 404: dict, 500: dict},
 )
-async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateIn):
+async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateIn, factory_id: int = Query(...)):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
@@ -806,9 +806,7 @@ async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateI
     await is_factory_member(int(factory_id), user)
 
     try:
-        plan = await ProjectPlan.objects.select_related("project", "product").aget(
-            id=plan_id
-        )
+        plan = await ProjectPlan.objects.select_related("project", "product").aget(id=plan_id, project__quotations__factory_id=int(factory_id))
     except ProjectPlan.DoesNotExist:
         raise HttpError(404, "해당 생산 계획을 찾을 수 없습니다.")
 
@@ -824,7 +822,7 @@ async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateI
 
     if payload.equipment_id is not None:
         try:
-            equipment = await FactoryEquipment.objects.aget(id=payload.equipment_id)
+            equipment = await FactoryEquipment.objects.aget(id=payload.equipment_id, factory_id=int(factory_id))
             plan.equipment = equipment
         except FactoryEquipment.DoesNotExist:
             raise HttpError(400, f"설비 ID {payload.equipment_id}를 찾을 수 없습니다.")

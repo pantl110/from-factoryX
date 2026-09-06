@@ -1,4 +1,4 @@
-from ninja import Router
+from ninja import Router, Query
 from ninja.errors import HttpError
 from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
@@ -154,7 +154,7 @@ async def assign_material(request, payload: AssignMaterialIn):
     response={ 200: List[MaterialSummaryOut], 404: dict, 500: dict }
     )
 @paginate
-async def get_materials_by_factory(request, q: str = None, order: str = "desc"):
+async def get_materials_by_factory(request, q: str = None, order: str = "desc", factory_id: int = Query(...)):
     factory_id = request.GET.get('factory_id')
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
@@ -204,7 +204,7 @@ async def get_materials_by_factory(request, q: str = None, order: str = "desc"):
     description="현재 재고가 안전 재고보다 적은 원자재의 개수를 조회합니다.",
     response={200: ShortageMaterialCountOut, 404: dict, 500: dict}
 )
-async def get_insufficient_material_count(request):
+async def get_insufficient_material_count(request, factory_id: int = Query(...)):
     factory_id = request.GET.get('factory_id')
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
@@ -247,7 +247,7 @@ async def get_insufficient_material_count(request):
     description="특정 원자재의 상세 정보를 조회합니다.",
     response={ 200: MaterialDetailOut, 404: dict, 500: dict }
     )
-async def get_material_detail(request, material_id: int):
+async def get_material_detail(request, material_id: int, factory_id: int = Query(...)):
     factory_id = request.GET.get('factory_id')
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
@@ -256,7 +256,7 @@ async def get_material_detail(request, material_id: int):
     await is_factory_member(int(factory_id), user)
     
     try:
-        material = await Material.objects.aget(id=material_id)
+        material = await Material.objects.aget(id=material_id, factory_id=int(factory_id))
     except Material.DoesNotExist:
         raise HttpError(404, "원자재 정보를 찾을 수 없습니다.")
     
