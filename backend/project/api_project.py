@@ -6,6 +6,7 @@ from asgiref.sync import sync_to_async
 from datetime import date, timedelta, datetime
 from api.permissions import require_factory_access
 from api.security import api_key_auth, jwt_auth
+from api.throttling import PartnerApiKeyThrottle
 from typing import List
 
 from project.models import Project, ProjectPlan
@@ -39,6 +40,7 @@ router = Router(tags=["Project"], auth=jwt_auth)
     summary="[C] 프로젝트 생성",
     description="프로젝트와 견적서를 동시에 생성합니다.",
     auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response={201: ProjectCreateOut, 500: dict},
 )
 async def create_project(request, factory_id: int = Query(...)):
@@ -71,6 +73,7 @@ async def create_project(request, factory_id: int = Query(...)):
     summary="[C] 프로젝트 복제",
     description="완료된 프로젝트를 복제하여 생산 대기 상태로 새 프로젝트를 생성합니다.",
     auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response={200: ProjectCloneOut, 400: dict, 404: dict, 500: dict},
 )
 async def clone_project(request, payload: ProjectCloneIn, factory_id: int = Query(...)):
@@ -161,6 +164,7 @@ async def clone_project(request, payload: ProjectCloneIn, factory_id: int = Quer
     description="프로젝트 ID로 프로젝트 상태를 조회합니다.",
     response={200: ProjectStatusOut, 404: dict, 403: dict, 500: dict},
     auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
 )
 async def get_project_status(request, project_id: int, factory_id: int = Query(...)):
     factory_id = request.GET.get("factory_id")
@@ -232,6 +236,7 @@ async def get_project_status(request, project_id: int, factory_id: int = Query(.
     summary="[C] 진행, 보관된 프로젝트 조회",
     description="진행 또는 보관 중인 프로젝트를 조회, 검색합니다.",
     auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response={200: List[ListProgressProjectOut], 400: dict, 500: dict},
 )
 @paginate
@@ -427,6 +432,7 @@ async def list_project(
     summary="[C] 프로젝트 상태 업데이트",
     description="프로젝트의 상태를 업데이트합니다.",
     auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response={200: ProjectDetailOut, 400: dict, 404: dict, 500: dict},
 )
 async def update_project_status(
@@ -543,6 +549,7 @@ async def update_project_status(
     summary="[C] 거래명세서 발급일 업데이트",
     description="프로젝트의 거래명세서 발급일을 업데이트합니다.",
     auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response={200: ProjectDetailOut, 404: dict, 500: dict},
 )
 async def update_project_transact_date(
@@ -584,6 +591,7 @@ async def update_project_transact_date(
     summary="[C] 프로젝트 삭제",
     description="프로젝트를 삭제합니다.",
     auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response={200: ProjectUpdateOut, 404: dict, 500: dict},
 )
 async def delete_project(request, project_id: int, factory_id: int = Query(...)):

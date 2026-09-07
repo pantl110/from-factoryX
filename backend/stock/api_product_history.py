@@ -3,6 +3,7 @@ from ninja.pagination import paginate
 from ninja.errors import HttpError
 from api.permissions import require_factory_access
 from api.security import api_key_auth, jwt_auth
+from api.throttling import PartnerApiKeyThrottle
 from asgiref.sync import sync_to_async
 from typing import List
 
@@ -72,6 +73,7 @@ async def create_product_history(request, payload: ProductHistoryCreateIn):
     description="사용자가 소유한 공장의 제품 입출고 이력을 조회합니다.",
     response={200: List[ProductHistoryOut]},
     auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
 )
 @paginate
 async def list_product_histories(request, filters: ProductHistoryFilter = Query(...), factory_id: int = Query(...)):
@@ -117,6 +119,7 @@ async def list_product_histories(request, filters: ProductHistoryFilter = Query(
     description="입출고 이력 ID로 상세 정보를 조회합니다.",
     response={200: ProductHistoryOut},
     auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
 )
 async def get_product_history(request, history_id: int, factory_id: int = Query(...)):
     factory_id = request.GET.get('factory_id')

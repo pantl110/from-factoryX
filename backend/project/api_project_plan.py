@@ -5,6 +5,7 @@ from asgiref.sync import sync_to_async
 from apikey.models import ApiKey
 from api.permissions import require_factory_access
 from api.security import api_key_auth, jwt_auth
+from api.throttling import PartnerApiKeyThrottle
 from django.db import models
 from project.schemas.inbound import (
     ProjectPlanCreateIn,
@@ -44,6 +45,7 @@ router = Router(tags=["ProjectPlan"], auth=jwt_auth)
     summary="[C] 프로젝트 생산 계획 생성",
     description="프로젝트에 연결된 견적서 품목들을 기반으로 생산 계획을 생성합니다.",
     auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response={200: ProjectPlansCreateOut, 400: dict, 404: dict, 500: dict},
 )
 async def create_project_plans(request, payload: ProjectPlanCreateIn, factory_id: int = Query(...)):
@@ -194,6 +196,7 @@ async def create_project_plans(request, payload: ProjectPlanCreateIn, factory_id
     summary="[C] 진행 중인 프로젝트 계획 조회",
     description="진행 중인 프로젝트의 생산 계획을 조회합니다. 프로젝트 이름으로 검색 가능합니다.",
     auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response={200: List[ProjectPlanDetailWithRelationsOut], 404: dict, 500: dict},
 )
 @paginate
@@ -286,6 +289,7 @@ async def list_ongoing_project_plans(
     summary="[C] 완료된 프로젝트 계획 조회",
     description="완료된 프로젝트의 생산 계획을 조회합니다. 프로젝트 이름으로 검색 가능합니다.",
     auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response={200: List[ProjectPlanDetailWithRelationsOut], 404: dict, 500: dict},
 )
 @paginate
@@ -378,6 +382,7 @@ async def list_completed_project_plans(
     summary="[C] 오늘 생산 시작인 프로젝트 계획 조회",
     description="오늘이 생산 시작인 프로젝트 계획을 조회합니다. 페이지당 5개씩 반환됩니다.",
     auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response={200: list[TodayProductionPlanOut], 400: dict, 404: dict, 500: dict},
 )
 async def list_today_production_plans(request, page: int = Query(1, ge=1), factory_id: int = Query(...)):
@@ -454,6 +459,7 @@ async def list_today_production_plans(request, page: int = Query(1, ge=1), facto
     summary="[C] 오늘 생산량 조회",
     description="오늘 완료된 생산 계획의 품목 수를 조회합니다. 전월 대비 수치도 포함됩니다.",
     auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response={200: DailyProductionQuantityOut, 404: dict, 500: dict},
 )
 async def get_daily_production_quantity(request, target_date: str = Query(None), factory_id: int = Query(...)):
@@ -578,6 +584,7 @@ async def get_daily_production_quantity(request, target_date: str = Query(None),
     summary="[C] 프로젝트 생산 계획 조회",
     description="project_id로 해당 프로젝트의 모든 생산 계획을 조회합니다.",
     auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response={200: List[ProjectPlanDetailWithRelationsOut], 404: dict, 500: dict},
 )
 async def list_project_plans(request, project_id: int, factory_id: int = Query(...)):
@@ -641,6 +648,7 @@ async def list_project_plans(request, project_id: int, factory_id: int = Query(.
     summary="[C] 생산 수익률 조회",
     description="프로젝트 완료 기준, 공급가액 기준으로 생산 수익률을 조회합니다. 가입 다음 달부터 전월 대비 수치를 표시합니다.",
     auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response={200: ProductionProfitRateOut, 404: dict, 500: dict},
 )
 async def get_production_profit_rate(request, target_date: str = Query(None), factory_id: int = Query(...)):
@@ -811,6 +819,7 @@ async def get_production_profit_rate(request, target_date: str = Query(None), fa
     summary="[C] 프로젝트 생산 계획 수정",
     description="생산 계획의 기기, 수량, 상태, 일정 등을 수정합니다. 수량 수정 시 견적서 수량과 일치하도록 자동으로 분할됩니다.",
     auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response={200: dict, 400: dict, 404: dict, 500: dict},
 )
 async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateIn, factory_id: int = Query(...)):

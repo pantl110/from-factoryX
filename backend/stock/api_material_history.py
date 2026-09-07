@@ -3,6 +3,7 @@ from ninja.errors import HttpError
 from asgiref.sync import sync_to_async
 from api.permissions import require_factory_access
 from api.security import api_key_auth, jwt_auth
+from api.throttling import PartnerApiKeyThrottle
 
 from stock.models import Material, MaterialHistory
 from stock.schemas.inbound import MaterialHistoryCreateIn, SingleMaterialHistoryCreateIn, MaterialHistoryDetailFilter
@@ -174,6 +175,7 @@ async def create_material_history(request, payload: MaterialHistoryCreateIn):
     summary="[C] 원자재 히스토리 조회",
     description="특정 원자재의 히스토리를 조회합니다. 기간 설정이 없으면 전체 히스토리를, 기간 설정이 있으면 해당 기간의 히스토리를 조회합니다.",
     auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response={ 200: dict, 404: dict, 500: dict }
     )
 async def get_material_history(request, material_id: int, filters: MaterialHistoryDetailFilter = Query(...), page: int = 1, page_size: int = 5, factory_id: int = Query(...)):

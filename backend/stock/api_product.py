@@ -5,6 +5,7 @@ from django.http import JsonResponse
 from django.db import IntegrityError
 from api.permissions import require_factory_access
 from api.security import api_key_auth, jwt_auth
+from api.throttling import PartnerApiKeyThrottle
 from asgiref.sync import sync_to_async
 from typing import List
 
@@ -165,6 +166,7 @@ async def assign_product(request, payload: AssignProductIn):
     description="등록된 제품 목록을 조회합니다.",
     response={200: List[ProductListOut]},
     auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
 )
 @paginate
 async def list_products(request, filters: ProductFilter = Query(None), q: str = None, factory_id: int = Query(...)):
@@ -210,6 +212,7 @@ async def list_products(request, filters: ProductFilter = Query(None), q: str = 
     description="제품 ID로 제품 정보를 조회합니다.",
     response={200: ProductOut},
     auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
 )
 async def get_product(request, product_id: int, factory_id: int = Query(...)):
     factory_id = request.GET.get('factory_id')

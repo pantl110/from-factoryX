@@ -4,6 +4,7 @@ from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
 from api.permissions import require_factory_access
 from api.security import api_key_auth, jwt_auth
+from api.throttling import PartnerApiKeyThrottle
 from project.models import Project, ProjectLog
 from project.schemas.outbound import ProjectLogDetailOut, ProjectLogCreateOut, ProjectLogUpdateOut
 from project.schemas.inbound import ProjectLogCreateIn, ProjectLogUpdateIn
@@ -18,6 +19,7 @@ router = Router(tags=["ProjectLog"], auth=jwt_auth)
     summary="[C] 프로젝트 로그 생성",
     description="새로운 프로젝트 로그를 생성합니다.",
     auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response={200: ProjectLogCreateOut, 400: dict, 404: dict, 500: dict}
 )
 async def create_project_log(request, payload: ProjectLogCreateIn, factory_id: int = Query(...)):
@@ -65,6 +67,7 @@ async def create_project_log(request, payload: ProjectLogCreateIn, factory_id: i
     summary="[C] 프로젝트 로그 조회",
     description="project_id로 해당 프로젝트의 모든 로그를 조회합니다.",
     auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response={200: List[ProjectLogDetailOut], 404: dict, 500: dict}
 )
 @paginate
@@ -128,6 +131,7 @@ async def list_project_logs(request, project_id: int = Query(...), factory_id: i
     summary="[C] 프로젝트 로그 수정",
     description="프로젝트 로그의 타입, 제목, 내용을 수정합니다.",
     auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response={200: ProjectLogUpdateOut, 400: dict, 404: dict, 500: dict}
 )
 async def update_project_log(request, log_id: int, payload: ProjectLogUpdateIn, factory_id: int = Query(...)):
