@@ -3,7 +3,8 @@ from ninja.pagination import paginate
 from ninja.errors import HttpError
 from django.http import JsonResponse
 from django.db import IntegrityError
-from api.security import jwt_auth
+from api.permissions import require_factory_access
+from api.security import api_key_auth, jwt_auth
 from asgiref.sync import sync_to_async
 from typing import List
 
@@ -163,7 +164,7 @@ async def assign_product(request, payload: AssignProductIn):
     summary="[C] 제품 목록 검색 및 조회",
     description="등록된 제품 목록을 조회합니다.",
     response={200: List[ProductListOut]},
-    auth=jwt_auth,
+    auth=[jwt_auth, api_key_auth],
 )
 @paginate
 async def list_products(request, filters: ProductFilter = Query(None), q: str = None, factory_id: int = Query(...)):
@@ -172,7 +173,7 @@ async def list_products(request, filters: ProductFilter = Query(None), q: str = 
         raise HttpError(400, "factory_id를 입력해야 합니다.")
     
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     @sync_to_async
     def get_products():
@@ -208,7 +209,7 @@ async def list_products(request, filters: ProductFilter = Query(None), q: str = 
     summary="[C] 제품 상세 조회",
     description="제품 ID로 제품 정보를 조회합니다.",
     response={200: ProductOut},
-    auth=jwt_auth,
+    auth=[jwt_auth, api_key_auth],
 )
 async def get_product(request, product_id: int, factory_id: int = Query(...)):
     factory_id = request.GET.get('factory_id')
@@ -216,7 +217,7 @@ async def get_product(request, product_id: int, factory_id: int = Query(...)):
         raise HttpError(400, "factory_id를 입력해야 합니다.")
     
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     try:
         product = await Product.objects.aget(id=product_id, factory_id=int(factory_id))
@@ -318,4 +319,3 @@ async def delete_product(request, product_id: int):
         raise HttpError(404, "해당 제품을 찾을 수 없습니다.")
     await product.adelete()
     return 204, None
-

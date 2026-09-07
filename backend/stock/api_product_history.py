@@ -1,7 +1,8 @@
 from ninja import Router, Query
 from ninja.pagination import paginate
 from ninja.errors import HttpError
-from api.security import jwt_auth
+from api.permissions import require_factory_access
+from api.security import api_key_auth, jwt_auth
 from asgiref.sync import sync_to_async
 from typing import List
 
@@ -70,7 +71,7 @@ async def create_product_history(request, payload: ProductHistoryCreateIn):
     summary="[C] 제품 입출고 이력 목록 조회",
     description="사용자가 소유한 공장의 제품 입출고 이력을 조회합니다.",
     response={200: List[ProductHistoryOut]},
-    auth=jwt_auth,
+    auth=[jwt_auth, api_key_auth],
 )
 @paginate
 async def list_product_histories(request, filters: ProductHistoryFilter = Query(...), factory_id: int = Query(...)):
@@ -79,7 +80,7 @@ async def list_product_histories(request, filters: ProductHistoryFilter = Query(
         raise HttpError(400, "factory_id를 입력해야 합니다.")
     
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     @sync_to_async
     def get_histories():
@@ -115,7 +116,7 @@ async def list_product_histories(request, filters: ProductHistoryFilter = Query(
     summary="[C] 제품 입출고 이력 상세 조회",
     description="입출고 이력 ID로 상세 정보를 조회합니다.",
     response={200: ProductHistoryOut},
-    auth=jwt_auth,
+    auth=[jwt_auth, api_key_auth],
 )
 async def get_product_history(request, history_id: int, factory_id: int = Query(...)):
     factory_id = request.GET.get('factory_id')
@@ -123,7 +124,7 @@ async def get_product_history(request, history_id: int, factory_id: int = Query(
         raise HttpError(400, "factory_id를 입력해야 합니다.")
     
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     try:
         history = await ProductHistory.objects.select_related("product").aget(

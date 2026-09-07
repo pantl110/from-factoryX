@@ -4,7 +4,8 @@ from ninja.pagination import paginate
 from django.db.models import Exists, OuterRef
 from asgiref.sync import sync_to_async
 from datetime import date, timedelta, datetime
-from api.security import jwt_auth
+from api.permissions import require_factory_access
+from api.security import api_key_auth, jwt_auth
 from typing import List
 
 from project.models import Project, ProjectPlan
@@ -37,6 +38,7 @@ router = Router(tags=["Project"], auth=jwt_auth)
     "",
     summary="[C] 프로젝트 생성",
     description="프로젝트와 견적서를 동시에 생성합니다.",
+    auth=[jwt_auth, api_key_auth],
     response={201: ProjectCreateOut, 500: dict},
 )
 async def create_project(request, factory_id: int = Query(...)):
@@ -45,7 +47,7 @@ async def create_project(request, factory_id: int = Query(...)):
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     try:
         factory = await Factory.objects.aget(id=int(factory_id))
@@ -68,6 +70,7 @@ async def create_project(request, factory_id: int = Query(...)):
     "/clone",
     summary="[C] 프로젝트 복제",
     description="완료된 프로젝트를 복제하여 생산 대기 상태로 새 프로젝트를 생성합니다.",
+    auth=[jwt_auth, api_key_auth],
     response={200: ProjectCloneOut, 400: dict, 404: dict, 500: dict},
 )
 async def clone_project(request, payload: ProjectCloneIn, factory_id: int = Query(...)):
@@ -76,7 +79,7 @@ async def clone_project(request, payload: ProjectCloneIn, factory_id: int = Quer
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     try:
 
@@ -157,7 +160,7 @@ async def clone_project(request, payload: ProjectCloneIn, factory_id: int = Quer
     summary="[C] 프로젝트 상태 조회",
     description="프로젝트 ID로 프로젝트 상태를 조회합니다.",
     response={200: ProjectStatusOut, 404: dict, 403: dict, 500: dict},
-    auth=jwt_auth,
+    auth=[jwt_auth, api_key_auth],
 )
 async def get_project_status(request, project_id: int, factory_id: int = Query(...)):
     factory_id = request.GET.get("factory_id")
@@ -165,7 +168,7 @@ async def get_project_status(request, project_id: int, factory_id: int = Query(.
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     try:
         # 프로젝트가 해당 공장에 속하는지 확인
@@ -228,6 +231,7 @@ async def get_project_status(request, project_id: int, factory_id: int = Query(.
     "",
     summary="[C] 진행, 보관된 프로젝트 조회",
     description="진행 또는 보관 중인 프로젝트를 조회, 검색합니다.",
+    auth=[jwt_auth, api_key_auth],
     response={200: List[ListProgressProjectOut], 400: dict, 500: dict},
 )
 @paginate
@@ -241,7 +245,7 @@ async def list_project(
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     try:
         if not factory_id:
@@ -422,6 +426,7 @@ async def list_project(
     "/{project_id}/status",
     summary="[C] 프로젝트 상태 업데이트",
     description="프로젝트의 상태를 업데이트합니다.",
+    auth=[jwt_auth, api_key_auth],
     response={200: ProjectDetailOut, 400: dict, 404: dict, 500: dict},
 )
 async def update_project_status(
@@ -432,7 +437,7 @@ async def update_project_status(
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     status_mapping = {
         "quotation": "견적 협의중",
@@ -537,6 +542,7 @@ async def update_project_status(
     "/{project_id}/transact-date",
     summary="[C] 거래명세서 발급일 업데이트",
     description="프로젝트의 거래명세서 발급일을 업데이트합니다.",
+    auth=[jwt_auth, api_key_auth],
     response={200: ProjectDetailOut, 404: dict, 500: dict},
 )
 async def update_project_transact_date(
@@ -547,7 +553,7 @@ async def update_project_transact_date(
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     try:
         project = await Project.objects.aget(id=project_id, quotations__factory_id=int(factory_id))
@@ -577,6 +583,7 @@ async def update_project_transact_date(
     "/{project_id}",
     summary="[C] 프로젝트 삭제",
     description="프로젝트를 삭제합니다.",
+    auth=[jwt_auth, api_key_auth],
     response={200: ProjectUpdateOut, 404: dict, 500: dict},
 )
 async def delete_project(request, project_id: int, factory_id: int = Query(...)):
@@ -585,7 +592,7 @@ async def delete_project(request, project_id: int, factory_id: int = Query(...))
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     try:
         project = await Project.objects.aget(id=project_id, quotations__factory_id=int(factory_id))

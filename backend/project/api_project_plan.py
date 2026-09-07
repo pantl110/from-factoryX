@@ -2,7 +2,9 @@ from ninja import Router, Query
 from ninja.errors import HttpError
 from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
-from api.security import jwt_auth
+from apikey.models import ApiKey
+from api.permissions import require_factory_access
+from api.security import api_key_auth, jwt_auth
 from django.db import models
 from project.schemas.inbound import (
     ProjectPlanCreateIn,
@@ -41,6 +43,7 @@ router = Router(tags=["ProjectPlan"], auth=jwt_auth)
     "",
     summary="[C] 프로젝트 생산 계획 생성",
     description="프로젝트에 연결된 견적서 품목들을 기반으로 생산 계획을 생성합니다.",
+    auth=[jwt_auth, api_key_auth],
     response={200: ProjectPlansCreateOut, 400: dict, 404: dict, 500: dict},
 )
 async def create_project_plans(request, payload: ProjectPlanCreateIn, factory_id: int = Query(...)):
@@ -49,7 +52,7 @@ async def create_project_plans(request, payload: ProjectPlanCreateIn, factory_id
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     try:
         project = await Project.objects.aget(id=payload.project_id)
@@ -190,6 +193,7 @@ async def create_project_plans(request, payload: ProjectPlanCreateIn, factory_id
     "/ongoing",
     summary="[C] 진행 중인 프로젝트 계획 조회",
     description="진행 중인 프로젝트의 생산 계획을 조회합니다. 프로젝트 이름으로 검색 가능합니다.",
+    auth=[jwt_auth, api_key_auth],
     response={200: List[ProjectPlanDetailWithRelationsOut], 404: dict, 500: dict},
 )
 @paginate
@@ -201,7 +205,7 @@ async def list_ongoing_project_plans(
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     try:
         ongoing_statuses = [
@@ -281,6 +285,7 @@ async def list_ongoing_project_plans(
     "/completed",
     summary="[C] 완료된 프로젝트 계획 조회",
     description="완료된 프로젝트의 생산 계획을 조회합니다. 프로젝트 이름으로 검색 가능합니다.",
+    auth=[jwt_auth, api_key_auth],
     response={200: List[ProjectPlanDetailWithRelationsOut], 404: dict, 500: dict},
 )
 @paginate
@@ -292,7 +297,7 @@ async def list_completed_project_plans(
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     try:
         completed_statuses = [
@@ -372,6 +377,7 @@ async def list_completed_project_plans(
     "/today",
     summary="[C] 오늘 생산 시작인 프로젝트 계획 조회",
     description="오늘이 생산 시작인 프로젝트 계획을 조회합니다. 페이지당 5개씩 반환됩니다.",
+    auth=[jwt_auth, api_key_auth],
     response={200: list[TodayProductionPlanOut], 400: dict, 404: dict, 500: dict},
 )
 async def list_today_production_plans(request, page: int = Query(1, ge=1), factory_id: int = Query(...)):
@@ -380,7 +386,7 @@ async def list_today_production_plans(request, page: int = Query(1, ge=1), facto
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     try:
         today = date.today()
@@ -447,6 +453,7 @@ async def list_today_production_plans(request, page: int = Query(1, ge=1), facto
     "/daily",
     summary="[C] 오늘 생산량 조회",
     description="오늘 완료된 생산 계획의 품목 수를 조회합니다. 전월 대비 수치도 포함됩니다.",
+    auth=[jwt_auth, api_key_auth],
     response={200: DailyProductionQuantityOut, 404: dict, 500: dict},
 )
 async def get_daily_production_quantity(request, target_date: str = Query(None), factory_id: int = Query(...)):
@@ -455,7 +462,7 @@ async def get_daily_production_quantity(request, target_date: str = Query(None),
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     try:
 
@@ -489,12 +496,15 @@ async def get_daily_production_quantity(request, target_date: str = Query(None),
                 or 0
             )
 
-            # 사용자의 첫 공장 멤버 등록 시점 확인
-            user_first_membership = (
-                FactoryMember.objects.filter(user=user).order_by("created_at").first()
+            # API Key 요청은 공장의 첫 멤버 등록 시점을 사용합니다.
+            membership_queryset = (
+                FactoryMember.objects.filter(factory_id=int(factory_id))
+                if isinstance(user, ApiKey)
+                else FactoryMember.objects.filter(user=user)
             )
-            if user_first_membership:
-                first_membership_month = user_first_membership.created_at.replace(
+            first_membership = membership_queryset.order_by("created_at").first()
+            if first_membership:
+                first_membership_month = first_membership.created_at.replace(
                     day=1
                 ).date()
                 target_month_start = target_date_obj.replace(day=1)
@@ -567,6 +577,7 @@ async def get_daily_production_quantity(request, target_date: str = Query(None),
     "",
     summary="[C] 프로젝트 생산 계획 조회",
     description="project_id로 해당 프로젝트의 모든 생산 계획을 조회합니다.",
+    auth=[jwt_auth, api_key_auth],
     response={200: List[ProjectPlanDetailWithRelationsOut], 404: dict, 500: dict},
 )
 async def list_project_plans(request, project_id: int, factory_id: int = Query(...)):
@@ -575,7 +586,7 @@ async def list_project_plans(request, project_id: int, factory_id: int = Query(.
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     try:
         project = await Project.objects.aget(id=project_id, quotations__factory_id=int(factory_id))
@@ -629,6 +640,7 @@ async def list_project_plans(request, project_id: int, factory_id: int = Query(.
     "/profit-rate",
     summary="[C] 생산 수익률 조회",
     description="프로젝트 완료 기준, 공급가액 기준으로 생산 수익률을 조회합니다. 가입 다음 달부터 전월 대비 수치를 표시합니다.",
+    auth=[jwt_auth, api_key_auth],
     response={200: ProductionProfitRateOut, 404: dict, 500: dict},
 )
 async def get_production_profit_rate(request, target_date: str = Query(None), factory_id: int = Query(...)):
@@ -637,7 +649,7 @@ async def get_production_profit_rate(request, target_date: str = Query(None), fa
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     try:
         # 날짜 파싱 (기본값: 오늘)
@@ -690,12 +702,15 @@ async def get_production_profit_rate(request, target_date: str = Query(None), fa
                 current_month_profit += project_profit
                 current_month_count += 1
 
-            # 사용자의 첫 공장 멤버 등록 시점 확인
-            user_first_membership = (
-                FactoryMember.objects.filter(user=user).order_by("created_at").first()
+            # API Key 요청은 공장의 첫 멤버 등록 시점을 사용합니다.
+            membership_queryset = (
+                FactoryMember.objects.filter(factory_id=int(factory_id))
+                if isinstance(user, ApiKey)
+                else FactoryMember.objects.filter(user=user)
             )
-            if user_first_membership:
-                first_membership_month = user_first_membership.created_at.replace(
+            first_membership = membership_queryset.order_by("created_at").first()
+            if first_membership:
+                first_membership_month = first_membership.created_at.replace(
                     day=1
                 ).date()
                 target_month_start_date = target_date_obj.replace(day=1)
@@ -751,7 +766,7 @@ async def get_production_profit_rate(request, target_date: str = Query(None), fa
                         previous_month_count += 1
 
                     # 전월에 데이터가 일정 기간 누적되었는지 확인 (최소 7일 이상)
-                    first_membership_day = user_first_membership.created_at.day
+                    first_membership_day = first_membership.created_at.day
                     if first_membership_day <= 7:  # 7일 이전에 가입한 경우
                         can_compare = True
                     else:
@@ -795,6 +810,7 @@ async def get_production_profit_rate(request, target_date: str = Query(None), fa
     "/{plan_id}",
     summary="[C] 프로젝트 생산 계획 수정",
     description="생산 계획의 기기, 수량, 상태, 일정 등을 수정합니다. 수량 수정 시 견적서 수량과 일치하도록 자동으로 분할됩니다.",
+    auth=[jwt_auth, api_key_auth],
     response={200: dict, 400: dict, 404: dict, 500: dict},
 )
 async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateIn, factory_id: int = Query(...)):
@@ -803,7 +819,7 @@ async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateI
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     try:
         plan = await ProjectPlan.objects.select_related("project", "product").aget(id=plan_id, project__quotations__factory_id=int(factory_id))

@@ -1,3 +1,5 @@
+import hashlib
+
 import jwt
 from typing import Any, Optional
 from django.http import HttpRequest
@@ -8,6 +10,8 @@ from django.utils import timezone
 from asgiref.sync import sync_to_async
 from factory.models import FactoryMember
 from api.permissions import has_manager_role, has_admin_role
+from apikey.models import ApiKey
+from subscription.models import Subscription, SubscriptionHistory
 
 
 User = get_user_model()
@@ -126,6 +130,36 @@ class JWTAdminAuth(JWTAuth):
         return None
 
 
+class ApiKeyAuth(HttpBearer):
+    async def authenticate(self, request, token):
+        if not (token.startswith("pantl_live_") or token.startswith("pantl_test_")):
+            return None
+
+        key_hash = hashlib.sha256(token.encode()).hexdigest()
+        try:
+            api_key = await ApiKey.objects.select_related("factory").aget(
+                key_hash=key_hash,
+                revoked_at__isnull=True,
+            )
+        except ApiKey.DoesNotExist:
+            return None
+
+        today = timezone.now().date()
+        has_partner_subscription = await SubscriptionHistory.objects.filter(
+            factory_id=api_key.factory_id,
+            subscription__type=Subscription.SubscriptionType.partners,
+            start_date__lte=today,
+            end_date__gt=today,
+        ).aexists()
+        if not has_partner_subscription:
+            return None
+
+        api_key.last_used_at = timezone.now()
+        await api_key.asave(update_fields=["last_used_at"])
+        return api_key
+
+
 jwt_auth = JWTAuth()
 jwt_manager_auth = JWTManagerAuth()
 jwt_admin_auth = JWTAdminAuth()
+api_key_auth = ApiKeyAuth()
