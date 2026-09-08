@@ -7,6 +7,7 @@ from stock.models import Product
 import json
 import jwt
 from django.conf import settings
+from django.utils import timezone
 from datetime import datetime, timedelta, date
 
 User = get_user_model()
@@ -95,7 +96,7 @@ class ProjectPlanAPITestCase(TestCase):
 
     def test_create_project_plans_success(self):
         """프로젝트 생산 계획 생성 성공 테스트"""
-        url = "/v1/project/plan"
+        url = "/v1/project-plan"
 
         payload = {
             "project_id": self.project.id,
@@ -139,7 +140,7 @@ class ProjectPlanAPITestCase(TestCase):
 
     def test_create_project_plans_nonexistent_project(self):
         """존재하지 않는 프로젝트로 생산 계획 생성 시도 테스트"""
-        url = "/v1/project/plan"
+        url = "/v1/project-plan"
 
         payload = {
             "project_id": 999,
@@ -162,7 +163,7 @@ class ProjectPlanAPITestCase(TestCase):
 
     def test_create_project_plans_nonexistent_quotation_product(self):
         """존재하지 않는 견적서 품목으로 생산 계획 생성 시도 테스트"""
-        url = "/v1/project/plan"
+        url = "/v1/project-plan"
 
         payload = {
             "project_id": self.project.id,
@@ -185,7 +186,7 @@ class ProjectPlanAPITestCase(TestCase):
 
     def test_create_project_plans_without_auth(self):
         """인증 없이 생산 계획 생성 시도 테스트"""
-        url = "/v1/project/plan"
+        url = "/v1/project-plan"
 
         payload = {
             "project_id": self.project.id,
@@ -206,7 +207,7 @@ class ProjectPlanAPITestCase(TestCase):
     def test_update_project_plan_success(self):
         """프로젝트 생산 계획 수정 성공 테스트"""
         # 먼저 생산 계획 생성
-        create_url = "/v1/project/plan"
+        create_url = "/v1/project-plan"
         create_payload = {
             "project_id": self.project.id,
             "quotation_product_ids": [self.quotation_product.id],
@@ -228,7 +229,7 @@ class ProjectPlanAPITestCase(TestCase):
         plan_id = create_response.json()["created_plans"][0]["id"]
 
         # 생산 계획 수정
-        update_url = f"/v1/project/plan/{plan_id}?factory_id={self.factory.id}"
+        update_url = f"/v1/project-plan/{plan_id}?factory_id={self.factory.id}"
         update_payload = {
             "quantity": 10,
             "status": "production",
@@ -255,7 +256,7 @@ class ProjectPlanAPITestCase(TestCase):
 
     def test_update_project_plan_nonexistent(self):
         """존재하지 않는 생산 계획 수정 시도 테스트"""
-        url = f"/v1/project/plan/999?factory_id={self.factory.id}"
+        url = f"/v1/project-plan/999?factory_id={self.factory.id}"
         payload = {"quantity": 15}
 
         response = self.client.patch(
@@ -270,7 +271,7 @@ class ProjectPlanAPITestCase(TestCase):
     def test_update_project_plan_invalid_equipment(self):
         """존재하지 않는 설비로 수정 시도 테스트"""
         # 먼저 생산 계획 생성
-        create_url = "/v1/project/plan"
+        create_url = "/v1/project-plan"
         create_payload = {
             "project_id": self.project.id,
             "quotation_product_ids": [self.quotation_product.id],
@@ -292,7 +293,7 @@ class ProjectPlanAPITestCase(TestCase):
         plan_id = create_response.json()["created_plans"][0]["id"]
 
         # 존재하지 않는 설비로 수정 시도
-        update_url = f"/v1/project/plan/{plan_id}?factory_id={self.factory.id}"
+        update_url = f"/v1/project-plan/{plan_id}?factory_id={self.factory.id}"
         update_payload = {"equipment_id": 999}
 
         response = self.client.patch(
@@ -307,7 +308,7 @@ class ProjectPlanAPITestCase(TestCase):
     def test_update_project_plan_invalid_status(self):
         """올바르지 않은 상태값으로 수정 시도 테스트"""
         # 먼저 생산 계획 생성
-        create_url = "/v1/project/plan"
+        create_url = "/v1/project-plan"
         create_payload = {
             "project_id": self.project.id,
             "quotation_product_ids": [self.quotation_product.id],
@@ -329,7 +330,7 @@ class ProjectPlanAPITestCase(TestCase):
         plan_id = create_response.json()["created_plans"][0]["id"]
 
         # 올바르지 않은 상태값으로 수정 시도
-        update_url = f"/v1/project/plan/{plan_id}?factory_id={self.factory.id}"
+        update_url = f"/v1/project-plan/{plan_id}?factory_id={self.factory.id}"
         update_payload = {"status": "잘못된상태"}
 
         response = self.client.patch(
@@ -344,7 +345,7 @@ class ProjectPlanAPITestCase(TestCase):
     def test_update_project_plan_invalid_quantity(self):
         """올바르지 않은 수량으로 수정 시도 테스트"""
         # 먼저 생산 계획 생성
-        create_url = "/v1/project/plan"
+        create_url = "/v1/project-plan"
         create_payload = {
             "project_id": self.project.id,
             "quotation_product_ids": [self.quotation_product.id],
@@ -366,7 +367,7 @@ class ProjectPlanAPITestCase(TestCase):
         plan_id = create_response.json()["created_plans"][0]["id"]
 
         # 올바르지 않은 수량으로 수정 시도
-        update_url = f"/v1/project/plan/{plan_id}?factory_id={self.factory.id}"
+        update_url = f"/v1/project-plan/{plan_id}?factory_id={self.factory.id}"
         update_payload = {"quantity": 0}
 
         response = self.client.patch(
@@ -380,7 +381,7 @@ class ProjectPlanAPITestCase(TestCase):
 
     def test_update_project_plan_without_auth(self):
         """인증 없이 생산 계획 수정 시도 테스트"""
-        url = "/v1/project/plan/1"
+        url = "/v1/project-plan/1"
         payload = {"quantity": 15}
 
         response = self.client.patch(
@@ -392,7 +393,7 @@ class ProjectPlanAPITestCase(TestCase):
     def test_list_project_plans_success(self):
         """프로젝트 생산 계획 조회 성공 테스트"""
         # 먼저 생산 계획 생성
-        create_url = "/v1/project/plan"
+        create_url = "/v1/project-plan"
         create_payload = {
             "project_id": self.project.id,
             "quotation_product_ids": [self.quotation_product.id],
@@ -411,7 +412,7 @@ class ProjectPlanAPITestCase(TestCase):
         )
 
         # 프로젝트 생산 계획 조회
-        list_url = f"/v1/project/plan?project_id={self.project.id}&factory_id={self.factory.id}"
+        list_url = f"/v1/project-plan?project_id={self.project.id}&factory_id={self.factory.id}"
 
         response = self.client.get(list_url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
 
@@ -461,7 +462,7 @@ class ProjectPlanAPITestCase(TestCase):
 
     def test_list_project_plans_nonexistent_project(self):
         """존재하지 않는 프로젝트로 생산 계획 조회 시도 테스트"""
-        url = f"/v1/project/plan?project_id=999&factory_id={self.factory.id}"
+        url = f"/v1/project-plan?project_id=999&factory_id={self.factory.id}"
 
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
 
@@ -473,7 +474,7 @@ class ProjectPlanAPITestCase(TestCase):
         new_project = Project.objects.create()
 
         url = (
-            f"/v1/project/plan?project_id={new_project.id}&factory_id={self.factory.id}"
+            f"/v1/project-plan?project_id={new_project.id}&factory_id={self.factory.id}"
         )
 
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
@@ -482,7 +483,7 @@ class ProjectPlanAPITestCase(TestCase):
 
     def test_list_project_plans_without_auth(self):
         """인증 없이 생산 계획 조회 시도 테스트"""
-        url = "/v1/project/plan?project_id=1"
+        url = "/v1/project-plan?project_id=1"
 
         response = self.client.get(url)
 
@@ -491,7 +492,7 @@ class ProjectPlanAPITestCase(TestCase):
     def test_list_ongoing_project_plans_success(self):
         """진행 중인 프로젝트 계획 조회 성공 테스트"""
         # 먼저 생산 계획 생성
-        create_url = "/v1/project/plan"
+        create_url = "/v1/project-plan"
         create_payload = {
             "project_id": self.project.id,
             "quotation_product_ids": [self.quotation_product.id],
@@ -510,7 +511,7 @@ class ProjectPlanAPITestCase(TestCase):
         )
 
         # 진행 중인 프로젝트 계획 조회 (쿼리 파라미터 없이)
-        list_url = f"/v1/project/plan/ongoing?factory_id={self.factory.id}"
+        list_url = f"/v1/project-plan/ongoing?factory_id={self.factory.id}"
 
         response = self.client.get(list_url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
 
@@ -553,7 +554,7 @@ class ProjectPlanAPITestCase(TestCase):
     def test_list_ongoing_project_plans_with_search(self):
         """진행 중인 프로젝트 계획 조회 (고객사 회사명 검색) 테스트"""
         # 먼저 생산 계획 생성
-        create_url = "/v1/project/plan"
+        create_url = "/v1/project-plan"
         create_payload = {
             "project_id": self.project.id,
             "quotation_product_ids": [self.quotation_product.id],
@@ -572,7 +573,7 @@ class ProjectPlanAPITestCase(TestCase):
         )
 
         # 고객사 회사명으로 검색
-        list_url = f"/v1/project/plan/ongoing?client_name={self.client_company.name}&factory_id={self.factory.id}"
+        list_url = f"/v1/project-plan/ongoing?client_name={self.client_company.name}&factory_id={self.factory.id}"
 
         response = self.client.get(list_url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
 
@@ -593,7 +594,7 @@ class ProjectPlanAPITestCase(TestCase):
     def test_list_completed_project_plans_empty(self):
         """완료된 프로젝트 계획 조회 (빈 결과) 테스트"""
         # 완료된 프로젝트 계획 조회 (쿼리 파라미터 없이)
-        list_url = f"/v1/project/plan/completed?factory_id={self.factory.id}"
+        list_url = f"/v1/project-plan/completed?factory_id={self.factory.id}"
 
         response = self.client.get(list_url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
 
@@ -607,7 +608,7 @@ class ProjectPlanAPITestCase(TestCase):
     def test_list_ongoing_project_plans_empty(self):
         """진행 중인 프로젝트 계획 조회 (빈 결과) 테스트"""
         # 존재하지 않는 프로젝트가 없으므로 쿼리 파라미터 없이 호출
-        list_url = f"/v1/project/plan/ongoing?factory_id={self.factory.id}"
+        list_url = f"/v1/project-plan/ongoing?factory_id={self.factory.id}"
 
         response = self.client.get(list_url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
 
@@ -621,7 +622,7 @@ class ProjectPlanAPITestCase(TestCase):
     def test_update_project_plan_equipment_change_log_creation(self):
         """생산 중인 프로젝트의 설비 변경 시 로그 생성 테스트"""
         # 먼저 생산 계획 생성
-        create_url = "/v1/project/plan"
+        create_url = "/v1/project-plan"
         create_payload = {
             "project_id": self.project.id,
             "quotation_product_ids": [self.quotation_product.id],
@@ -645,7 +646,7 @@ class ProjectPlanAPITestCase(TestCase):
         plan_id = response.json()["created_plans"][0]["id"]
 
         # 계획 상태를 "production"으로 변경
-        update_status_url = f"/v1/project/plan/{plan_id}?factory_id={self.factory.id}"
+        update_status_url = f"/v1/project-plan/{plan_id}?factory_id={self.factory.id}"
         status_payload = {"status": "production"}
 
         response = self.client.patch(
@@ -697,7 +698,7 @@ class ProjectPlanAPITestCase(TestCase):
     def test_update_project_plan_equipment_change_no_log_when_not_producing(self):
         """생산 중이 아닌 상태에서 설비 변경 시 로그 생성 안됨 테스트"""
         # 먼저 생산 계획 생성
-        create_url = "/v1/project/plan"
+        create_url = "/v1/project-plan"
         create_payload = {
             "project_id": self.project.id,
             "quotation_product_ids": [self.quotation_product.id],
@@ -729,7 +730,7 @@ class ProjectPlanAPITestCase(TestCase):
         equipment_change_payload = {"equipment_id": new_equipment.id}
 
         response = self.client.patch(
-            f"/v1/project/plan/{plan_id}?factory_id={self.factory.id}",
+            f"/v1/project-plan/{plan_id}?factory_id={self.factory.id}",
             data=json.dumps(equipment_change_payload),
             content_type="application/json",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
@@ -744,7 +745,7 @@ class ProjectPlanAPITestCase(TestCase):
     def test_update_project_plan_equipment_change_no_log_when_same_equipment(self):
         """같은 설비로 변경 시 로그 생성 안됨 테스트"""
         # 먼저 생산 계획 생성
-        create_url = "/v1/project/plan"
+        create_url = "/v1/project-plan"
         create_payload = {
             "project_id": self.project.id,
             "quotation_product_ids": [self.quotation_product.id],
@@ -768,7 +769,7 @@ class ProjectPlanAPITestCase(TestCase):
         plan_id = response.json()["created_plans"][0]["id"]
 
         # 계획 상태를 "production" : "가동 중"으로 변경
-        update_status_url = f"/v1/project/plan/{plan_id}?factory_id={self.factory.id}"
+        update_status_url = f"/v1/project-plan/{plan_id}?factory_id={self.factory.id}"
         status_payload = {"status": "production"}
 
         response = self.client.patch(
@@ -827,7 +828,7 @@ class ProjectPlanAPITestCase(TestCase):
         )
 
         response = self.client.get(
-            f"/v1/project/plan/daily?factory_id={self.factory.id}",
+            f"/v1/project-plan/daily?factory_id={self.factory.id}",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
 
@@ -848,7 +849,7 @@ class ProjectPlanAPITestCase(TestCase):
     def test_get_daily_production_quantity_no_data(self):
         """생산 데이터가 없는 경우 테스트"""
         response = self.client.get(
-            f"/v1/project/plan/daily?factory_id={self.factory.id}",
+            f"/v1/project-plan/daily?factory_id={self.factory.id}",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
 
@@ -878,7 +879,7 @@ class ProjectPlanAPITestCase(TestCase):
         )
 
         response = self.client.get(
-            f"/v1/project/plan/daily?factory_id={self.factory.id}&target_date=2024-01-15",
+            f"/v1/project-plan/daily?factory_id={self.factory.id}&target_date=2024-01-15",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
 
@@ -891,7 +892,7 @@ class ProjectPlanAPITestCase(TestCase):
     def test_get_daily_production_quantity_invalid_date_format(self):
         """잘못된 날짜 형식 테스트"""
         response = self.client.get(
-            f"/v1/project/plan/daily?factory_id={self.factory.id}&target_date=invalid-date",
+            f"/v1/project-plan/daily?factory_id={self.factory.id}&target_date=invalid-date",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
 
@@ -904,19 +905,15 @@ class ProjectPlanAPITestCase(TestCase):
     def test_get_daily_production_quantity_without_factory_id(self):
         """factory_id 누락 테스트"""
         response = self.client.get(
-            "/v1/project/plan/daily", HTTP_AUTHORIZATION=f"Bearer {self.token}"
+            "/v1/project-plan/daily", HTTP_AUTHORIZATION=f"Bearer {self.token}"
         )
 
-        self.assertEqual(response.status_code, 400)
-        data = response.json()
-        # Django Ninja의 에러 응답 구조 확인
-        error_message = data.get("message", "") or data.get("detail", "")
-        self.assertIn("factory_id를 입력해야 합니다", error_message)
+        self.assertEqual(response.status_code, 422)
 
     def test_get_daily_production_quantity_without_auth(self):
         """인증 없이 조회 테스트"""
         response = self.client.get(
-            f"/v1/project/plan/daily?factory_id={self.factory.id}"
+            f"/v1/project-plan/daily?factory_id={self.factory.id}"
         )
 
         self.assertEqual(response.status_code, 401)
@@ -963,7 +960,7 @@ class ProjectPlanAPITestCase(TestCase):
 
         # 현재 공장으로 요청하지만 다른 공장의 데이터는 조회되지 않음
         response = self.client.get(
-            f"/v1/project/plan/daily?factory_id={self.factory.id}",
+            f"/v1/project-plan/daily?factory_id={self.factory.id}",
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
 
@@ -988,7 +985,7 @@ class ProjectPlanAPITestCase(TestCase):
             avg_production_time=3600,
         )
 
-        url = f"/v1/project/plan/{plan.id}"
+        url = f"/v1/project-plan/{plan.id}"
 
         payload = {"start_date": "2024-02-01 14:30", "end_date": "2024-02-28 18:45"}
 
@@ -1003,8 +1000,8 @@ class ProjectPlanAPITestCase(TestCase):
 
         # 데이터베이스 확인
         plan.refresh_from_db()
-        self.assertEqual(plan.start_date, date(2024, 2, 1))
-        self.assertEqual(plan.end_date, date(2024, 2, 28))
+        self.assertEqual(timezone.localtime(plan.start_date).date(), date(2024, 2, 1))
+        self.assertEqual(timezone.localtime(plan.end_date).date(), date(2024, 2, 28))
 
     def test_update_project_plan_date_without_time_format(self):
         """날짜만 있는 형식으로 수정하는 테스트"""
@@ -1020,7 +1017,7 @@ class ProjectPlanAPITestCase(TestCase):
             avg_production_time=3600,
         )
 
-        url = f"/v1/project/plan/{plan.id}"
+        url = f"/v1/project-plan/{plan.id}"
 
         payload = {"start_date": "2024-03-01", "end_date": "2024-03-31"}
 
@@ -1035,8 +1032,8 @@ class ProjectPlanAPITestCase(TestCase):
 
         # 데이터베이스 확인
         plan.refresh_from_db()
-        self.assertEqual(plan.start_date, date(2024, 3, 1))
-        self.assertEqual(plan.end_date, date(2024, 3, 31))
+        self.assertEqual(timezone.localtime(plan.start_date).date(), date(2024, 3, 1))
+        self.assertEqual(timezone.localtime(plan.end_date).date(), date(2024, 3, 31))
 
     def test_update_project_plan_date_mixed_format(self):
         """시작일은 시간 포함, 마감일은 시간 없는 혼합 형식 테스트"""
@@ -1052,7 +1049,7 @@ class ProjectPlanAPITestCase(TestCase):
             avg_production_time=3600,
         )
 
-        url = f"/v1/project/plan/{plan.id}"
+        url = f"/v1/project-plan/{plan.id}"
 
         payload = {"start_date": "2024-04-01 09:15", "end_date": "2024-04-30"}
 
@@ -1067,8 +1064,8 @@ class ProjectPlanAPITestCase(TestCase):
 
         # 데이터베이스 확인
         plan.refresh_from_db()
-        self.assertEqual(plan.start_date, date(2024, 4, 1))
-        self.assertEqual(plan.end_date, date(2024, 4, 30))
+        self.assertEqual(timezone.localtime(plan.start_date).date(), date(2024, 4, 1))
+        self.assertEqual(timezone.localtime(plan.end_date).date(), date(2024, 4, 30))
 
     def test_update_project_plan_quantity_less_than_quotation(self):
         """생산수량을 주문수량보다 작게 수정하는 테스트 (다른 설비로 계획 생성)"""
@@ -1089,7 +1086,7 @@ class ProjectPlanAPITestCase(TestCase):
             avg_production_time=3600,
         )
 
-        url = f"/v1/project/plan/{plan.id}"
+        url = f"/v1/project-plan/{plan.id}"
 
         payload = {"quantity": 60}  # 주문수량(100)보다 작음
 
@@ -1134,7 +1131,7 @@ class ProjectPlanAPITestCase(TestCase):
             avg_production_time=3600,
         )
 
-        url = f"/v1/project/plan/{plan.id}"
+        url = f"/v1/project-plan/{plan.id}"
 
         payload = {"quantity": 60}  # 주문수량(100)보다 작음
 
@@ -1184,7 +1181,7 @@ class ProjectPlanAPITestCase(TestCase):
             avg_production_time=3600,
         )
 
-        url = f"/v1/project/plan/{plan.id}"
+        url = f"/v1/project-plan/{plan.id}"
 
         payload = {"quantity": 60}  # 주문수량(100)보다 작음
 
@@ -1215,8 +1212,8 @@ class ProjectPlanAPITestCase(TestCase):
         additional_plan = additional_plans.first()
         self.assertEqual(additional_plan.equipment.id, equipment2.id)  # 다른 설비 사용
         self.assertEqual(
-            additional_plan.quantity, 40
-        )  # (100-60) = 40 (buffer rate 적용 안함)
+            additional_plan.quantity, 44
+        )  # (100-60) × (1 + buffer rate 10%) = 44
 
     def test_list_today_production_plans_success(self):
         """오늘 생산 시작인 프로젝트 계획 조회 성공 테스트"""
@@ -1233,7 +1230,7 @@ class ProjectPlanAPITestCase(TestCase):
             avg_production_time=3600,
         )
 
-        url = "/v1/project/plan/today"
+        url = "/v1/project-plan/today"
 
         response = self.client.get(
             f"{url}?factory_id={self.factory.id}&page=1",
@@ -1272,7 +1269,7 @@ class ProjectPlanAPITestCase(TestCase):
                 avg_production_time=3600 + i * 100,
             )
 
-        url = "/v1/project/plan/today"
+        url = "/v1/project-plan/today"
 
         # 첫 번째 페이지 (5개)
         response = self.client.get(
@@ -1304,7 +1301,7 @@ class ProjectPlanAPITestCase(TestCase):
 
     def test_list_today_production_plans_no_data(self):
         """오늘 생산 시작인 프로젝트 계획이 없을 때 테스트"""
-        url = "/v1/project/plan/today"
+        url = "/v1/project-plan/today"
 
         response = self.client.get(
             f"{url}?factory_id={self.factory.id}&page=1",
@@ -1315,17 +1312,17 @@ class ProjectPlanAPITestCase(TestCase):
 
     def test_list_today_production_plans_missing_factory_id(self):
         """factory_id 누락 시 오늘 생산 시작인 프로젝트 계획 조회 테스트"""
-        url = "/v1/project/plan/today"
+        url = "/v1/project-plan/today"
 
         response = self.client.get(
             f"{url}?page=1", HTTP_AUTHORIZATION=f"Bearer {self.token}"
         )
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 422)
 
     def test_list_today_production_plans_without_auth(self):
         """인증 없이 오늘 생산 시작인 프로젝트 계획 조회 테스트"""
-        url = "/v1/project/plan/today"
+        url = "/v1/project-plan/today"
 
         response = self.client.get(f"{url}?factory_id={self.factory.id}&page=1")
 

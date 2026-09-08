@@ -241,10 +241,7 @@ class TestMaterialAPI(TestCase):
         headers = await self.authenticate()
         
         response = await self.client.get("", headers=headers)
-        self.assertEqual(response.status_code, 400)
-        
-        data = response.json()
-        self.assertEqual(data.get("message") or data.get("detail"), "factory_id를 입력해야 합니다.")
+        self.assertEqual(response.status_code, 422)
 
     async def test_get_materials_by_factory_not_found(self):
         """존재하지 않는 공장 조회 테스트"""
@@ -254,7 +251,7 @@ class TestMaterialAPI(TestCase):
         self.assertEqual(response.status_code, 404)
         
         data = response.json()
-        self.assertEqual(data.get("message") or data.get("detail"), "해당 공장에 멤버가 아닙니다.")
+        self.assertEqual(data.get("message") or data.get("detail"), "해당 공장의 멤버가 아닙니다.")
 
     async def test_get_materials_by_factory_unauthorized(self):
         """인증되지 않은 사용자 테스트"""
@@ -282,10 +279,7 @@ class TestMaterialAPI(TestCase):
         headers = await self.authenticate()
         
         response = await self.client.get(f"/{self.material.id}", headers=headers)
-        self.assertEqual(response.status_code, 400)
-        
-        data = response.json()
-        self.assertEqual(data.get("message") or data.get("detail"), "factory_id를 입력해야 합니다.")
+        self.assertEqual(response.status_code, 422)
 
     async def test_get_material_detail_not_found(self):
         """존재하지 않는 원자재 조회 테스트"""

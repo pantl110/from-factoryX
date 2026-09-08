@@ -168,7 +168,7 @@ class TestProductHistoryAPI(TestCase):
         """[R] 제품 입출고 이력 목록 조회 - 날짜 범위 필터"""
         headers = await self.authenticate()
         response = await self.client.get(
-            f"?factory_id={self.factory.id}&start_date=2025-01-01&end_date=2025-12-31", 
+            f"?factory_id={self.factory.id}&start_date=2026-01-01&end_date=2026-12-31",
             headers=headers
         )
         self.assertEqual(response.status_code, 200)
@@ -182,7 +182,7 @@ class TestProductHistoryAPI(TestCase):
         """[R] 제품 입출고 이력 목록 조회 - 복합 필터 (product_id + 날짜)"""
         headers = await self.authenticate()
         response = await self.client.get(
-            f"?factory_id={self.factory.id}&product_id={self.product1.id}&start_date=2025-01-01", 
+            f"?factory_id={self.factory.id}&product_id={self.product1.id}&start_date=2026-01-01",
             headers=headers
         )
         self.assertEqual(response.status_code, 200)

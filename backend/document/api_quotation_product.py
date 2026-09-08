@@ -5,6 +5,7 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 from asgiref.sync import sync_to_async
 from datetime import datetime, timedelta
+from django.utils import timezone
 
 from document.models import Quotation, QuotationProduct
 from document.schemas.inbound import (
@@ -368,8 +369,7 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
             production_quantity = int(base_quantity * (1 + buffer_rate))
 
             # 현재 시간을 기준으로 시작 시간 설정
-            start_datetime = datetime.now()
-            start_date = start_datetime.strftime("%Y-%m-%d")
+            start_datetime = timezone.localtime()
 
             # 평균 생산 시간을 반영하여 마감 일자 계산
             # 총 생산 시간 = 생산 수량 * 평균 생산 시간(초)
@@ -382,7 +382,6 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
             )  # 24시간 기준
 
             end_datetime = start_datetime + timedelta(days=production_days)
-            end_date = end_datetime.strftime("%Y-%m-%d")
 
             # 생산 계획 생성
             project_plan = await ProjectPlan.objects.acreate(
@@ -390,8 +389,8 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
                 product=quotation_product,
                 quantity=production_quantity,
                 equipment=equipment,
-                start_date=start_datetime.date(),
-                end_date=end_datetime.date(),
+                start_date=start_datetime,
+                end_date=end_datetime,
                 avg_production_time=avg_production_time,
             )
 

@@ -7,6 +7,7 @@ from api.permissions import require_factory_access
 from api.security import api_key_auth, jwt_auth
 from api.throttling import PartnerApiKeyThrottle
 from django.db import models
+from django.utils import timezone
 from project.schemas.inbound import (
     ProjectPlanCreateIn,
     ProjectPlanUpdateIn,
@@ -38,6 +39,14 @@ from document.models import QuotationProduct
 from websocket.utils import send_notification_to_factory
 
 router = Router(tags=["ProjectPlan"], auth=jwt_auth)
+
+
+def _as_date(value):
+    if not isinstance(value, datetime):
+        return value
+    if timezone.is_aware(value):
+        return timezone.localtime(value).date()
+    return value.date()
 
 
 @router.post(
@@ -140,8 +149,8 @@ async def create_project_plans(request, payload: ProjectPlanCreateIn, factory_id
                 equipment_id=plan1.equipment.id,
                 status=plan1.status,
                 quantity=plan1.quantity,
-                start_date=plan1.start_date,
-                end_date=plan1.end_date,
+                start_date=_as_date(plan1.start_date),
+                end_date=_as_date(plan1.end_date),
                 avg_production_time=plan1.avg_production_time,
             )
         )
@@ -179,8 +188,8 @@ async def create_project_plans(request, payload: ProjectPlanCreateIn, factory_id
                     equipment_id=plan2.equipment.id,
                     status=plan2.status,
                     quantity=plan2.quantity,
-                    start_date=plan2.start_date,
-                    end_date=plan2.end_date,
+                    start_date=_as_date(plan2.start_date),
+                    end_date=_as_date(plan2.end_date),
                     avg_production_time=plan2.avg_production_time,
                 )
             )
@@ -262,8 +271,8 @@ async def list_ongoing_project_plans(
                         ),
                         status=plan.status,
                         quantity=plan.quantity,
-                        start_date=plan.start_date,
-                        end_date=plan.end_date,
+                        start_date=_as_date(plan.start_date),
+                        end_date=_as_date(plan.end_date),
                         avg_production_time=plan.avg_production_time,
                         is_completed=plan.is_completed,
                     )
@@ -355,8 +364,8 @@ async def list_completed_project_plans(
                         ),
                         status=plan.status,
                         quantity=plan.quantity,
-                        start_date=plan.start_date,
-                        end_date=plan.end_date,
+                        start_date=_as_date(plan.start_date),
+                        end_date=_as_date(plan.end_date),
                         avg_production_time=plan.avg_production_time,
                         is_completed=plan.is_completed,
                     )
@@ -633,8 +642,8 @@ async def list_project_plans(request, project_id: int, factory_id: int = Query(.
                 ),
                 status=plan.status,
                 quantity=plan.quantity,
-                start_date=plan.start_date,
-                end_date=plan.end_date,
+                start_date=_as_date(plan.start_date),
+                end_date=_as_date(plan.end_date),
                 avg_production_time=plan.avg_production_time,
                 is_completed=plan.is_completed,
             )
@@ -1112,17 +1121,13 @@ async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateI
 
     if payload.start_date is not None:
         try:
-            # 날짜와 시간 정보를 파싱
             if " " in payload.start_date:
-                # 'yyyy-mm-dd HH:MM' 형식
-                plan.start_date = datetime.strptime(
+                parsed_start_date = datetime.strptime(
                     payload.start_date, "%Y-%m-%d %H:%M"
-                ).date()
+                )
             else:
-                # 'yyyy-mm-dd' 형식
-                plan.start_date = datetime.strptime(
-                    payload.start_date, "%Y-%m-%d"
-                ).date()
+                parsed_start_date = datetime.strptime(payload.start_date, "%Y-%m-%d")
+            plan.start_date = timezone.make_aware(parsed_start_date)
         except ValueError:
             raise HttpError(
                 400,
@@ -1131,15 +1136,13 @@ async def update_project_plan(request, plan_id: int, payload: ProjectPlanUpdateI
 
     if payload.end_date is not None:
         try:
-            # 날짜와 시간 정보를 파싱
             if " " in payload.end_date:
-                # 'yyyy-mm-dd HH:MM' 형식
-                plan.end_date = datetime.strptime(
+                parsed_end_date = datetime.strptime(
                     payload.end_date, "%Y-%m-%d %H:%M"
-                ).date()
+                )
             else:
-                # 'yyyy-mm-dd' 형식
-                plan.end_date = datetime.strptime(payload.end_date, "%Y-%m-%d").date()
+                parsed_end_date = datetime.strptime(payload.end_date, "%Y-%m-%d")
+            plan.end_date = timezone.make_aware(parsed_end_date)
         except ValueError:
             raise HttpError(
                 400,

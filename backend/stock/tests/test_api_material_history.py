@@ -541,7 +541,7 @@ class TestMaterialHistoryAPI(TestCase):
 
         # 2025년 히스토리 조회
         response = await self.client.get(
-            f"/?material_id={self.material.id}&factory_id={self.factory.id}&start_date=2025-01-01&end_date=2025-12-31",
+            f"/?material_id={self.material.id}&factory_id={self.factory.id}&start_date=2026-01-01&end_date=2026-12-31",
             headers=headers,
         )
         self.assertEqual(response.status_code, 200)
@@ -708,7 +708,7 @@ class TestMaterialHistoryAPI(TestCase):
 
         # 구매 타입 + 날짜 범위 조회
         response = await self.client.get(
-            f"/?material_id={self.material.id}&factory_id={self.factory.id}&type=구매&start_date=2025-01-01&end_date=2025-12-31",
+            f"/?material_id={self.material.id}&factory_id={self.factory.id}&type=구매&start_date=2026-01-01&end_date=2026-12-31",
             headers=headers,
         )
         self.assertEqual(response.status_code, 200)

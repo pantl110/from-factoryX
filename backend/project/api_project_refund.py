@@ -2,6 +2,7 @@ from ninja import Router, Query
 from ninja.errors import HttpError
 from asgiref.sync import sync_to_async
 from datetime import datetime, timedelta
+from django.utils import timezone
 from typing import List
 from api.security import jwt_auth
 
@@ -26,6 +27,11 @@ from project.utils import (
 
 
 router = Router(tags=["ProjectRefund"], auth=jwt_auth)
+
+
+def _local_midnight(days: int = 0):
+    local_date = timezone.localdate() + timedelta(days=days)
+    return timezone.make_aware(datetime.combine(local_date, datetime.min.time()))
 
 
 @router.post(
@@ -149,17 +155,14 @@ async def register_production_from_refund(request, refund_id: int):
         production_days = int(total_production_seconds / (24 * 3600))
         if production_days == 0:
             production_days = 1  # 최소 1일
-        start_date = datetime.now().date()
-        end_date = start_date + timedelta(days=production_days)
-
         project_plan = await sync_to_async(ProjectPlan.objects.create)(
             project=project,
             product=new_quotation_product,  # 새로운 QuotationProduct 사용
             equipment=default_equipment,
             status="가동 대기",
             quantity=refund.amount,
-            start_date=start_date,
-            end_date=end_date,
+            start_date=_local_midnight(),
+            end_date=_local_midnight(production_days),
             avg_production_time=avg_production_time,  # 품목의 평균 생산 시간 사용
         )
 
@@ -354,8 +357,8 @@ async def update_refund(request, refund_id: int, payload: RefundUpdateIn):
                         equipment=default_equipment,
                         status="가동 대기",
                         quantity=new_refund_amount,
-                        start_date=datetime.now().date(),
-                        end_date=datetime.now().date() + timedelta(days=7),
+                        start_date=_local_midnight(),
+                        end_date=_local_midnight(7),
                         avg_production_time=3600,
                     )
                     created_plans.append(new_project_plan.id)

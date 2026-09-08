@@ -7,6 +7,7 @@ from project.models import Project, ProjectPlan
 import json
 import jwt
 from django.conf import settings
+from django.utils import timezone
 from datetime import datetime, timedelta, date
 import re
 
@@ -848,13 +849,13 @@ class QuotationProductAPITestCase(TestCase):
         )  # 가동 대기 상태인 설비만 할당됨
 
         # 기본값 확인
-        today = datetime.now().date()
-        self.assertEqual(plan.start_date, today)  # 기본값: 오늘
+        today = timezone.localdate()
+        self.assertEqual(timezone.localtime(plan.start_date).date(), today)  # 기본값: 오늘
 
         # end_date는 제품의 average_production_time에 따라 계산됨
         # 11개 * 3600초 = 39600초 = 11시간 = 1일
         expected_end_date = today + timedelta(days=1)
-        self.assertEqual(plan.end_date, expected_end_date)
+        self.assertEqual(timezone.localtime(plan.end_date).date(), expected_end_date)
 
         self.assertEqual(plan.avg_production_time, 3600)  # 기본값: 3600초 (1시간)
 

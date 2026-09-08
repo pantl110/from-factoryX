@@ -198,8 +198,8 @@ class ProjectAPITestCase(TestCase):
             HTTP_AUTHORIZATION=f"Bearer {self.token}",
         )
 
-        # factory_id가 필수이므로 400이 반환되어야 함
-        self.assertEqual(response.status_code, 400)
+        # Swagger 필수 Query 파라미터 검증은 Django Ninja가 처리한다.
+        self.assertEqual(response.status_code, 422)
 
     def test_create_multiple_projects(self):
         """여러 프로젝트 생성 테스트"""
@@ -291,7 +291,7 @@ class ProjectAPITestCase(TestCase):
 
     def test_delete_project_success(self):
         """프로젝트 삭제 성공 테스트"""
-        project = Project.objects.create()
+        project, _ = self.create_test_project_with_quotation(create_plan=False)
 
         url = f"/v1/project/{project.id}?factory_id={self.factory.id}"
 
@@ -326,7 +326,7 @@ class ProjectAPITestCase(TestCase):
 
     def test_update_project_status_success(self):
         """프로젝트 상태 업데이트 성공 테스트"""
-        project = Project.objects.create()
+        project, _ = self.create_test_project_with_quotation(create_plan=False)
 
         url = f"/v1/project/{project.id}/status?factory_id={self.factory.id}"
         payload = {"status": "pending"}
@@ -383,7 +383,7 @@ class ProjectAPITestCase(TestCase):
 
     def test_update_project_status_all_valid_statuses(self):
         """모든 유효한 상태값으로 프로젝트 상태 업데이트 테스트"""
-        project = Project.objects.create()
+        project, _ = self.create_test_project_with_quotation(create_plan=False)
 
         valid_statuses = [
             "quotation",
@@ -616,7 +616,9 @@ class ProjectAPITestCase(TestCase):
     def test_update_project_status_to_completed_no_plans(self):
         """생산 계획이 없는 프로젝트를 완료 상태로 변경하는 테스트"""
         # 프로젝트 생성 (생산 계획 없음)
-        project = Project.objects.create(status="생산 완료")
+        project, _ = self.create_test_project_with_quotation(
+            status="manufactured", create_plan=False
+        )
 
         # 프로젝트를 완료 상태로 변경
         url = f"/v1/project/{project.id}/status?factory_id={self.factory.id}"
@@ -637,7 +639,7 @@ class ProjectAPITestCase(TestCase):
 
     def test_update_project_transact_date_success(self):
         """거래명세서 발급일 업데이트 성공 테스트"""
-        project = Project.objects.create()
+        project, _ = self.create_test_project_with_quotation(create_plan=False)
         test_date = date(2024, 1, 15)
 
         url = f"/v1/project/{project.id}/transact-date?factory_id={self.factory.id}"
@@ -663,7 +665,9 @@ class ProjectAPITestCase(TestCase):
 
     def test_update_project_transact_date_none(self):
         """거래명세서 발급일을 None으로 업데이트 테스트"""
-        project = Project.objects.create(transact_date=date(2024, 1, 15))
+        project, _ = self.create_test_project_with_quotation(create_plan=False)
+        project.transact_date = date(2024, 1, 15)
+        project.save(update_fields=["transact_date"])
 
         url = f"/v1/project/{project.id}/transact-date?factory_id={self.factory.id}"
         payload = {"transact_date": None}
@@ -944,7 +948,9 @@ class ProjectAPITestCase(TestCase):
     def test_clone_project_success(self):
         """프로젝트 복제 성공 테스트"""
         # 완료된 프로젝트 생성
-        project = Project.objects.create(status="completed")
+        project, _ = self.create_test_project_with_quotation(
+            status="completed", create_plan=False
+        )
 
         # API 호출
         url = f"/v1/project/clone?factory_id={self.factory.id}"
@@ -975,7 +981,9 @@ class ProjectAPITestCase(TestCase):
     def test_clone_project_not_completed(self):
         """완료되지 않은 프로젝트 복제 시도 테스트"""
         # 생산 중인 프로젝트 생성
-        project = Project.objects.create(status="production")
+        project, _ = self.create_test_project_with_quotation(
+            status="production", create_plan=False
+        )
 
         # API 호출
         url = f"/v1/project/clone?factory_id={self.factory.id}"
@@ -1580,9 +1588,7 @@ class ProjectAPITestCase(TestCase):
         url = f"/v1/project/{project.id}"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
 
-        self.assertEqual(response.status_code, 400)
-        data = response.json()
-        self.assertIn("factory_id를 입력해야 합니다", data["detail"])
+        self.assertEqual(response.status_code, 422)
 
     def test_get_project_status_without_auth(self):
         """인증 없이 프로젝트 상태 조회 시도 테스트"""
