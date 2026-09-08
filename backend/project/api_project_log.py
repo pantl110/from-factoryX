@@ -18,8 +18,6 @@ router = Router(tags=["ProjectLog"], auth=jwt_auth)
     "",
     summary="[C] 프로젝트 로그 생성",
     description="새로운 프로젝트 로그를 생성합니다.",
-    auth=[jwt_auth, api_key_auth],
-    throttle=[PartnerApiKeyThrottle()],
     response={200: ProjectLogCreateOut, 400: dict, 404: dict, 500: dict}
 )
 async def create_project_log(request, payload: ProjectLogCreateIn, factory_id: int = Query(...)):
@@ -121,8 +119,6 @@ async def list_project_logs(request, project_id: int = Query(...), factory_id: i
     "/{log_id}",
     summary="[C] 프로젝트 로그 수정",
     description="프로젝트 로그의 타입, 제목, 내용을 수정합니다.",
-    auth=[jwt_auth, api_key_auth],
-    throttle=[PartnerApiKeyThrottle()],
     response={200: ProjectLogUpdateOut, 400: dict, 404: dict, 500: dict}
 )
 async def update_project_log(request, log_id: int, payload: ProjectLogUpdateIn, factory_id: int = Query(...)):
