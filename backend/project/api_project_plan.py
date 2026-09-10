@@ -2,7 +2,6 @@ from ninja import Router, Query
 from ninja.errors import HttpError
 from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
-from apikey.models import ApiKey
 from api.permissions import require_factory_access
 from api.security import api_key_auth, jwt_auth
 from api.throttling import PartnerApiKeyThrottle
@@ -463,13 +462,13 @@ async def list_today_production_plans(request, page: int = Query(1, ge=1), facto
     description="오늘 완료된 생산 계획의 품목 수를 조회합니다. 전월 대비 수치도 포함됩니다.",
     response={200: DailyProductionQuantityOut, 404: dict, 500: dict},
 )
-async def get_daily_production_quantity(request, target_date: str = Query(None), factory_id: int = Query(...)):
+async def get_daily_production_quantity(request, target_date: str = Query(None)):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await require_factory_access(int(factory_id), user)
+    await is_factory_member(int(factory_id), user)
 
     try:
 
@@ -503,15 +502,12 @@ async def get_daily_production_quantity(request, target_date: str = Query(None),
                 or 0
             )
 
-            # API Key 요청은 공장의 첫 멤버 등록 시점을 사용합니다.
-            membership_queryset = (
-                FactoryMember.objects.filter(factory_id=int(factory_id))
-                if isinstance(user, ApiKey)
-                else FactoryMember.objects.filter(user=user)
+            # 사용자의 첫 공장 멤버 등록 시점 확인
+            user_first_membership = (
+                FactoryMember.objects.filter(user=user).order_by("created_at").first()
             )
-            first_membership = membership_queryset.order_by("created_at").first()
-            if first_membership:
-                first_membership_month = first_membership.created_at.replace(
+            if user_first_membership:
+                first_membership_month = user_first_membership.created_at.replace(
                     day=1
                 ).date()
                 target_month_start = target_date_obj.replace(day=1)
@@ -650,13 +646,13 @@ async def list_project_plans(request, project_id: int, factory_id: int = Query(.
     description="프로젝트 완료 기준, 공급가액 기준으로 생산 수익률을 조회합니다. 가입 다음 달부터 전월 대비 수치를 표시합니다.",
     response={200: ProductionProfitRateOut, 404: dict, 500: dict},
 )
-async def get_production_profit_rate(request, target_date: str = Query(None), factory_id: int = Query(...)):
+async def get_production_profit_rate(request, target_date: str = Query(None)):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await require_factory_access(int(factory_id), user)
+    await is_factory_member(int(factory_id), user)
 
     try:
         # 날짜 파싱 (기본값: 오늘)
@@ -709,15 +705,12 @@ async def get_production_profit_rate(request, target_date: str = Query(None), fa
                 current_month_profit += project_profit
                 current_month_count += 1
 
-            # API Key 요청은 공장의 첫 멤버 등록 시점을 사용합니다.
-            membership_queryset = (
-                FactoryMember.objects.filter(factory_id=int(factory_id))
-                if isinstance(user, ApiKey)
-                else FactoryMember.objects.filter(user=user)
+            # 사용자의 첫 공장 멤버 등록 시점 확인
+            user_first_membership = (
+                FactoryMember.objects.filter(user=user).order_by("created_at").first()
             )
-            first_membership = membership_queryset.order_by("created_at").first()
-            if first_membership:
-                first_membership_month = first_membership.created_at.replace(
+            if user_first_membership:
+                first_membership_month = user_first_membership.created_at.replace(
                     day=1
                 ).date()
                 target_month_start_date = target_date_obj.replace(day=1)
@@ -773,7 +766,7 @@ async def get_production_profit_rate(request, target_date: str = Query(None), fa
                         previous_month_count += 1
 
                     # 전월에 데이터가 일정 기간 누적되었는지 확인 (최소 7일 이상)
-                    first_membership_day = first_membership.created_at.day
+                    first_membership_day = user_first_membership.created_at.day
                     if first_membership_day <= 7:  # 7일 이전에 가입한 경우
                         can_compare = True
                     else:

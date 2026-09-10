@@ -908,7 +908,10 @@ class ProjectPlanAPITestCase(TestCase):
             "/v1/project-plan/daily", HTTP_AUTHORIZATION=f"Bearer {self.token}"
         )
 
-        self.assertEqual(response.status_code, 422)
+        self.assertEqual(response.status_code, 400)
+        data = response.json()
+        error_message = data.get("message", "") or data.get("detail", "")
+        self.assertIn("factory_id를 입력해야 합니다", error_message)
 
     def test_get_daily_production_quantity_without_auth(self):
         """인증 없이 조회 테스트"""
