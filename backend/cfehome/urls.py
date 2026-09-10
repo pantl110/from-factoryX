@@ -15,6 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+from django.conf import settings
 from django.contrib import admin
 from django.urls import path
 from ninja import NinjaAPI
@@ -61,12 +62,18 @@ from django.contrib.admin.views.decorators import staff_member_required
 from cfehome.views import websocket_test, websocket_test_local
 
 
+def docs_auth_decorator(view):
+    if settings.DEBUG:
+        return view  # 개발 환경에서는 그냥 통과
+    return staff_member_required(view)  # 운영에서는 관리자만
+
+
 base_api = NinjaAPI(
     title="Factory X API",
     version="0.1.0",
     description="공장 관리 시스템 API",
     docs_url="/<engine>/",
-    # docs_decorator=staff_member_required,  # 개발용으로 주석 처리
+    docs_decorator=docs_auth_decorator,
     docs=MixedDocs(),
 )
 
