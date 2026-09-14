@@ -178,6 +178,7 @@ async def assign_material(request, payload: AssignMaterialIn):
                     "name": material_info["name"],
                     "spec": material_info["spec"],
                     "unit": "EA",
+                    "tax_type": material_info["tax_type"],
                     "current_stock": 0,
                     "standard_stock": 0,
                 },
@@ -293,6 +294,7 @@ async def get_materials_by_factory(
                 "spec": material.spec,
                 "unit": material.unit,
                 "current_stock": material.current_stock,
+                "tax_type": material.tax_type,
                 "status": material_status,
                 "expiry_status": expiry_status,
             }

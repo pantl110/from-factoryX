@@ -132,6 +132,7 @@ async def create_product(request, payload: List[ProductCreateIn]):
                 "code": product.code,
                 "unit": product.unit,
                 "spec": product.spec,
+                "tax_type": product.tax_type,
                 "current_stock": product.current_stock,
                 "average_production_time": product.average_production_time,
                 "buffer_rate": float(product.buffer_rate),
@@ -202,6 +203,7 @@ async def assign_product(request, payload: AssignProductIn):
                     "name": product_info["name"],
                     "spec": product_info["spec"],
                     "unit": product_info["unit"],
+                    "tax_type": product_info["tax_type"],
                     "current_stock": 0,
                 }
             )
@@ -256,6 +258,7 @@ async def list_products(request, filters: ProductFilter = Query(None), q: str = 
             "code": product.code,
             "unit": product.unit,
             "spec": product.spec,
+            "tax_type": product.tax_type,
             "current_stock": product.current_stock,
         }
         for product in products
@@ -290,6 +293,7 @@ async def get_product(request, product_id: int):
         "code": product.code,
         "unit": product.unit,
         "spec": product.spec,
+        "tax_type": product.tax_type,
         "current_stock": product.current_stock,
         "average_production_time": product.average_production_time,
         "buffer_rate": float(product.buffer_rate),
@@ -350,6 +354,7 @@ async def update_product(request, product_id: int, payload: ProductUpdateIn):
         "code": product.code,
         "unit": product.unit,
         "spec": product.spec,
+        "tax_type": product.tax_type,
         "current_stock": product.current_stock,
         "average_production_time": product.average_production_time,
         "buffer_rate": float(product.buffer_rate),

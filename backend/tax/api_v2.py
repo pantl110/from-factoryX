@@ -161,6 +161,8 @@ async def list_published_documents(
                         is_hidden=invoice.is_hidden,
                         account=account,
                         tax_invoice_type=invoice.tax_invoice_type,
+                        document_kind=invoice.document_kind,
+                        tax_type=invoice.tax_type,
                         project_id=project_id,
                         item_name=None,
                     )
@@ -243,6 +245,8 @@ async def list_published_documents(
                         is_hidden=receipt.is_hidden,
                         account=account,
                         tax_invoice_type=None,
+                        document_kind=None,
+                        tax_type=None,
                         project_id=None,
                         item_name=receipt.item_name,
                     )

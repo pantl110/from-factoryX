@@ -1,6 +1,6 @@
 from ninja import Schema, ModelSchema, Field, FilterSchema
 from tax.models import NationalTaxService, CashReceipt, PublishStatus
-from typing import List, Optional
+from typing import List, Optional, Literal
 from datetime import date
 from pydantic import field_validator
 
@@ -9,6 +9,9 @@ class TaxServiceItem(Schema):
     id: Optional[int] = Field(None, description="품목 식별자(순번)")
     purchase_expiry: Optional[date | str] = Field(None, description="공급일자")
     product_id: Optional[int] = Field(None, description="품목 ID")
+    tax_type: Optional[Literal["taxable", "zero_rated", "exempt"]] = Field(
+        None, description="품목 과세 유형"
+    )
     name: Optional[str] = Field(None, description="품목")
     code: Optional[str] = Field(None, description="품목 코드")
     information: Optional[str] = Field("", description="규격")

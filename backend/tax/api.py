@@ -12,6 +12,13 @@ from tax.barobill_utils import (
     get_state_barobill_tax_invoice,
     cancel_barobill_tax_invoice,
 )
+from tax.tax_document import (
+    UNCLASSIFIED,
+    TaxDocumentValidationError,
+    get_barobill_tax_document_fields,
+    validate_line_item_tax_types,
+    validate_zero_rated_reason,
+)
 from tax.schemas.inbound import (
     NationalTaxServiceCreateIn,
     NationalTaxServiceUpdateIn,
@@ -46,6 +53,43 @@ from stock.models import MaterialHistory
 
 
 router = Router(tags=["Tax"], auth=jwt_auth)
+
+
+def validate_tax_document_draft(tax_type, document_kind, tax_amount, line_items=None):
+    """Validate an explicitly classified draft without breaking legacy drafts."""
+    if tax_type == UNCLASSIFIED:
+        return
+    try:
+        get_barobill_tax_document_fields(
+            tax_type=tax_type,
+            document_kind=document_kind,
+            tax_amount=tax_amount,
+        )
+        validate_line_item_tax_types(
+            document_tax_type=tax_type,
+            line_items=line_items,
+        )
+    except TaxDocumentValidationError as error:
+        raise HttpError(422, str(error))
+
+
+def validate_tax_document_for_issue(tax_service):
+    try:
+        get_barobill_tax_document_fields(
+            tax_type=tax_service.tax_type,
+            document_kind=tax_service.document_kind,
+            tax_amount=tax_service.tax_amount,
+        )
+        validate_line_item_tax_types(
+            document_tax_type=tax_service.tax_type,
+            line_items=tax_service.line_items,
+        )
+        validate_zero_rated_reason(
+            tax_type=tax_service.tax_type,
+            reason=tax_service.zero_rated_reason,
+        )
+    except TaxDocumentValidationError as error:
+        raise HttpError(422, str(error))
 
 # 세금계산서 API 구조
 # POST /api/tax/ - tax_id가 없으면 생성, 있으면 수정 (통합 API)
@@ -585,6 +629,7 @@ async def sync_tax_invoices(request, factory_id: int):
         201: NationalTaxServiceOut,
         200: NationalTaxServiceOut,
         400: dict,
+        422: dict,
         500: dict,
     },
 )
@@ -623,6 +668,13 @@ async def create_or_update_tax_invoice(request, payload: NationalTaxServiceCreat
         if tax_service.factory.id != factory_id:
             raise HttpError(400, "세금계산서의 공장과 요청한 공장이 일치하지 않습니다.")
 
+        validate_tax_document_draft(
+            data.get("tax_type", tax_service.tax_type),
+            data.get("document_kind", tax_service.document_kind),
+            data.get("tax_amount", tax_service.tax_amount),
+            data.get("line_items", tax_service.line_items),
+        )
+
         # 데이터 업데이트
         if client_id is not None:
             tax_service.client = client
@@ -647,6 +699,13 @@ async def create_or_update_tax_invoice(request, payload: NationalTaxServiceCreat
         return 200, tax_service
     else:
         # 생성 모드
+        validate_tax_document_draft(
+            data.get("tax_type", UNCLASSIFIED),
+            data.get("document_kind", "tax_invoice"),
+            data.get("tax_amount"),
+            data.get("line_items"),
+        )
+
         @sync_to_async
         @transaction.atomic
         def create_tax_service():
@@ -701,7 +760,7 @@ async def get_tax_invoice(request, tax_id: int):
     "/{tax_id}",
     summary="[C] 세금계산서 수정",
     description="국세청 API 세금계산서를 수정합니다. (임시저장 가능)",
-    response={200: NationalTaxServiceOut, 400: dict, 404: dict, 500: dict},
+    response={200: NationalTaxServiceOut, 400: dict, 404: dict, 422: dict, 500: dict},
 )
 async def update_tax_invoice(request, tax_id: int, payload: NationalTaxServiceUpdateIn):
     user = request.auth
@@ -735,6 +794,13 @@ async def update_tax_invoice(request, tax_id: int, payload: NationalTaxServiceUp
         )
         tax_service.client = client
         tax_service.client_info = FactoryClientRowOut.from_orm(client).dict()
+
+    validate_tax_document_draft(
+        data.get("tax_type", tax_service.tax_type),
+        data.get("document_kind", tax_service.document_kind),
+        data.get("tax_amount", tax_service.tax_amount),
+        data.get("line_items", tax_service.line_items),
+    )
 
     # line_items는 수정 시에만 업데이트
     line_items = data.pop("line_items", None)
@@ -773,7 +839,7 @@ async def delete_tax_invoice(request, tax_id: int):
     "/{tax_id}/publish",
     summary="[C] 세금계산서 발행",
     description="국세청 API 세금계산서를 발행합니다.",
-    response={200: dict, 400: dict, 500: dict},
+    response={200: dict, 400: dict, 422: dict, 500: dict},
 )
 async def publish_tax_invoice(request, tax_id: int):
     user = request.auth
@@ -797,7 +863,9 @@ async def publish_tax_invoice(request, tax_id: int):
 
     missing_fields = []
     for field, field_name in required_fields.items():
-        if not getattr(tax_service, field):
+        if getattr(tax_service, field) is None or (
+            field == "line_items" and not tax_service.line_items
+        ):
             missing_fields.append(field_name)
 
     if missing_fields:
@@ -819,7 +887,7 @@ async def publish_tax_invoice(request, tax_id: int):
 
             item_missing_fields = []
             for field, field_name in item_required_fields.items():
-                if not item.get(field):
+                if item.get(field) is None or item.get(field) == "":
                     item_missing_fields.append(field_name)
 
             if item_missing_fields:
@@ -827,6 +895,8 @@ async def publish_tax_invoice(request, tax_id: int):
                     400,
                     f"품목 {i+1}번에 다음 필드들이 필요합니다: {', '.join(item_missing_fields)}",
                 )
+
+    validate_tax_document_for_issue(tax_service)
 
     # 바로빌 API
     issue_barobill_tax_invoice(

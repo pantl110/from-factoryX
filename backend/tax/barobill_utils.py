@@ -1,16 +1,24 @@
 from django.conf import settings
 from ninja.errors import HttpError
 from tax.models import TransactionType
+from tax.tax_document import get_barobill_tax_document_fields
 from barobill.barobill_error_code import barobill_error_codes
 
 
 def issue_barobill_tax_invoice(tax_service, factory, client, user):
     certKey = settings.BAROBILL_CERT_KEY
+    tax_document_fields = get_barobill_tax_document_fields(
+        tax_type=tax_service.tax_type,
+        document_kind=tax_service.document_kind,
+        tax_amount=tax_service.tax_amount,
+    )
     taxInvoice = settings.BAROBILL_CLIENT.get_type("ns0:TaxInvoice")(
         IssueDirection=1,
-        TaxInvoiceType=1,
+        TaxInvoiceType=tax_document_fields.tax_invoice_type,
         ModifyCode="",
-        TaxType=1,
+        TaxType=tax_document_fields.tax_type,
+        # BaroBill's TaxCalcType code meanings have not yet been confirmed.
+        # Preserve the existing integration's value until vendor confirmation.
         TaxCalcType=1,
         PurposeType=1 if tax_service.transaction_type == TransactionType.receipt else 2,
         WriteDate=tax_service.transaction_date.strftime("%Y%m%d"),

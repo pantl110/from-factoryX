@@ -218,6 +218,8 @@ class PublishedDocumentOut(Schema):
     
     # 세금계산서 전용 필드
     tax_invoice_type: Optional[str] = Field(None, description="세금계산서 유형 (sales/purchase)")
+    document_kind: Optional[str] = Field(None, description="문서 종류 (tax_invoice/invoice)")
+    tax_type: Optional[str] = Field(None, description="과세 유형 (taxable/zero_rated/exempt)")
     project_id: Optional[int] = Field(None, description="연결된 프로젝트 ID")
     
     # 현금영수증 전용 필드

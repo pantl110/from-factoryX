@@ -14,6 +14,18 @@ class TaxInvoiceType(models.TextChoices):
     purchase = ("purchase", "매입")
 
 
+class TaxDocumentKind(models.TextChoices):
+    tax_invoice = ("tax_invoice", "전자세금계산서")
+    invoice = ("invoice", "전자계산서")
+
+
+class TaxType(models.TextChoices):
+    unclassified = ("unclassified", "미분류")
+    taxable = ("taxable", "과세")
+    zero_rated = ("zero_rated", "영세율")
+    exempt = ("exempt", "면세")
+
+
 class PublishStatus(models.TextChoices):
     temporary = ("temporary", "임시 저장")  # 바로빌에 넘기기 전 상태
     pending = ("pending", "전송 대기")  # 바로빌에만 넘어간 상태
@@ -61,6 +73,24 @@ class NationalTaxService(BaseModel):  # 거래명세서 같이 사용
         choices=TaxInvoiceType.choices,
         default=TaxInvoiceType.sales,
         help_text="세금계산서 유형",
+    )
+    document_kind = models.CharField(
+        max_length=20,
+        choices=TaxDocumentKind.choices,
+        default=TaxDocumentKind.tax_invoice,
+        help_text="문서 종류",
+    )
+    tax_type = models.CharField(
+        max_length=20,
+        choices=TaxType.choices,
+        default=TaxType.unclassified,
+        help_text="과세 유형",
+    )
+    zero_rated_reason = models.CharField(
+        max_length=200,
+        null=True,
+        blank=True,
+        help_text="영세율 적용 사유",
     )
     transaction_type = models.CharField(
         max_length=10,

@@ -5,6 +5,11 @@ from factory.models import Factory, FactoryClient
 from stock.utils_lot import generate_lot_number
 
 
+class StockTaxType(models.TextChoices):
+    taxable = ("taxable", "과세")
+    exempt = ("exempt", "면세")
+
+
 # Create your models here.
 class Material(BaseModel):
     factory = models.ForeignKey(
@@ -25,6 +30,12 @@ class Material(BaseModel):
     spec = models.CharField(
         max_length=100,
         help_text="규격",
+    )
+    tax_type = models.CharField(
+        max_length=20,
+        choices=StockTaxType.choices,
+        default=StockTaxType.taxable,
+        help_text="기본 과세 유형",
     )
     current_stock = models.DecimalField(
         max_digits=12,
@@ -223,6 +234,12 @@ class Product(BaseModel):
     spec = models.CharField(
         max_length=100,
         help_text="규격",
+    )
+    tax_type = models.CharField(
+        max_length=20,
+        choices=StockTaxType.choices,
+        default=StockTaxType.taxable,
+        help_text="기본 과세 유형",
     )
     current_stock = models.IntegerField(
         default=0,

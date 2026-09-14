@@ -1,7 +1,7 @@
 from datetime import date
 from decimal import Decimal
 from ninja import Field, FilterSchema, Schema
-from typing import Optional, List
+from typing import Optional, List, Literal
 
 from pydantic_core.core_schema import str_schema
 
@@ -13,6 +13,7 @@ class ProductAssignmentIn(Schema):
     spec: str
     unit: str
     quantity: float
+    tax_type: Literal["taxable", "exempt"] = "taxable"
 
 
 # Material Info
@@ -21,6 +22,7 @@ class MaterialAssignmentIn(Schema):
     code: str
     spec: str
     quantity: float
+    tax_type: Literal["taxable", "exempt"] = "taxable"
 
 
 # Material Product Info
@@ -41,6 +43,7 @@ class SingleProductCreateIn(Schema):
     code: str
     spec: str
     unit: str
+    tax_type: Literal["taxable", "exempt"] = "taxable"
 
 
 # (POST) Create Product History
@@ -53,6 +56,9 @@ class ProductCreateIn(Schema):
     average_production_time: Optional[int] = Field(None, description="평균 생산 시간")
     buffer_rate: Optional[float] = Field(None, description="버퍼 비율")
     note: Optional[str] = Field(None, description="비고")
+    tax_type: Literal["taxable", "exempt"] = Field(
+        "taxable", description="기본 과세 유형"
+    )
 
 
 # (POST) Assign Product
@@ -79,6 +85,7 @@ class ProductUpdateIn(Schema):
     average_production_time: Optional[int] = None
     buffer_rate: Optional[float] = None
     note: Optional[str] = None
+    tax_type: Optional[Literal["taxable", "exempt"]] = None
 
 
 # ------------------------------------------------------------
@@ -124,6 +131,9 @@ class SingleMaterialCreateIn(Schema):
     max_stock: Optional[Decimal] = Field(None, description="적정 재고(최대 재고)")
     expiry_days: Optional[int] = Field(None, description="유통기한 (일)")
     memo: Optional[str] = Field(None, description="메모")
+    tax_type: Literal["taxable", "exempt"] = Field(
+        "taxable", description="기본 과세 유형"
+    )
 
 
 # (POST) Assign Material
@@ -144,6 +154,7 @@ class MaterialUpdateIn(Schema):
     max_stock: Optional[Decimal] = None
     expiry_days: Optional[int] = None
     memo: Optional[str] = None
+    tax_type: Optional[Literal["taxable", "exempt"]] = None
 
 
 # ------------------------------------------------------------
