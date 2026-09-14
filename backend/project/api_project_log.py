@@ -2,7 +2,9 @@ from ninja import Router, Query
 from ninja.errors import HttpError
 from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
-from api.security import jwt_auth
+from api.permissions import require_factory_access
+from api.security import api_key_auth, jwt_auth
+from api.throttling import PartnerApiKeyThrottle
 from project.models import Project, ProjectLog
 from project.schemas.outbound import (
     ProjectLogDetailOut,
@@ -104,16 +106,18 @@ async def create_project_log(request, payload: ProjectLogCreateIn):
     "",
     summary="[C] 프로젝트 로그 조회",
     description="project_id로 해당 프로젝트의 모든 로그를 조회합니다.",
+    auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response={200: List[ProjectLogDetailOut], 404: dict, 500: dict},
 )
 @paginate
-async def list_project_logs(request, project_id: int = Query(...)):
+async def list_project_logs(request, project_id: int = Query(...), factory_id: int = Query(...)):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     try:
         project = await Project.objects.aget(id=project_id)
