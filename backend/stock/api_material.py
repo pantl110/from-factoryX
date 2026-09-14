@@ -1,12 +1,14 @@
 import logging
 
-from ninja import Router
+from ninja import Router, Query
 from ninja.errors import HttpError
 from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
 from django.db import IntegrityError
 from django.db.models import F
-from api.security import jwt_auth
+from api.permissions import require_factory_access
+from api.security import api_key_auth, jwt_auth
+from api.throttling import PartnerApiKeyThrottle
 from typing import List
 
 from stock.models import Material, MaterialProduct, Product
@@ -208,6 +210,8 @@ async def assign_material(request, payload: AssignMaterialIn):
     "",
     summary="[C] 공장별 원자재 목록 조회",
     description="특정 공장의 모든 원자재 정보를 조회합니다. material_id가 제공되면 해당 자재와 연결된 대체자재들을 제외합니다.",
+    auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response={200: List[MaterialSummaryOut], 404: dict, 500: dict},
 )
 @paginate
@@ -217,13 +221,14 @@ async def get_materials_by_factory(
     order: str = "desc",
     material_id: int = None,
     status: str = None,
+    factory_id: int = Query(...),
 ):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     try:
         factory = await Factory.objects.aget(id=factory_id)
@@ -357,15 +362,17 @@ async def get_expiry_risk_materials(request, q: str = None):
     "/shortage",
     summary="[C] 부족한 원자재 수 조회",
     description="현재 재고가 안전 재고보다 적은 원자재의 개수를 조회합니다.",
+    auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response={200: ShortageMaterialCountOut, 404: dict, 500: dict},
 )
-async def get_insufficient_material_count(request):
+async def get_insufficient_material_count(request, factory_id: int = Query(...)):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     try:
 
@@ -404,18 +411,20 @@ async def get_insufficient_material_count(request):
     "{material_id}",
     summary="[C] 원자재 상세 조회",
     description="특정 원자재의 상세 정보를 조회합니다.",
+    auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response={200: MaterialDetailModelOut, 404: dict, 500: dict},
 )
-async def get_material_detail(request, material_id: int):
+async def get_material_detail(request, material_id: int, factory_id: int = Query(...)):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     try:
-        material = await Material.objects.aget(id=material_id)
+        material = await Material.objects.aget(id=material_id, factory_id=int(factory_id))
     except Material.DoesNotExist:
         raise HttpError(404, "원자재 정보를 찾을 수 없습니다.")
 
