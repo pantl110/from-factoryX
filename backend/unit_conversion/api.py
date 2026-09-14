@@ -1,7 +1,9 @@
 from ninja import Router, Query
 from ninja.errors import HttpError
 from ninja.pagination import paginate
-from api.security import jwt_auth
+from api.permissions import require_factory_access
+from api.security import api_key_auth, jwt_auth
+from api.throttling import PartnerApiKeyThrottle
 from factory.models import Factory
 from unit_conversion.models import UnitConversion
 from unit_conversion.schemas.inbound import UnitConversionCreateSchema, UnitConversionFilter
@@ -88,7 +90,8 @@ async def create_unit_conversion(request, payload: UnitConversionCreateSchema):
     summary="[R] 단위변환 정보 목록 조회",
     description="공장의 단위변환 정보 목록을 조회합니다.",
     response=list[UnitConversionOutSchema],
-    auth=jwt_auth,
+    auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
 )
 @paginate
 async def list_unit_conversions(
@@ -99,7 +102,7 @@ async def list_unit_conversions(
     item_type: str = None,
 ):
     user = request.auth
-    await is_factory_member(factory_id, user)
+    await require_factory_access(factory_id, user)
 
     @sync_to_async
     def get_unit_conversions():
@@ -161,11 +164,12 @@ async def list_unit_conversions(
     summary="[R] 특정 원자재에 대한 단위변환 정보 조회",
     description="단위변환 정보의 상세 내용을 조회합니다.",
     response=list[UnitConversionOutSchema],
-    auth=jwt_auth,
+    auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
 )
 async def get_unit_conversion_by_material(request, material_id: int, factory_id: int):
     user = request.auth
-    await is_factory_member(factory_id, user)
+    await require_factory_access(factory_id, user)
 
     @sync_to_async
     def fetch_unit_conversion_with_material():
@@ -183,11 +187,12 @@ async def get_unit_conversion_by_material(request, material_id: int, factory_id:
     summary="[R] 특정 품목에 대한 단위변환 정보 조회",
     description="단위변환 정보의 상세 내용을 조회합니다.",
     response=list[UnitConversionOutSchema],
-    auth=jwt_auth,
+    auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
 )
 async def get_unit_conversion_by_product(request, product_id: int, factory_id: int):
     user = request.auth
-    await is_factory_member(factory_id, user)
+    await require_factory_access(factory_id, user)
 
     @sync_to_async
     def fetch_unit_conversion_with_product():

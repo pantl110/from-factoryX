@@ -1,7 +1,9 @@
 from ninja import Router, Query
 from ninja.errors import HttpError
 from ninja.pagination import paginate
-from api.security import jwt_auth
+from api.permissions import require_factory_access
+from api.security import api_key_auth, jwt_auth
+from api.throttling import PartnerApiKeyThrottle
 from asgiref.sync import sync_to_async
 from document.schemas.outbound import (
     WorkInstructionModelOut,
@@ -27,6 +29,8 @@ router = Router(
     "",
     summary="[C] 작업 지시서 목록 조회",
     description="작업 지시서 목록을 조회합니다.",
+    auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response=list[WorkInstructionModelOut],
 )
 @paginate
@@ -34,12 +38,13 @@ async def get_work_instructions(
     request,
     order_by: str = Query("-created_at"),
     q: str | None = Query(None, description="검색어(거래처명/품목명)"),
+    factory_id: int = Query(...),
 ):
     user = request.auth
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     @sync_to_async
     def work_instructions_list():
@@ -201,16 +206,18 @@ async def update_work_instruction(
     "/{work_instruction_id}/history",
     summary="[C] 작업 지시서 변경 이력 조회",
     description="작업 지시서의 변경 이력을 조회합니다.",
+    auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response=list[WorkInstructionHistoryOut],
 )
 async def get_work_instruction_history(
-    request, work_instruction_id: int
+    request, work_instruction_id: int, factory_id: int = Query(...)
 ):
     user = request.auth
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     @sync_to_async
     def get_history():

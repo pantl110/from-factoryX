@@ -4,7 +4,9 @@ from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
 from typing import List
 from datetime import datetime
-from api.security import jwt_auth
+from api.permissions import require_factory_access
+from api.security import api_key_auth, jwt_auth
+from api.throttling import PartnerApiKeyThrottle
 
 from stock.models import Material, MaterialHistory
 from stock.schemas.outbound import MaterialAvailableLotOut, MaterialHistoryLotDetailOut
@@ -19,19 +21,22 @@ router = Router(tags=["MaterialHistory V2"], auth=jwt_auth)
     "/available-lots",
     summary="[C] 원자재별 사용 가능한 로트 목록 조회",
     description="특정 원자재에 대해 MaterialHistory와 소분(MaterialRepackaging)에서 잔여 수량이 0이 아닌 로트 번호 목록을 페이지네이션하여 조회합니다.",
+    auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response=List[MaterialAvailableLotOut],
 )
 @paginate
 async def list_available_lots(
     request,
     material_id: int = Query(..., description="원자재 ID"),
+    factory_id: int = Query(...),
 ):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     # 원자재 존재 및 소유권 확인
     try:
@@ -114,18 +119,21 @@ async def list_available_lots(
     "/{history_id}",
     summary="[R] 원자재 이력 상세 조회",
     description="원자재 이력 ID로 상세 정보를 조회합니다. lot번호, 입고수량, 남은수량, 창고위치, 유통기한을 반환합니다.",
+    auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response={200: MaterialHistoryLotDetailOut, 404: dict, 500: dict},
 )
 async def get_material_history(
     request,
     history_id: int,
+    factory_id: int = Query(...),
 ):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     try:
         @sync_to_async

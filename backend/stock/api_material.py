@@ -310,16 +310,18 @@ async def get_materials_by_factory(
     "/expiry-risk",
     summary="[C] 유통기한 위험 원자재 목록 조회",
     description="유통기한이 위험 상태인 원자재 목록을 조회합니다. expiry_status가 '위험'인 원자재만 반환합니다.",
+    auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response={200: List[ExpiryRiskMaterialOut], 404: dict, 500: dict},
 )
 @paginate
-async def get_expiry_risk_materials(request, q: str = None):
+async def get_expiry_risk_materials(request, q: str = None, factory_id: int = Query(...)):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     try:
         factory = await Factory.objects.aget(id=factory_id)
