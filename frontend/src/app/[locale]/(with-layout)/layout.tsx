@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { createPortal } from 'react-dom';
+import Script from 'next/script';
 import SideBar from '@/components/side-bar';
 import TopBar from '@/components/top-bar';
 import useAuthStore from '@/store/auth-store';
@@ -59,6 +60,17 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
           </div>
         </div>
       </div>
+
+      {/* Reflow 온보딩 가이드 위젯: 키가 설정된 환경에서만 로드 */}
+      {process.env.NEXT_PUBLIC_REFLOW_KEY && (
+        <Script
+          src="https://cdn.reflowguide.com/v0.1.12/embed.js"
+          integrity="sha384-VvAJHpHXxABg2cPcuY/SsiZ+CjRKEwswXOzTsi2TsuzsLf3VERCQwVcbAhIZHAcH"
+          crossOrigin="anonymous"
+          data-key={process.env.NEXT_PUBLIC_REFLOW_KEY}
+          strategy="afterInteractive"
+        />
+      )}
     </>
   );
 };
