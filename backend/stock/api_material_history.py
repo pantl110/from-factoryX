@@ -3,7 +3,9 @@ from ninja.errors import HttpError
 from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
 from typing import List
-from api.security import jwt_auth
+from api.permissions import require_factory_access
+from api.security import api_key_auth, jwt_auth
+from api.throttling import PartnerApiKeyThrottle
 from stock.models import Material, MaterialHistory
 from stock.schemas.inbound import (
     MaterialHistoryCreateIn,
@@ -222,24 +224,27 @@ async def create_material_history(request, payload: MaterialHistoryCreateIn):
     "",
     summary="[C] 원자재 히스토리 조회",
     description="원자재 히스토리를 조회합니다. material_id가 제공되면 특정 원자재의 히스토리를, 제공되지 않으면 전체 원자재 히스토리를 조회합니다. 기간 설정이 없으면 전체 히스토리를, 기간 설정이 있으면 해당 기간의 히스토리를 조회합니다.",
+    auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response=List[MaterialHistoryItemOut],
 )
 @paginate
 async def get_material_history(
     request,
     filters: MaterialHistoryDetailFilter = Query(...),
+    factory_id: int = Query(...),
 ):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     # material_id 필터가 제공된 경우 해당 원자재 존재 여부 확인
     if filters.material_id:
         try:
-            material = await Material.objects.aget(id=filters.material_id)
+            material = await Material.objects.aget(id=filters.material_id, factory_id=int(factory_id))
         except Material.DoesNotExist:
             raise HttpError(404, "원자재 정보를 찾을 수 없습니다.")
 
