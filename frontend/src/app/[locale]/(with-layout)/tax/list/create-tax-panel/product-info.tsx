@@ -6,6 +6,7 @@ import { useImperativeHandle, forwardRef, useEffect } from 'react';
 import { useGetProduct } from '@/hooks';
 import useMemberStore from '@/store/member-store';
 import { useTranslations } from 'next-intl';
+import { TaxType } from '@/types/status-type';
 
 // 세금계산서 편집용 제품 데이터 타입
 interface TaxProductEditModel {
@@ -15,6 +16,7 @@ interface TaxProductEditModel {
   product_name: string;
   product_code: string;
   product_spec: string;
+  tax_type?: Exclude<TaxType, 'unclassified'>;
 }
 
 interface ProductInfoProps {
@@ -26,6 +28,8 @@ interface ProductInfoProps {
     formData: ProductFormDataModel
   ) => void;
   initialProducts?: TaxProductEditModel[];
+  initialTaxType?: TaxType;
+  overrideTaxType?: Exclude<TaxType, 'unclassified'>;
 }
 
 export interface ProductFormDataModel {
@@ -36,6 +40,7 @@ export interface ProductFormDataModel {
     product_name?: string;
     product_code?: string;
     product_spec?: string;
+    tax_type?: Exclude<TaxType, 'unclassified'>;
   }>;
 }
 
@@ -50,6 +55,8 @@ const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
       isProductDetailOpen,
       onFormChange,
       initialProducts,
+      initialTaxType,
+      overrideTaxType,
     },
     ref
   ) => {
@@ -77,10 +84,19 @@ const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
             product_name: product.product_name,
             product_code: product.product_code,
             product_spec: product.product_spec,
+            tax_type:
+              (product.tax_type === 'zero_rated'
+                ? 'taxable'
+                : product.tax_type) ??
+              (initialTaxType === 'unclassified'
+                ? 'taxable'
+                : initialTaxType === 'zero_rated'
+                  ? 'taxable'
+                  : (initialTaxType ?? 'taxable')),
           })),
         });
       }
-    }, [initialProducts, methods]);
+    }, [initialProducts, initialTaxType, methods]);
 
     const { fields, append, remove } = useFieldArray({
       control: methods.control,
@@ -93,8 +109,7 @@ const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
         const subscription = methods.watch((formData) => {
           // 폼 유효성 검사: 모든 필수 필드가 채워져 있는지 확인
           const isValid = Boolean(
-            methods.formState.isValid &&
-              formData.products &&
+            formData.products &&
               formData.products.length > 0 &&
               formData.products.every(
                 (product) =>
@@ -104,7 +119,8 @@ const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
                   typeof product.quantity === 'number' &&
                   product.quantity > 0 &&
                   typeof product.unitPrice === 'number' &&
-                  product.unitPrice > 0
+                  product.unitPrice > 0 &&
+                  Boolean(product.tax_type)
               )
           );
 
@@ -150,6 +166,9 @@ const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
                 <p className="flex-1 py-1 px-3 text-sv">
                   {tCommon('specification')}
                 </p>
+                <p className="w-[90px] py-1 px-3 text-sv">
+                  {tCommon('taxClassification')}
+                </p>
                 <p className="flex-1 py-1 px-3 text-sv">
                   {tCommon('manufacturingQuantity')}
                 </p>
@@ -167,6 +186,7 @@ const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
                   key={field.id}
                   index={index}
                   onRemove={() => handleRemoveProduct(index)}
+                  overrideTaxType={overrideTaxType}
                 />
               ))}
             </>
@@ -191,6 +211,7 @@ const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
                       product_name: result.data.name,
                       product_code: result.data.code,
                       product_spec: result.data.spec,
+                      tax_type: result.data.tax_type,
                     });
                   }
                 } catch {

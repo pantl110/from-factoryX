@@ -227,6 +227,7 @@ const ConnectMaterialModal = ({
           code: material.code,
           spec: material.spec,
           unit: material.unit,
+          tax_type: material.tax_type ?? 'taxable',
         }));
 
         const createResult = await createMaterial(createPayload);
@@ -280,6 +281,7 @@ const ConnectMaterialModal = ({
           code: material.code,
           spec: material.spec,
           unit: material.unit,
+          tax_type: material.tax_type ?? 'taxable',
         }));
 
         const createResult = await createMaterial(createPayload);

@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from 'react';
 import { PublishedTaxInvoiceResponseModel } from '@/types/data-model';
+import { TaxDocumentKindType, TaxType } from '@/types/status-type';
 
 // 세금계산서 수정을 위한 입력 데이터 타입
 export interface TaxInvoiceUpdateModel {
@@ -19,6 +20,8 @@ export interface TaxInvoiceUpdateModel {
     description?: string; // 비고
   }>;
   transaction_date?: string;
+  document_kind?: TaxDocumentKindType;
+  tax_type?: TaxType;
   transaction_amount: number; // 필수 필드로 변경
   tax_amount: number; // 필수 필드로 변경
   is_hidden?: boolean;

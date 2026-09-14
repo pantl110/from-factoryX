@@ -6,12 +6,14 @@ import { useTranslations } from 'next-intl';
 interface ClaimReceiptTaxModalProps {
   onClose: () => void;
   issueType: 'invoice' | 'receipt';
+  documentLabel: string;
   onConfirm: (transactionType: TransactionType) => Promise<void>;
 }
 
 const ClaimReceiptTaxModal = ({
   onClose,
   issueType,
+  documentLabel,
   onConfirm,
 }: ClaimReceiptTaxModalProps) => {
   const t = useTranslations('tax.createTaxPanel.claimReceiptTaxModal');
@@ -21,11 +23,11 @@ const ClaimReceiptTaxModal = ({
     issueType === 'invoice' ? tTax('request') : tTax('receipt');
 
   const getTitle = () => {
-    return t('title', { issueType: issueTypeLabel });
+    return t('title', { documentLabel, issueType: issueTypeLabel });
   };
 
   const getSubtitle = () => {
-    return t('subtitle', { issueType: issueTypeLabel });
+    return t('subtitle', { documentLabel, issueType: issueTypeLabel });
   };
 
   return (

@@ -10,6 +10,7 @@ import ProductDetail from '@/app/[locale]/(with-layout)/stock/product/product-de
 import IconBtn from '@/ui/icon-btn';
 import useMemberStore from '@/store/member-store';
 import { useTranslations } from 'next-intl';
+import { TaxType } from '@/types/status-type';
 
 interface TableItemFormDataModel {
   products: Array<{
@@ -19,15 +20,17 @@ interface TableItemFormDataModel {
     product_name?: string;
     product_code?: string;
     product_spec?: string;
+    tax_type?: Exclude<TaxType, 'unclassified'>;
   }>;
 }
 
 interface TableItemProps {
   index: number;
   onRemove: () => void;
+  overrideTaxType?: Exclude<TaxType, 'unclassified'>;
 }
 
-const TableItem = ({ index, onRemove }: TableItemProps) => {
+const TableItem = ({ index, onRemove, overrideTaxType }: TableItemProps) => {
   const role = useMemberStore((state) => state.role);
   const isViewer = role === 'viewer';
   const tCommon = useTranslations('common');
@@ -47,6 +50,8 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
   const productNameValue = watch(`products.${index}.product_name`);
   const productCode = watch(`products.${index}.product_code`);
   const productSpec = watch(`products.${index}.product_spec`);
+  const taxType = watch(`products.${index}.tax_type`);
+  const displayTaxType = overrideTaxType ?? taxType;
 
   // 금액 자동 계산
   const totalAmount = quantity * unitPrice;
@@ -83,6 +88,9 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
     setValue(`products.${index}.product_spec`, product.spec, {
       shouldDirty: true,
     });
+    setValue(`products.${index}.tax_type`, product.tax_type, {
+      shouldDirty: true,
+    });
     trigger(); // 폼 상태 강제 업데이트
     // 드롭다운 닫기
     setIsDropdownOpen(false);
@@ -105,17 +113,9 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
               onChange={(e) => {
                 const { value } = e.target;
                 setProductName(value);
-                if (value.length > 0) {
-                  setIsDropdownOpen(true);
-                } else {
-                  setIsDropdownOpen(false);
-                }
+                setIsDropdownOpen(true);
               }}
-              onFocus={() => {
-                if (productName.length > 0) {
-                  setIsDropdownOpen(true);
-                }
-              }}
+              onFocus={() => setIsDropdownOpen(true)}
               onBlur={() => setTimeout(() => setIsDropdownOpen(false), 150)}
               placeholder={tCommon('productName')}
               className="text-dg outline-none w-full"
@@ -132,13 +132,14 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
           )}
 
           {/* 품목 검색 드롭다운 */}
-          {isDropdownOpen && productName && (
+          {isDropdownOpen && (
             <div className="absolute top-[41px] left-0 right-0 z-10">
               <ProductNameDropdown
                 searchTerm={productName}
                 onSelect={handleProductSelectWithId}
                 onClose={() => setIsDropdownOpen(false)}
                 width="w-full"
+                showAllOnEmpty
               />
             </div>
           )}
@@ -148,6 +149,15 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
         </p>
         <p className="flex-1 px-3 text-dg truncate cursor-default">
           {productSpec || '-'}
+        </p>
+        <p className="w-[90px] px-3 text-dg truncate cursor-default">
+          {displayTaxType === 'exempt'
+            ? tCommon('taxExempt')
+            : displayTaxType === 'zero_rated'
+              ? '0%'
+              : displayTaxType === 'taxable'
+                ? tCommon('taxable')
+                : '-'}
         </p>
         <div className="flex-1 px-3">
           <input
@@ -206,6 +216,9 @@ const TableItem = ({ index, onRemove }: TableItemProps) => {
                     shouldDirty: true,
                   });
                   setValue(`products.${index}.product_spec`, result.data.spec, {
+                    shouldDirty: true,
+                  });
+                  setValue(`products.${index}.tax_type`, result.data.tax_type, {
                     shouldDirty: true,
                   });
                   trigger(); // 폼 상태 강제 업데이트

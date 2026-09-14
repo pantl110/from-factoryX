@@ -8,6 +8,7 @@ import { WarningCircle } from '@phosphor-icons/react';
 import { useToast, useCreateProduct, useCreateMaterial } from '@/hooks';
 import Spinner from '@/ui/spinner';
 import { useTranslations } from 'next-intl';
+import { MasterTaxType } from '@/types/status-type';
 
 interface ExcelUploadModalProps {
   onClose: () => void;
@@ -45,6 +46,7 @@ const ExcelUploadModal = ({
     minStock: t('excelColumns.minStock'),
     avgProductionTime: t('excelColumns.avgProductionTime'),
     note: t('excelColumns.note'),
+    taxExempt: t('excelColumns.taxExempt'),
   };
   const [hasFiles, setHasFiles] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -75,7 +77,16 @@ const ExcelUploadModal = ({
     minStock: String(row[excelColumns.minStock] ?? '').trim(),
     avgProductionTime: String(row[excelColumns.avgProductionTime] ?? '').trim(),
     note: String(row[excelColumns.note] ?? '').trim(),
+    taxExempt: String(row[excelColumns.taxExempt] ?? '')
+      .trim()
+      .toUpperCase(),
   });
+
+  const getTaxType = (taxExempt: string): MasterTaxType | null => {
+    if (taxExempt === '' || taxExempt === 'N') return 'taxable';
+    if (taxExempt === 'Y') return 'exempt';
+    return null;
+  };
 
   // 자재/제품에 따라 다른 기준으로 빈 행을 판단한다
   const isEmptyRow = (row: ExcelRowModel) => {
@@ -88,6 +99,7 @@ const ExcelUploadModal = ({
       minStock,
       avgProductionTime,
       note,
+      taxExempt,
     } = readRow(row);
     const isCommonEmpty =
       name === '' &&
@@ -95,10 +107,14 @@ const ExcelUploadModal = ({
       spec === '' &&
       unit === '' &&
       currentStock === '';
+    const isTaxTypeEmpty = taxExempt === '';
 
     return type === 'material'
-      ? isCommonEmpty && minStock === ''
-      : isCommonEmpty && avgProductionTime === '' && note === '';
+      ? isCommonEmpty && minStock === '' && isTaxTypeEmpty
+      : isCommonEmpty &&
+          avgProductionTime === '' &&
+          note === '' &&
+          isTaxTypeEmpty;
   };
 
   const handleComplete = async (files: File[]) => {
@@ -171,11 +187,21 @@ const ExcelUploadModal = ({
         return;
       }
 
+      const hasInvalidTaxType = data.some((row) => {
+        if (isEmptyRow(row)) return false;
+        return getTaxType(readRow(row).taxExempt) === null;
+      });
+      if (hasInvalidTaxType) {
+        setSubtext(t('errors.invalidTaxExempt'));
+        showToast();
+        return;
+      }
+
       // 빈 행을 제외하고 엑셀 데이터를 ProductCreateExcelModel 형식으로 변환
       const productData = data
         .filter((row) => !isEmptyRow(row))
         .map((row) => {
-          const { name, code, unit, spec } = readRow(row);
+          const { name, code, unit, spec, taxExempt } = readRow(row);
           const currentStock = extractRoundedInt(
             row[excelColumns.currentStock]
           );
@@ -193,6 +219,7 @@ const ExcelUploadModal = ({
             code,
             unit,
             spec,
+            tax_type: getTaxType(taxExempt) ?? 'taxable',
             ...(currentStock > 0 ? { current_stock: currentStock } : {}),
             ...(type === 'product' &&
             avgProductionTime !== null &&

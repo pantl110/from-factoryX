@@ -14,6 +14,10 @@
     "loading": "로딩 중...",
     "error": "오류가 발생했습니다",
     "success": "성공적으로 완료되었습니다",
+    "taxClassification": "과세 구분",
+    "taxable": "과세",
+    "taxExempt": "면세",
+    "taxTypeAutoHelp": "저장 후 세금 문서 작성 시 자동으로 적용됩니다.",
     "errors": {
       "serverConnectionFailed": "서버 연결에 실패했습니다.",
       "factoryIdNotSet": "공장 ID가 설정되지 않았습니다.",
@@ -662,8 +666,31 @@
     },
     "createTaxPanel": {
       "claimReceiptTaxModal": {
-        "title": "{issueType} 방식으로 세금계산서를 생성할까요?",
-        "subtitle": "{issueType} 방식으로 발행된 세금계산서는 문서 뷰에 ''{issueType}''로 표시돼요."
+        "title": "{issueType} 방식으로 {documentLabel}를 생성할까요?",
+        "subtitle": "{issueType} 방식으로 발행된 {documentLabel}는 문서 뷰에 ''{issueType}''로 표시돼요."
+      },
+      "taxType": {
+        "label": "과세 유형",
+        "taxable": "과세",
+        "zeroRated": "영세율",
+        "exempt": "면세",
+        "unclassified": "미분류",
+        "taxInvoice": "전자세금계산서",
+        "invoice": "전자계산서",
+        "taxableDescription": "세액은 공급가액의 10%로 계산됩니다.",
+        "zeroTaxDescription": "{documentLabel}의 세액은 0원으로 저장됩니다.",
+        "autoDescription": "선택한 제품의 마스터 과세 구분이 자동 적용됩니다.",
+        "zeroRatedTransaction": "영세율 거래",
+        "zeroRatedDescription": "영세율 거래로 지정되어 선택한 제품 전체에 0%가 적용됩니다.",
+        "zeroRatedReasonLabel": "영세율 적용 사유",
+        "zeroRatedReasonPlaceholder": "예: 수출 거래, 내국신용장에 의한 공급",
+        "zeroRatedReasonHelp": "영세율 적용 요건과 증빙은 발행 전에 반드시 확인해 주세요.",
+        "zeroRatedExemptErrorTitle": "면세 제품에는 영세율을 바로 적용할 수 없습니다.",
+        "zeroRatedExemptErrorSubtitle": "면세 제품을 제거하거나 별도 문서로 작성한 뒤 영세율 적용 요건을 확인해 주세요.",
+        "mixed": "과세·면세 혼합",
+        "mixedDescription": "현재 발행 연동은 문서별 과세 유형이 하나이므로 문서를 나누어 작성해 주세요.",
+        "mixedErrorTitle": "과세 유형이 다른 제품이 섞여 있습니다.",
+        "mixedErrorSubtitle": "과세 제품과 면세 제품을 각각 별도 문서로 작성해 주세요."
       },
       "addItemDropdown": {
         "existing": "기존 제품 추가",
@@ -1433,6 +1460,7 @@
             "noDataToUpload": "업로드할 데이터가 없습니다.",
             "parseFailed": "엑셀 파일 파싱에 실패했습니다.",
             "fileReadFailed": "파일 읽기에 실패했습니다.",
+            "invalidTaxExempt": "면세 여부는 Y 또는 N으로 입력해 주세요. 빈칸은 N(과세)으로 처리됩니다.",
             "requiredFields": {
               "product": "제품명, 제품 코드, 규격, 단위는 필수입니다. 모든 필수 항목을 확인해주세요.",
               "material": "자재명, 자재 코드, 규격, 단위는 필수입니다. 모든 필수 항목을 확인해주세요."
@@ -1450,7 +1478,8 @@
             "currentStock": "현재 재고",
             "minStock": "최소 재고",
             "avgProductionTime": "평균 생산 시간(초)",
-            "note": "비고"
+            "note": "비고",
+            "taxExempt": "면세 여부(Y/N)"
           },
           "duplicateCheck": {
             "keyword": "중복된",

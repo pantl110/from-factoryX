@@ -66,6 +66,8 @@ const TaxDocumentView = ({
     <div className="flex flex-col gap-6">
       <DocInfo
         taxType={item.tax_invoice_type}
+        taxClassification={item.tax_type}
+        zeroRatedReason={item.zero_rated_reason}
         transactionType={item.transaction_type}
         publishDate={publishDate}
       />

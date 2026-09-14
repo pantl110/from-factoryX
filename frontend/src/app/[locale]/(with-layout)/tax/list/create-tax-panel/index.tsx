@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { Panel, MiniBtn, PanelRefModel, Toast } from '@/ui';
 import SellerInfo from './seller-info';
 import ClientInfo from './client-info';
@@ -27,7 +27,7 @@ import {
   ClientUpdateModel,
   TaxClientInfoModel,
 } from '@/types/data-model';
-import { TransactionType } from '@/types/status-type';
+import { TaxType, TransactionType } from '@/types/status-type';
 import { ClientInfoFormDataModel, SellerInfoFormDataModel } from '../type';
 import ProductInfo, {
   ProductInfoRefModel,
@@ -44,11 +44,14 @@ interface TaxProductEditModel {
   product_name: string;
   product_code: string;
   product_spec: string;
+  tax_type?: Exclude<TaxType, 'unclassified'>;
 }
 
 interface CreatTaxPanelProps {
   onClose: () => void;
   taxId?: number;
+  initialTaxType?: TaxType;
+  initialZeroRatedReason?: string;
   initialClientData?: TaxClientInfoModel;
   initialProducts?: TaxProductEditModel[];
   setIsEditingMode?: (isEditingMode: boolean) => void;
@@ -59,6 +62,8 @@ interface CreatTaxPanelProps {
 const CreatTaxPanel = ({
   onClose,
   taxId,
+  initialTaxType,
+  initialZeroRatedReason = '',
   initialClientData,
   initialProducts,
   setIsEditingMode,
@@ -100,6 +105,13 @@ const CreatTaxPanel = ({
   const [isProductInfoValid, setIsProductInfoValid] = useState(false);
   const [productInfoFormData, setProductInfoFormData] =
     useState<ProductFormDataModel | null>(null);
+  const [isZeroRatedTransaction, setIsZeroRatedTransaction] = useState(
+    initialTaxType === 'zero_rated'
+  );
+  const [zeroRatedReason, setZeroRatedReason] = useState(
+    initialZeroRatedReason
+  );
+  const [isTaxTypeDirty, setIsTaxTypeDirty] = useState(false);
 
   // 그 외 폼 관련 상태
   const [isSaving, setIsSaving] = useState(false);
@@ -124,6 +136,7 @@ const CreatTaxPanel = ({
   useEffect(() => {
     setCurrentTaxId(taxId);
   }, [taxId]);
+
   const { linkTaxInvoice } = useLinkTaxInvoice();
   const { checkBarobill } = useCheckBarobill();
 
@@ -140,7 +153,70 @@ const CreatTaxPanel = ({
   const t = useTranslations('tax.createTaxPanel');
   const tTax = useTranslations('tax');
   const tCommon = useTranslations('common');
-  const tDocumentType = useTranslations('document.type');
+  const productTaxTypes = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          (productInfoFormData?.products ?? [])
+            .map((product) => product.tax_type)
+            .map((taxType) => (taxType === 'zero_rated' ? 'taxable' : taxType))
+            .filter((taxType): taxType is 'taxable' | 'exempt' =>
+              Boolean(taxType)
+            )
+        )
+      ),
+    [productInfoFormData]
+  );
+  const hasMixedTaxTypes = productTaxTypes.length > 1;
+  const hasExemptProducts = productTaxTypes.includes('exempt');
+  const initialMasterTaxType =
+    initialTaxType === 'exempt' ? 'exempt' : 'taxable';
+  const selectedTaxType: TaxType = isZeroRatedTransaction
+    ? 'zero_rated'
+    : hasMixedTaxTypes
+      ? 'unclassified'
+      : (productTaxTypes[0] ?? initialMasterTaxType);
+  const isZeroRatedReasonMissing =
+    isZeroRatedTransaction && zeroRatedReason.trim().length === 0;
+  const taxDocumentLabel =
+    selectedTaxType === 'exempt'
+      ? t('taxType.invoice')
+      : t('taxType.taxInvoice');
+  const selectedDocumentKind =
+    selectedTaxType === 'exempt' ? 'invoice' : 'tax_invoice';
+
+  useEffect(() => {
+    setIsZeroRatedTransaction(initialTaxType === 'zero_rated');
+    setZeroRatedReason(initialZeroRatedReason);
+    setIsTaxTypeDirty(false);
+  }, [initialTaxType, initialZeroRatedReason]);
+
+  useEffect(() => {
+    if (isZeroRatedTransaction && hasExemptProducts) {
+      setIsZeroRatedTransaction(false);
+      setZeroRatedReason('');
+      setIsTaxTypeDirty(true);
+      setToastType('red');
+      setErrorText(t('taxType.zeroRatedExemptErrorTitle'));
+      setErrorSubtext(t('taxType.zeroRatedExemptErrorSubtitle'));
+      showToast();
+    }
+  }, [hasExemptProducts, isZeroRatedTransaction, showToast, t]);
+
+  const handleZeroRatedToggle = () => {
+    if (isViewer) return;
+    if (!isZeroRatedTransaction && hasExemptProducts) {
+      setToastType('red');
+      setErrorText(t('taxType.zeroRatedExemptErrorTitle'));
+      setErrorSubtext(t('taxType.zeroRatedExemptErrorSubtitle'));
+      showToast();
+      return;
+    }
+
+    setIsZeroRatedTransaction((current) => !current);
+    if (isZeroRatedTransaction) setZeroRatedReason('');
+    setIsTaxTypeDirty(true);
+  };
 
   // 주문제품 정보 폼 변경 핸들러
   const handleProductInfoChange = useCallback(
@@ -439,6 +515,13 @@ const CreatTaxPanel = ({
     transactionType: TransactionType,
     projectId?: number
   ): Promise<boolean> => {
+    if (hasMixedTaxTypes) {
+      setToastType('red');
+      setErrorText(t('taxType.mixedErrorTitle'));
+      setErrorSubtext(t('taxType.mixedErrorSubtitle'));
+      showToast();
+      return false;
+    }
     // 임시저장일 때는 작성날짜만 유효성 검사
     if (!isWriteDateValid()) {
       setShowWriteDateError(true); // 작성일자만 에러 표시
@@ -521,21 +604,31 @@ const CreatTaxPanel = ({
                 (p.unitPrice && p.unitPrice > 0)
               );
             })
-            ?.map((p, index) => ({
-              id: index + 1, // 순번 ID
-              product_id: p.productId || null, // 제품 ID
-              name: p.product_name || '', // 제품명
-              code: p.product_code || null, // 제품 코드
-              information: p.product_spec || '', // 규격
-              chargeable_unit: p.quantity.toString() || '0', // 수량
-              unit_price: p.unitPrice.toString() || '0', // 단가
-              amount:
-                ((p.quantity || 0) * (p.unitPrice || 0)).toString() || '0', // 공급가액
-              tax:
-                Math.floor(
-                  (p.quantity || 0) * (p.unitPrice || 0) * 0.1
-                ).toString() || '0', // 세액 (원 미만 절사 — 국세청 홈택스 기준)
-            })) || [];
+            ?.map((p, index) => {
+              const lineTaxType =
+                selectedTaxType === 'unclassified'
+                  ? (p.tax_type ?? 'taxable')
+                  : selectedTaxType;
+
+              return {
+                id: index + 1, // 순번 ID
+                product_id: p.productId || null, // 제품 ID
+                tax_type: lineTaxType,
+                name: p.product_name || '', // 제품명
+                code: p.product_code || null, // 제품 코드
+                information: p.product_spec || '', // 규격
+                chargeable_unit: p.quantity.toString() || '0', // 수량
+                unit_price: p.unitPrice.toString() || '0', // 단가
+                amount:
+                  ((p.quantity || 0) * (p.unitPrice || 0)).toString() || '0', // 공급가액
+                tax:
+                  Math.floor(
+                    (p.quantity || 0) *
+                      (p.unitPrice || 0) *
+                      (lineTaxType === 'taxable' ? 0.1 : 0)
+                  ).toString() || '0', // 세액 (원 미만 절사 — 국세청 홈택스 기준)
+              };
+            }) || [];
 
         const taxInvoiceData: CreateTaxInvoiceModel = {
           tax_id: currentTaxId,
@@ -543,6 +636,11 @@ const CreatTaxPanel = ({
           client: currentClientId || null, // 거래처 ID가 없으면 null
           line_items: lineItems,
           tax_invoice_type: 'sales', // 항상 매출 세금계산서
+          document_kind: selectedDocumentKind,
+          tax_type: selectedTaxType,
+          zero_rated_reason: isZeroRatedTransaction
+            ? zeroRatedReason.trim()
+            : null,
           transaction_type: transactionType,
           transaction_date: sellerInfoFormData?.writeDate || '',
           transaction_amount: lineItems.reduce(
@@ -663,7 +761,8 @@ const CreatTaxPanel = ({
           (taxId &&
             !isSellerInfoDirty &&
             !isClientInfoDirty &&
-            !isProductInfoDirty) ||
+            !isProductInfoDirty &&
+            !isTaxTypeDirty) ||
           isSaving ||
           isViewer
         }
@@ -679,6 +778,8 @@ const CreatTaxPanel = ({
             !hasSellerInfoRequiredValues ||
             !hasClientInfoRequiredValues ||
             !isProductInfoValid ||
+            hasMixedTaxTypes ||
+            isZeroRatedReasonMissing ||
             isSaving ||
             isViewer
           }
@@ -696,7 +797,7 @@ const CreatTaxPanel = ({
   return (
     <>
       <Panel
-        title={tDocumentType('salesTaxInvoice')}
+        title={taxDocumentLabel}
         onClose={onClose}
         headerButton={headerButton}
         ref={panelRef}
@@ -713,6 +814,83 @@ const CreatTaxPanel = ({
             showErrors={showErrors}
             initialData={initialClientData}
           />
+        </div>
+
+        <div
+          className={`mt-7 rounded-lg border px-5 py-4 ${
+            hasMixedTaxTypes ? 'border-red bg-red-8' : 'border-lg bg-bg'
+          }`}
+        >
+          <div className="flex items-center gap-4">
+            <p className="Me_Body-2 text-dg">{t('taxType.label')}</p>
+            <span className="rounded-md bg-white px-3 py-2 Me_Body-3 text-dg">
+              {hasMixedTaxTypes
+                ? t('taxType.mixed')
+                : selectedTaxType === 'zero_rated'
+                  ? t('taxType.zeroRated')
+                  : selectedTaxType === 'exempt'
+                    ? t('taxType.exempt')
+                    : t('taxType.taxable')}
+            </span>
+            <p className="flex-1 Me_Body-3 text-sv">
+              {hasMixedTaxTypes
+                ? t('taxType.mixedDescription')
+                : isZeroRatedTransaction
+                  ? t('taxType.zeroRatedDescription')
+                  : t('taxType.autoDescription')}
+            </p>
+            <div className="flex items-center gap-2">
+              <span className="Me_Body-3 text-dg">
+                {t('taxType.zeroRatedTransaction')}
+              </span>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={isZeroRatedTransaction}
+                aria-label={t('taxType.zeroRatedTransaction')}
+                disabled={
+                  isViewer || (!isZeroRatedTransaction && hasExemptProducts)
+                }
+                onClick={handleZeroRatedToggle}
+                className={`relative h-6 w-11 rounded-full transition-colors ${
+                  isZeroRatedTransaction ? 'bg-primary' : 'bg-lg'
+                } disabled:cursor-not-allowed disabled:opacity-50`}
+              >
+                <span
+                  className={`absolute top-1 h-4 w-4 rounded-full bg-white transition-all ${
+                    isZeroRatedTransaction ? 'left-6' : 'left-1'
+                  }`}
+                />
+              </button>
+            </div>
+          </div>
+
+          {isZeroRatedTransaction && (
+            <div className="mt-4 border-t border-lg pt-4">
+              <label htmlFor="zero-rated-reason" className="Me_Body-3 text-dg">
+                {t('taxType.zeroRatedReasonLabel')}
+                <span className="ml-1 text-red">*</span>
+              </label>
+              <input
+                id="zero-rated-reason"
+                type="text"
+                maxLength={200}
+                value={zeroRatedReason}
+                onChange={(event) => {
+                  setZeroRatedReason(event.target.value);
+                  setIsTaxTypeDirty(true);
+                }}
+                placeholder={t('taxType.zeroRatedReasonPlaceholder')}
+                disabled={isViewer}
+                className={`mt-2 h-10 w-full rounded-md border bg-white px-3 Me_Body-3 text-dg outline-none ${
+                  isZeroRatedReasonMissing ? 'border-red' : 'border-lg'
+                }`}
+              />
+              <p className="mt-2 Me_Body-3 text-sv">
+                {t('taxType.zeroRatedReasonHelp')}
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="flex flex-col gap-3 mt-9">
@@ -743,6 +921,8 @@ const CreatTaxPanel = ({
             isProductDetailOpen={isProductDetailOpen}
             onFormChange={handleProductInfoChange}
             initialProducts={initialProducts}
+            initialTaxType={initialTaxType}
+            overrideTaxType={isZeroRatedTransaction ? 'zero_rated' : undefined}
           />
         </div>
       </Panel>
@@ -752,6 +932,7 @@ const CreatTaxPanel = ({
         <ClaimReceiptTaxModal
           onClose={handleModalClose}
           issueType={selectedIssueType}
+          documentLabel={taxDocumentLabel}
           onConfirm={handleModalConfirm}
         />
       )}

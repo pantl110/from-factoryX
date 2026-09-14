@@ -15,6 +15,10 @@
     "loading": "Loading...",
     "error": "An error occurred",
     "success": "Completed successfully",
+    "taxClassification": "Tax classification",
+    "taxable": "Taxable",
+    "taxExempt": "Tax exempt",
+    "taxTypeAutoHelp": "This value is applied automatically when creating tax documents.",
     "errors": {
       "serverConnectionFailed": "Failed to connect to server.",
       "factoryIdNotSet": "Factory ID is not set.",
@@ -661,8 +665,31 @@
     },
     "createTaxPanel": {
       "claimReceiptTaxModal": {
-        "title": "Create tax invoice using {issueType} method?",
-        "subtitle": "Tax invoices issued using {issueType} method will be displayed as ''{issueType}'' in the document view."
+        "title": "Create {documentLabel} using {issueType} method?",
+        "subtitle": "The {documentLabel} issued using {issueType} method will be displayed as ''{issueType}'' in the document view."
+      },
+      "taxType": {
+        "label": "Tax type",
+        "taxable": "Taxable",
+        "zeroRated": "Zero-rated",
+        "exempt": "Exempt",
+        "unclassified": "Unclassified",
+        "taxInvoice": "Electronic tax invoice",
+        "invoice": "Electronic invoice",
+        "taxableDescription": "Tax is calculated at 10% of the supply amount.",
+        "zeroTaxDescription": "The tax amount for this {documentLabel} is saved as 0.",
+        "autoDescription": "The tax classification saved on the selected product is applied automatically.",
+        "zeroRatedTransaction": "Zero-rated transaction",
+        "zeroRatedDescription": "This transaction is zero-rated, so 0% is applied to all selected products.",
+        "zeroRatedReasonLabel": "Reason for zero rating",
+        "zeroRatedReasonPlaceholder": "e.g. Export transaction or supply under a local letter of credit",
+        "zeroRatedReasonHelp": "Verify the applicable zero-rating requirements and evidence before issuing.",
+        "zeroRatedExemptErrorTitle": "Zero rating cannot directly override an exempt product.",
+        "zeroRatedExemptErrorSubtitle": "Remove the exempt product or create a separate document, then verify eligibility for zero rating.",
+        "mixed": "Mixed taxable/exempt",
+        "mixedDescription": "The current issuing integration supports one tax classification per document. Create separate documents.",
+        "mixedErrorTitle": "Products with different tax classifications are mixed.",
+        "mixedErrorSubtitle": "Create separate documents for taxable and tax-exempt products."
       },
       "addItemDropdown": {
         "existing": "Add Existing Product",
@@ -1424,6 +1451,7 @@
             "noDataToUpload": "No data to upload.",
             "parseFailed": "Failed to parse Excel file.",
             "fileReadFailed": "Failed to read file.",
+            "invalidTaxExempt": "Tax Exempt must be Y or N. A blank value is treated as N (taxable).",
             "requiredFields": {
               "product": "Product name, product code, specification, and unit are required. Please check all required fields.",
               "material": "Material name, material code, specification, and unit are required. Please check all required fields."
@@ -1441,7 +1469,8 @@
             "currentStock": "Current Stock",
             "minStock": "Min Stock",
             "avgProductionTime": "Average Cycle Time (sec)",
-            "note": "Notes"
+            "note": "Notes",
+            "taxExempt": "Tax Exempt (Y/N)"
           },
           "duplicateCheck": {
             "keyword": "duplicate",

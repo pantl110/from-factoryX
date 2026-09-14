@@ -17,7 +17,9 @@ import {
   handleQuantityInput,
 } from '@/utils';
 import { ExpiryStatusType } from '@/types/status-type';
+import { MasterTaxType } from '@/types/status-type';
 import { mapExpiryStatus, mapMaterialToFormData } from './utils';
+import MasterTaxTypeField from '@/ui/master-tax-type-field';
 
 interface MaterialInfoProps {
   materialId: number;
@@ -38,6 +40,7 @@ interface MaterialInfoFormModel {
   materialCode: string;
   size: string;
   unit: string;
+  taxType: MasterTaxType;
   currentStock: string;
   standardStock: string;
   rop: string; // rop
@@ -103,6 +106,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
         materialCode: '',
         size: '',
         unit: '',
+        taxType: 'taxable',
         currentStock: '',
         standardStock: '', // 안전 재고
         rop: '', // rop
@@ -217,6 +221,20 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
               />
             )}
           />
+        </div>
+        <div className="flex border-t border-lg">
+          <Controller
+            name="taxType"
+            control={control}
+            render={({ field }) => (
+              <MasterTaxTypeField
+                value={field.value ?? 'taxable'}
+                handleChange={field.onChange}
+                disabled={isViewer || !hasSubscription()}
+              />
+            )}
+          />
+          <div className="flex-1" />
         </div>
         <div className="flex">
           <Controller

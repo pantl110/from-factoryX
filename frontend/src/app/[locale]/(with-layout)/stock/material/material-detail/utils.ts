@@ -10,6 +10,7 @@ export const mapMaterialToFormData = (mat: MaterialResponseModel) => ({
   materialCode: mat.code ?? '',
   size: mat.spec ?? '',
   unit: mat.unit ?? '',
+  taxType: mat.tax_type ?? 'taxable',
   currentStock:
     mat.current_stock !== undefined && mat.current_stock !== null
       ? mat.current_stock.toString()

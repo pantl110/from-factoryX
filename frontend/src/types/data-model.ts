@@ -10,6 +10,9 @@ import {
   NotificationType,
   NotificationCaseType,
   TaxDocumentType,
+  TaxDocumentKindType,
+  TaxType,
+  MasterTaxType,
   TransactionType,
   BarobillStateType,
   NtsSendStateType,
@@ -381,6 +384,7 @@ export interface ProductModel {
   code: string;
   unit: string;
   spec: string;
+  tax_type: MasterTaxType;
   current_stock?: number | null;
   average_production_time?: number;
   buffer_rate?: number; // 기본값 10%
@@ -397,6 +401,7 @@ export interface ProductResponseModel {
   code: string;
   unit: string;
   spec: string;
+  tax_type: MasterTaxType;
   current_stock?: number;
   average_production_time?: number;
   buffer_rate?: number;
@@ -415,6 +420,7 @@ export interface ProductCreateExcelModel {
   code: string;
   unit: string;
   spec: string;
+  tax_type: MasterTaxType;
   current_stock?: number;
   average_production_time?: number;
   buffer_rate: number;
@@ -428,6 +434,7 @@ export interface ProductCreateExcelResponseModel {
   code: string;
   unit: string;
   spec?: string;
+  tax_type: MasterTaxType;
   current_stock: number;
   average_production_time: number;
   buffer_rate: number;
@@ -472,6 +479,7 @@ export interface CreateMaterialModel {
   code: string;
   spec: string;
   unit: string;
+  tax_type: MasterTaxType;
   current_stock?: number;
   standard_stock?: number;
 }
@@ -483,6 +491,7 @@ export interface MaterialModel {
   code: string;
   unit: string;
   spec: string;
+  tax_type: MasterTaxType;
   current_stock?: number;
   standard_stock?: number;
   rop?: number;
@@ -501,6 +510,7 @@ export interface MaterialResponseModel {
   code: string;
   unit: string;
   spec: string;
+  tax_type: MasterTaxType;
   status: InventoryStatusType | null;
   current_stock?: number;
   standard_stock?: number;
@@ -539,6 +549,7 @@ export interface MaterialItemModel {
   code: string;
   spec: string; // 규격
   unit: string; // 단위
+  tax_type?: MasterTaxType;
   quantity: number | null;
   price: number | null; // 구매 단가
 }
@@ -1470,6 +1481,7 @@ export interface TaxLineItemModel {
   id: number; //제품 식별자(순번)
   purchase_expiry?: string; // YYYYMMDD 형식 (예: "20241231") // 공급일자
   product_id?: number | null; // 연동된 제품 ID
+  tax_type?: Exclude<TaxType, 'unclassified'>; // 품목 과세 유형
   name: string; // 제품명
   code?: string | null; // 제품 코드
   information?: string; // 규격
@@ -1498,6 +1510,9 @@ export interface PublishedTaxInvoiceResponseModel {
   // 세금계산서 기본 정보
   publish_status: TaxStatusType; // 발행 상태 ("temporary"/"pending"/"published")
   tax_invoice_type: TaxDocumentType; // 세금계산서 유형 ("sales"/"purchase")
+  document_kind: TaxDocumentKindType; // 전자세금계산서 / 전자계산서
+  tax_type: TaxType; // 미분류 / 과세 / 영세율 / 면세
+  zero_rated_reason?: string | null; // 영세율 적용 사유
   transaction_type: TransactionType; // 거래 유형 ("receipt"/"invoice")
   transaction_date: string; // 거래 일자
 
@@ -1571,6 +1586,9 @@ export interface CreateTaxInvoiceModel {
   product?: number[]; // 제품 ID 리스트
   line_items: TaxLineItemModel[];
   tax_invoice_type?: TaxDocumentType;
+  document_kind?: TaxDocumentKindType;
+  tax_type?: TaxType;
+  zero_rated_reason?: string | null;
   transaction_type?: TransactionType;
   transaction_date?: string;
   transaction_amount: number; // 공급가액
@@ -1768,6 +1786,8 @@ export interface PublishedDocumentOutModel {
   is_hidden: boolean; // 숨김 여부
   account: TaxInvoiceAccountModel | null; // 계정 정보
   tax_invoice_type: 'sales' | 'purchase' | null; // 세금계산서 유형 (세금계산서인 경우)
+  document_kind: TaxDocumentKindType | null; // 전자세금계산서 / 전자계산서
+  tax_type: TaxType | null; // 과세 / 영세율 / 면세
   project_id: number | null; // 프로젝트 ID (세금계산서인 경우)
   cash_receipt_type: 'sales' | 'purchase' | null; // 현금영수증 유형 (현금영수증인 경우)
   item_name: string | null; // 품목명 (현금영수증인 경우)

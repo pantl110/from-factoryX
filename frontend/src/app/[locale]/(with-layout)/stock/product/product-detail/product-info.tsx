@@ -5,6 +5,7 @@ import { useForm, Controller } from 'react-hook-form';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import { useTranslations } from 'next-intl';
+import MasterTaxTypeField from '@/ui/master-tax-type-field';
 // import { WarningCircle } from '@phosphor-icons/react';
 
 interface ProductInfoProps {
@@ -147,6 +148,20 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
                 />
               )}
             />
+          </div>
+          <div className="flex border-t border-lg">
+            <Controller
+              name="tax_type"
+              control={control}
+              render={({ field }) => (
+                <MasterTaxTypeField
+                  value={field.value ?? 'taxable'}
+                  handleChange={field.onChange}
+                  disabled={isViewer || !hasSubscription()}
+                />
+              )}
+            />
+            <div className="flex-1" />
           </div>
           <div className="flex">
             <Controller

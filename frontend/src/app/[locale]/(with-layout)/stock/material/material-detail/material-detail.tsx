@@ -211,6 +211,7 @@ const MaterialDetail = forwardRef<MaterialInfoModel, MaterialDetailProps>(
             materialCode: '',
             size: '',
             unit: '',
+            taxType: 'taxable',
             currentStock: '',
             standardStock: '',
             rop: '',

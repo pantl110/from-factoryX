@@ -392,6 +392,7 @@ const MaterialDetailPanel = ({
     if (refObj.isDirty) {
       const values = refObj.getValues();
       const payload: Record<string, string | number | null> = {};
+      payload.tax_type = values.taxType;
 
       // 필수 필드들 추가
       if (values.materialName !== undefined && values.materialName !== '') {

@@ -103,6 +103,7 @@ const ProductDetail = ({
     code: '',
     unit: '',
     spec: '',
+    tax_type: 'taxable',
     current_stock: undefined,
     average_production_time: undefined,
     buffer_rate: undefined,
@@ -244,6 +245,7 @@ const ProductDetail = ({
         code: product.code,
         unit: product.unit,
         spec: product.spec,
+        tax_type: product.tax_type ?? 'taxable',
         current_stock: product.current_stock,
         average_production_time: product.average_production_time,
         buffer_rate: product.buffer_rate,
@@ -258,6 +260,7 @@ const ProductDetail = ({
         code: '',
         unit: '',
         spec: '',
+        tax_type: 'taxable',
         current_stock: undefined,
         average_production_time: undefined,
         buffer_rate: undefined,
@@ -415,6 +418,7 @@ const ProductDetail = ({
           code: currentFormData.code,
           spec: currentFormData.spec,
           unit: currentFormData.unit,
+          tax_type: currentFormData.tax_type,
           current_stock:
             currentFormData.current_stock === undefined ||
             currentFormData.current_stock === null

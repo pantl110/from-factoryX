@@ -180,6 +180,8 @@ const TaxPageContent = () => {
           id: doc.id,
           transaction_date: doc.transaction_date,
           tax_invoice_type: doc.tax_invoice_type || 'purchase',
+          document_kind: doc.document_kind || 'tax_invoice',
+          tax_type: doc.tax_type || 'unclassified',
           client_info: {
             name: doc.client_name,
           },

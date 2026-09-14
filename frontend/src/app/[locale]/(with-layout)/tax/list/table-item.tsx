@@ -31,6 +31,7 @@ const TableItem = ({
 }: TableItemProps) => {
   const t = useTranslations('tax.list.sentStatus');
   const tStatus = useTranslations('tax.list.status');
+  const tTaxType = useTranslations('tax.createTaxPanel.taxType');
   const tCommon = useTranslations('common');
   const tRoot = useTranslations();
   const role = useMemberStore((state) => state.role);
@@ -45,6 +46,14 @@ const TableItem = ({
   const accountStatus = item.account.status || 'waiting';
   const statusText = tStatus(accountStatus);
   const statusColor = getAccountsStatusColor(accountStatus);
+  const taxTypeLabel = tTaxType(
+    {
+      taxable: 'taxable',
+      zero_rated: 'zeroRated',
+      exempt: 'exempt',
+      unclassified: 'unclassified',
+    }[item.tax_type || 'unclassified']
+  );
 
   const handleRowClick = () => {
     onItemClick?.();
@@ -67,8 +76,9 @@ const TableItem = ({
         onToggle={handleToggle}
         disabled={isProdManager || isViewer}
       />
-      <div className="pl-2 pr-4 w-[192px]">
+      <div className="pl-2 pr-4 w-[192px] flex items-center gap-2">
         <RoundChip text={statusText} variant="sm" color={statusColor} />
+        <span className="text-sv whitespace-nowrap">{taxTypeLabel}</span>
       </div>
       <p
         className="flex-[1.5] px-3 text-dg truncate"

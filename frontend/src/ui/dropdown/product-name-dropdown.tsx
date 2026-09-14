@@ -11,6 +11,7 @@ interface ProductNameDropdownProps {
   onSelect: (item: ProductResponseModel) => void;
   onClose: () => void;
   width?: string;
+  showAllOnEmpty?: boolean;
 }
 
 export const ProductNameDropdown = ({
@@ -18,6 +19,7 @@ export const ProductNameDropdown = ({
   onSelect,
   onClose,
   width,
+  showAllOnEmpty = false,
 }: ProductNameDropdownProps) => {
   const [products, setProducts] = useState<ProductResponseModel[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -34,7 +36,7 @@ export const ProductNameDropdown = ({
       setIsLoading(true);
       try {
         const response = await getProductList({
-          q: searchTerm,
+          q: searchTerm || undefined,
           page: 1,
           page_size: 5,
         });
@@ -62,7 +64,7 @@ export const ProductNameDropdown = ({
       }
     };
 
-    if (searchTerm) {
+    if (searchTerm || showAllOnEmpty) {
       fetchInitialData();
     }
 
@@ -72,7 +74,7 @@ export const ProductNameDropdown = ({
       abortController.abort();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchTerm]);
+  }, [searchTerm, showAllOnEmpty]);
 
   // 더 많은 제품 로드
   const loadMoreProducts = useCallback(async () => {
@@ -84,7 +86,7 @@ export const ProductNameDropdown = ({
 
     try {
       const response = await getProductList({
-        q: searchTerm,
+        q: searchTerm || undefined,
         page: currentPage + 1,
         page_size: 5,
       });

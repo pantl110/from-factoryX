@@ -191,6 +191,11 @@ export const TaxDocumentTypeColorMap: Record<
   purchase: { bgColor: 'bg-red-8', textColor: 'text-red', color: 'red' },
 };
 
+// 문서 법적 형태 및 과세 유형
+export type TaxDocumentKindType = 'tax_invoice' | 'invoice';
+export type TaxType = 'unclassified' | 'taxable' | 'zero_rated' | 'exempt';
+export type MasterTaxType = Extract<TaxType, 'taxable' | 'exempt'>;
+
 export type TransactionType = 'receipt' | 'invoice'; // 영수, 청구
 // export const TransactionTypeColorMap: Record<
 //   TransactionType,
