@@ -4,7 +4,9 @@ from ninja.pagination import paginate
 from django.db.models import Exists, OuterRef
 from asgiref.sync import sync_to_async
 from datetime import date, timedelta, datetime
-from api.security import jwt_auth
+from api.permissions import require_factory_access
+from api.security import api_key_auth, jwt_auth
+from api.throttling import PartnerApiKeyThrottle
 from typing import List
 from django.conf import settings
 
@@ -398,19 +400,22 @@ async def get_project_status(request, project_id: int):
     "",
     summary="[C] 진행, 보관된 프로젝트 조회",
     description="진행 또는 보관 중인 프로젝트를 조회, 검색합니다.",
+    auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response={200: List[ListProgressProjectOut], 400: dict, 500: dict},
 )
 @paginate
 async def list_project(
     request,
     filters: ProjectListFilter = Query(...),
+    factory_id: int = Query(...),
 ):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     try:
         if not factory_id:
