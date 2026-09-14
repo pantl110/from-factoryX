@@ -1,7 +1,9 @@
-from ninja import Router
+from ninja import Router, Query
 from ninja.errors import HttpError
 from asgiref.sync import sync_to_async
-from api.security import jwt_auth
+from api.permissions import require_factory_access
+from api.security import api_key_auth, jwt_auth
+from api.throttling import PartnerApiKeyThrottle
 from project.models import Project, ProjectLog, Refund, ProjectPlan
 from project.schemas.outbound import (
     RefundCreateOut,
@@ -292,10 +294,12 @@ async def register_production_from_refund_log(
     "/{refund_id}",
     summary="[C] 반품 상세 조회",
     description="특정 반품의 상세 정보를 조회합니다.",
+    auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response={200: RefundDetailOut, 400: dict, 404: dict, 500: dict},
 )
-async def get_refund_detail(request, refund_id: int):
-    factory_id, user = await validate_factory_and_get_user(request)
+async def get_refund_detail(request, refund_id: int, factory_id: int = Query(...)):
+    await require_factory_access(factory_id, request.auth)
     refund, project = await get_refund_with_project(refund_id, factory_id)
 
     # 관련 로그 조회
