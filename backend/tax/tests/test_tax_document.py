@@ -8,7 +8,9 @@ from tax.tax_document import (
     UNCLASSIFIED,
     ZERO_RATED,
     TaxDocumentValidationError,
+    calculate_line_amounts,
     get_barobill_tax_document_fields,
+    validate_document_amounts,
     validate_line_item_tax_types,
     validate_zero_rated_reason,
 )
@@ -90,3 +92,73 @@ class TaxDocumentTest(TestCase):
 
     def test_non_zero_rated_document_does_not_require_reason(self):
         validate_zero_rated_reason(tax_type=TAXABLE, reason=None)
+
+    def test_taxable_line_calculates_supply_tax_and_total(self):
+        result = calculate_line_amounts(
+            quantity="3", unit_price="999", tax_type=TAXABLE
+        )
+        self.assertEqual(
+            (result.supply_amount, result.tax_amount, result.total_amount),
+            (2997, 299, 3296),
+        )
+
+    def test_exempt_and_zero_rated_lines_have_no_tax(self):
+        for tax_type in (EXEMPT, ZERO_RATED):
+            result = calculate_line_amounts(
+                quantity="2", unit_price="1500", tax_type=tax_type
+            )
+            self.assertEqual(
+                (result.supply_amount, result.tax_amount, result.total_amount),
+                (3000, 0, 3000),
+            )
+
+    def test_fractional_supply_amount_is_truncated_to_whole_won(self):
+        result = calculate_line_amounts(
+            quantity="1.5", unit_price="999", tax_type=TAXABLE
+        )
+        self.assertEqual(
+            (result.supply_amount, result.tax_amount, result.total_amount),
+            (1498, 149, 1647),
+        )
+
+    def test_document_totals_must_equal_line_totals(self):
+        line_items = [
+            {
+                "tax_type": TAXABLE,
+                "chargeable_unit": "3",
+                "unit_price": "999",
+                "amount": "2997",
+                "tax": "299",
+            }
+        ]
+        validate_document_amounts(
+            document_tax_type=TAXABLE,
+            transaction_amount=2997,
+            tax_amount=299,
+            line_items=line_items,
+        )
+
+        with self.assertRaises(TaxDocumentValidationError):
+            validate_document_amounts(
+                document_tax_type=TAXABLE,
+                transaction_amount=2998,
+                tax_amount=299,
+                line_items=line_items,
+            )
+
+    def test_submitted_line_tax_is_recalculated_by_tax_type(self):
+        with self.assertRaises(TaxDocumentValidationError):
+            validate_document_amounts(
+                document_tax_type=EXEMPT,
+                transaction_amount=3000,
+                tax_amount=300,
+                line_items=[
+                    {
+                        "tax_type": EXEMPT,
+                        "chargeable_unit": "2",
+                        "unit_price": "1500",
+                        "amount": "3000",
+                        "tax": "300",
+                    }
+                ],
+            )

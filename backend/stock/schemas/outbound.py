@@ -38,6 +38,7 @@ class ProductListOut(Schema):
     spec: str
     current_stock: Optional[Decimal]
     tax_type: str
+    tax_type_review_required: bool
 
 
 # (GET) List Product
@@ -52,6 +53,7 @@ class ProductOut(Schema):
     average_production_time: Optional[int]
     note: Optional[str]
     tax_type: str
+    tax_type_review_required: bool
 
 
 class ProductRowOut(ModelSchema):
@@ -120,6 +122,7 @@ class MaterialSummaryOut(Schema):
     unit: str
     current_stock: Optional[Decimal]
     tax_type: str
+    tax_type_review_required: bool
     status: Optional[str] = Field(None, description="자재 상태: '과재고', '충분', '위험', '부족', None")
     expiry_status: Optional[str] = Field(None, description="유통기한 상태: '양호', '위험', None")
 
@@ -147,6 +150,7 @@ class MaterialDetailModelOut(ModelSchema):
             "spec",
             "unit",
             "tax_type",
+            "tax_type_review_required",
             "current_stock",
             "standard_stock",
             "rop",

@@ -72,6 +72,9 @@ class AssignProductIn(Schema):
 class ProductFilter(FilterSchema):
     name: Optional[str] = Field(default=None, q="name__icontains")
     code: Optional[str] = Field(default=None, q="code__icontains")
+    tax_type: Optional[Literal["taxable", "exempt"]] = Field(
+        default=None, q="tax_type"
+    )
 
 
 # (PATCH) Update Product

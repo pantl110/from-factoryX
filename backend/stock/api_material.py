@@ -7,7 +7,7 @@ from asgiref.sync import sync_to_async
 from django.db import IntegrityError
 from django.db.models import F
 from api.security import jwt_auth
-from typing import List
+from typing import List, Literal
 
 from stock.models import Material, MaterialProduct, Product
 from stock.schemas.inbound import (
@@ -218,6 +218,7 @@ async def get_materials_by_factory(
     order: str = "desc",
     material_id: int = None,
     status: str = None,
+    tax_type: Literal["taxable", "exempt"] = None,
 ):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
@@ -254,6 +255,9 @@ async def get_materials_by_factory(
         
         if status == "shortage":
             queryset = queryset.filter(current_stock__lt=F("standard_stock"))
+
+        if tax_type:
+            queryset = queryset.filter(tax_type=tax_type)
 
         if q:
             qs1 = queryset.filter(name__icontains=q)
@@ -295,6 +299,7 @@ async def get_materials_by_factory(
                 "unit": material.unit,
                 "current_stock": material.current_stock,
                 "tax_type": material.tax_type,
+                "tax_type_review_required": material.tax_type_review_required,
                 "status": material_status,
                 "expiry_status": expiry_status,
             }
@@ -479,6 +484,8 @@ async def update_material(request, material_id: int, payload: MaterialUpdateIn):
 
     for key, value in update_data.items():
         setattr(material, key, value)
+    if "tax_type" in update_data:
+        material.tax_type_review_required = False
     await sync_to_async(material.save)()
 
     return material

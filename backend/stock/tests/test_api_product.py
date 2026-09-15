@@ -201,6 +201,29 @@ class TestProductAPI(TestCase):
         self.assertEqual(data["id"], self.product.id)
         self.assertEqual(data["name"], self.product.name)
 
+    async def test_list_products_filter_by_tax_type(self):
+        """과세 유형으로 제품 목록을 필터링한다."""
+        headers = await self.authenticate()
+        self.product.tax_type = "taxable"
+        await sync_to_async(self.product.save)()
+        await sync_to_async(Product.objects.create)(
+            factory=self.factory,
+            name="면세 제품",
+            code="EXEMPT01",
+            unit="EA",
+            spec="Spec E",
+            tax_type="exempt",
+        )
+
+        response = await self.client.get(
+            f"?factory_id={self.factory.id}&tax_type=exempt", headers=headers
+        )
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()["data"]
+        self.assertEqual([item["code"] for item in data], ["EXEMPT01"])
+        self.assertTrue(all(item["tax_type"] == "exempt" for item in data))
+
     async def test_update_product(self):
         """[U] 제품 수정 테스트"""
         headers = await self.authenticate()
@@ -213,6 +236,24 @@ class TestProductAPI(TestCase):
         self.assertEqual(data["id"], self.product.id)
         self.assertEqual(data["name"], payload["name"])
         # created_at, updated_at 필드는 응답에서 제외되었으므로 더 이상 검증하지 않음
+
+    async def test_updating_tax_type_clears_legacy_review_flag(self):
+        """과세 구분을 명시적으로 저장하면 기존 데이터 확인 표식이 해제된다."""
+        self.product.tax_type_review_required = True
+        await sync_to_async(self.product.save)()
+
+        headers = await self.authenticate()
+        response = await self.client.patch(
+            f"/{self.product.id}?factory_id={self.factory.id}",
+            headers=headers,
+            json={"tax_type": "exempt"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.json()["tax_type"], "exempt")
+        self.assertFalse(response.json()["tax_type_review_required"])
+        await sync_to_async(self.product.refresh_from_db)()
+        self.assertFalse(self.product.tax_type_review_required)
 
     async def test_update_product_required_field_blank(self):
         """[U] 필수 입력값 누락 또는 공란일 때 422 에러 테스트"""

@@ -133,6 +133,7 @@ async def create_product(request, payload: List[ProductCreateIn]):
                 "unit": product.unit,
                 "spec": product.spec,
                 "tax_type": product.tax_type,
+                "tax_type_review_required": product.tax_type_review_required,
                 "current_stock": product.current_stock,
                 "average_production_time": product.average_production_time,
                 "buffer_rate": float(product.buffer_rate),
@@ -259,6 +260,7 @@ async def list_products(request, filters: ProductFilter = Query(None), q: str = 
             "unit": product.unit,
             "spec": product.spec,
             "tax_type": product.tax_type,
+            "tax_type_review_required": product.tax_type_review_required,
             "current_stock": product.current_stock,
         }
         for product in products
@@ -294,6 +296,7 @@ async def get_product(request, product_id: int):
         "unit": product.unit,
         "spec": product.spec,
         "tax_type": product.tax_type,
+        "tax_type_review_required": product.tax_type_review_required,
         "current_stock": product.current_stock,
         "average_production_time": product.average_production_time,
         "buffer_rate": float(product.buffer_rate),
@@ -344,6 +347,8 @@ async def update_product(request, product_id: int, payload: ProductUpdateIn):
 
     for key, value in update_data.items():
         setattr(product, key, value)
+    if "tax_type" in update_data:
+        product.tax_type_review_required = False
     await product.asave()
 
     # 응답 데이터 직렬화
@@ -355,6 +360,7 @@ async def update_product(request, product_id: int, payload: ProductUpdateIn):
         "unit": product.unit,
         "spec": product.spec,
         "tax_type": product.tax_type,
+        "tax_type_review_required": product.tax_type_review_required,
         "current_stock": product.current_stock,
         "average_production_time": product.average_production_time,
         "buffer_rate": float(product.buffer_rate),

@@ -54,6 +54,7 @@ async def list_projects(
             "quotations__products__product",
             "plans__product__product",
             "tax_invoice",
+            "tax_invoice__document_group__documents",
         ).annotate(
             start_date=Min("plans__start_date"),
             # 첫 번째 견적서의 정보만 사용 (중복 방지)

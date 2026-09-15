@@ -3,9 +3,10 @@ from ninja.errors import HttpError
 from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
 from api.security import jwt_auth
-from tax.models import NationalTaxService
+from tax.models import NationalTaxService, TaxDocumentGroup
 from factory.utils import get_factory_by_id, is_factory_member, get_factory_client_by_id
 from django.db import transaction
+from django.db.models import Count
 from tax.utils import get_tax_service_by_id
 from tax.barobill_utils import (
     issue_barobill_tax_invoice,
@@ -16,12 +17,21 @@ from tax.tax_document import (
     UNCLASSIFIED,
     TaxDocumentValidationError,
     get_barobill_tax_document_fields,
+    validate_document_amounts,
     validate_line_item_tax_types,
     validate_zero_rated_reason,
+)
+from tax.split_service import (
+    build_split_preview,
+    get_split_group_result,
+    reset_group_to_auto_split,
+    split_group_document,
+    split_tax_document,
 )
 from tax.schemas.inbound import (
     NationalTaxServiceCreateIn,
     NationalTaxServiceUpdateIn,
+    ManualTaxDocumentSplitIn,
     TaxInvoiceFilter,
     TaxToMaterialHistoryIn,
 )
@@ -49,17 +59,26 @@ from datetime import datetime
 from typing import List
 from factory.schemas.outbound import FactoryRowOut, FactoryClientRowOut
 from websocket.utils import send_notification_to_factory
-from stock.models import MaterialHistory
+from stock.models import MaterialHistory, Product
 
 
 router = Router(tags=["Tax"], auth=jwt_auth)
 
 
-def validate_tax_document_draft(tax_type, document_kind, tax_amount, line_items=None):
+def validate_tax_document_draft(
+    tax_type, document_kind, transaction_amount, tax_amount, line_items=None
+):
     """Validate an explicitly classified draft without breaking legacy drafts."""
-    if tax_type == UNCLASSIFIED:
-        return
     try:
+        validate_document_amounts(
+            document_tax_type=tax_type,
+            transaction_amount=transaction_amount,
+            tax_amount=tax_amount,
+            line_items=line_items,
+            allow_incomplete=True,
+        )
+        if tax_type == UNCLASSIFIED:
+            return
         get_barobill_tax_document_fields(
             tax_type=tax_type,
             document_kind=document_kind,
@@ -75,6 +94,12 @@ def validate_tax_document_draft(tax_type, document_kind, tax_amount, line_items=
 
 def validate_tax_document_for_issue(tax_service):
     try:
+        validate_document_amounts(
+            document_tax_type=tax_service.tax_type,
+            transaction_amount=tax_service.transaction_amount,
+            tax_amount=tax_service.tax_amount,
+            line_items=tax_service.line_items,
+        )
         get_barobill_tax_document_fields(
             tax_type=tax_service.tax_type,
             document_kind=tax_service.document_kind,
@@ -90,6 +115,95 @@ def validate_tax_document_for_issue(tax_service):
         )
     except TaxDocumentValidationError as error:
         raise HttpError(422, str(error))
+
+
+async def validate_product_master_tax_types_for_issue(tax_service):
+    """Reject issuance until every referenced legacy product is reviewed."""
+    product_ids = {
+        item.get("product_id")
+        for item in (tax_service.line_items or [])
+        if item.get("product_id") is not None
+    }
+    if not product_ids:
+        return
+
+    products = await sync_to_async(list)(
+        Product.objects.filter(
+            id__in=product_ids,
+            factory_id=tax_service.factory_id,
+        ).values("id", "tax_type", "tax_type_review_required")
+    )
+    products_by_id = {product["id"]: product for product in products}
+
+    missing_product_ids = product_ids - products_by_id.keys()
+    if missing_product_ids:
+        raise HttpError(422, "문서에 존재하지 않거나 다른 공장의 제품이 포함되어 있습니다.")
+
+    products_requiring_review = [
+        product
+        for product in products
+        if product["tax_type_review_required"]
+    ]
+    if products_requiring_review:
+        raise HttpError(
+            422,
+            "과세 구분 확인이 필요한 제품이 있습니다. 제품 마스터에서 과세/면세를 확인해 주세요.",
+        )
+
+    for item in tax_service.line_items:
+        product_id = item.get("product_id")
+        if product_id is None:
+            continue
+        line_tax_type = item.get("tax_type") or tax_service.tax_type
+        master_tax_type = products_by_id[product_id]["tax_type"]
+        normalized_line_tax_type = (
+            "taxable" if line_tax_type == "zero_rated" else line_tax_type
+        )
+        if normalized_line_tax_type != master_tax_type:
+            raise HttpError(
+                422,
+                "제품 마스터의 과세 구분과 문서 품목의 과세 구분이 일치하지 않습니다.",
+            )
+
+
+def validate_required_fields_for_issue(tax_service):
+    required_fields = {
+        "client": "거래처",
+        "transaction_date": "거래일자",
+        "transaction_amount": "공급가액",
+        "tax_amount": "세액",
+        "line_items": "품목 리스트",
+    }
+    missing_fields = []
+    for field, field_name in required_fields.items():
+        if getattr(tax_service, field) is None or (
+            field == "line_items" and not tax_service.line_items
+        ):
+            missing_fields.append(field_name)
+    if missing_fields:
+        raise HttpError(
+            400,
+            f"세금계산서 발행을 위해 다음 필드들이 필요합니다: {', '.join(missing_fields)}",
+        )
+
+    for index, item in enumerate(tax_service.line_items or []):
+        item_required_fields = {
+            "name": "품목명",
+            "chargeable_unit": "수량",
+            "unit_price": "단가",
+            "amount": "공급가액",
+            "tax": "세액",
+        }
+        item_missing_fields = [
+            field_name
+            for field, field_name in item_required_fields.items()
+            if item.get(field) is None or item.get(field) == ""
+        ]
+        if item_missing_fields:
+            raise HttpError(
+                400,
+                f"품목 {index + 1}번에 다음 필드들이 필요합니다: {', '.join(item_missing_fields)}",
+            )
 
 # 세금계산서 API 구조
 # POST /api/tax/ - tax_id가 없으면 생성, 있으면 수정 (통합 API)
@@ -122,14 +236,39 @@ async def list_published_tax_invoices(
     def get_all_tax_invoices():
         queryset = NationalTaxService.objects.filter(
             factory_id=factory_id, publish_status="published"
-        ).prefetch_related("client", "tax_invoice_account")
+        ).select_related("document_group").prefetch_related(
+            "client", "tax_invoice_account"
+        )
         queryset = filters.filter(queryset)
         if ordering:
             queryset = queryset.order_by(ordering)
 
         invoices = list(queryset)
+        group_ids = {
+            invoice.document_group_id
+            for invoice in invoices
+            if invoice.document_group_id
+        }
+        group_counts = dict(
+            NationalTaxService.objects.filter(document_group_id__in=group_ids)
+            .values("document_group_id")
+            .annotate(document_count=Count("id"))
+            .values_list("document_group_id", "document_count")
+        )
         # prefetch된 관계를 동기적으로 접근하여 객체에 직접 저장
         for invoice in invoices:
+            setattr(
+                invoice,
+                "_cached_document_group_key",
+                str(invoice.document_group.group_key)
+                if invoice.document_group_id
+                else None,
+            )
+            setattr(
+                invoice,
+                "_cached_document_group_count",
+                group_counts.get(invoice.document_group_id, 1),
+            )
             if hasattr(invoice, 'tax_invoice_account'):
                 try:
                     account = invoice.tax_invoice_account
@@ -671,6 +810,7 @@ async def create_or_update_tax_invoice(request, payload: NationalTaxServiceCreat
         validate_tax_document_draft(
             data.get("tax_type", tax_service.tax_type),
             data.get("document_kind", tax_service.document_kind),
+            data.get("transaction_amount", tax_service.transaction_amount),
             data.get("tax_amount", tax_service.tax_amount),
             data.get("line_items", tax_service.line_items),
         )
@@ -702,6 +842,7 @@ async def create_or_update_tax_invoice(request, payload: NationalTaxServiceCreat
         validate_tax_document_draft(
             data.get("tax_type", UNCLASSIFIED),
             data.get("document_kind", "tax_invoice"),
+            data.get("transaction_amount"),
             data.get("tax_amount"),
             data.get("line_items"),
         )
@@ -729,6 +870,178 @@ async def create_or_update_tax_invoice(request, payload: NationalTaxServiceCreat
         )
 
         return 201, tax_service
+
+
+@router.get(
+    "/{tax_id}/split-preview",
+    summary="[C] 혼합 과세 문서 분리 미리보기",
+    description="과세·면세 혼합 임시 문서가 두 문서로 어떻게 나뉘는지 저장 없이 확인합니다.",
+    response={200: dict, 422: dict},
+)
+async def preview_tax_document_split(request, tax_id: int):
+    user = request.auth
+    tax_service = await get_tax_service_by_id(tax_id)
+    await is_factory_member(tax_service.factory.id, user)
+
+    if tax_service.document_group_id:
+        return await sync_to_async(get_split_group_result)(
+            group_id=tax_service.document_group_id
+        )
+    try:
+        preview = build_split_preview(
+            document_tax_type=tax_service.tax_type,
+            transaction_amount=tax_service.transaction_amount,
+            tax_amount=tax_service.tax_amount,
+            line_items=tax_service.line_items,
+        )
+    except TaxDocumentValidationError as error:
+        raise HttpError(422, str(error))
+    preview["source_document_id"] = tax_service.id
+    return preview
+
+
+@router.post(
+    "/{tax_id}/split",
+    summary="[C] 혼합 과세 임시 문서 분리",
+    description="과세·면세 혼합 임시 문서를 전자세금계산서와 전자계산서로 한 번만 분리합니다.",
+    response={200: dict, 422: dict},
+)
+async def create_tax_document_split(request, tax_id: int):
+    user = request.auth
+    tax_service = await get_tax_service_by_id(tax_id)
+    await is_factory_member(tax_service.factory.id, user)
+    try:
+        return await sync_to_async(split_tax_document)(
+            tax_service_id=tax_service.id,
+            actor=user,
+        )
+    except TaxDocumentValidationError as error:
+        raise HttpError(422, str(error))
+
+
+@router.post(
+    "/{tax_id}/split-document",
+    summary="[C] 같은 과세 유형 문서 추가 분리",
+    description="분리 그룹의 임시 문서에서 선택한 품목을 같은 과세 유형의 새 임시 문서로 옮깁니다.",
+    response={200: dict, 422: dict},
+)
+async def create_additional_tax_document_split(
+    request, tax_id: int, payload: ManualTaxDocumentSplitIn
+):
+    user = request.auth
+    tax_service = await get_tax_service_by_id(tax_id)
+    await is_factory_member(tax_service.factory.id, user)
+    try:
+        return await sync_to_async(split_group_document)(
+            tax_service_id=tax_service.id,
+            selected_line_item_indexes=payload.selected_line_item_indexes,
+            expected_line_item_count=payload.expected_line_item_count,
+        )
+    except TaxDocumentValidationError as error:
+        raise HttpError(422, str(error))
+
+
+@router.post(
+    "/{tax_id}/reset-split",
+    summary="[C] 자동 분리 상태 복원",
+    description="추가 분리된 임시 문서 그룹을 원거래의 과세·면세 2장 상태로 되돌립니다.",
+    response={200: dict, 422: dict},
+)
+async def reset_tax_document_split(request, tax_id: int):
+    user = request.auth
+    tax_service = await get_tax_service_by_id(tax_id)
+    await is_factory_member(tax_service.factory.id, user)
+    try:
+        return await sync_to_async(reset_group_to_auto_split)(
+            tax_service_id=tax_service.id,
+        )
+    except TaxDocumentValidationError as error:
+        raise HttpError(422, str(error))
+
+
+@router.get(
+    "/{tax_id}/publish-group-readiness",
+    summary="[C] 분리 세금 문서 그룹 발행 준비 확인",
+    description="외부 전송 없이 분리된 모든 세금 문서의 발행 필수값과 과세 구분을 확인합니다.",
+    response={200: dict, 400: dict},
+)
+async def check_split_tax_document_group_readiness(request, tax_id: int):
+    user = request.auth
+    source = await get_tax_service_by_id(tax_id)
+    await is_factory_member(source.factory.id, user)
+    if not source.document_group_id:
+        raise HttpError(400, "분리된 세금 문서 그룹이 아닙니다.")
+
+    group_key = await TaxDocumentGroup.objects.values_list(
+        "group_key", flat=True
+    ).aget(id=source.document_group_id)
+
+    documents = await sync_to_async(list)(
+        NationalTaxService.objects.filter(
+            document_group_id=source.document_group_id
+        )
+        .select_related("client")
+        .order_by("id")
+    )
+    results = []
+    has_temporary_document = False
+    for document in documents:
+        if document.publish_status == "published":
+            results.append(
+                {
+                    "id": document.id,
+                    "tax_type": document.tax_type,
+                    "publish_status": document.publish_status,
+                    "ready": True,
+                    "message": "이미 발행된 문서입니다. 재시도 시 건너뜁니다.",
+                }
+            )
+            continue
+        if document.publish_status != "temporary":
+            results.append(
+                {
+                    "id": document.id,
+                    "tax_type": document.tax_type,
+                    "publish_status": document.publish_status,
+                    "ready": False,
+                    "message": "현재 상태에서는 발행을 시작할 수 없습니다.",
+                }
+            )
+            continue
+
+        has_temporary_document = True
+        try:
+            validate_required_fields_for_issue(document)
+            await validate_product_master_tax_types_for_issue(document)
+            validate_tax_document_for_issue(document)
+        except HttpError as error:
+            results.append(
+                {
+                    "id": document.id,
+                    "tax_type": document.tax_type,
+                    "publish_status": document.publish_status,
+                    "ready": False,
+                    "message": str(error.message),
+                }
+            )
+        else:
+            results.append(
+                {
+                    "id": document.id,
+                    "tax_type": document.tax_type,
+                    "publish_status": document.publish_status,
+                    "ready": True,
+                    "message": "발행 준비가 완료되었습니다.",
+                }
+            )
+
+    return {
+        "group_key": str(group_key),
+        "can_publish": has_temporary_document
+        and all(result["ready"] for result in results),
+        "external_request_sent": False,
+        "documents": results,
+    }
 
 
 @router.get(
@@ -798,6 +1111,7 @@ async def update_tax_invoice(request, tax_id: int, payload: NationalTaxServiceUp
     validate_tax_document_draft(
         data.get("tax_type", tax_service.tax_type),
         data.get("document_kind", tax_service.document_kind),
+        data.get("transaction_amount", tax_service.transaction_amount),
         data.get("tax_amount", tax_service.tax_amount),
         data.get("line_items", tax_service.line_items),
     )
@@ -896,6 +1210,7 @@ async def publish_tax_invoice(request, tax_id: int):
                     f"품목 {i+1}번에 다음 필드들이 필요합니다: {', '.join(item_missing_fields)}",
                 )
 
+    await validate_product_master_tax_types_for_issue(tax_service)
     validate_tax_document_for_issue(tax_service)
 
     # 바로빌 API

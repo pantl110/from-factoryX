@@ -5,6 +5,7 @@ from decimal import Decimal
 from project.models import Project, ProjectLog, Refund, ProjectPlan
 from document.schemas.outbound import QuotationModelOut
 from tax.models import NationalTaxService
+from project.tax_documents import get_linked_tax_documents
 
 
 # 순환 import 방지를 위한 별도 정의
@@ -93,6 +94,28 @@ class ProjectModelOut(ModelSchema):
     plans: Optional[List[ProjectPlanModelOut]] = Field(
         [], description="프로젝트 계획 정보"
     )
+    tax_documents: List[NationalTaxServiceOut] = Field(
+        default_factory=list,
+        description="프로젝트의 단일 또는 분리 세금 문서 전체",
+    )
+    tax_document_group_key: Optional[str] = Field(
+        None, description="분리 세금 문서 그룹 UUID"
+    )
+    tax_document_count: int = Field(0, description="연결된 세금 문서 수")
+
+    @staticmethod
+    def resolve_tax_documents(obj):
+        return get_linked_tax_documents(obj)
+
+    @staticmethod
+    def resolve_tax_document_group_key(obj):
+        if not obj.tax_invoice_id or not obj.tax_invoice.document_group_id:
+            return None
+        return str(obj.tax_invoice.document_group.group_key)
+
+    @staticmethod
+    def resolve_tax_document_count(obj):
+        return len(get_linked_tax_documents(obj))
 
     class Meta:
         model = Project
@@ -135,6 +158,28 @@ class ProjectStatusDetailOut(ModelSchema):
     max_delivery_date: Optional[datetime.date] = Field(
         None, description="최대 납기일 (quotation_product의 delivery_date 중 최대값)"
     )
+    tax_documents: List[NationalTaxServiceOut] = Field(
+        default_factory=list,
+        description="프로젝트의 단일 또는 분리 세금 문서 전체",
+    )
+    tax_document_group_key: Optional[str] = Field(
+        None, description="분리 세금 문서 그룹 UUID"
+    )
+    tax_document_count: int = Field(0, description="연결된 세금 문서 수")
+
+    @staticmethod
+    def resolve_tax_documents(obj):
+        return get_linked_tax_documents(obj)
+
+    @staticmethod
+    def resolve_tax_document_group_key(obj):
+        if not obj.tax_invoice_id or not obj.tax_invoice.document_group_id:
+            return None
+        return str(obj.tax_invoice.document_group.group_key)
+
+    @staticmethod
+    def resolve_tax_document_count(obj):
+        return len(get_linked_tax_documents(obj))
 
     class Meta:
         model = Project

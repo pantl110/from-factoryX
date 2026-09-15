@@ -37,6 +37,10 @@ class Material(BaseModel):
         default=StockTaxType.taxable,
         help_text="기본 과세 유형",
     )
+    tax_type_review_required = models.BooleanField(
+        default=False,
+        help_text="기존 데이터의 과세 유형 확인 필요 여부",
+    )
     current_stock = models.DecimalField(
         max_digits=12,
         decimal_places=2,
@@ -240,6 +244,10 @@ class Product(BaseModel):
         choices=StockTaxType.choices,
         default=StockTaxType.taxable,
         help_text="기본 과세 유형",
+    )
+    tax_type_review_required = models.BooleanField(
+        default=False,
+        help_text="기존 데이터의 과세 유형 확인 필요 여부",
     )
     current_stock = models.IntegerField(
         default=0,

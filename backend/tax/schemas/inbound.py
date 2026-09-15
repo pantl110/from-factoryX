@@ -62,6 +62,7 @@ class NationalTaxServiceCreateIn(ModelSchema):
             "nts_send_key",
             "barobill_state",
             "nts_send_state",
+            "document_group",
             "created_at",
             "updated_at",
         ]
@@ -86,12 +87,18 @@ class NationalTaxServiceUpdateIn(ModelSchema):
             "user",
             "created_at",
             "updated_at",
+            "document_group",
         ]
 
 
 class LinkTaxInvoiceIn(Schema):
     project_id: int
     tax_id: int  # 배열에서 단일 값으로 변경
+
+
+class ManualTaxDocumentSplitIn(Schema):
+    selected_line_item_indexes: List[int]
+    expected_line_item_count: int
 
 
 class TaxInvoiceFilter(FilterSchema):

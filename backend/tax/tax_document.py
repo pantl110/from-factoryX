@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation, ROUND_DOWN
 
 
 TAXABLE = "taxable"
@@ -19,6 +19,131 @@ class TaxDocumentValidationError(ValueError):
 class BarobillTaxDocumentFields:
     tax_invoice_type: int
     tax_type: int
+
+
+@dataclass(frozen=True)
+class TaxLineAmounts:
+    supply_amount: int
+    tax_amount: int
+    total_amount: int
+
+
+def _to_non_negative_decimal(value, field_name: str) -> Decimal:
+    try:
+        number = Decimal(str(value))
+    except (InvalidOperation, TypeError, ValueError):
+        raise TaxDocumentValidationError(
+            f"{field_name}은(는) 숫자로 입력해야 합니다."
+        ) from None
+    if not number.is_finite() or number < 0:
+        raise TaxDocumentValidationError(
+            f"{field_name}은(는) 0 이상의 숫자여야 합니다."
+        )
+    return number
+
+
+def calculate_line_amounts(*, quantity, unit_price, tax_type: str) -> TaxLineAmounts:
+    """Calculate whole-won supply, tax and total amounts for one line item."""
+    if tax_type not in {TAXABLE, ZERO_RATED, EXEMPT}:
+        raise TaxDocumentValidationError("지원하지 않는 품목 과세 유형입니다.")
+
+    quantity_value = _to_non_negative_decimal(quantity, "수량")
+    unit_price_value = _to_non_negative_decimal(unit_price, "단가")
+    supply_amount = int(
+        (quantity_value * unit_price_value).quantize(
+            Decimal("1"), rounding=ROUND_DOWN
+        )
+    )
+    tax_amount = (
+        int(
+            (Decimal(supply_amount) * Decimal("0.1")).quantize(
+                Decimal("1"), rounding=ROUND_DOWN
+            )
+        )
+        if tax_type == TAXABLE
+        else 0
+    )
+    return TaxLineAmounts(
+        supply_amount=supply_amount,
+        tax_amount=tax_amount,
+        total_amount=supply_amount + tax_amount,
+    )
+
+
+def validate_document_amounts(
+    *,
+    document_tax_type: str,
+    transaction_amount,
+    tax_amount,
+    line_items,
+    allow_incomplete: bool = False,
+) -> None:
+    """Ensure every line and the document totals use the same calculation rules."""
+    if not line_items:
+        return
+
+    expected_supply_total = 0
+    expected_tax_total = 0
+    validated_line_count = 0
+
+    for index, item in enumerate(line_items, start=1):
+        item_tax_type = item.get("tax_type") or document_tax_type
+        if allow_incomplete and item_tax_type == UNCLASSIFIED:
+            continue
+        required_values = {
+            "수량": item.get("chargeable_unit"),
+            "단가": item.get("unit_price"),
+            "공급가액": item.get("amount"),
+            "세액": item.get("tax"),
+        }
+        if any(value is None or value == "" for value in required_values.values()):
+            if allow_incomplete:
+                continue
+            raise TaxDocumentValidationError(
+                f"품목 {index}번의 수량·단가·공급가액·세액이 필요합니다."
+            )
+
+        expected = calculate_line_amounts(
+            quantity=required_values["수량"],
+            unit_price=required_values["단가"],
+            tax_type=item_tax_type,
+        )
+        submitted_supply = _to_non_negative_decimal(
+            required_values["공급가액"], "공급가액"
+        )
+        submitted_tax = _to_non_negative_decimal(required_values["세액"], "세액")
+        if submitted_supply != expected.supply_amount:
+            raise TaxDocumentValidationError(
+                f"품목 {index}번의 공급가액이 수량×단가 계산 결과와 일치하지 않습니다."
+            )
+        if submitted_tax != expected.tax_amount:
+            raise TaxDocumentValidationError(
+                f"품목 {index}번의 세액이 과세 유형별 계산 결과와 일치하지 않습니다."
+            )
+
+        expected_supply_total += expected.supply_amount
+        expected_tax_total += expected.tax_amount
+        validated_line_count += 1
+
+    if allow_incomplete and validated_line_count != len(line_items):
+        return
+    if transaction_amount is None or tax_amount is None:
+        if allow_incomplete:
+            return
+        raise TaxDocumentValidationError("문서 공급가액과 세액 합계가 필요합니다.")
+
+    submitted_supply_total = _to_non_negative_decimal(
+        transaction_amount, "문서 공급가액"
+    )
+    submitted_tax_total = _to_non_negative_decimal(tax_amount, "문서 세액")
+    if submitted_supply_total != expected_supply_total:
+        raise TaxDocumentValidationError(
+            "문서 공급가액이 품목별 공급가액 합계와 일치하지 않습니다."
+        )
+    if submitted_tax_total != expected_tax_total:
+        raise TaxDocumentValidationError(
+            "문서 세액이 품목별 세액 합계와 일치하지 않습니다."
+        )
 
 
 def validate_line_item_tax_types(*, document_tax_type: str, line_items) -> None:

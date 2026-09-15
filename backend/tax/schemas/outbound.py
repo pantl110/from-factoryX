@@ -40,6 +40,12 @@ class TaxInvoiceAccountSimpleOut(ModelSchema):
 class NationalTaxServiceOut(ModelSchema):
     project_id: Optional[int] = Field(default=None, description="연결된 프로젝트 ID")
     account: Optional[TaxInvoiceAccountSimpleOut] = Field(default=None, description="채권/채무 정보")
+    document_group_key: Optional[str] = Field(
+        default=None, description="혼합 거래 문서 그룹 키"
+    )
+    document_group_count: int = Field(
+        default=1, description="같은 원거래에 포함된 문서 수"
+    )
 
     class Meta:
         model = NationalTaxService
@@ -60,6 +66,14 @@ class NationalTaxServiceOut(ModelSchema):
         
         # 캐시되지 않은 경우 None 반환 (pending/unlinked API)
         return None
+
+    @staticmethod
+    def resolve_document_group_key(obj):
+        return getattr(obj, "_cached_document_group_key", None)
+
+    @staticmethod
+    def resolve_document_group_count(obj):
+        return getattr(obj, "_cached_document_group_count", 1)
 
 
 class NationalTaxServiceDetailOut(ModelSchema):

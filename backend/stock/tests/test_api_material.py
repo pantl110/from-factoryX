@@ -874,6 +874,35 @@ class TestMaterialAPI(TestCase):
         data = response.json()
         self.assertEqual(len(data["data"]), 0)
 
+    async def test_get_materials_by_factory_filter_by_tax_type(self):
+        """과세 유형으로 원자재 목록을 필터링한다."""
+        headers = await self.authenticate()
+        await sync_to_async(Material.objects.create)(
+            factory=self.factory,
+            name="면세 원자재",
+            code="MAT-EXEMPT",
+            unit="EA",
+            spec="Spec E",
+            tax_type="exempt",
+        )
+        await sync_to_async(Material.objects.create)(
+            factory=self.factory,
+            name="과세 원자재",
+            code="MAT-TAXABLE",
+            unit="EA",
+            spec="Spec T",
+            tax_type="taxable",
+        )
+
+        response = await self.client.get(
+            f"?factory_id={self.factory.id}&tax_type=exempt", headers=headers
+        )
+
+        self.assertEqual(response.status_code, 200)
+        data = response.json()["data"]
+        self.assertEqual([item["code"] for item in data], ["MAT-EXEMPT"])
+        self.assertTrue(all(item["tax_type"] == "exempt" for item in data))
+
     async def test_get_materials_by_factory_order_asc(self):
         """재고 오름차순 정렬 테스트(order=asc)"""
         await sync_to_async(Material.objects.create)(

@@ -14,8 +14,12 @@ if TYPE_CHECKING:
 async def get_project_by_id(project_id):
     try:
         project = (
-            await Project.objects.select_related("tax_invoice")
+            await Project.objects.select_related(
+                "tax_invoice",
+                "tax_invoice__document_group",
+            )
             .prefetch_related(
+                "tax_invoice__document_group__documents",
                 "quotations__products__product",
                 "quotations__client",
                 "plans",

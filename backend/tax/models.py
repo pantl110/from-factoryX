@@ -2,6 +2,7 @@ from django.db import models
 from common.models import BaseModel
 from factory.models import FactoryClient, Factory
 import random
+import uuid
 
 
 class TransactionType(models.TextChoices):
@@ -36,6 +37,27 @@ class PublishStatus(models.TextChoices):
         "발행 취소",
     )  # 전송 대기일 때만 가능 - 바로빌에서 국세청 가기 전에 한 취소를 의미
     failed = ("failed", "발행 실패")  # 국세청에서 거부된 상태
+
+
+class TaxDocumentGroup(BaseModel):
+    """분리 전 원거래와 분리된 세금 문서들을 함께 추적하는 그룹."""
+
+    group_key = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    factory = models.ForeignKey(
+        "factory.Factory",
+        related_name="tax_document_groups",
+        on_delete=models.CASCADE,
+    )
+    created_by = models.ForeignKey(
+        "user.User",
+        related_name="created_tax_document_groups",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    source_line_items = models.JSONField(default=list)
+    source_transaction_amount = models.IntegerField(default=0)
+    source_tax_amount = models.IntegerField(default=0)
 
 
 # 국세청 API 세금계산서 데이터 저장
@@ -147,6 +169,14 @@ class NationalTaxService(BaseModel):  # 거래명세서 같이 사용
         default=list,
         blank=True,
         help_text="세금계산서 품목 리스트",
+    )
+    document_group = models.ForeignKey(
+        TaxDocumentGroup,
+        related_name="documents",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="혼합 거래 분리 문서 그룹",
     )
 
     def save(self, *args, **kwargs):
