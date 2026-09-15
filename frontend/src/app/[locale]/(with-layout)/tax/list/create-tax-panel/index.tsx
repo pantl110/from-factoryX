@@ -48,7 +48,8 @@ interface TaxProductEditModel {
   product_name: string;
   product_code: string;
   product_spec: string;
-  tax_type?: Exclude<TaxType, 'unclassified'>;
+  tax_type?: Exclude<TaxType, 'unclassified' | 'mixed'>;
+  tax_type_review_required?: boolean;
 }
 
 interface CreatTaxPanelProps {
@@ -183,6 +184,9 @@ const CreatTaxPanel = ({
     [productInfoFormData]
   );
   const hasMixedTaxTypes = productTaxTypes.length > 1;
+  const hasUnclassifiedProducts = (productInfoFormData?.products ?? []).some(
+    (product) => !product.tax_type || product.tax_type_review_required
+  );
   const hasExemptProducts = productTaxTypes.includes('exempt');
   const initialMasterTaxType: TaxType =
     initialTaxType === 'taxable' || initialTaxType === 'exempt'
@@ -191,8 +195,10 @@ const CreatTaxPanel = ({
   const selectedTaxType: TaxType = isZeroRatedTransaction
     ? 'zero_rated'
     : hasMixedTaxTypes
-      ? 'unclassified'
-      : (productTaxTypes[0] ?? initialMasterTaxType);
+      ? 'mixed'
+      : hasUnclassifiedProducts
+        ? 'unclassified'
+        : (productTaxTypes[0] ?? initialMasterTaxType);
   const isZeroRatedReasonMissing =
     isZeroRatedTransaction && zeroRatedReason.trim().length === 0;
   const taxDocumentLabel =
@@ -468,7 +474,9 @@ const CreatTaxPanel = ({
           product.unit_price &&
           product.product_name &&
           product.product_code &&
-          product.product_spec
+          product.product_spec &&
+          product.tax_type &&
+          !product.tax_type_review_required
       );
 
       if (hasValidProducts) {
@@ -659,8 +667,9 @@ const CreatTaxPanel = ({
             })
             ?.map((p, index) => {
               const lineTaxType =
-                selectedTaxType === 'unclassified'
-                  ? (p.tax_type ?? 'taxable')
+                selectedTaxType === 'unclassified' ||
+                selectedTaxType === 'mixed'
+                  ? p.tax_type
                   : selectedTaxType;
               const lineAmounts = calculateTaxLineAmounts(
                 p.quantity,
@@ -993,7 +1002,6 @@ const CreatTaxPanel = ({
             isProductDetailOpen={isProductDetailOpen}
             onFormChange={handleProductInfoChange}
             initialProducts={initialProducts}
-            initialTaxType={initialTaxType}
             overrideTaxType={isZeroRatedTransaction ? 'zero_rated' : undefined}
           />
         </div>

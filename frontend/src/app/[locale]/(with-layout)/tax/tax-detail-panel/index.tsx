@@ -22,6 +22,7 @@ interface TaxProductEditModel {
   product_code: string;
   product_spec: string;
   tax_type?: TaxLineItemModel['tax_type'];
+  tax_type_review_required?: boolean;
 }
 
 interface TaxDetailPanelProps {
@@ -118,11 +119,7 @@ const TaxDetailPanel = ({
         <CreateTaxPanel
           onClose={onClose}
           taxId={item?.id || createdTaxId || undefined}
-          initialTaxType={
-            item?.tax_type === 'zero_rated' || item?.tax_type === 'exempt'
-              ? item.tax_type
-              : 'taxable'
-          }
+          initialTaxType={item?.tax_type ?? 'unclassified'}
           initialZeroRatedReason={item?.zero_rated_reason ?? ''}
           initialClientData={
             (item?.client_info as TaxClientInfoModel) || initialClientData
@@ -136,6 +133,7 @@ const TaxDetailPanel = ({
               product_code: product.code,
               product_spec: product.information,
               tax_type: product.tax_type,
+              tax_type_review_required: undefined,
             })) as TaxProductEditModel[]) || initialProducts
           }
           setIsEditingMode={setIsEditingMode}

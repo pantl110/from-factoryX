@@ -51,6 +51,7 @@ const TableItem = ({
       taxable: 'taxable',
       zero_rated: 'zeroRated',
       exempt: 'exempt',
+      mixed: 'mixed',
       unclassified: 'unclassified',
     }[item.tax_type || 'unclassified']
   );

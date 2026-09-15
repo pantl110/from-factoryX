@@ -8,11 +8,14 @@ export interface TaxDocumentReadinessItemModel {
   publish_status: string;
   ready: boolean;
   message: string;
+  attempt_count: number;
+  last_error: string;
 }
 
 export interface TaxDocumentGroupReadinessModel {
   group_key: string;
   can_publish: boolean;
+  group_publish_enabled: boolean;
   external_request_sent: false;
   documents: TaxDocumentReadinessItemModel[];
 }

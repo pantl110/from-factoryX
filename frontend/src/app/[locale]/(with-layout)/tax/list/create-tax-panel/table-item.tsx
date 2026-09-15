@@ -21,14 +21,15 @@ interface TableItemFormDataModel {
     product_name?: string;
     product_code?: string;
     product_spec?: string;
-    tax_type?: Exclude<TaxType, 'unclassified'>;
+    tax_type?: Exclude<TaxType, 'unclassified' | 'mixed'>;
+    tax_type_review_required?: boolean;
   }>;
 }
 
 interface TableItemProps {
   index: number;
   onRemove: () => void;
-  overrideTaxType?: Exclude<TaxType, 'unclassified'>;
+  overrideTaxType?: Exclude<TaxType, 'unclassified' | 'mixed'>;
 }
 
 const TableItem = ({ index, onRemove, overrideTaxType }: TableItemProps) => {
@@ -52,6 +53,9 @@ const TableItem = ({ index, onRemove, overrideTaxType }: TableItemProps) => {
   const productCode = watch(`products.${index}.product_code`);
   const productSpec = watch(`products.${index}.product_spec`);
   const taxType = watch(`products.${index}.tax_type`);
+  const isTaxTypeReviewRequired = watch(
+    `products.${index}.tax_type_review_required`
+  );
   const displayTaxType = overrideTaxType ?? taxType;
 
   const { supplyAmount, taxAmount, totalAmount } = calculateTaxLineAmounts(
@@ -92,9 +96,20 @@ const TableItem = ({ index, onRemove, overrideTaxType }: TableItemProps) => {
     setValue(`products.${index}.product_spec`, product.spec, {
       shouldDirty: true,
     });
-    setValue(`products.${index}.tax_type`, product.tax_type, {
-      shouldDirty: true,
-    });
+    setValue(
+      `products.${index}.tax_type`,
+      product.tax_type_review_required ? undefined : product.tax_type,
+      {
+        shouldDirty: true,
+      }
+    );
+    setValue(
+      `products.${index}.tax_type_review_required`,
+      product.tax_type_review_required ?? false,
+      {
+        shouldDirty: false,
+      }
+    );
     trigger(); // 폼 상태 강제 업데이트
     // 드롭다운 닫기
     setIsDropdownOpen(false);
@@ -163,13 +178,15 @@ const TableItem = ({ index, onRemove, overrideTaxType }: TableItemProps) => {
           {productSpec || '-'}
         </p>
         <p className="w-[90px] px-3 text-dg truncate cursor-default">
-          {displayTaxType === 'exempt'
-            ? tCommon('taxExempt')
-            : displayTaxType === 'zero_rated'
-              ? '0%'
-              : displayTaxType === 'taxable'
-                ? tCommon('taxable')
-                : '-'}
+          {isTaxTypeReviewRequired || !displayTaxType
+            ? tCommon('taxTypeReviewRequired')
+            : displayTaxType === 'exempt'
+              ? tCommon('taxExempt')
+              : displayTaxType === 'zero_rated'
+                ? '0%'
+                : displayTaxType === 'taxable'
+                  ? tCommon('taxable')
+                  : '-'}
         </p>
         <div className="flex-1 px-3">
           <input
@@ -236,9 +253,18 @@ const TableItem = ({ index, onRemove, overrideTaxType }: TableItemProps) => {
                   setValue(`products.${index}.product_spec`, result.data.spec, {
                     shouldDirty: true,
                   });
-                  setValue(`products.${index}.tax_type`, result.data.tax_type, {
-                    shouldDirty: true,
-                  });
+                  setValue(
+                    `products.${index}.tax_type`,
+                    result.data.tax_type_review_required
+                      ? undefined
+                      : result.data.tax_type,
+                    { shouldDirty: true }
+                  );
+                  setValue(
+                    `products.${index}.tax_type_review_required`,
+                    result.data.tax_type_review_required ?? false,
+                    { shouldDirty: false }
+                  );
                   trigger(); // 폼 상태 강제 업데이트
                   // selectedProduct도 업데이트
                   setSelectedProduct(result.data);

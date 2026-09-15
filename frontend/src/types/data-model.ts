@@ -1496,7 +1496,7 @@ export interface TaxLineItemModel {
   id: number; //제품 식별자(순번)
   purchase_expiry?: string; // YYYYMMDD 형식 (예: "20241231") // 공급일자
   product_id?: number | null; // 연동된 제품 ID
-  tax_type?: Exclude<TaxType, 'unclassified'>; // 품목 과세 유형
+  tax_type?: Exclude<TaxType, 'unclassified' | 'mixed'>; // 품목 과세 유형
   name: string; // 제품명
   code?: string | null; // 제품 코드
   information?: string; // 규격

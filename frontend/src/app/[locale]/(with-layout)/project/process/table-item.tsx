@@ -93,6 +93,8 @@ const TableItem = ({
       return `${prefix}${tTax('temporary')}`;
     if (representativeTaxStatus === 'pending')
       return `${prefix}${tTax('pending')}`;
+    if (representativeTaxStatus === 'publishing')
+      return `${prefix}${tTax('publishing')}`;
     if (representativeTaxStatus === 'processing')
       return `${prefix}${tTax('processing')}`;
     if (representativeTaxStatus === 'published')

@@ -7,6 +7,9 @@ import useTaxDocumentGroupReadiness, {
   TaxDocumentGroupReadinessModel,
 } from '@/hooks/tax/use-tax-document-group-readiness';
 import useSplitTaxDocument from '@/hooks/tax/use-split-tax-document';
+import usePublishTaxDocumentGroup, {
+  TaxDocumentGroupPublishModel,
+} from '@/hooks/tax/use-publish-tax-document-group';
 
 interface TaxDocumentGroupModalProps {
   documents: PublishedTaxInvoiceResponseModel[];
@@ -31,12 +34,17 @@ const TaxDocumentGroupModal = ({
     resetSplitGroup,
     isLoading: isSplitLoading,
   } = useSplitTaxDocument();
+  const { publishGroup, isLoading: isPublishLoading } =
+    usePublishTaxDocumentGroup();
   const [readiness, setReadiness] =
     useState<TaxDocumentGroupReadinessModel | null>(null);
   const [readinessError, setReadinessError] = useState<string | null>(null);
   const [splitTargetId, setSplitTargetId] = useState<number | null>(null);
   const [selectedLineIndexes, setSelectedLineIndexes] = useState<number[]>([]);
   const [splitError, setSplitError] = useState<string | null>(null);
+  const [publishResult, setPublishResult] =
+    useState<TaxDocumentGroupPublishModel | null>(null);
+  const [publishError, setPublishError] = useState<string | null>(null);
   const client = documents[0]?.client_info;
   const supplyTotal = documents.reduce(
     (sum, document) => sum + (document.transaction_amount || 0),
@@ -102,6 +110,29 @@ const TaxDocumentGroupModal = ({
     onClose();
   };
 
+  const handlePublishGroup = async () => {
+    const sourceId = documents[0]?.id;
+    if (
+      !sourceId ||
+      !readiness?.can_publish ||
+      !readiness.group_publish_enabled ||
+      !window.confirm(t('publishConfirm'))
+    )
+      return;
+
+    setPublishError(null);
+    setPublishResult(null);
+    const result = await publishGroup(sourceId);
+    if (!result.success || !result.data) {
+      setPublishError(result.error || t('publishError'));
+      return;
+    }
+    setPublishResult(result.data);
+    const refreshed = await checkReadiness(sourceId);
+    if (refreshed.success && refreshed.data) setReadiness(refreshed.data);
+    await onUpdated?.();
+  };
+
   const getDocumentLabel = (document: PublishedTaxInvoiceResponseModel) => {
     if (document.tax_type === 'exempt') return t('exemptInvoice');
     if (document.tax_type === 'zero_rated') return t('zeroRatedInvoice');
@@ -114,6 +145,7 @@ const TaxDocumentGroupModal = ({
     if (!status) return '-';
     if (status === 'temporary') return tTaxStatus('temporary');
     if (status === 'pending') return tTaxStatus('pending');
+    if (status === 'publishing') return tTaxStatus('publishing');
     if (status === 'processing') return tTaxStatus('processing');
     if (status === 'published') return tTaxStatus('published');
     if (status === 'failed') return tTaxStatus('failed');
@@ -302,7 +334,39 @@ const TaxDocumentGroupModal = ({
             ))}
           </ul>
           <p className="mt-2">{t('noExternalRequest')}</p>
+          {!readiness.group_publish_enabled && (
+            <p className="mt-2 font-semibold">{t('publishDisabled')}</p>
+          )}
         </div>
+      )}
+
+      {publishResult && (
+        <div
+          className={`mt-4 rounded-lg px-4 py-3 Me_Body-3 ${
+            publishResult.all_succeeded
+              ? 'bg-blue-8 text-dg'
+              : 'bg-red-4 text-red'
+          }`}
+        >
+          <strong className="block Me_Body-2">
+            {publishResult.all_succeeded
+              ? t('publishComplete')
+              : t('publishPartialFailure')}
+          </strong>
+          <ul className="mt-2 space-y-1">
+            {publishResult.documents.map((document) => (
+              <li key={document.id}>
+                #{document.id}: {document.message}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {publishError && (
+        <p className="mt-4 rounded-lg bg-red-4 px-4 py-3 Me_Body-3 text-red">
+          {publishError}
+        </p>
       )}
 
       {readinessError && (
@@ -334,7 +398,27 @@ const TaxDocumentGroupModal = ({
             variant="secondary"
             text={isReadinessLoading ? tCommon('loading') : t('checkReadiness')}
             onClick={handleCheckReadiness}
-            disabled={isReadinessLoading || isSplitLoading}
+            disabled={isReadinessLoading || isSplitLoading || isPublishLoading}
+          />
+          <MiniBtn
+            variant="secondary"
+            text={
+              isPublishLoading
+                ? tCommon('loading')
+                : readiness?.documents.some(
+                      (document) => document.publish_status === 'failed'
+                    )
+                  ? t('retryFailed')
+                  : t('publishGroup')
+            }
+            onClick={handlePublishGroup}
+            disabled={
+              isPublishLoading ||
+              isReadinessLoading ||
+              isSplitLoading ||
+              !readiness?.can_publish ||
+              !readiness?.group_publish_enabled
+            }
           />
         </div>
       </div>

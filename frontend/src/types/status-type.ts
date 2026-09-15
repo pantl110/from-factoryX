@@ -193,7 +193,12 @@ export const TaxDocumentTypeColorMap: Record<
 
 // 문서 법적 형태 및 과세 유형
 export type TaxDocumentKindType = 'tax_invoice' | 'invoice';
-export type TaxType = 'unclassified' | 'taxable' | 'zero_rated' | 'exempt';
+export type TaxType =
+  | 'unclassified'
+  | 'mixed'
+  | 'taxable'
+  | 'zero_rated'
+  | 'exempt';
 export type MasterTaxType = Extract<TaxType, 'taxable' | 'exempt'>;
 
 export type TransactionType = 'receipt' | 'invoice'; // 영수, 청구
@@ -210,6 +215,7 @@ export type TaxStatusType =
   | null
   | 'temporary'
   | 'pending'
+  | 'publishing'
   | 'processing'
   | 'published'
   | 'cancled'
@@ -221,6 +227,7 @@ export const TaxStatusColorMap: Record<
 > = {
   temporary: { textColor: 'text-gr', color: 'gray' },
   pending: { textColor: 'text-yellow', color: 'yellow' },
+  publishing: { textColor: 'text-purple', color: 'purple' },
   processing: { textColor: 'text-purple', color: 'purple' },
   published: { textColor: 'text-blue', color: 'blue' },
   cancled: { textColor: 'text-red', color: 'red' },

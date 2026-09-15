@@ -28,7 +28,8 @@ interface TaxProductEditModel {
   product_name: string;
   product_code: string;
   product_spec: string;
-  tax_type?: Exclude<TaxType, 'unclassified'>;
+  tax_type?: Exclude<TaxType, 'unclassified' | 'mixed'>;
+  tax_type_review_required?: boolean;
 }
 
 interface ProductInfoProps {
@@ -40,8 +41,7 @@ interface ProductInfoProps {
     formData: ProductFormDataModel
   ) => void;
   initialProducts?: TaxProductEditModel[];
-  initialTaxType?: TaxType;
-  overrideTaxType?: Exclude<TaxType, 'unclassified'>;
+  overrideTaxType?: Exclude<TaxType, 'unclassified' | 'mixed'>;
 }
 
 export interface ProductFormDataModel {
@@ -52,7 +52,8 @@ export interface ProductFormDataModel {
     product_name?: string;
     product_code?: string;
     product_spec?: string;
-    tax_type?: Exclude<TaxType, 'unclassified'>;
+    tax_type?: Exclude<TaxType, 'unclassified' | 'mixed'>;
+    tax_type_review_required?: boolean;
   }>;
 }
 
@@ -61,15 +62,13 @@ export interface ProductInfoRefModel {
 }
 
 const normalizeTaxType = (
-  productTaxType?: TaxType,
-  initialTaxType?: TaxType
-): Exclude<TaxType, 'unclassified'> => {
+  productTaxType?: TaxType
+): Exclude<TaxType, 'unclassified' | 'mixed'> | undefined => {
   if (productTaxType === 'taxable' || productTaxType === 'exempt') {
     return productTaxType;
   }
-  if (productTaxType === 'zero_rated') return 'taxable';
-  if (initialTaxType === 'exempt') return 'exempt';
-  return 'taxable';
+  if (productTaxType === 'zero_rated') return 'zero_rated';
+  return undefined;
 };
 
 const isProductFormValid = (products: ProductFormDataModel['products']) =>
@@ -79,7 +78,8 @@ const isProductFormValid = (products: ProductFormDataModel['products']) =>
       product.productId > 0 &&
       product.quantity > 0 &&
       product.unitPrice > 0 &&
-      Boolean(product.tax_type)
+      Boolean(product.tax_type) &&
+      !product.tax_type_review_required
   );
 
 const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
@@ -89,7 +89,6 @@ const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
       isProductDetailOpen,
       onFormChange,
       initialProducts,
-      initialTaxType,
       overrideTaxType,
     },
     ref
@@ -120,7 +119,8 @@ const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
         product_name: product.product_name,
         product_code: product.product_code,
         product_spec: product.product_spec,
-        tax_type: normalizeTaxType(product.tax_type, initialTaxType),
+        tax_type: normalizeTaxType(product.tax_type),
+        tax_type_review_required: product.tax_type_review_required,
       }));
 
       methods.reset({ products: restoredProducts });
@@ -128,26 +128,43 @@ const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
       const syncTaxTypesFromProductMaster = async () => {
         const masterTaxTypes = await Promise.all(
           restoredProducts.map(async (product) => {
-            if (!product.productId) return product.tax_type;
+            if (!product.productId) return product;
 
             const result = await getProductDetail(product.productId);
-            return result.success && result.data
-              ? normalizeTaxType(result.data.tax_type, initialTaxType)
-              : product.tax_type;
+            if (!result.success || !result.data) return product;
+            return {
+              ...product,
+              tax_type: result.data.tax_type_review_required
+                ? undefined
+                : normalizeTaxType(result.data.tax_type),
+              tax_type_review_required:
+                result.data.tax_type_review_required ?? false,
+            };
           })
         );
 
         if (isCancelled) return;
 
         let hasTaxTypeChanges = false;
-        masterTaxTypes.forEach((masterTaxType, index) => {
-          if (masterTaxType === restoredProducts[index].tax_type) return;
+        masterTaxTypes.forEach((masterProduct, index) => {
+          if (
+            masterProduct.tax_type === restoredProducts[index].tax_type &&
+            masterProduct.tax_type_review_required ===
+              restoredProducts[index].tax_type_review_required
+          )
+            return;
 
           hasTaxTypeChanges = true;
-          methods.setValue(`products.${index}.tax_type`, masterTaxType, {
-            shouldDirty: true,
-            shouldValidate: true,
-          });
+          methods.setValue(
+            `products.${index}.tax_type`,
+            masterProduct.tax_type,
+            { shouldDirty: true, shouldValidate: true }
+          );
+          methods.setValue(
+            `products.${index}.tax_type_review_required`,
+            masterProduct.tax_type_review_required,
+            { shouldDirty: false, shouldValidate: true }
+          );
         });
 
         if (hasTaxTypeChanges) {
@@ -160,7 +177,7 @@ const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
       return () => {
         isCancelled = true;
       };
-    }, [getProductDetail, initialProducts, initialTaxType, methods]);
+    }, [getProductDetail, initialProducts, methods]);
 
     const { fields, append, remove } = useFieldArray({
       control: methods.control,
@@ -171,7 +188,7 @@ const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
       name: 'products',
     });
     const [taxTypeFilter, setTaxTypeFilter] = useState<
-      'all' | 'taxable' | 'exempt'
+      'all' | 'taxable' | 'exempt' | 'unclassified'
     >('all');
     const effectiveTaxTypes = (watchedProducts ?? []).map(
       (product) => overrideTaxType ?? product.tax_type
@@ -181,6 +198,9 @@ const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
     ).length;
     const exemptCount = effectiveTaxTypes.filter(
       (taxType) => taxType === 'exempt'
+    ).length;
+    const reviewRequiredCount = (watchedProducts ?? []).filter(
+      (product) => !product.tax_type || product.tax_type_review_required
     ).length;
     const totals = useMemo(
       () =>
@@ -268,6 +288,17 @@ const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
                 >
                   {tCommon('taxExempt')} {exemptCount}
                 </button>
+                <button
+                  type="button"
+                  onClick={() => setTaxTypeFilter('unclassified')}
+                  className={`rounded-md px-3 py-2 Me_Body-3 ${
+                    taxTypeFilter === 'unclassified'
+                      ? 'bg-red text-wh'
+                      : 'bg-red-4 text-red'
+                  }`}
+                >
+                  {tCommon('taxTypeReviewRequired')} {reviewRequiredCount}
+                </button>
               </div>
               <div className="flex items-center h-12 border-t border-b border-lg Me_Body-3 cursor-default">
                 <p className="flex-1 py-1 px-3 text-sv">
@@ -304,9 +335,14 @@ const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
                 const rowTaxType = effectiveTaxTypes[index];
                 const normalizedTaxType =
                   rowTaxType === 'zero_rated' ? 'taxable' : rowTaxType;
+                const isRowReviewRequired =
+                  !rowTaxType ||
+                  watchedProducts?.[index]?.tax_type_review_required;
                 if (
                   taxTypeFilter !== 'all' &&
-                  normalizedTaxType !== taxTypeFilter
+                  (taxTypeFilter === 'unclassified'
+                    ? !isRowReviewRequired
+                    : normalizedTaxType !== taxTypeFilter)
                 ) {
                   return null;
                 }
@@ -359,7 +395,11 @@ const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
                       product_name: result.data.name,
                       product_code: result.data.code,
                       product_spec: result.data.spec,
-                      tax_type: result.data.tax_type,
+                      tax_type: result.data.tax_type_review_required
+                        ? undefined
+                        : result.data.tax_type,
+                      tax_type_review_required:
+                        result.data.tax_type_review_required ?? false,
                     });
                   }
                 } catch {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import useMemberStore from '@/store/member-store';
 
 interface PublishTaxInvoiceResponseModel {
@@ -15,11 +15,16 @@ interface PublishTaxInvoiceResponseModel {
 const usePublishTaxInvoice = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const inFlightRef = useRef(false);
   const { factoryId } = useMemberStore();
 
   // 세금계산서 발행
   const publishTaxInvoice = useCallback(
     async (taxId: number): Promise<PublishTaxInvoiceResponseModel> => {
+      if (inFlightRef.current) {
+        return { success: false, error: '이미 발행 요청을 처리하고 있습니다.' };
+      }
+      inFlightRef.current = true;
       setIsLoading(true);
       setError(null);
 
@@ -58,6 +63,7 @@ const usePublishTaxInvoice = () => {
         setError(errorMessage);
         return { success: false, error: errorMessage };
       } finally {
+        inFlightRef.current = false;
         setIsLoading(false);
       }
     },
