@@ -28,6 +28,7 @@ const TableHeader = ({ isAllChecked, onToggleAll }: TableHeaderProps) => {
       <p className="flex-1 px-3 text-sv">{tCommon('productCode')}</p>
       <p className="flex-1 px-3 text-sv">{tCommon('specification')}</p>
       <p className="flex-1 px-3 text-sv">{tCommon('unit')}</p>
+      <p className="flex-[0.8] px-3 text-sv">{tCommon('taxClassification')}</p>
       <p className="flex-1 px-3 text-sv">{tCommon('currentStock')}</p>
     </div>
   );

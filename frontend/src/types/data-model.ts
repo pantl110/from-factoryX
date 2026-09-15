@@ -385,6 +385,7 @@ export interface ProductModel {
   unit: string;
   spec: string;
   tax_type: MasterTaxType;
+  tax_type_review_required?: boolean;
   current_stock?: number | null;
   average_production_time?: number;
   buffer_rate?: number; // 기본값 10%
@@ -402,6 +403,7 @@ export interface ProductResponseModel {
   unit: string;
   spec: string;
   tax_type: MasterTaxType;
+  tax_type_review_required?: boolean;
   current_stock?: number;
   average_production_time?: number;
   buffer_rate?: number;
@@ -421,6 +423,7 @@ export interface ProductCreateExcelModel {
   unit: string;
   spec: string;
   tax_type: MasterTaxType;
+  tax_type_review_required?: boolean;
   current_stock?: number;
   average_production_time?: number;
   buffer_rate: number;
@@ -492,6 +495,7 @@ export interface MaterialModel {
   unit: string;
   spec: string;
   tax_type: MasterTaxType;
+  tax_type_review_required?: boolean;
   current_stock?: number;
   standard_stock?: number;
   rop?: number;
@@ -511,6 +515,7 @@ export interface MaterialResponseModel {
   unit: string;
   spec: string;
   tax_type: MasterTaxType;
+  tax_type_review_required?: boolean;
   status: InventoryStatusType | null;
   current_stock?: number;
   standard_stock?: number;
@@ -760,7 +765,10 @@ export interface ProjectResponseModel {
   printed_at: string; // 거래명세서 발행 일자
   quotations: ProjectQuotationModel[]; // QuotationModelOut
   status: ProjectStatusType;
-  tax_invoice: PublishedTaxInvoiceResponseModel; // NationalTaxServiceOut
+  tax_invoice: PublishedTaxInvoiceResponseModel | null; // 기존 대표 세금 문서
+  tax_documents?: PublishedTaxInvoiceResponseModel[]; // 분리된 세금 문서를 포함한 전체 문서
+  tax_document_group_key?: string | null;
+  tax_document_count?: number;
   transact_date: string; // 현재 사용 안하고 printed_at 사용
   updated_at: string;
 }
@@ -806,6 +814,8 @@ export interface ProjectQuotationProductsModel {
     spec: string;
     unit: string;
     updated_at: string;
+    tax_type?: 'taxable' | 'exempt';
+    tax_type_review_required?: boolean;
   };
   product_info: {
     average_production_time: number;
@@ -821,6 +831,8 @@ export interface ProjectQuotationProductsModel {
     spec: string;
     unit: string;
     updated_at: string;
+    tax_type?: 'taxable' | 'exempt';
+    tax_type_review_required?: boolean;
   };
   quantity: number;
   quotation: number;
@@ -858,6 +870,9 @@ export interface ProjectStatusResponseModel {
   status: ProjectStatusType;
   updated_at: string;
   tax_invoice: PublishedTaxInvoiceResponseModel | null;
+  tax_documents?: PublishedTaxInvoiceResponseModel[];
+  tax_document_group_key?: string | null;
+  tax_document_count?: number;
   transact_date: string; // 거래명세서 발행 일자
   printed_at: string;
   pending_at: string;
@@ -1518,6 +1533,9 @@ export interface PublishedTaxInvoiceResponseModel {
 
   // 프로젝트 관련
   project_id?: number | null; // 프로젝트 ID (연결된 프로젝트 ID)
+  document_group?: number | null; // 혼합 거래 분리 문서 그룹 ID
+  document_group_key?: string | null; // 혼합 거래 그룹 UUID
+  document_group_count?: number; // 같은 원거래에 포함된 문서 수
 
   // 거래처 관련
   client: number; // FactoryClient ID (ForeignKey)

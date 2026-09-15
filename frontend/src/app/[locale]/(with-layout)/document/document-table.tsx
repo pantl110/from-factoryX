@@ -92,7 +92,7 @@ const DocumentTable = ({
             {selectedType === '매출 세금계산서' ||
             selectedType === '매입 세금계산서' ? (
               <>
-                <p className="px-3 w-[160px]">
+                <p className="px-3 w-[240px]">
                   {tDocumentType('documentType')}
                 </p>
                 <p className="px-3 flex-[1.2]">{tCommon('clientName')}</p>

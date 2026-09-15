@@ -9,7 +9,12 @@ import MiniBtn from '@/ui/mini-btn';
 import DeleteModal from '@/ui/modal/delete-modal';
 import Pagination from '@/components/pagination';
 import { ProductResponseModel } from '@/types/data-model';
-import { useCheckAll, useGetProduct, useDeleteProduct } from '@/hooks';
+import {
+  useCheckAll,
+  useGetProduct,
+  useDeleteProduct,
+  useUpdateProduct,
+} from '@/hooks';
 import Spinner from '@/ui/spinner';
 import NoHistoryBox from '@/ui/no-history-box';
 import useMemberStore from '@/store/member-store';
@@ -38,7 +43,19 @@ const Product = ({
   const { getProductList, productList, pagination, isLoading } =
     useGetProduct();
   const { deleteProduct } = useDeleteProduct();
+  const { updateProduct } = useUpdateProduct();
   const [searchKeyword, setSearchKeyword] = useState('');
+  const [taxTypeFilter, setTaxTypeFilter] = useState<'' | 'taxable' | 'exempt'>(
+    ''
+  );
+  const [bulkTaxType, setBulkTaxType] = useState<'taxable' | 'exempt'>(
+    'taxable'
+  );
+  const [isBulkUpdating, setIsBulkUpdating] = useState(false);
+  const [bulkMessage, setBulkMessage] = useState<{
+    type: 'success' | 'error';
+    text: string;
+  } | null>(null);
   const [_currentPage, setCurrentPage] = useState(1);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   // 패널 오픈 상태를 부모에서 제어할 경우 prop을 우선 사용
@@ -54,11 +71,12 @@ const Product = ({
 
   // 제품 목록 로드 함수
   const loadProducts = useCallback(
-    (page = 1, search = '') => {
-      getProductList({
+    (page = 1, search = '', taxType: '' | 'taxable' | 'exempt' = '') => {
+      return getProductList({
         q: search || undefined,
         page,
         page_size: 10,
+        tax_type: taxType || undefined,
       });
     },
     [getProductList]
@@ -76,7 +94,8 @@ const Product = ({
         // 검색어 초기화하고 첫 페이지로 이동
         setSearchKeyword('');
         setCurrentPage(1);
-        loadProducts(1, '');
+        setTaxTypeFilter('');
+        loadProducts(1, '', '');
       });
     }
   }, [setReloadFunctionToParent, loadProducts]);
@@ -85,13 +104,21 @@ const Product = ({
   const handleSearch = (term: string) => {
     setSearchKeyword(term);
     setCurrentPage(1);
-    loadProducts(1, term);
+    loadProducts(1, term, taxTypeFilter);
+  };
+
+  const handleTaxTypeFilter = (value: '' | 'taxable' | 'exempt') => {
+    setTaxTypeFilter(value);
+    setCurrentPage(1);
+    setAllChecked(false);
+    setBulkMessage(null);
+    loadProducts(1, searchKeyword, value);
   };
 
   // 페이지 변경
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-    loadProducts(page, searchKeyword);
+    loadProducts(page, searchKeyword, taxTypeFilter);
   };
 
   // 페이지 유효성 관리 (삭제나 비어 있는 페이지 처리)
@@ -101,14 +128,14 @@ const Product = ({
 
     if (totalPages > 0 && _currentPage > totalPages) {
       setCurrentPage(totalPages);
-      loadProducts(totalPages, searchKeyword);
+      loadProducts(totalPages, searchKeyword, taxTypeFilter);
       return;
     }
 
     if (!isLoading && _currentPage > 1 && !hasData) {
       const previousPage = _currentPage - 1;
       setCurrentPage(previousPage);
-      loadProducts(previousPage, searchKeyword);
+      loadProducts(previousPage, searchKeyword, taxTypeFilter);
     }
   }, [
     pagination?.pageCnt,
@@ -117,6 +144,7 @@ const Product = ({
     isLoading,
     loadProducts,
     searchKeyword,
+    taxTypeFilter,
   ]);
 
   const {
@@ -151,19 +179,92 @@ const Product = ({
     }
     setIsDeleteModalOpen(false);
     setAllChecked(false);
-    loadProducts(_currentPage, searchKeyword);
+    loadProducts(_currentPage, searchKeyword, taxTypeFilter);
+  };
+
+  const handleBulkTaxTypeUpdate = async () => {
+    const checkedIds = productList
+      .filter((item: ProductResponseModel) => isChecked(item.id))
+      .map((item: ProductResponseModel) => item.id);
+    if (checkedIds.length === 0) return;
+
+    setIsBulkUpdating(true);
+    setBulkMessage(null);
+    let failedCount = 0;
+    for (const id of checkedIds) {
+      const result = await updateProduct(id, { tax_type: bulkTaxType });
+      if (!result.success) failedCount += 1;
+    }
+
+    if (failedCount === 0) {
+      setBulkMessage({
+        type: 'success',
+        text: t('taxManagement.bulkSuccess', { count: checkedIds.length }),
+      });
+      setAllChecked(false);
+    } else {
+      setBulkMessage({
+        type: 'error',
+        text: t('taxManagement.bulkFailed', { count: failedCount }),
+      });
+    }
+    await loadProducts(_currentPage, searchKeyword, taxTypeFilter);
+    setIsBulkUpdating(false);
   };
 
   return (
     <>
-      <div className="flex items-center justify-between pb-4">
-        <SearchInput
-          value={searchKeyword}
-          onChange={handleSearch}
-          placeholder={t('searchPlaceholder')}
-        />
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <SearchInput
+            value={searchKeyword}
+            onChange={handleSearch}
+            placeholder={t('searchPlaceholder')}
+          />
+          <select
+            aria-label={t('taxManagement.filterLabel')}
+            className="h-10 rounded-md border border-lg bg-wh px-3 Me_Body-3 text-dg"
+            value={taxTypeFilter}
+            onChange={(event) =>
+              handleTaxTypeFilter(
+                event.target.value as '' | 'taxable' | 'exempt'
+              )
+            }
+          >
+            <option value="">{t('taxManagement.all')}</option>
+            <option value="taxable">{t('taxManagement.taxable')}</option>
+            <option value="exempt">{t('taxManagement.exempt')}</option>
+          </select>
+        </div>
         {productList.length > 0 && !isViewer && hasSubscription() && (
-          <div className="flex gap-1">
+          <div className="flex flex-wrap items-center gap-1">
+            {checkedCount > 0 && (
+              <>
+                <select
+                  aria-label={t('taxManagement.bulkLabel')}
+                  className="h-10 rounded-md border border-lg bg-wh px-3 Me_Body-3 text-dg"
+                  value={bulkTaxType}
+                  onChange={(event) =>
+                    setBulkTaxType(event.target.value as 'taxable' | 'exempt')
+                  }
+                >
+                  <option value="taxable">
+                    {t('taxManagement.changeToTaxable')}
+                  </option>
+                  <option value="exempt">
+                    {t('taxManagement.changeToExempt')}
+                  </option>
+                </select>
+                <MiniBtn
+                  variant="primary"
+                  text={t('taxManagement.applySelected', {
+                    count: checkedCount,
+                  })}
+                  disabled={isBulkUpdating}
+                  onClick={handleBulkTaxTypeUpdate}
+                />
+              </>
+            )}
             {/* <MiniBtn variant="outline"
               text="취소"
               onClick={() => setAllChecked(false)}
@@ -178,6 +279,17 @@ const Product = ({
           </div>
         )}
       </div>
+
+      {bulkMessage && (
+        <p
+          aria-live="polite"
+          className={`mb-3 text-sm ${
+            bulkMessage.type === 'success' ? 'text-green' : 'text-red'
+          }`}
+        >
+          {bulkMessage.text}
+        </p>
+      )}
 
       {isLoading ? (
         <div className="flex justify-center items-center h-100">
@@ -219,7 +331,7 @@ const Product = ({
           onClose={handlePanelClose}
           onSuccess={() => {
             // 저장 성공 후 목록 새로고침
-            loadProducts(_currentPage, searchKeyword);
+            loadProducts(_currentPage, searchKeyword, taxTypeFilter);
           }}
         />
       )}

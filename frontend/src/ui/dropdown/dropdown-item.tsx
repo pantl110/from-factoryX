@@ -11,6 +11,7 @@ interface DropdownItemProps {
   search?: boolean;
   mobile?: boolean;
   breakWords?: boolean;
+  disabled?: boolean;
 }
 
 const DropdownItem = ({
@@ -24,14 +25,19 @@ const DropdownItem = ({
   search = false,
   mobile = false,
   breakWords = false,
+  disabled = false,
 }: DropdownItemProps) => {
   return (
     <div
-      className={`${breakWords ? 'break-words' : 'truncate'} bg-wh flex gap-3 w-full ${chip ? 'h-fit' : breakWords ? 'h-fit min-h-12' : search ? 'h-10' : mobile ? 'h-[43px]' : 'h-12'} items-center cursor-pointer rounded-[4px] ${breakWords ? 'py-3' : 'p-0'} transition-all duration-200 ease-in-out ${
-        noHover ? '' : 'hover:bg-bg'
+      className={`${breakWords ? 'break-words' : 'truncate'} bg-wh flex gap-3 w-full ${chip ? 'h-fit' : breakWords ? 'h-fit min-h-12' : search ? 'h-10' : mobile ? 'h-[43px]' : 'h-12'} items-center rounded-[4px] ${breakWords ? 'py-3' : 'p-0'} transition-all duration-200 ease-in-out ${
+        disabled
+          ? 'cursor-not-allowed opacity-50'
+          : `cursor-pointer ${noHover ? '' : 'hover:bg-bg'}`
       }`}
+      aria-disabled={disabled}
       onClick={(e) => {
         e.stopPropagation();
+        if (disabled) return;
         onClick?.(e);
       }}
     >

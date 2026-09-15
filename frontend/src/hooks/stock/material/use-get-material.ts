@@ -52,6 +52,7 @@ const buildListParams = (
   if (filters.material_id)
     params.append('material_id', filters.material_id.toString());
   if (filters.status) params.append('status', filters.status);
+  if (filters.tax_type) params.append('tax_type', filters.tax_type);
   return params;
 };
 

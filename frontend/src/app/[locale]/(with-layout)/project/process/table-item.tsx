@@ -21,6 +21,7 @@ import CloneProjectModal from '../clone-project-modal';
 import { IconBtn } from '@/ui';
 import TaxDocumentOverlay from '@/app/[locale]/(with-layout)/document/tax-document-overlay';
 import { useTranslations } from 'next-intl';
+import TaxDocumentGroupModal from './tax-document-group-modal';
 
 interface TableItemProps {
   project: ProjectResponseModel;
@@ -45,6 +46,7 @@ const TableItem = ({
   );
   const tStatus = useTranslations('project.status');
   const t = useTranslations('project.process');
+  const tTaxDocumentGroup = useTranslations('project.taxDocumentGroup');
   const tCommon = useTranslations('common');
   const tTax = useTranslations('tax.publishStatus');
   const tDocumentType = useTranslations('document.type');
@@ -53,6 +55,10 @@ const TableItem = ({
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 });
   const [isLinkTaxModalOpen, setIsLinkTaxModalOpen] = useState(false);
   const [isTaxOverlayOpen, setIsTaxOverlayOpen] = useState(false);
+  const [isTaxDocumentGroupOpen, setIsTaxDocumentGroupOpen] = useState(false);
+  const [selectedTaxDocumentId, setSelectedTaxDocumentId] = useState<
+    number | null
+  >(null);
   const { cloneProject, isLoading: isCloning } = useCloneProject();
   const [isNavigating, setIsNavigating] = useState(false);
   const [isCloneProjectModalOpen, setIsCloneProjectModalOpen] = useState(false);
@@ -64,6 +70,39 @@ const TableItem = ({
 
   const displayText = getDisplayText(project.status);
   const chipColor = getProjectStatusColor(project.status);
+  const taxDocuments =
+    project.tax_documents && project.tax_documents.length > 0
+      ? project.tax_documents
+      : project.tax_invoice
+        ? [project.tax_invoice]
+        : [];
+  const taxDocumentCount = taxDocuments.length;
+  const taxPublishStatuses = Array.from(
+    new Set(taxDocuments.map((document) => document.publish_status))
+  );
+  const representativeTaxStatus =
+    taxPublishStatuses.length === 1 ? taxPublishStatuses[0] : undefined;
+
+  const getTaxStatusLabel = () => {
+    if (taxDocumentCount === 0) return '-';
+    const prefix =
+      taxDocumentCount > 1 ? `${taxDocumentCount}${tCommon('count')} · ` : '';
+    if (!representativeTaxStatus)
+      return `${prefix}${tTaxDocumentGroup('partialStatus')}`;
+    if (representativeTaxStatus === 'temporary')
+      return `${prefix}${tTax('temporary')}`;
+    if (representativeTaxStatus === 'pending')
+      return `${prefix}${tTax('pending')}`;
+    if (representativeTaxStatus === 'processing')
+      return `${prefix}${tTax('processing')}`;
+    if (representativeTaxStatus === 'published')
+      return `${prefix}${tTax('published')}`;
+    if (representativeTaxStatus === 'cancled')
+      return `${prefix}${tTax('cancled')}`;
+    if (representativeTaxStatus === 'failed')
+      return `${prefix}${tTax('failed')}`;
+    return '-';
+  };
 
   const productsName =
     project.status === 'quotation' ||
@@ -213,8 +252,7 @@ const TableItem = ({
               e.stopPropagation();
             }}
           >
-            {!project.tax_invoice ||
-            project.tax_invoice.publish_status === undefined ? (
+            {taxDocumentCount === 0 ? (
               <MiniBtn
                 text={tCommon('link')}
                 variant="outline"
@@ -232,7 +270,12 @@ const TableItem = ({
                 size="w-9 h-9"
                 onClick={(e?: React.MouseEvent<HTMLButtonElement>) => {
                   e?.stopPropagation();
-                  setIsTaxOverlayOpen(true);
+                  if (taxDocumentCount > 1) {
+                    setIsTaxDocumentGroupOpen(true);
+                  } else {
+                    setSelectedTaxDocumentId(taxDocuments[0].id);
+                    setIsTaxOverlayOpen(true);
+                  }
                 }}
                 hoverBg="hover:bg-wh"
               />
@@ -241,25 +284,9 @@ const TableItem = ({
         )}
         {!isArchived && (
           <p
-            className={`w-[200px] px-3 ${getTaxStatusColor(project.tax_invoice?.publish_status).textColor}`}
+            className={`w-[200px] px-3 ${getTaxStatusColor(representativeTaxStatus ?? null).textColor}`}
           >
-            {!project.tax_invoice
-              ? '-'
-              : project.tax_invoice.publish_status === 'temporary'
-                ? tTax('temporary')
-                : project.tax_invoice.publish_status === 'pending'
-                  ? tTax('pending')
-                  : project.tax_invoice.publish_status === 'processing'
-                    ? tTax('processing')
-                    : project.tax_invoice.publish_status === 'published'
-                      ? tTax('published')
-                      : project.tax_invoice.publish_status === 'cancled'
-                        ? tTax('cancled')
-                        : project.tax_invoice.publish_status === 'failed'
-                          ? tTax('failed')
-                          : project.tax_invoice.publish_status === null
-                            ? '-'
-                            : '-'}
+            {getTaxStatusLabel()}
           </p>
         )}
 
@@ -324,10 +351,26 @@ const TableItem = ({
         />
       )}
 
-      {isTaxOverlayOpen && project.tax_invoice?.id && (
+      {isTaxDocumentGroupOpen && taxDocumentCount > 1 && (
+        <TaxDocumentGroupModal
+          documents={taxDocuments}
+          onClose={() => setIsTaxDocumentGroupOpen(false)}
+          onUpdated={onReload}
+          onSelect={(taxId) => {
+            setSelectedTaxDocumentId(taxId);
+            setIsTaxDocumentGroupOpen(false);
+            setIsTaxOverlayOpen(true);
+          }}
+        />
+      )}
+
+      {isTaxOverlayOpen && selectedTaxDocumentId && (
         <TaxDocumentOverlay
-          onClose={() => setIsTaxOverlayOpen(false)}
-          taxId={project.tax_invoice.id}
+          onClose={() => {
+            setIsTaxOverlayOpen(false);
+            setSelectedTaxDocumentId(null);
+          }}
+          taxId={selectedTaxDocumentId}
           title={tDocumentType('salesTaxInvoice')}
         />
       )}

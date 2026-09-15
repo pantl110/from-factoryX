@@ -12,6 +12,7 @@ interface GetProductListModel {
   q?: string;
   page?: number;
   page_size?: number;
+  tax_type?: 'taxable' | 'exempt';
 }
 
 const useGetProduct = () => {
@@ -52,6 +53,7 @@ const useGetProduct = () => {
         if (params.page) queryParams.append('page', params.page.toString());
         if (params.page_size)
           queryParams.append('page_size', params.page_size.toString());
+        if (params.tax_type) queryParams.append('tax_type', params.tax_type);
         const url = `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/product?${queryParams}`;
         const headers = {
           'Content-Type': 'application/json',

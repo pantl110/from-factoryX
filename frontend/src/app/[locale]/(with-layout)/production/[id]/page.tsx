@@ -27,6 +27,7 @@ import TaxDetailPanel from '@/app/[locale]/(with-layout)/tax/tax-detail-panel';
 import getLastDeliveryDate from '@/utils/get-last-delivery-date';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
+import TaxDocumentSummaryCard from '../tax-document-summary-card';
 
 const getTabsByStatus = (
   status: ProjectStatusType,
@@ -411,10 +412,13 @@ const ProductionPageContent = () => {
           />
         )}
         {tabs[selectedTab] === t('tabs.productionPlan') && (
-          <ProductionPlan
-            handleChangeStatus={handleChangeStatus}
-            projectStatus={projectStatus.status as ProjectStatusType}
-          />
+          <>
+            <TaxDocumentSummaryCard project={projectStatus} />
+            <ProductionPlan
+              handleChangeStatus={handleChangeStatus}
+              projectStatus={projectStatus.status as ProjectStatusType}
+            />
+          </>
         )}
         {tabs[selectedTab] === t('tabs.orderDocument') &&
           projectStatus?.quotations[0] && (

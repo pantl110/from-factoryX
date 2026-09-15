@@ -1,12 +1,24 @@
 import NoHistoryBox from '@/ui/no-history-box';
 import TableItem from './table-item';
 import ProductDetail from '@/app/[locale]/(with-layout)/stock/product/product-detail';
-import { FormProvider, useForm, useFieldArray } from 'react-hook-form';
-import { useImperativeHandle, forwardRef, useEffect } from 'react';
+import {
+  FormProvider,
+  useForm,
+  useFieldArray,
+  useWatch,
+} from 'react-hook-form';
+import {
+  useImperativeHandle,
+  forwardRef,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { useGetProduct } from '@/hooks';
 import useMemberStore from '@/store/member-store';
 import { useTranslations } from 'next-intl';
 import { TaxType } from '@/types/status-type';
+import { calculateTaxLineAmounts } from '@/utils/tax-calculation';
 
 // 세금계산서 편집용 제품 데이터 타입
 interface TaxProductEditModel {
@@ -48,6 +60,28 @@ export interface ProductInfoRefModel {
   addProduct: () => void;
 }
 
+const normalizeTaxType = (
+  productTaxType?: TaxType,
+  initialTaxType?: TaxType
+): Exclude<TaxType, 'unclassified'> => {
+  if (productTaxType === 'taxable' || productTaxType === 'exempt') {
+    return productTaxType;
+  }
+  if (productTaxType === 'zero_rated') return 'taxable';
+  if (initialTaxType === 'exempt') return 'exempt';
+  return 'taxable';
+};
+
+const isProductFormValid = (products: ProductFormDataModel['products']) =>
+  products.length > 0 &&
+  products.every(
+    (product) =>
+      product.productId > 0 &&
+      product.quantity > 0 &&
+      product.unitPrice > 0 &&
+      Boolean(product.tax_type)
+  );
+
 const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
   (
     {
@@ -73,66 +107,110 @@ const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
       },
     });
 
-    // initialProducts가 변경될 때마다 폼 리셋
+    // 임시 문서를 다시 열 때 저장 당시 스냅샷을 먼저 복원한 뒤,
+    // 연결된 제품 마스터의 최신 과세 구분을 다시 적용한다.
     useEffect(() => {
-      if (initialProducts && initialProducts.length > 0) {
-        methods.reset({
-          products: initialProducts.map((product) => ({
-            productId: product.productId,
-            quantity: product.quantity,
-            unitPrice: product.unit_price, // snake_case → camelCase로 매핑
-            product_name: product.product_name,
-            product_code: product.product_code,
-            product_spec: product.product_spec,
-            tax_type:
-              (product.tax_type === 'zero_rated'
-                ? 'taxable'
-                : product.tax_type) ??
-              (initialTaxType === 'unclassified'
-                ? 'taxable'
-                : initialTaxType === 'zero_rated'
-                  ? 'taxable'
-                  : (initialTaxType ?? 'taxable')),
-          })),
+      if (!initialProducts || initialProducts.length === 0) return;
+
+      let isCancelled = false;
+      const restoredProducts = initialProducts.map((product) => ({
+        productId: product.productId,
+        quantity: product.quantity,
+        unitPrice: product.unit_price, // snake_case → camelCase로 매핑
+        product_name: product.product_name,
+        product_code: product.product_code,
+        product_spec: product.product_spec,
+        tax_type: normalizeTaxType(product.tax_type, initialTaxType),
+      }));
+
+      methods.reset({ products: restoredProducts });
+
+      const syncTaxTypesFromProductMaster = async () => {
+        const masterTaxTypes = await Promise.all(
+          restoredProducts.map(async (product) => {
+            if (!product.productId) return product.tax_type;
+
+            const result = await getProductDetail(product.productId);
+            return result.success && result.data
+              ? normalizeTaxType(result.data.tax_type, initialTaxType)
+              : product.tax_type;
+          })
+        );
+
+        if (isCancelled) return;
+
+        let hasTaxTypeChanges = false;
+        masterTaxTypes.forEach((masterTaxType, index) => {
+          if (masterTaxType === restoredProducts[index].tax_type) return;
+
+          hasTaxTypeChanges = true;
+          methods.setValue(`products.${index}.tax_type`, masterTaxType, {
+            shouldDirty: true,
+            shouldValidate: true,
+          });
         });
-      }
-    }, [initialProducts, initialTaxType, methods]);
+
+        if (hasTaxTypeChanges) {
+          await methods.trigger('products');
+        }
+      };
+
+      void syncTaxTypesFromProductMaster();
+
+      return () => {
+        isCancelled = true;
+      };
+    }, [getProductDetail, initialProducts, initialTaxType, methods]);
 
     const { fields, append, remove } = useFieldArray({
       control: methods.control,
       name: 'products',
     });
+    const watchedProducts = useWatch({
+      control: methods.control,
+      name: 'products',
+    });
+    const [taxTypeFilter, setTaxTypeFilter] = useState<
+      'all' | 'taxable' | 'exempt'
+    >('all');
+    const effectiveTaxTypes = (watchedProducts ?? []).map(
+      (product) => overrideTaxType ?? product.tax_type
+    );
+    const taxableCount = effectiveTaxTypes.filter(
+      (taxType) => taxType === 'taxable' || taxType === 'zero_rated'
+    ).length;
+    const exemptCount = effectiveTaxTypes.filter(
+      (taxType) => taxType === 'exempt'
+    ).length;
+    const totals = useMemo(
+      () =>
+        (watchedProducts ?? []).reduce(
+          (sum, product) => {
+            const lineAmounts = calculateTaxLineAmounts(
+              product.quantity,
+              product.unitPrice,
+              overrideTaxType ?? product.tax_type
+            );
+            return {
+              supplyAmount: sum.supplyAmount + lineAmounts.supplyAmount,
+              taxAmount: sum.taxAmount + lineAmounts.taxAmount,
+              totalAmount: sum.totalAmount + lineAmounts.totalAmount,
+            };
+          },
+          { supplyAmount: 0, taxAmount: 0, totalAmount: 0 }
+        ),
+      [overrideTaxType, watchedProducts]
+    );
 
-    // 폼 변경 상태를 상위 컴포넌트로 전달
+    // 배열 내부의 과세 구분 변경까지 감지해 상위 문서 유형과 저장 상태를 갱신한다.
     useEffect(() => {
-      if (onFormChange) {
-        const subscription = methods.watch((formData) => {
-          // 폼 유효성 검사: 모든 필수 필드가 채워져 있는지 확인
-          const isValid = Boolean(
-            formData.products &&
-              formData.products.length > 0 &&
-              formData.products.every(
-                (product) =>
-                  product &&
-                  typeof product.productId === 'number' &&
-                  product.productId > 0 &&
-                  typeof product.quantity === 'number' &&
-                  product.quantity > 0 &&
-                  typeof product.unitPrice === 'number' &&
-                  product.unitPrice > 0 &&
-                  Boolean(product.tax_type)
-              )
-          );
+      if (!onFormChange) return;
 
-          onFormChange(
-            methods.formState.isDirty,
-            isValid,
-            formData as ProductFormDataModel
-          );
-        });
-        return () => subscription.unsubscribe();
-      }
-    }, [methods, onFormChange]);
+      const products = watchedProducts ?? [];
+      onFormChange(methods.formState.isDirty, isProductFormValid(products), {
+        products,
+      });
+    }, [methods.formState.isDirty, onFormChange, watchedProducts]);
 
     const handleRemoveProduct = (index: number) => {
       remove(index);
@@ -156,6 +234,41 @@ const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
             <NoHistoryBox title={t('empty.title')} text={t('empty.text')} />
           ) : (
             <>
+              <div className="mb-3 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setTaxTypeFilter('all')}
+                  className={`rounded-md px-3 py-2 Me_Body-3 ${
+                    taxTypeFilter === 'all'
+                      ? 'bg-primary text-wh'
+                      : 'bg-bg text-sv'
+                  }`}
+                >
+                  {tCommon('all')} {fields.length}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTaxTypeFilter('taxable')}
+                  className={`rounded-md px-3 py-2 Me_Body-3 ${
+                    taxTypeFilter === 'taxable'
+                      ? 'bg-primary text-wh'
+                      : 'bg-blue-8 text-primary'
+                  }`}
+                >
+                  {tCommon('taxable')} {taxableCount}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTaxTypeFilter('exempt')}
+                  className={`rounded-md px-3 py-2 Me_Body-3 ${
+                    taxTypeFilter === 'exempt'
+                      ? 'bg-secondary text-bl'
+                      : 'bg-bg text-sv'
+                  }`}
+                >
+                  {tCommon('taxExempt')} {exemptCount}
+                </button>
+              </div>
               <div className="flex items-center h-12 border-t border-b border-lg Me_Body-3 cursor-default">
                 <p className="flex-1 py-1 px-3 text-sv">
                   {tCommon('productName')}
@@ -170,25 +283,60 @@ const ProductInfo = forwardRef<ProductInfoRefModel, ProductInfoProps>(
                   {tCommon('taxClassification')}
                 </p>
                 <p className="flex-1 py-1 px-3 text-sv">
-                  {tCommon('manufacturingQuantity')}
+                  {tCommon('quantity')}
                 </p>
                 <p className="w-[100px] py-1 px-3 text-sv">
                   {tCommon('unitPrice')}
                 </p>
-                <p className="flex-1 py-1 px-3 text-sv">
+                <p className="w-[110px] py-1 px-3 text-sv text-right">
+                  {tCommon('supplyAmount')}
+                </p>
+                <p className="w-[100px] py-1 px-3 text-sv text-right">
+                  {tCommon('taxAmount')}
+                </p>
+                <p className="w-[110px] py-1 px-3 text-sv text-right">
                   {tCommon('totalAmount')}
                 </p>
                 {!isViewer && <div className="w-9" />}
               </div>
 
-              {fields.map((field, index) => (
-                <TableItem
-                  key={field.id}
-                  index={index}
-                  onRemove={() => handleRemoveProduct(index)}
-                  overrideTaxType={overrideTaxType}
-                />
-              ))}
+              {fields.map((field, index) => {
+                const rowTaxType = effectiveTaxTypes[index];
+                const normalizedTaxType =
+                  rowTaxType === 'zero_rated' ? 'taxable' : rowTaxType;
+                if (
+                  taxTypeFilter !== 'all' &&
+                  normalizedTaxType !== taxTypeFilter
+                ) {
+                  return null;
+                }
+                return (
+                  <TableItem
+                    key={field.id}
+                    index={index}
+                    onRemove={() => handleRemoveProduct(index)}
+                    overrideTaxType={overrideTaxType}
+                  />
+                );
+              })}
+              <div className="flex items-center h-12 border-b border-lg bg-bg Me_Body-3">
+                <p className="flex-1 px-3 text-dg">{tCommon('total')}</p>
+                <div className="flex-1" />
+                <div className="flex-1" />
+                <div className="w-[90px]" />
+                <div className="flex-1" />
+                <div className="w-[100px]" />
+                <p className="w-[110px] px-3 text-dg text-right">
+                  {totals.supplyAmount.toLocaleString()}
+                </p>
+                <p className="w-[100px] px-3 text-dg text-right">
+                  {totals.taxAmount.toLocaleString()}
+                </p>
+                <p className="w-[110px] px-3 text-dg text-right">
+                  {totals.totalAmount.toLocaleString()}
+                </p>
+                {!isViewer && <div className="w-9" />}
+              </div>
             </>
           )}
         </div>

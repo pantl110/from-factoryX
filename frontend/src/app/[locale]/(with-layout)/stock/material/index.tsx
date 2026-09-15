@@ -6,7 +6,12 @@ import SearchInput from '@/ui/search-input';
 import MiniBtn from '@/ui/mini-btn';
 import DeleteModal from '@/ui/modal/delete-modal';
 import { useState, useEffect } from 'react';
-import { useDeleteMaterial, useCheckAll, useGetMaterial } from '@/hooks';
+import {
+  useDeleteMaterial,
+  useCheckAll,
+  useGetMaterial,
+  useUpdateMaterial,
+} from '@/hooks';
 import Spinner from '@/ui/spinner';
 import { useMaterialReloadStore } from '@/store/material-reload-store';
 import Pagination from '@/components/pagination';
@@ -41,6 +46,17 @@ const Material = ({
 
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [search, setSearch] = useState('');
+  const [taxTypeFilter, setTaxTypeFilter] = useState<'' | 'taxable' | 'exempt'>(
+    ''
+  );
+  const [bulkTaxType, setBulkTaxType] = useState<'taxable' | 'exempt'>(
+    'taxable'
+  );
+  const [isBulkUpdating, setIsBulkUpdating] = useState(false);
+  const [bulkMessage, setBulkMessage] = useState<{
+    type: 'success' | 'error';
+    text: string;
+  } | null>(null);
   const [page, setPage] = useState(1);
   const [order, setOrder] = useState<'asc' | 'desc'>('desc');
   const pageSize = 10;
@@ -49,6 +65,7 @@ const Material = ({
     useGetMaterial();
   const { shouldReload, setShouldReload } = useMaterialReloadStore();
   const { deleteMaterial, isLoading: isDeleting } = useDeleteMaterial();
+  const { updateMaterial } = useUpdateMaterial();
 
   const {
     checkedCount,
@@ -76,6 +93,7 @@ const Material = ({
       getMaterialList({
         order,
         q: search,
+        tax_type: taxTypeFilter || undefined,
         page: totalPages,
         page_size: pageSize,
       });
@@ -88,6 +106,7 @@ const Material = ({
       getMaterialList({
         order,
         q: search,
+        tax_type: taxTypeFilter || undefined,
         page: previousPage,
         page_size: pageSize,
       });
@@ -99,6 +118,7 @@ const Material = ({
     isLoading,
     order,
     search,
+    taxTypeFilter,
     pageSize,
     getMaterialList,
   ]);
@@ -112,15 +132,27 @@ const Material = ({
       await deleteMaterial(id);
     }
     setIsDeleteModalOpen(false);
-    getMaterialList({ order, q: search, page, page_size: pageSize }); // 삭제 후 목록 새로고침
+    getMaterialList({
+      order,
+      q: search,
+      tax_type: taxTypeFilter || undefined,
+      page,
+      page_size: pageSize,
+    }); // 삭제 후 목록 새로고침
     setAllChecked(false); // 체크 해제
   };
 
   // 마운트 시 데이터 불러오기
   useEffect(() => {
-    getMaterialList({ order, page, page_size: pageSize });
+    getMaterialList({
+      order,
+      q: search,
+      tax_type: taxTypeFilter || undefined,
+      page,
+      page_size: pageSize,
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page, pageSize, order]);
+  }, [page, pageSize, order, taxTypeFilter]);
 
   // Pass reload function to parent
   useEffect(() => {
@@ -128,6 +160,7 @@ const Material = ({
       setReloadFunctionToParent(() => {
         // Reset search and go to first page
         setSearch('');
+        setTaxTypeFilter('');
         setPage(1);
         setOrder('desc');
         getMaterialList({
@@ -146,6 +179,7 @@ const Material = ({
       getMaterialList({
         order,
         q: search,
+        tax_type: taxTypeFilter || undefined,
         page,
         page_size: pageSize,
       });
@@ -159,6 +193,7 @@ const Material = ({
     page,
     pageSize,
     order,
+    taxTypeFilter,
   ]);
 
   // 검색 핸들러
@@ -168,21 +203,108 @@ const Material = ({
     getMaterialList({
       order,
       q: value,
+      tax_type: taxTypeFilter || undefined,
       page: 1,
       page_size: pageSize,
     });
   };
 
+  const handleTaxTypeFilter = (value: '' | 'taxable' | 'exempt') => {
+    setTaxTypeFilter(value);
+    setPage(1);
+    setAllChecked(false);
+    setBulkMessage(null);
+  };
+
+  const handleBulkTaxTypeUpdate = async () => {
+    const checkedIds = materialList
+      .filter((material: MaterialResponseModel) => isChecked(material.id))
+      .map((material: MaterialResponseModel) => material.id);
+    if (checkedIds.length === 0) return;
+
+    setIsBulkUpdating(true);
+    setBulkMessage(null);
+    let failedCount = 0;
+    for (const id of checkedIds) {
+      const result = await updateMaterial(id, { tax_type: bulkTaxType });
+      if (!result.success) failedCount += 1;
+    }
+
+    if (failedCount === 0) {
+      setBulkMessage({
+        type: 'success',
+        text: t('taxManagement.bulkSuccess', { count: checkedIds.length }),
+      });
+      setAllChecked(false);
+    } else {
+      setBulkMessage({
+        type: 'error',
+        text: t('taxManagement.bulkFailed', { count: failedCount }),
+      });
+    }
+    await getMaterialList({
+      order,
+      q: search,
+      tax_type: taxTypeFilter || undefined,
+      page,
+      page_size: pageSize,
+    });
+    setIsBulkUpdating(false);
+  };
+
   return (
     <>
-      <div className="flex items-center justify-between pb-4">
-        <SearchInput
-          placeholder={t('searchPlaceholder')}
-          value={search}
-          onChange={handleSearch}
-        />
+      <div className="flex flex-wrap items-center justify-between gap-3 pb-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <SearchInput
+            placeholder={t('searchPlaceholder')}
+            value={search}
+            onChange={handleSearch}
+          />
+          <select
+            aria-label={t('taxManagement.filterLabel')}
+            className="h-10 rounded-md border border-lg bg-wh px-3 Me_Body-3 text-dg"
+            value={taxTypeFilter}
+            onChange={(event) =>
+              handleTaxTypeFilter(
+                event.target.value as '' | 'taxable' | 'exempt'
+              )
+            }
+          >
+            <option value="">{t('taxManagement.all')}</option>
+            <option value="taxable">{t('taxManagement.taxable')}</option>
+            <option value="exempt">{t('taxManagement.exempt')}</option>
+          </select>
+        </div>
         {materialList.length > 0 && !isViewer && hasSubscription() && (
-          <div className="flex gap-1">
+          <div className="flex flex-wrap items-center gap-1">
+            {checkedCount > 0 && (
+              <>
+                <select
+                  aria-label={t('taxManagement.bulkLabel')}
+                  className="h-10 rounded-md border border-lg bg-wh px-3 Me_Body-3 text-dg"
+                  value={bulkTaxType}
+                  onChange={(event) =>
+                    setBulkTaxType(event.target.value as 'taxable' | 'exempt')
+                  }
+                >
+                  <option value="taxable">
+                    {t('taxManagement.changeToTaxable')}
+                  </option>
+                  <option value="exempt">
+                    {t('taxManagement.changeToExempt')}
+                  </option>
+                </select>
+                <MiniBtn
+                  variant="primary"
+                  text={t('taxManagement.applySelected', {
+                    count: checkedCount,
+                  })}
+                  disabled={isBulkUpdating}
+                  onClick={handleBulkTaxTypeUpdate}
+                />
+              </>
+            )}
             {/* <MiniBtn
               text="취소"
               variant="outline"
@@ -198,6 +320,17 @@ const Material = ({
           </div>
         )}
       </div>
+
+      {bulkMessage && (
+        <p
+          aria-live="polite"
+          className={`mb-3 text-sm ${
+            bulkMessage.type === 'success' ? 'text-green' : 'text-red'
+          }`}
+        >
+          {bulkMessage.text}
+        </p>
+      )}
 
       {isLoading ? (
         <div className="flex justify-center items-center h-100">

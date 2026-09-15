@@ -11,6 +11,7 @@ import IconBtn from '@/ui/icon-btn';
 import useMemberStore from '@/store/member-store';
 import { useTranslations } from 'next-intl';
 import { TaxType } from '@/types/status-type';
+import { calculateTaxLineAmounts } from '@/utils/tax-calculation';
 
 interface TableItemFormDataModel {
   products: Array<{
@@ -53,8 +54,11 @@ const TableItem = ({ index, onRemove, overrideTaxType }: TableItemProps) => {
   const taxType = watch(`products.${index}.tax_type`);
   const displayTaxType = overrideTaxType ?? taxType;
 
-  // 금액 자동 계산
-  const totalAmount = quantity * unitPrice;
+  const { supplyAmount, taxAmount, totalAmount } = calculateTaxLineAmounts(
+    quantity,
+    unitPrice,
+    displayTaxType
+  );
 
   // 천 단위 구분자 추가 함수
   const formatNumber = (value: number): string => {
@@ -100,7 +104,15 @@ const TableItem = ({ index, onRemove, overrideTaxType }: TableItemProps) => {
 
   return (
     <>
-      <div className="group flex items-center h-14 border-b border-lg Me_Body-3 cursor-default">
+      <div
+        className={`group flex items-center h-14 border-b border-l-2 border-lg Me_Body-3 cursor-default ${
+          displayTaxType === 'exempt'
+            ? 'border-l-secondary'
+            : displayTaxType
+              ? 'border-l-primary'
+              : 'border-l-lg'
+        }`}
+      >
         <div className="flex-1 px-3 flex items-center justify-between gap-1 min-w-0 relative">
           {productNameValue ? (
             <p className="text-dg w-full truncate" title={productNameValue}>
@@ -179,7 +191,13 @@ const TableItem = ({ index, onRemove, overrideTaxType }: TableItemProps) => {
             disabled={isViewer}
           />
         </div>
-        <p className="flex-1 px-3 text-dg truncate cursor-default">
+        <p className="w-[110px] px-3 text-dg truncate cursor-default text-right">
+          {supplyAmount === 0 ? '-' : supplyAmount.toLocaleString()}
+        </p>
+        <p className="w-[100px] px-3 text-dg truncate cursor-default text-right">
+          {taxAmount === 0 ? '0' : taxAmount.toLocaleString()}
+        </p>
+        <p className="w-[110px] px-3 text-dg truncate cursor-default text-right">
           {totalAmount === 0 ? '-' : totalAmount.toLocaleString()}
         </p>
         {!isViewer && (

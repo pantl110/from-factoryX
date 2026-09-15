@@ -76,6 +76,16 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
 
     return (
       <>
+        {formData.tax_type_review_required && (
+          <div className="mb-4 rounded-lg border border-lg bg-blue-8 px-4 py-3">
+            <p className="Me_Body-2 text-dg">
+              {tCommon('taxTypeReviewRequired')}
+            </p>
+            <p className="mt-1 Me_Body-3 text-sv">
+              {tCommon('taxTypeReviewRequiredHelp')}
+            </p>
+          </div>
+        )}
         <div className="flex flex-col border-b border-lg">
           <div className="flex relative">
             <Controller

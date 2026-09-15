@@ -5,6 +5,7 @@ import Dropdown from '@/ui/dropdown/dropdown';
 import DropdownItem from '@/ui/dropdown/dropdown-item';
 import { useState, useEffect, useCallback } from 'react';
 import { useGetProduct } from '@/hooks';
+import { useTranslations } from 'next-intl';
 
 interface ProductNameDropdownProps {
   searchTerm: string;
@@ -26,6 +27,7 @@ export const ProductNameDropdown = ({
   const [hasMore, setHasMore] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { getProductList } = useGetProduct();
+  const tCommon = useTranslations('common');
 
   // 초기 데이터 로드
   useEffect(() => {
@@ -121,8 +123,13 @@ export const ProductNameDropdown = ({
       {products.map((item, index) => (
         <DropdownItem
           key={`${item.id}-${index}`}
-          text={item.name}
+          text={
+            item.tax_type_review_required
+              ? `${item.name} (${tCommon('taxTypeReviewRequired')})`
+              : item.name
+          }
           onClick={() => onSelect(item)}
+          disabled={item.tax_type_review_required}
           search={true}
         />
       ))}

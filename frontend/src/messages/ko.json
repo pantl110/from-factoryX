@@ -17,7 +17,7 @@
     "taxClassification": "과세 구분",
     "taxable": "과세",
     "taxExempt": "면세",
-    "taxTypeAutoHelp": "저장 후 세금 문서 작성 시 자동으로 적용됩니다.",
+    "taxTypeAutoHelp": "면세 제품은 전자계산서로, 과세 제품은 전자세금계산서로 분류됩니다.",
     "errors": {
       "serverConnectionFailed": "서버 연결에 실패했습니다.",
       "factoryIdNotSet": "공장 ID가 설정되지 않았습니다.",
@@ -102,11 +102,15 @@
     "unitPrice": "단가",
     "currentStock": "현재 재고",
     "totalAmount": "합계금액",
+    "total": "합계",
     "amount": "금액",
     "supplyAmount": "공급가액",
     "taxAmountVAT": "세액(VAT 10%)",
+    "taxAmount": "세액",
     "won": "원",
     "manufacturingQuantity": "제작 수량",
+    "taxTypeReviewRequired": "과세 구분 확인 필요",
+    "taxTypeReviewRequiredHelp": "기존 제품은 기본값을 그대로 믿지 않고 확인해야 합니다. 과세 또는 면세를 확인한 뒤 저장해 주세요.",
     "companyName": "회사명",
     "name": "이름",
     "email": "이메일",
@@ -256,6 +260,7 @@
   },
   "document": {
     "title": "문서함",
+    "groupedTaxDocuments": "원거래 · {count}장",
     "searchPlaceholder": "거래처명이나 제품명을 입력해 검색하세요.",
     "editLog": "수정로그",
     "documentTitleFormat": "[{clientName}]{case} {title}",
@@ -677,10 +682,11 @@
         "unclassified": "미분류",
         "taxInvoice": "전자세금계산서",
         "invoice": "전자계산서",
+        "taxDocument": "전자 세금 문서",
         "taxableDescription": "세액은 공급가액의 10%로 계산됩니다.",
-        "zeroTaxDescription": "{documentLabel}의 세액은 0원으로 저장됩니다.",
         "autoDescription": "선택한 제품의 마스터 과세 구분이 자동 적용됩니다.",
         "zeroRatedTransaction": "영세율 거래",
+        "zeroRatedBadge": "전자세금계산서 · 영세율 0%",
         "zeroRatedDescription": "영세율 거래로 지정되어 선택한 제품 전체에 0%가 적용됩니다.",
         "zeroRatedReasonLabel": "영세율 적용 사유",
         "zeroRatedReasonPlaceholder": "예: 수출 거래, 내국신용장에 의한 공급",
@@ -688,9 +694,21 @@
         "zeroRatedExemptErrorTitle": "면세 제품에는 영세율을 바로 적용할 수 없습니다.",
         "zeroRatedExemptErrorSubtitle": "면세 제품을 제거하거나 별도 문서로 작성한 뒤 영세율 적용 요건을 확인해 주세요.",
         "mixed": "과세·면세 혼합",
-        "mixedDescription": "현재 발행 연동은 문서별 과세 유형이 하나이므로 문서를 나누어 작성해 주세요.",
+        "mixedDescription": "과세 제품과 면세 제품이 함께 있습니다. 임시 저장할 수 있으며, 발행 전 문서 분리 확인이 필요합니다.",
         "mixedErrorTitle": "과세 유형이 다른 제품이 섞여 있습니다.",
         "mixedErrorSubtitle": "과세 제품과 면세 제품을 각각 별도 문서로 작성해 주세요."
+      },
+      "splitPreview": {
+        "title": "과세·면세 문서를 2장으로 나눌까요?",
+        "subtitle": "품목의 과세 구분에 따라 전자세금계산서와 전자계산서 임시 문서를 각각 만듭니다.",
+        "itemCount": "품목 {count}개",
+        "balanced": "분리 전후 공급가액·세액·합계금액이 일치합니다.",
+        "unbalanced": "분리 전후 금액이 일치하지 않습니다. 품목 금액을 다시 확인해 주세요.",
+        "notIssuedNotice": "이 작업은 바로빌에 발행하지 않습니다. 분리 저장 후 각 문서를 다시 검토하여 개별 발행해야 합니다.",
+        "confirm": "2장으로 분리 저장",
+        "errorTitle": "문서를 나누지 못했어요.",
+        "successTitle": "문서를 2장으로 나눴어요.",
+        "successSubtitle": "과세 문서와 면세 문서가 임시저장되었습니다. 각 문서를 검토한 뒤 발행해 주세요."
       },
       "addItemDropdown": {
         "existing": "기존 제품 추가",
@@ -708,7 +726,7 @@
       "productInfo": {
         "empty": {
           "title": "제품이 아직 등록되지 않았어요.",
-          "text": "선발행된 세금계산서에는 추후 제품이 추가될 수 있어요."
+          "text": "제품을 추가하면 과세 구분과 문서 유형이 자동으로 결정됩니다."
         }
       },
       "buttons": {
@@ -947,6 +965,36 @@
         "issuedStatus": "발행 여부"
       }
     },
+    "taxDocumentGroup": {
+      "title": "이 프로젝트의 세금 문서",
+      "subtitle": "생산계획은 한 건으로 유지되고 세금 문서 {count}건이 연결되어 있습니다.",
+      "taxableInvoice": "과세 전자세금계산서",
+      "exemptInvoice": "면세 전자계산서",
+      "zeroRatedInvoice": "영세율 전자세금계산서",
+      "partialStatus": "일부 진행",
+      "view": "문서 보기",
+      "itemCount": "품목 {count}건",
+      "additionalSplit": "추가 분리",
+      "selectItemsToMove": "새 문서로 옮길 품목을 선택해 주세요.",
+      "leaveOneItem": "현재 문서에는 최소 한 품목이 남아야 합니다.",
+      "createAdditionalDocument": "새 문서 만들기",
+      "additionalSplitError": "문서를 추가로 나누지 못했습니다.",
+      "resetToAutoSplit": "자동 분리 상태로 되돌리기",
+      "resetConfirm": "추가로 나눈 임시 문서를 삭제하고 최초 과세·면세 자동 분리 상태로 되돌릴까요?",
+      "resetError": "자동 분리 상태로 되돌리지 못했습니다.",
+      "checkReadiness": "발행 준비 확인",
+      "readinessComplete": "두 문서 모두 발행할 준비가 되었습니다.",
+      "readinessBlocked": "발행 전에 수정이 필요한 문서가 있습니다.",
+      "readinessError": "발행 준비 상태를 확인하지 못했습니다.",
+      "noExternalRequest": "이 확인은 바로빌이나 국세청에 문서를 전송하지 않습니다.",
+      "clientName": "거래처 상호",
+      "businessNumber": "사업자등록번호",
+      "documentCount": "발행 문서 수",
+      "countValue": "총 {count}장",
+      "grandTotal": "전체 발행 합계",
+      "irreversibleTitle": "발행 전 반드시 확인해 주세요.",
+      "irreversibleDescription": "발행 후에는 문서를 직접 수정할 수 없으며, 잘못 발행한 경우 취소 발행 후 다시 발행해야 합니다."
+    },
     "completed": {
       "title": "보관된 프로젝트",
       "filters": {
@@ -975,6 +1023,18 @@
       "orderDocument": "주문서",
       "taxInvoice": "세금계산서",
       "transactionStatement": "거래명세서"
+    },
+    "taxDocumentSummary": {
+      "title": "세금 문서 구성",
+      "description": "생산계획은 한 건으로 유지되고, 과세 유형에 따라 발행 문서가 나뉩니다.",
+      "expectedCount": "발행 예정 {count}장",
+      "taxableInvoice": "전자세금계산서 (과세)",
+      "exemptInvoice": "전자계산서 (면세)",
+      "zeroRatedInvoice": "전자세금계산서 (영세율 0%)",
+      "itemCount": "품목 {count}건",
+      "total": "합계",
+      "documentType": "문서 유형",
+      "items": "품목"
     },
     "loadError": "프로젝트 상태 로드 중 오류",
     "reloadError": "프로젝트 상태 리로드 실패",
@@ -1261,6 +1321,18 @@
     },
     "material": {
       "searchPlaceholder": "자재명 또는 자재코드를 입력해 검색하세요.",
+      "taxManagement": {
+        "filterLabel": "원자재 과세 구분 필터",
+        "all": "과세 구분 전체",
+        "taxable": "과세만",
+        "exempt": "면세만",
+        "bulkLabel": "선택 원자재 과세 구분 변경",
+        "changeToTaxable": "과세로 변경",
+        "changeToExempt": "면세로 변경",
+        "applySelected": "선택 {count}건 적용",
+        "bulkSuccess": "선택한 원자재 {count}건의 과세 구분을 변경했습니다.",
+        "bulkFailed": "원자재 {count}건의 과세 구분을 변경하지 못했습니다."
+      },
       "empty": {
         "title": "자재가 아직 없어요.",
         "description": "자재가 생성되면 이곳에 표시돼요."
@@ -1592,6 +1664,18 @@
     },
     "product": {
       "searchPlaceholder": "제품명 또는 제품코드를 입력해 검색하세요.",
+      "taxManagement": {
+        "filterLabel": "제품 과세 구분 필터",
+        "all": "과세 구분 전체",
+        "taxable": "과세만",
+        "exempt": "면세만",
+        "bulkLabel": "선택 제품 과세 구분 변경",
+        "changeToTaxable": "과세로 변경",
+        "changeToExempt": "면세로 변경",
+        "applySelected": "선택 {count}건 적용",
+        "bulkSuccess": "선택한 제품 {count}건의 과세 구분을 변경했습니다.",
+        "bulkFailed": "제품 {count}건의 과세 구분을 변경하지 못했습니다."
+      },
       "empty": {
         "title": "제품이 아직 없어요.",
         "description": "제품이 생성되면 이곳에 표시돼요."

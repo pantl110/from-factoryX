@@ -37,6 +37,7 @@ interface DocumentTableItemProps {
 }
 
 const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
+  const tDocument = useTranslations('document');
   const tDocumentType = useTranslations('document.type');
   const tList = useTranslations('tax.list');
   const tRoot = useTranslations();
@@ -121,12 +122,22 @@ const DocumentTableItem = ({ data, documentType }: DocumentTableItemProps) => {
         {documentType === '매출 세금계산서' ||
         documentType === '매입 세금계산서' ? (
           <>
-            <div className="pl-2 pr-4 w-[160px]">
+            <div className="pl-2 pr-4 w-[240px] flex items-center gap-2">
               <RoundChip
                 text={getDocumentTypeText(documentType)}
                 variant="defaultSmall"
                 color={color}
               />
+              {(taxData.document_group_count || 1) > 1 && (
+                <span
+                  className="whitespace-nowrap rounded-full bg-bg px-2 py-1 text-xs text-dg"
+                  title={taxData.document_group_key || undefined}
+                >
+                  {tDocument('groupedTaxDocuments', {
+                    count: taxData.document_group_count || 1,
+                  })}
+                </span>
+              )}
             </div>
             <p
               className="px-3 flex-[1.2] truncate"

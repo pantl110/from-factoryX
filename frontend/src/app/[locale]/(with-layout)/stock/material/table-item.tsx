@@ -37,6 +37,8 @@ const TableItem = ({
     current_stock: currentStock,
     status,
     expiry_status: expiryStatus,
+    tax_type: taxType,
+    tax_type_review_required: isTaxTypeReviewRequired,
   } = material;
   const colors = status ? InventoryStatusColorMap[status] : null;
 
@@ -79,6 +81,22 @@ const TableItem = ({
         <p className="flex-[0.5] px-3 text-dg truncate" title={unit}>
           {unit}
         </p>
+        <div className="flex-[0.8] px-3">
+          <span
+            className={`inline-flex rounded-full px-2 py-1 text-xs ${
+              taxType === 'exempt'
+                ? 'bg-orange-8 text-orange'
+                : 'bg-blue-8 text-blue'
+            }`}
+          >
+            {taxType === 'exempt' ? tCommon('taxExempt') : tCommon('taxable')}
+          </span>
+          {isTaxTypeReviewRequired && (
+            <span className="ml-1 text-xs text-red">
+              {tCommon('taxTypeReviewRequired')}
+            </span>
+          )}
+        </div>
         <p
           className="flex-1 px-3 text-dg truncate"
           title={

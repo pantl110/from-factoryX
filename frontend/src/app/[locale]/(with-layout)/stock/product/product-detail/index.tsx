@@ -246,6 +246,7 @@ const ProductDetail = ({
         unit: product.unit,
         spec: product.spec,
         tax_type: product.tax_type ?? 'taxable',
+        tax_type_review_required: product.tax_type_review_required,
         current_stock: product.current_stock,
         average_production_time: product.average_production_time,
         buffer_rate: product.buffer_rate,
@@ -261,6 +262,7 @@ const ProductDetail = ({
         unit: '',
         spec: '',
         tax_type: 'taxable',
+        tax_type_review_required: false,
         current_stock: undefined,
         average_production_time: undefined,
         buffer_rate: undefined,
@@ -361,6 +363,7 @@ const ProductDetail = ({
         // factory 필드는 수정 시 제외 (서버에서 Factory 인스턴스를 기대함)
         const { factory: _factory, ...updateDataWithoutFactory } =
           currentFormData;
+        delete updateDataWithoutFactory.tax_type_review_required;
         const updateData = {
           ...updateDataWithoutFactory,
           current_stock:
@@ -513,7 +516,8 @@ const ProductDetail = ({
 
   // 통합 저장 함수
   const handleSave = async () => {
-    const isProductInfoChanged = isDirty;
+    const isProductInfoChanged =
+      isDirty || Boolean(formData.tax_type_review_required);
     const isLocationsChanged = isLocationDirty;
     const isQuantitiesChanged = isQuantityDirty;
     const prevLocations =
@@ -609,6 +613,7 @@ const ProductDetail = ({
         onClose={onClose}
         headerButton={
           (isDirty ||
+            formData.tax_type_review_required ||
             isLocationDirty ||
             isQuantityDirty ||
             stagedLocations.length > 0) && (

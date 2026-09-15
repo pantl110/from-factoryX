@@ -17,6 +17,7 @@ import {
   useToast,
   useCheckBarobill,
   usePublishTaxInvoice,
+  useSplitTaxDocument,
 } from '@/hooks';
 import type { CreateClientResultType } from '@/hooks';
 import useMemberStore from '@/store/member-store';
@@ -35,6 +36,9 @@ import ProductInfo, {
 } from './product-info';
 import { WarningCircle, CheckCircle } from '@phosphor-icons/react';
 import { useTranslations } from 'next-intl';
+import { calculateTaxLineAmounts } from '@/utils/tax-calculation';
+import SplitTaxDocumentModal from './split-tax-document-modal';
+import type { TaxSplitPreviewModel } from '@/hooks/tax/use-split-tax-document';
 
 // 세금계산서 편집용 제품 데이터 타입
 interface TaxProductEditModel {
@@ -74,6 +78,10 @@ const CreatTaxPanel = ({
     useState(false);
   const [isIssueTypeDropdownOpen, setIsIssueTypeDropdownOpen] = useState(false);
   const [isClaimTaxModalOpen, setIsClaimTaxModalOpen] = useState(false);
+  const [isSplitPreviewOpen, setIsSplitPreviewOpen] = useState(false);
+  const [splitPreview, setSplitPreview] = useState<TaxSplitPreviewModel | null>(
+    null
+  );
   const [selectedIssueType, setSelectedIssueType] = useState<
     'invoice' | 'receipt' | null
   >(null);
@@ -111,6 +119,8 @@ const CreatTaxPanel = ({
   const [zeroRatedReason, setZeroRatedReason] = useState(
     initialZeroRatedReason
   );
+  const [hasZeroRatedReasonBeenTouched, setHasZeroRatedReasonBeenTouched] =
+    useState(false);
   const [isTaxTypeDirty, setIsTaxTypeDirty] = useState(false);
 
   // 그 외 폼 관련 상태
@@ -129,6 +139,11 @@ const CreatTaxPanel = ({
   const { updateClient } = useUpdateClient();
   const { createTaxInvoice } = useCreateTaxInvoice();
   const { publishTaxInvoice } = usePublishTaxInvoice();
+  const {
+    getSplitPreview,
+    splitTaxDocument,
+    isLoading: isSplitting,
+  } = useSplitTaxDocument();
   // 생성된 세금계산서 id 보관 (모달 확인 시 생성 후 발행에 사용)
   const createdTaxIdRef = useRef<number | null>(null);
   // 생성 후 id를 기억 → 재시도 시 새로 생성하지 않고 수정되도록(중복 임시저장 방지)
@@ -169,8 +184,10 @@ const CreatTaxPanel = ({
   );
   const hasMixedTaxTypes = productTaxTypes.length > 1;
   const hasExemptProducts = productTaxTypes.includes('exempt');
-  const initialMasterTaxType =
-    initialTaxType === 'exempt' ? 'exempt' : 'taxable';
+  const initialMasterTaxType: TaxType =
+    initialTaxType === 'taxable' || initialTaxType === 'exempt'
+      ? initialTaxType
+      : 'unclassified';
   const selectedTaxType: TaxType = isZeroRatedTransaction
     ? 'zero_rated'
     : hasMixedTaxTypes
@@ -181,13 +198,16 @@ const CreatTaxPanel = ({
   const taxDocumentLabel =
     selectedTaxType === 'exempt'
       ? t('taxType.invoice')
-      : t('taxType.taxInvoice');
+      : selectedTaxType === 'unclassified'
+        ? t('taxType.taxDocument')
+        : t('taxType.taxInvoice');
   const selectedDocumentKind =
     selectedTaxType === 'exempt' ? 'invoice' : 'tax_invoice';
 
   useEffect(() => {
     setIsZeroRatedTransaction(initialTaxType === 'zero_rated');
     setZeroRatedReason(initialZeroRatedReason);
+    setHasZeroRatedReasonBeenTouched(false);
     setIsTaxTypeDirty(false);
   }, [initialTaxType, initialZeroRatedReason]);
 
@@ -195,6 +215,7 @@ const CreatTaxPanel = ({
     if (isZeroRatedTransaction && hasExemptProducts) {
       setIsZeroRatedTransaction(false);
       setZeroRatedReason('');
+      setHasZeroRatedReasonBeenTouched(false);
       setIsTaxTypeDirty(true);
       setToastType('red');
       setErrorText(t('taxType.zeroRatedExemptErrorTitle'));
@@ -215,6 +236,7 @@ const CreatTaxPanel = ({
 
     setIsZeroRatedTransaction((current) => !current);
     if (isZeroRatedTransaction) setZeroRatedReason('');
+    setHasZeroRatedReasonBeenTouched(false);
     setIsTaxTypeDirty(true);
   };
 
@@ -297,6 +319,21 @@ const CreatTaxPanel = ({
       return;
     }
 
+    if (hasMixedTaxTypes) {
+      const previewResult = await getSplitPreview(taxId);
+      handleModalClose();
+      if (previewResult.success && previewResult.data) {
+        setSplitPreview(previewResult.data);
+        setIsSplitPreviewOpen(true);
+      } else {
+        setToastType('red');
+        setErrorText(t('splitPreview.errorTitle'));
+        setErrorSubtext(previewResult.error || t('errors.tryAgain'));
+        showToast();
+      }
+      return;
+    }
+
     // 2) 국세청 발행
     const publishResult = await publishTaxInvoice(taxId);
     if (publishResult.success) {
@@ -321,6 +358,29 @@ const CreatTaxPanel = ({
       showToast();
       handleModalClose();
     }
+  };
+
+  const handleSplitConfirm = async () => {
+    const taxId = createdTaxIdRef.current ?? currentTaxId;
+    if (!taxId) return;
+
+    const splitResult = await splitTaxDocument(taxId);
+    if (!splitResult.success) {
+      setToastType('red');
+      setErrorText(t('splitPreview.errorTitle'));
+      setErrorSubtext(splitResult.error || t('errors.tryAgain'));
+      showToast();
+      return;
+    }
+
+    setIsSplitPreviewOpen(false);
+    setSplitPreview(null);
+    setToastType('primary');
+    setErrorText(t('splitPreview.successTitle'));
+    setErrorSubtext(t('splitPreview.successSubtitle'));
+    showToast();
+    setIsEditingMode?.(false);
+    setTimeout(() => onClose(), 1500);
   };
 
   // 판매처 정보 폼 유효성 및 변경 상태 변경 핸들러
@@ -515,13 +575,6 @@ const CreatTaxPanel = ({
     transactionType: TransactionType,
     projectId?: number
   ): Promise<boolean> => {
-    if (hasMixedTaxTypes) {
-      setToastType('red');
-      setErrorText(t('taxType.mixedErrorTitle'));
-      setErrorSubtext(t('taxType.mixedErrorSubtitle'));
-      showToast();
-      return false;
-    }
     // 임시저장일 때는 작성날짜만 유효성 검사
     if (!isWriteDateValid()) {
       setShowWriteDateError(true); // 작성일자만 에러 표시
@@ -609,6 +662,11 @@ const CreatTaxPanel = ({
                 selectedTaxType === 'unclassified'
                   ? (p.tax_type ?? 'taxable')
                   : selectedTaxType;
+              const lineAmounts = calculateTaxLineAmounts(
+                p.quantity,
+                p.unitPrice,
+                lineTaxType
+              );
 
               return {
                 id: index + 1, // 순번 ID
@@ -619,14 +677,8 @@ const CreatTaxPanel = ({
                 information: p.product_spec || '', // 규격
                 chargeable_unit: p.quantity.toString() || '0', // 수량
                 unit_price: p.unitPrice.toString() || '0', // 단가
-                amount:
-                  ((p.quantity || 0) * (p.unitPrice || 0)).toString() || '0', // 공급가액
-                tax:
-                  Math.floor(
-                    (p.quantity || 0) *
-                      (p.unitPrice || 0) *
-                      (lineTaxType === 'taxable' ? 0.1 : 0)
-                  ).toString() || '0', // 세액 (원 미만 절사 — 국세청 홈택스 기준)
+                amount: lineAmounts.supplyAmount.toString(), // 공급가액
+                tax: lineAmounts.taxAmount.toString(), // 세액 (원 미만 절사)
               };
             }) || [];
 
@@ -694,6 +746,12 @@ const CreatTaxPanel = ({
     if (!isSellerInfoValid || !isClientInfoValid || !isProductInfoValid) {
       forceShowErrors.current = true;
       setShowErrors(true);
+      return;
+    }
+
+    // 혼합 문서는 바로빌 발행이 아니라 분리 미리보기·임시저장으로 이동한다.
+    if (hasMixedTaxTypes) {
+      setIsIssueTypeDropdownOpen(true);
       return;
     }
 
@@ -778,7 +836,6 @@ const CreatTaxPanel = ({
             !hasSellerInfoRequiredValues ||
             !hasClientInfoRequiredValues ||
             !isProductInfoValid ||
-            hasMixedTaxTypes ||
             isZeroRatedReasonMissing ||
             isSaving ||
             isViewer
@@ -816,23 +873,32 @@ const CreatTaxPanel = ({
           />
         </div>
 
-        <div
-          className={`mt-7 rounded-lg border px-5 py-4 ${
-            hasMixedTaxTypes ? 'border-red bg-red-8' : 'border-lg bg-bg'
-          }`}
-        >
-          <div className="flex items-center gap-4">
-            <p className="Me_Body-2 text-dg">{t('taxType.label')}</p>
-            <span className="rounded-md bg-white px-3 py-2 Me_Body-3 text-dg">
+        <div className="mt-7 flex flex-col gap-2">
+          <div className="flex h-5 items-center gap-1">
+            <p className="Heading-5 text-sv">{t('taxType.label')}</p>
+          </div>
+          <div
+            className={`flex min-h-12 items-center gap-3 rounded border bg-white px-3 transition-colors ${
+              hasMixedTaxTypes ? 'border-primary' : 'border-lg'
+            }`}
+          >
+            <span
+              className={`shrink-0 Me_Body-2 ${
+                hasMixedTaxTypes ? 'text-primary' : 'text-dg'
+              }`}
+            >
               {hasMixedTaxTypes
                 ? t('taxType.mixed')
                 : selectedTaxType === 'zero_rated'
-                  ? t('taxType.zeroRated')
+                  ? t('taxType.zeroRatedBadge')
                   : selectedTaxType === 'exempt'
                     ? t('taxType.exempt')
-                    : t('taxType.taxable')}
+                    : selectedTaxType === 'taxable'
+                      ? t('taxType.taxable')
+                      : t('taxType.unclassified')}
             </span>
-            <p className="flex-1 Me_Body-3 text-sv">
+            <span className="h-5 w-px shrink-0 bg-lg" />
+            <p className="flex-1 Re_Body-1 text-sv">
               {hasMixedTaxTypes
                 ? t('taxType.mixedDescription')
                 : isZeroRatedTransaction
@@ -840,7 +906,7 @@ const CreatTaxPanel = ({
                   : t('taxType.autoDescription')}
             </p>
             <div className="flex items-center gap-2">
-              <span className="Me_Body-3 text-dg">
+              <span className="whitespace-nowrap Re_Body-1 text-dg">
                 {t('taxType.zeroRatedTransaction')}
               </span>
               <button
@@ -866,10 +932,13 @@ const CreatTaxPanel = ({
           </div>
 
           {isZeroRatedTransaction && (
-            <div className="mt-4 border-t border-lg pt-4">
-              <label htmlFor="zero-rated-reason" className="Me_Body-3 text-dg">
+            <div className="mt-2 flex flex-col gap-2">
+              <label
+                htmlFor="zero-rated-reason"
+                className="flex h-5 items-center Heading-5 text-sv"
+              >
                 {t('taxType.zeroRatedReasonLabel')}
-                <span className="ml-1 text-red">*</span>
+                <span className="ml-1 text-primary">*</span>
               </label>
               <input
                 id="zero-rated-reason"
@@ -880,13 +949,16 @@ const CreatTaxPanel = ({
                   setZeroRatedReason(event.target.value);
                   setIsTaxTypeDirty(true);
                 }}
+                onBlur={() => setHasZeroRatedReasonBeenTouched(true)}
                 placeholder={t('taxType.zeroRatedReasonPlaceholder')}
                 disabled={isViewer}
-                className={`mt-2 h-10 w-full rounded-md border bg-white px-3 Me_Body-3 text-dg outline-none ${
-                  isZeroRatedReasonMissing ? 'border-red' : 'border-lg'
+                className={`h-12 w-full rounded border bg-white px-3 Re_Body-1 text-dg outline-none transition-colors hover:border-primary focus:border-primary ${
+                  hasZeroRatedReasonBeenTouched && isZeroRatedReasonMissing
+                    ? 'border-red'
+                    : 'border-lg'
                 }`}
               />
-              <p className="mt-2 Me_Body-3 text-sv">
+              <p className="Re_Body-1 text-sv">
                 {t('taxType.zeroRatedReasonHelp')}
               </p>
             </div>
@@ -934,6 +1006,18 @@ const CreatTaxPanel = ({
           issueType={selectedIssueType}
           documentLabel={taxDocumentLabel}
           onConfirm={handleModalConfirm}
+        />
+      )}
+
+      {isSplitPreviewOpen && splitPreview && (
+        <SplitTaxDocumentModal
+          preview={splitPreview}
+          isLoading={isSplitting}
+          onClose={() => {
+            setIsSplitPreviewOpen(false);
+            setSplitPreview(null);
+          }}
+          onConfirm={handleSplitConfirm}
         />
       )}
 

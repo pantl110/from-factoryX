@@ -44,6 +44,7 @@ const TableHeader = ({
       <p className="flex-1 px-3 text-sv">{t('tableHeader.code')}</p>
       <p className="flex-1 px-3 text-sv">{tCommon('specification')}</p>
       <p className="flex-[0.5] px-3 text-sv">{tCommon('unit')}</p>
+      <p className="flex-[0.8] px-3 text-sv">{tCommon('taxClassification')}</p>
       <div
         className="px-3 flex-1 h-full flex items-center gap-1"
         // cursor-pointer hover:bg-bg

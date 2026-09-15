@@ -18,7 +18,7 @@
     "taxClassification": "Tax classification",
     "taxable": "Taxable",
     "taxExempt": "Tax exempt",
-    "taxTypeAutoHelp": "This value is applied automatically when creating tax documents.",
+    "taxTypeAutoHelp": "Exempt products are classified as electronic invoices and taxable products as electronic tax invoices.",
     "errors": {
       "serverConnectionFailed": "Failed to connect to server.",
       "factoryIdNotSet": "Factory ID is not set.",
@@ -103,11 +103,15 @@
     "unitPrice": "Unit Price",
     "currentStock": "Current Stock",
     "totalAmount": "Total Price",
+    "total": "Total",
     "amount": "Price",
     "supplyAmount": "Supply Price",
     "taxAmountVAT": "Tax Amount (VAT 10%)",
+    "taxAmount": "Tax",
     "won": "KRW",
     "manufacturingQuantity": "Quantity",
+    "taxTypeReviewRequired": "Tax classification review required",
+    "taxTypeReviewRequiredHelp": "Legacy product defaults must be verified. Confirm taxable or exempt, then save the product.",
     "companyName": "Company Name",
     "name": "Name",
     "email": "Email",
@@ -256,6 +260,7 @@
   },
   "document": {
     "title": "Documents",
+    "groupedTaxDocuments": "Source transaction · {count} docs",
     "searchPlaceholder": "Search by client name or product name.",
     "editLog": "Edit Log",
     "documentTitleFormat": "[{clientName}] {title}",
@@ -676,10 +681,11 @@
         "unclassified": "Unclassified",
         "taxInvoice": "Electronic tax invoice",
         "invoice": "Electronic invoice",
+        "taxDocument": "Electronic tax document",
         "taxableDescription": "Tax is calculated at 10% of the supply amount.",
-        "zeroTaxDescription": "The tax amount for this {documentLabel} is saved as 0.",
         "autoDescription": "The tax classification saved on the selected product is applied automatically.",
         "zeroRatedTransaction": "Zero-rated transaction",
+        "zeroRatedBadge": "Electronic tax invoice · Zero-rated 0%",
         "zeroRatedDescription": "This transaction is zero-rated, so 0% is applied to all selected products.",
         "zeroRatedReasonLabel": "Reason for zero rating",
         "zeroRatedReasonPlaceholder": "e.g. Export transaction or supply under a local letter of credit",
@@ -687,9 +693,21 @@
         "zeroRatedExemptErrorTitle": "Zero rating cannot directly override an exempt product.",
         "zeroRatedExemptErrorSubtitle": "Remove the exempt product or create a separate document, then verify eligibility for zero rating.",
         "mixed": "Mixed taxable/exempt",
-        "mixedDescription": "The current issuing integration supports one tax classification per document. Create separate documents.",
+        "mixedDescription": "Taxable and exempt products are mixed. You can save a draft, but the document split must be reviewed before issuing.",
         "mixedErrorTitle": "Products with different tax classifications are mixed.",
         "mixedErrorSubtitle": "Create separate documents for taxable and tax-exempt products."
+      },
+      "splitPreview": {
+        "title": "Split this into two tax documents?",
+        "subtitle": "Separate draft tax invoice and invoice documents will be created from each item's tax classification.",
+        "itemCount": "{count} items",
+        "balanced": "Supply, tax, and total amounts match before and after the split.",
+        "unbalanced": "Amounts do not match before and after the split. Review the item amounts.",
+        "notIssuedNotice": "This does not issue anything through BaroBill. Review and issue each saved draft separately.",
+        "confirm": "Save as two drafts",
+        "errorTitle": "Could not split the document.",
+        "successTitle": "The document was split in two.",
+        "successSubtitle": "Taxable and exempt drafts were saved. Review each document before issuing."
       },
       "addItemDropdown": {
         "existing": "Add Existing Product",
@@ -707,7 +725,7 @@
       "productInfo": {
         "empty": {
           "title": "No products registered yet.",
-          "text": "Products can be added later to pre-issued tax invoices."
+          "text": "Adding products automatically determines the tax classification and document type."
         }
       },
       "buttons": {
@@ -946,6 +964,36 @@
         "issuedStatus": "Issued"
       }
     },
+    "taxDocumentGroup": {
+      "title": "Tax documents for this project",
+      "subtitle": "The production plan remains one project with {count} linked tax documents.",
+      "taxableInvoice": "Taxable electronic tax invoice",
+      "exemptInvoice": "Exempt electronic invoice",
+      "zeroRatedInvoice": "Zero-rated electronic tax invoice",
+      "partialStatus": "Partially processed",
+      "view": "View document",
+      "itemCount": "{count} item(s)",
+      "additionalSplit": "Split further",
+      "selectItemsToMove": "Select the items to move into a new document.",
+      "leaveOneItem": "At least one item must remain in the current document.",
+      "createAdditionalDocument": "Create new document",
+      "additionalSplitError": "Could not split the document further.",
+      "resetToAutoSplit": "Reset to automatic split",
+      "resetConfirm": "Delete the additional drafts and restore the original taxable/exempt automatic split?",
+      "resetError": "Could not restore the automatic split.",
+      "checkReadiness": "Check issue readiness",
+      "readinessComplete": "Both documents are ready to issue.",
+      "readinessBlocked": "One or more documents must be corrected before issue.",
+      "readinessError": "Could not check issue readiness.",
+      "noExternalRequest": "This check does not send anything to BaroBill or the NTS.",
+      "clientName": "Client name",
+      "businessNumber": "Business registration number",
+      "documentCount": "Documents to issue",
+      "countValue": "{count} document(s)",
+      "grandTotal": "Grand issue total",
+      "irreversibleTitle": "Please verify before issuing.",
+      "irreversibleDescription": "Issued documents cannot be edited directly. Corrections require a cancellation issue followed by reissue."
+    },
     "completed": {
       "title": "Archived Projects",
       "filters": {
@@ -974,6 +1022,18 @@
       "orderDocument": "Order",
       "taxInvoice": "Tax Invoice",
       "transactionStatement": "Transaction Statement"
+    },
+    "taxDocumentSummary": {
+      "title": "Tax document composition",
+      "description": "The production plan remains one project while tax documents are separated by tax type.",
+      "expectedCount": "{count} document(s) expected",
+      "taxableInvoice": "Electronic tax invoice (taxable)",
+      "exemptInvoice": "Electronic invoice (exempt)",
+      "zeroRatedInvoice": "Electronic tax invoice (zero-rated 0%)",
+      "itemCount": "{count} item(s)",
+      "total": "Total",
+      "documentType": "Document type",
+      "items": "Items"
     },
     "loadError": "Error loading project status",
     "reloadError": "Failed to reload project status",
@@ -1260,6 +1320,18 @@
     },
     "material": {
       "searchPlaceholder": "Search by material name or code.",
+      "taxManagement": {
+        "filterLabel": "Material tax classification filter",
+        "all": "All tax classifications",
+        "taxable": "Taxable only",
+        "exempt": "Exempt only",
+        "bulkLabel": "Change selected material tax classification",
+        "changeToTaxable": "Change to taxable",
+        "changeToExempt": "Change to exempt",
+        "applySelected": "Apply to {count} selected",
+        "bulkSuccess": "Updated the tax classification for {count} selected material(s).",
+        "bulkFailed": "Failed to update the tax classification for {count} material(s)."
+      },
       "empty": {
         "title": "No materials yet.",
         "description": "Materials will appear here once created."
@@ -1591,6 +1663,18 @@
     },
     "product": {
       "searchPlaceholder": "Search by product name or code.",
+      "taxManagement": {
+        "filterLabel": "Product tax classification filter",
+        "all": "All tax classifications",
+        "taxable": "Taxable only",
+        "exempt": "Exempt only",
+        "bulkLabel": "Change selected product tax classification",
+        "changeToTaxable": "Change to taxable",
+        "changeToExempt": "Change to exempt",
+        "applySelected": "Apply to {count} selected",
+        "bulkSuccess": "Updated the tax classification for {count} selected product(s).",
+        "bulkFailed": "Failed to update the tax classification for {count} product(s)."
+      },
       "empty": {
         "title": "No products yet.",
         "description": "Products will appear here once created."

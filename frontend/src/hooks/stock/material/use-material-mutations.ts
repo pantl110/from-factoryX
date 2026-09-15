@@ -13,6 +13,7 @@ export interface MaterialFilterModel {
   limit?: number;
   material_id?: number; // 대체자재 필터링을 위한 파라미터
   status?: 'shortage';
+  tax_type?: 'taxable' | 'exempt';
 }
 
 // 원자재 목록 조회 mutation
@@ -36,6 +37,7 @@ export const useGetMaterialListMutation = () => {
       if (filters.limit) params.limit = filters.limit.toString();
       if (filters.material_id) params.material_id = filters.material_id;
       if (filters.status) params.status = filters.status;
+      if (filters.tax_type) params.tax_type = filters.tax_type;
 
       const response = await axios.get<MaterialListResponseModel>(
         `${process.env.NEXT_PUBLIC_API_URL}/v1/stock/material`,

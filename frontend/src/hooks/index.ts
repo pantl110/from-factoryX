@@ -107,6 +107,7 @@ export { default as useUpdatePaymentDetail } from './tax/invoice-account/use-upd
 export { default as useDeletePaymentDetail } from './tax/invoice-account/use-delete-payment-detail';
 export { default as useSendEmailForAccount } from './tax/invoice-account/use-send-email-for-account';
 export { default as usePublishTaxInvoice } from './tax/use-publish-tax-invoice';
+export { default as useSplitTaxDocument } from './tax/use-split-tax-document';
 export { default as useCancelTaxInvoice } from './tax/use-cancel-tax-invoice';
 export { default as useDeleteTaxInvoice } from './tax/use-delete-tax-invoice';
 export { default as useConnectMaterialHistory } from './tax/use-connect-material-history';
