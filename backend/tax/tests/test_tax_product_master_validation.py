@@ -65,3 +65,10 @@ class ProductMasterTaxTypeValidationTest(TestCase):
             async_to_sync(validate_product_master_tax_types_for_issue)(
                 self.make_tax_service(line_tax_type="taxable")
             )
+
+    def test_productless_line_cannot_bypass_master_validation(self):
+        tax_service = self.make_tax_service()
+        tax_service.line_items[0]["product_id"] = None
+
+        with self.assertRaisesMessage(HttpError, "마스터와 연결"):
+            async_to_sync(validate_product_master_tax_types_for_issue)(tax_service)

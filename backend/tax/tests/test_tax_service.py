@@ -167,10 +167,6 @@ class TestTaxService(TestCase):
         tax_service = await NationalTaxService.objects.aget(
             id=tax_service_id
         )  # Ensure the object is created
-        print(
-            "🐍 File: tests/test_tax_service.py | Line: 148 | setUp ~ tax_service",
-            tax_service.mgt_key,
-        )
         return data.get("id")
 
     # async def test_publish_tax_invoice(self):
@@ -259,10 +255,21 @@ class TestTaxService(TestCase):
 
         # 세금계산서 동기화
         response = await self.client.post(f"/{tax_service_id}/sync", headers=headers)
-        data = response.json()
-        print("🐍 File: tests/test_tax_service.py | Line: 240 | setUp ~ data", data)
-
         self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            [
+                call.kwargs["TaxType"]
+                for call in self.barobill_mock.service.GetPeriodTaxInvoiceSalesList.call_args_list
+            ],
+            [1, 3],
+        )
+        self.assertEqual(
+            [
+                call.kwargs["TaxType"]
+                for call in self.barobill_mock.service.GetPeriodTaxInvoicePurchaseList.call_args_list
+            ],
+            [1, 3],
+        )
 
     # async def test_get_tax_service_state(self):
     #     """세금계산서 상태 조회 테스트"""
@@ -294,19 +301,12 @@ class TestTaxService(TestCase):
         # 세금계산서 발행(바로빌 요청)
         response = await self.client.post(f"{tax_service_id}/publish", headers=headers)
 
-        data = response.json()
-        print("🐍 File: tests/test_tax_service.py | Line: 256 | setUp ~ data", data)
-
         # 세금계산서 바로빌 상태 조회(바로빌 상태 : 발급완료, NTS 상태 : 전송전)
         response = await self.client.get(f"/{tax_service_id}/state", headers=headers)
-        data = response.json()
-        print("🐍 File: tests/test_tax_service.py | Line: 250 | setUp ~ data", data)
         self.assertEqual(response.status_code, 200)
 
         # 세금계산서 취소
         response = await self.client.post(f"/{tax_service_id}/cancel", headers=headers)
-        data = response.json()
-        print("🐍 File: tests/test_tax_service.py | Line: 270 | setUp ~ data", data)
 
     async def test_connect_material_history(self):
         """세금계산서 품목과 자재 이력 연동 API 테스트"""

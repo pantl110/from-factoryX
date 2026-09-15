@@ -6,6 +6,7 @@ TAXABLE = "taxable"
 ZERO_RATED = "zero_rated"
 EXEMPT = "exempt"
 UNCLASSIFIED = "unclassified"
+MIXED = "mixed"
 
 TAX_INVOICE = "tax_invoice"
 INVOICE = "invoice"
@@ -70,6 +71,53 @@ def calculate_line_amounts(*, quantity, unit_price, tax_type: str) -> TaxLineAmo
     )
 
 
+def normalize_line_item_amounts(
+    *, line_items, allow_incomplete: bool = True
+) -> tuple[list[dict], int | None, int | None]:
+    """Make the server calculation authoritative for every classifiable line."""
+    normalized_items = []
+    supply_total = 0
+    tax_total = 0
+    is_complete = bool(line_items)
+
+    for item in line_items or []:
+        normalized = dict(item)
+        item_tax_type = normalized.get("tax_type")
+        quantity = normalized.get("chargeable_unit")
+        unit_price = normalized.get("unit_price")
+        if (
+            item_tax_type not in {TAXABLE, ZERO_RATED, EXEMPT}
+            or quantity is None
+            or quantity == ""
+            or unit_price is None
+            or unit_price == ""
+        ):
+            if not allow_incomplete:
+                raise TaxDocumentValidationError(
+                    "모든 품목의 과세 구분·수량·단가를 입력해야 합니다."
+                )
+            is_complete = False
+            normalized_items.append(normalized)
+            continue
+
+        amounts = calculate_line_amounts(
+            quantity=quantity,
+            unit_price=unit_price,
+            tax_type=item_tax_type,
+        )
+        normalized["amount"] = str(amounts.supply_amount)
+        normalized["tax"] = str(amounts.tax_amount)
+        supply_total += amounts.supply_amount
+        tax_total += amounts.tax_amount
+        normalized_items.append(normalized)
+
+    return (
+        normalized_items,
+        supply_total if is_complete else None,
+        tax_total if is_complete else None,
+    )
+
+
 def validate_document_amounts(
     *,
     document_tax_type: str,
@@ -87,9 +135,13 @@ def validate_document_amounts(
     validated_line_count = 0
 
     for index, item in enumerate(line_items, start=1):
-        item_tax_type = item.get("tax_type") or document_tax_type
-        if allow_incomplete and item_tax_type == UNCLASSIFIED:
-            continue
+        item_tax_type = item.get("tax_type")
+        if item_tax_type not in {TAXABLE, ZERO_RATED, EXEMPT}:
+            if allow_incomplete:
+                continue
+            raise TaxDocumentValidationError(
+                f"품목 {index}번의 과세 구분을 확인해야 합니다."
+            )
         required_values = {
             "수량": item.get("chargeable_unit"),
             "단가": item.get("unit_price"),
@@ -146,14 +198,24 @@ def validate_document_amounts(
         )
 
 
-def validate_line_item_tax_types(*, document_tax_type: str, line_items) -> None:
+def validate_line_item_tax_types(
+    *, document_tax_type: str, line_items, allow_incomplete: bool = False
+) -> None:
     """Keep item defaults and the single BaroBill document classification aligned."""
-    if document_tax_type == UNCLASSIFIED or not line_items:
+    if document_tax_type in {UNCLASSIFIED, MIXED} and allow_incomplete:
+        return
+    if not line_items:
         return
 
     item_tax_types = set()
-    for item in line_items:
-        item_tax_type = item.get("tax_type") or document_tax_type
+    for index, item in enumerate(line_items, start=1):
+        item_tax_type = item.get("tax_type")
+        if item_tax_type is None:
+            if allow_incomplete:
+                continue
+            raise TaxDocumentValidationError(
+                f"품목 {index}번의 과세 구분을 확인해야 합니다."
+            )
         if item_tax_type not in {TAXABLE, ZERO_RATED, EXEMPT}:
             raise TaxDocumentValidationError("지원하지 않는 품목 과세 유형입니다.")
         item_tax_types.add(item_tax_type)
@@ -173,6 +235,8 @@ def validate_line_item_tax_types(*, document_tax_type: str, line_items) -> None:
         raise TaxDocumentValidationError(
             "과세 유형이 다른 품목은 문서를 나누어 발행해야 합니다."
         )
+    if allow_incomplete and not item_tax_types:
+        return
     if item_tax_types != {document_tax_type}:
         raise TaxDocumentValidationError(
             "품목의 과세 유형과 문서의 과세 유형이 일치하지 않습니다."
@@ -191,6 +255,10 @@ def get_barobill_tax_document_fields(
     """Validate an issue-ready document and convert it to BaroBill values."""
     if tax_type == UNCLASSIFIED:
         raise TaxDocumentValidationError("과세 유형을 선택해야 발행할 수 있습니다.")
+    if tax_type == MIXED:
+        raise TaxDocumentValidationError(
+            "과세·면세 혼합 문서는 분리한 뒤 발행해야 합니다."
+        )
 
     expected_document_kind = {
         TAXABLE: TAX_INVOICE,
@@ -208,6 +276,8 @@ def get_barobill_tax_document_fields(
     if tax_type in {ZERO_RATED, EXEMPT} and tax_amount != 0:
         raise TaxDocumentValidationError("영세율과 면세 문서의 세액은 0원이어야 합니다.")
 
+    # BaroBill official contract: TaxInvoiceType is 1 for a tax invoice and
+    # 2 for an invoice; TaxType is 1 taxable, 2 zero-rated, 3 exempt.
     return BarobillTaxDocumentFields(
         tax_invoice_type=1 if document_kind == TAX_INVOICE else 2,
         tax_type={TAXABLE: 1, ZERO_RATED: 2, EXEMPT: 3}[tax_type],

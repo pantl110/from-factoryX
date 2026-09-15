@@ -110,7 +110,9 @@ def issue_barobill_tax_invoice(tax_service, factory, client, user):
     return result
 
 
-def get_state_barobill_tax_invoice(business_registration_number, mgt_key):
+def get_state_barobill_tax_invoice(
+    business_registration_number, mgt_key, *, allow_missing=False
+):
     certKey = settings.BAROBILL_CERT_KEY
     corpNum = business_registration_number
     mgtKey = mgt_key
@@ -121,6 +123,8 @@ def get_state_barobill_tax_invoice(business_registration_number, mgt_key):
         MgtKey=mgtKey,
     )
 
+    if result.BarobillState == -21002 and allow_missing:
+        return result
     if result.BarobillState < 0:  # 호출 실패
         raise HttpError(
             400,

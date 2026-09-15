@@ -1492,8 +1492,6 @@ class TaxAPITestCase(TestCase):
         # API 호출
         url = f"/v1/tax/invoice-by-material-history?material_history_id={history.id}"
         response = self.client.get(url, HTTP_AUTHORIZATION=f"Bearer {self.token}")
-        if response.status_code != 200:
-            print("응답:", response.json())
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertEqual(data["client_name"], self.client_company1.name)
@@ -1586,24 +1584,14 @@ class TaxAPITestCase(TestCase):
         """디버그용 라우터 테스트"""
         # GET 디버그 엔드포인트 테스트
         response = self.client.get("/v1/tax/debug")
-        print(f"GET /v1/tax/debug: {response.status_code}")
-        print(
-            f"Response: {response.json() if response.status_code == 200 else response.content}"
-        )
+        self.assertEqual(response.status_code, 401)
 
         # POST 디버그 엔드포인트 테스트
         response = self.client.post("/v1/tax/debug")
-        print(f"POST /v1/tax/debug: {response.status_code}")
-        print(
-            f"Response: {response.json() if response.status_code == 200 else response.content}"
-        )
+        self.assertEqual(response.status_code, 405)
 
         # 실제 POST 엔드포인트 테스트 (인증 없이)
         response = self.client.post(
             "/v1/tax/", data='{"factory": 999}', content_type="application/json"
         )
-        print(f"POST /v1/tax/: {response.status_code}")
-        print(f"Response: {response.content}")
-
-        # 이 테스트는 항상 성공하도록 설정
-        self.assertTrue(True)
+        self.assertEqual(response.status_code, 401)

@@ -167,9 +167,6 @@ class TestTaxService(TestCase):
 
         # 현금영수증 동기화
         response = await self.client.post(f"/{self.factory.id}/sync", headers=headers)
-        data = response.json()
-        print("🐍 File: tests/test_tax_service.py | Line: 240 | setUp ~ data", data)
-
         self.assertEqual(response.status_code, 200)
 
     async def test_get_cash_receipt_detail(self):
@@ -190,8 +187,6 @@ class TestTaxService(TestCase):
         self.assertEqual(data["tax_amount"], 1000)
         self.assertEqual(data["nts_confirm_num"], "TEST123456789")
 
-        print("✅ 현금영수증 상세 조회 테스트 성공!")
-
     async def test_get_cash_receipt_detail_not_found(self):
         """존재하지 않는 현금영수증 조회 테스트"""
         headers = await self.authenticate()
@@ -203,8 +198,6 @@ class TestTaxService(TestCase):
         data = response.json()
         self.assertIn("detail", data)
         self.assertEqual(data["detail"], "해당 현금영수증이 존재하지 않습니다.")
-
-        print("✅ 404 에러 테스트 성공!")
 
     async def test_cash_to_material_links_histories(self):
         """cash-to-material PATCH가 자재 이력을 현금영수증에 연결한다"""
@@ -382,10 +375,6 @@ class TestTaxService(TestCase):
                     f"outstanding_balance가 올바르게 설정되지 않았습니다. 예상: {expected_total}, 실제: {account.outstanding_balance}"
                 )
                 self.assertEqual(account.status, "waiting", "account 상태가 올바르게 설정되지 않았습니다.")
-                print(f"✅ 현금영수증 {cash_receipt.id}의 account 생성 확인 완료")
-                print(f"   - total_billed_amount: {account.total_billed_amount}")
-                print(f"   - outstanding_balance: {account.outstanding_balance}")
-                print(f"   - status: {account.status}")
     
     async def test_update_cash_receipt_hidden_status(self):
         """현금영수증 숨김 상태 변경 테스트 (PATCH API)"""

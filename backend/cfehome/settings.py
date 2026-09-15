@@ -333,6 +333,12 @@ AWS_STORAGE_BUCKET_NAME = config("AWS_STORAGE_BUCKET_NAME", default=None)
 # Barobill settings
 BAROBILL_CERT_KEY = config("BAROBILL_CERT_KEY", default=None)
 ENABLE_BAROBILL = config("ENABLE_BAROBILL", default=False, cast=bool)
+ENABLE_GROUP_TAX_PUBLISH = config(
+    "ENABLE_GROUP_TAX_PUBLISH", default=False, cast=bool
+)
+TAX_PUBLISH_CLAIM_TIMEOUT_SECONDS = config(
+    "TAX_PUBLISH_CLAIM_TIMEOUT_SECONDS", default=600, cast=int
+)
 if ENABLE_BAROBILL:
     # 운영(DJANGO_ENV_NAME == "production")만 운영 서버, 그 외 환경은 테스트 서버(안전 기본값)
     if DJANGO_ENV_NAME == "production":

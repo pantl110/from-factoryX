@@ -70,7 +70,7 @@ def build_split_preview(
 
     partitions = {}
     for item in line_items:
-        item_tax_type = item.get("tax_type") or document_tax_type
+        item_tax_type = item.get("tax_type")
         if item_tax_type == UNCLASSIFIED or item_tax_type not in DOCUMENT_META:
             raise TaxDocumentValidationError(
                 "모든 품목의 과세/면세 구분을 확정해야 문서를 나눌 수 있습니다."

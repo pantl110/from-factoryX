@@ -3,6 +3,7 @@ from unittest import TestCase
 from tax.tax_document import (
     EXEMPT,
     INVOICE,
+    MIXED,
     TAXABLE,
     TAX_INVOICE,
     UNCLASSIFIED,
@@ -10,6 +11,7 @@ from tax.tax_document import (
     TaxDocumentValidationError,
     calculate_line_amounts,
     get_barobill_tax_document_fields,
+    normalize_line_item_amounts,
     validate_document_amounts,
     validate_line_item_tax_types,
     validate_zero_rated_reason,
@@ -54,6 +56,12 @@ class TaxDocumentTest(TestCase):
                 tax_type=UNCLASSIFIED, document_kind=TAX_INVOICE, tax_amount=0
             )
 
+    def test_mixed_document_must_be_split_before_issue(self):
+        with self.assertRaisesRegex(TaxDocumentValidationError, "분리"):
+            get_barobill_tax_document_fields(
+                tax_type=MIXED, document_kind=TAX_INVOICE, tax_amount=0
+            )
+
     def test_line_item_tax_type_must_match_document(self):
         with self.assertRaises(TaxDocumentValidationError):
             validate_line_item_tax_types(
@@ -64,10 +72,17 @@ class TaxDocumentTest(TestCase):
                 ],
             )
 
-    def test_legacy_line_item_inherits_document_tax_type(self):
+    def test_legacy_line_item_requires_explicit_tax_type_for_issue(self):
+        with self.assertRaises(TaxDocumentValidationError):
+            validate_line_item_tax_types(
+                document_tax_type=EXEMPT,
+                line_items=[{"name": "우유", "tax": "0"}],
+            )
+
         validate_line_item_tax_types(
             document_tax_type=EXEMPT,
             line_items=[{"name": "우유", "tax": "0"}],
+            allow_incomplete=True,
         )
 
     def test_decimal_zero_tax_is_accepted(self):
@@ -162,3 +177,20 @@ class TaxDocumentTest(TestCase):
                     }
                 ],
             )
+
+    def test_server_normalizes_fractional_line_and_document_totals(self):
+        items, supply_total, tax_total = normalize_line_item_amounts(
+            line_items=[
+                {
+                    "tax_type": TAXABLE,
+                    "chargeable_unit": "0.29",
+                    "unit_price": "100",
+                    "amount": "28",
+                    "tax": "2",
+                }
+            ]
+        )
+
+        self.assertEqual(items[0]["amount"], "29")
+        self.assertEqual(items[0]["tax"], "2")
+        self.assertEqual((supply_total, tax_total), (29, 2))

@@ -1,8 +1,13 @@
 from django.db import models
 from common.models import BaseModel
 from factory.models import FactoryClient, Factory
-import random
+import secrets
 import uuid
+
+
+def generate_mgt_key():
+    """Generate a BaroBill-compatible management key for normal and bulk inserts."""
+    return "".join(secrets.choice("0123456789") for _ in range(20))
 
 
 class TransactionType(models.TextChoices):
@@ -22,6 +27,7 @@ class TaxDocumentKind(models.TextChoices):
 
 class TaxType(models.TextChoices):
     unclassified = ("unclassified", "미분류")
+    mixed = ("mixed", "과세·면세 혼합")
     taxable = ("taxable", "과세")
     zero_rated = ("zero_rated", "영세율")
     exempt = ("exempt", "면세")
@@ -30,6 +36,7 @@ class TaxType(models.TextChoices):
 class PublishStatus(models.TextChoices):
     temporary = ("temporary", "임시 저장")  # 바로빌에 넘기기 전 상태
     pending = ("pending", "전송 대기")  # 바로빌에만 넘어간 상태
+    publishing = ("publishing", "외부 발행 중")
     processing = ("processing", "처리 중")  # 바로빌에서 국세청 넘어간 상태
     published = ("published", "발행 완료")  # 국세청에서 데이터 가져온 상태
     canceled = (
@@ -142,8 +149,7 @@ class NationalTaxService(BaseModel):  # 거래명세서 같이 사용
     is_hidden = models.BooleanField(default=False, help_text="숨김 여부")
     mgt_key = models.CharField(
         max_length=50,
-        null=True,
-        blank=True,
+        default=generate_mgt_key,
         help_text="관리 키",
     )
     nts_send_key = models.CharField(
@@ -178,15 +184,22 @@ class NationalTaxService(BaseModel):  # 거래명세서 같이 사용
         blank=True,
         help_text="혼합 거래 분리 문서 그룹",
     )
+    publish_attempt_count = models.PositiveIntegerField(
+        default=0,
+        help_text="외부 발행 시도 횟수",
+    )
+    last_publish_attempt_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text="마지막 외부 발행 시도 시각",
+    )
+    last_publish_error = models.TextField(
+        blank=True,
+        default="",
+        help_text="마지막 외부 발행 실패 사유",
+    )
 
     def save(self, *args, **kwargs):
-        if not self.mgt_key:
-            # Generate a unique management key
-            new_key = "".join(random.choices("0123456789", k=20))
-            while NationalTaxService.objects.filter(mgt_key=new_key).exists():
-                new_key = "".join(random.choices("0123456789", k=20))
-            self.mgt_key = new_key
-        
         # 이전 상태 확인을 위해 저장 전에 체크
         was_published = False
         if self.pk:

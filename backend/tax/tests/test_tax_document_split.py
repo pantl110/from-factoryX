@@ -1,12 +1,18 @@
 from datetime import date
 from types import SimpleNamespace
+from unittest.mock import patch
 
 from asgiref.sync import async_to_sync
-from django.test import TestCase
+from django.test import TestCase, override_settings
+from ninja.errors import HttpError
 
 from factory.models import Factory, FactoryClient, FactoryMember
 from project.models import Project
-from tax.api import check_split_tax_document_group_readiness
+from stock.models import Product
+from tax.api import (
+    check_split_tax_document_group_readiness,
+    publish_split_tax_document_group,
+)
 from tax.models import NationalTaxService, TaxDocumentGroup
 from tax.schemas.outbound import NationalTaxServiceOut
 from tax.split_service import (
@@ -97,6 +103,24 @@ class TaxDocumentSplitPersistenceTest(TestCase):
             name="Tax Split Factory",
             business_registration_number="123-45-67890",
         )
+        self.taxable_product = Product.objects.create(
+            factory=self.factory,
+            name="딸기우유",
+            code="TAX-001",
+            unit="EA",
+            spec="1L",
+            tax_type="taxable",
+            tax_type_review_required=False,
+        )
+        self.exempt_product = Product.objects.create(
+            factory=self.factory,
+            name="흰우유",
+            code="EXEMPT-001",
+            unit="EA",
+            spec="1L",
+            tax_type="exempt",
+            tax_type_review_required=False,
+        )
         self.source = NationalTaxService.objects.create(
             user=self.user,
             factory=self.factory,
@@ -113,7 +137,7 @@ class TaxDocumentSplitPersistenceTest(TestCase):
                     unit_price=1000,
                     amount=2000,
                     tax=200,
-                ),
+                ) | {"product_id": self.taxable_product.id},
                 line_item(
                     name="흰우유",
                     tax_type="exempt",
@@ -121,7 +145,7 @@ class TaxDocumentSplitPersistenceTest(TestCase):
                     unit_price=900,
                     amount=2700,
                     tax=0,
-                ),
+                ) | {"product_id": self.exempt_product.id},
             ],
         )
         self.project = Project.objects.create(
@@ -139,6 +163,7 @@ class TaxDocumentSplitPersistenceTest(TestCase):
                 amount=500,
                 tax=50,
             )
+            | {"product_id": self.taxable_product.id}
         )
         self.source.transaction_amount = 5200
         self.source.tax_amount = 250
@@ -272,3 +297,82 @@ class TaxDocumentSplitPersistenceTest(TestCase):
         self.assertFalse(result["external_request_sent"])
         self.assertEqual(len(result["documents"]), 2)
         self.assertTrue(all(item["ready"] for item in result["documents"]))
+
+    @override_settings(ENABLE_BAROBILL=True, ENABLE_GROUP_TAX_PUBLISH=True)
+    def test_group_publish_retries_only_failed_document(self):
+        FactoryMember.objects.get_or_create(
+            factory=self.factory,
+            user=self.user,
+            defaults={"role": "admin", "status": "active"},
+        )
+        client = FactoryClient.objects.create(
+            factory=self.factory,
+            name="Publish Client",
+        )
+        split_tax_document(tax_service_id=self.source.id, actor=self.user)
+        self.source.refresh_from_db()
+        self.source.document_group.documents.update(
+            client=client,
+            transaction_date=date.today(),
+        )
+        document_ids = list(
+            self.source.document_group.documents.order_by("id").values_list(
+                "id", flat=True
+            )
+        )
+        calls = []
+
+        def fail_second_document(tax_service, factory, issue_client, user):
+            calls.append(tax_service.id)
+            if tax_service.id == document_ids[1]:
+                raise HttpError(400, "테스트 외부 발행 실패")
+            return 1
+
+        with patch(
+            "tax.api.issue_barobill_tax_invoice",
+            side_effect=fail_second_document,
+        ):
+            first = async_to_sync(publish_split_tax_document_group)(
+                SimpleNamespace(auth=self.user), self.source.id
+            )
+
+        self.assertFalse(first["all_succeeded"])
+        self.assertEqual(calls, document_ids)
+        first_document = NationalTaxService.objects.get(id=document_ids[0])
+        second_document = NationalTaxService.objects.get(id=document_ids[1])
+        self.assertEqual(first_document.publish_status, "published")
+        self.assertEqual(second_document.publish_status, "failed")
+        self.assertEqual(first_document.publish_attempt_count, 1)
+        self.assertEqual(second_document.publish_attempt_count, 1)
+        self.assertEqual(second_document.last_publish_error, "테스트 외부 발행 실패")
+
+        readiness = async_to_sync(check_split_tax_document_group_readiness)(
+            SimpleNamespace(auth=self.user), self.source.id
+        )
+        self.assertTrue(readiness["can_publish"])
+
+        retry_calls = []
+
+        def succeed(tax_service, factory, issue_client, user):
+            retry_calls.append(tax_service.id)
+            return 1
+
+        with patch("tax.api.issue_barobill_tax_invoice", side_effect=succeed):
+            retry = async_to_sync(publish_split_tax_document_group)(
+                SimpleNamespace(auth=self.user), self.source.id
+            )
+
+        self.assertTrue(retry["all_succeeded"])
+        self.assertEqual(retry_calls, [document_ids[1]])
+        first_document.refresh_from_db()
+        second_document.refresh_from_db()
+        self.assertEqual(first_document.publish_attempt_count, 1)
+        self.assertEqual(second_document.publish_attempt_count, 2)
+        self.assertEqual(second_document.publish_status, "published")
+        self.assertEqual(second_document.last_publish_error, "")
+
+    def test_group_publish_is_disabled_without_explicit_feature_flag(self):
+        with self.assertRaisesMessage(HttpError, "기능 플래그"):
+            async_to_sync(publish_split_tax_document_group)(
+                SimpleNamespace(auth=self.user), self.source.id
+            )
