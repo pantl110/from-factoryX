@@ -216,23 +216,15 @@ const MaterialEnrollmentModal = ({
                 value={input}
                 onChange={(value) => {
                   setInput(value);
-                  if (value.length > 0) {
-                    setIsOpen(true);
-                  } else {
-                    setIsOpen(false);
-                  }
+                  setIsOpen(true);
                 }}
-                onFocus={() => {
-                  if (input.length > 0) {
-                    setIsOpen(true);
-                  }
-                }}
+                onFocus={() => setIsOpen(true)}
                 onBlur={() => setTimeout(() => setIsOpen(false), 150)}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') e.preventDefault();
                 }}
               />
-              {isOpen && input && (
+              {isOpen && (
                 <div className="absolute left-0 top-14 w-[369.5px] z-10">
                   <MaterialNameDropdown
                     searchTerm={input}
