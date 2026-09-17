@@ -1334,7 +1334,7 @@
       "searchPlaceholder": "자재명 또는 자재코드를 입력해 검색하세요.",
       "taxManagement": {
         "filterLabel": "원자재 과세 구분 필터",
-        "all": "과세 구분 전체",
+        "all": "구분",
         "taxable": "과세만",
         "exempt": "면세만",
         "bulkLabel": "선택 원자재 과세 구분 변경",
@@ -1681,7 +1681,7 @@
       "searchPlaceholder": "제품명 또는 제품코드를 입력해 검색하세요.",
       "taxManagement": {
         "filterLabel": "제품 과세 구분 필터",
-        "all": "과세 구분 전체",
+        "all": "구분",
         "taxable": "과세만",
         "exempt": "면세만",
         "bulkLabel": "선택 제품 과세 구분 변경",

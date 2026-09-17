@@ -263,7 +263,7 @@ const Material = ({
           />
           <select
             aria-label={t('taxManagement.filterLabel')}
-            className="h-10 rounded-md border border-lg bg-wh px-3 Me_Body-3 text-dg"
+            className="h-12 rounded-lg border border-lg bg-wh px-3 Me_Body-3 text-dg outline-none transition-colors hover:border-primary focus:border-primary"
             value={taxTypeFilter}
             onChange={(event) =>
               handleTaxTypeFilter(
@@ -282,7 +282,7 @@ const Material = ({
               <>
                 <select
                   aria-label={t('taxManagement.bulkLabel')}
-                  className="h-10 rounded-md border border-lg bg-wh px-3 Me_Body-3 text-dg"
+                  className="h-10 rounded-md border border-lg bg-wh px-3 Me_Body-3 text-dg outline-none transition-colors hover:border-primary focus:border-primary"
                   value={bulkTaxType}
                   onChange={(event) =>
                     setBulkTaxType(event.target.value as 'taxable' | 'exempt')

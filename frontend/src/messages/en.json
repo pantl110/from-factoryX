@@ -1333,7 +1333,7 @@
       "searchPlaceholder": "Search by material name or code.",
       "taxManagement": {
         "filterLabel": "Material tax classification filter",
-        "all": "All tax classifications",
+        "all": "Classification",
         "taxable": "Taxable only",
         "exempt": "Exempt only",
         "bulkLabel": "Change selected material tax classification",
@@ -1680,7 +1680,7 @@
       "searchPlaceholder": "Search by product name or code.",
       "taxManagement": {
         "filterLabel": "Product tax classification filter",
-        "all": "All tax classifications",
+        "all": "Classification",
         "taxable": "Taxable only",
         "exempt": "Exempt only",
         "bulkLabel": "Change selected product tax classification",
