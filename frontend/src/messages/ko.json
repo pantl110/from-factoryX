@@ -1442,7 +1442,8 @@
             "standardStock": "안전 재고",
             "rop": "ROP",
             "maxStock": "적정 재고",
-            "stockStatus": "재고 상태"
+            "stockStatus": "재고 상태",
+            "expiryWarningDays": "유통기한 경고일"
           },
           "placeholders": {
             "materialName": "(필수) 자재명을 입력하세요.",
@@ -1453,7 +1454,7 @@
             "standardStock": "안전재고를 입력하세요.",
             "rop": "ROP를 입력하세요.",
             "maxStock": "적정 재고를 입력하세요.",
-            "expiryDays": "유통기한 위험일을 입력하세요."
+            "expiryDays": "유통기한 경고 기준일을 입력하세요."
           }
         },
         "errors": {

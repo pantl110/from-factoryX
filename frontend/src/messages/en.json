@@ -1441,7 +1441,8 @@
             "standardStock": "Safety Stock",
             "rop": "ROP",
             "maxStock": "Max Stock",
-            "stockStatus": "Stock Status"
+            "stockStatus": "Stock Status",
+            "expiryWarningDays": "Expiry Warning Days"
           },
           "placeholders": {
             "materialName": "(Required) Enter material name.",
@@ -1452,7 +1453,7 @@
             "standardStock": "Enter safety stock.",
             "rop": "Enter ROP.",
             "maxStock": "Enter optimal stock.",
-            "expiryDays": "Enter expiration warning days."
+            "expiryDays": "Enter the expiration warning threshold in days."
           }
         },
         "errors": {

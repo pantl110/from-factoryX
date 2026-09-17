@@ -688,7 +688,7 @@ const MaterialInfo = forwardRef<MaterialInfoModel, MaterialInfoProps>(
 
               return (
                 <InfoLabelValue
-                  label={tCommon('expirationDate')}
+                  label={t('labels.expiryWarningDays')}
                   chip={shouldShowChip ? { status: expiryStatus } : undefined}
                   value={displayValue}
                   handleChange={handleChangeExpiryDays}
