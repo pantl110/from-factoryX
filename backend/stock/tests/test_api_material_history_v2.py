@@ -16,6 +16,11 @@ from repackaging.models import MaterialRepackaging
 
 class TestMaterialHistoryV2API(TestCase):
     def setUp(self):
+        original_router_api = material_history_v2_router.api
+        self.addCleanup(
+            material_history_v2_router.set_api_instance,
+            original_router_api,
+        )
         self.client = TestAsyncClient(material_history_v2_router)
         self.auth_client = TestAsyncClient(user_router)
 
@@ -121,7 +126,8 @@ class TestMaterialHistoryV2API(TestCase):
         url = f"/{self.material_history.id}"
         response = await self.client.get(url, headers=headers)
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 422)
+        self.assertIn("factory_id", str(response.json()))
 
     async def test_update_material_history_success(self):
         """원자재 이력 수정 성공"""
@@ -220,5 +226,5 @@ class TestMaterialHistoryV2API(TestCase):
         response = await self.client.get(
             f"/available-lots?material_id={self.material.id}", headers=headers
         )
-        self.assertEqual(response.status_code, 400)
-
+        self.assertEqual(response.status_code, 422)
+        self.assertIn("factory_id", str(response.json()))

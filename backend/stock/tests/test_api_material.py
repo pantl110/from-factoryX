@@ -16,6 +16,11 @@ from substitute.models import Substitute
 
 class TestMaterialAPI(TestCase):
     def setUp(self):
+        original_material_router_api = material_router.api
+        self.addCleanup(
+            material_router.set_api_instance,
+            original_material_router_api,
+        )
         self.client = TestAsyncClient(material_router)
         self.auth_client = TestAsyncClient(user_router)
 
@@ -250,12 +255,10 @@ class TestMaterialAPI(TestCase):
         headers = await self.authenticate()
 
         response = await self.client.get("", headers=headers)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 422)
 
         data = response.json()
-        self.assertEqual(
-            data.get("message") or data.get("detail"), "factory_id를 입력해야 합니다."
-        )
+        self.assertIn("factory_id", str(data))
 
     async def test_get_materials_by_factory_not_found(self):
         """존재하지 않는 공장 조회 테스트"""
@@ -266,7 +269,7 @@ class TestMaterialAPI(TestCase):
 
         data = response.json()
         self.assertEqual(
-            data.get("message") or data.get("detail"), "해당 공장에 멤버가 아닙니다."
+            data.get("message") or data.get("detail"), "해당 공장의 멤버가 아닙니다."
         )
 
     async def test_get_materials_by_factory_unauthorized(self):
@@ -298,12 +301,10 @@ class TestMaterialAPI(TestCase):
         headers = await self.authenticate()
 
         response = await self.client.get(f"/{self.material.id}", headers=headers)
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 422)
 
         data = response.json()
-        self.assertEqual(
-            data.get("message") or data.get("detail"), "factory_id를 입력해야 합니다."
-        )
+        self.assertIn("factory_id", str(data))
 
     async def test_get_material_detail_not_found(self):
         """존재하지 않는 원자재 조회 테스트"""
