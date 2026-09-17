@@ -16,7 +16,7 @@ from zeep import Client
 import sys
 import os
 
-from cfehome.redis import build_redis_url
+from cfehome.redis import build_redis_url, validate_redis_auth_policy
 
 # 시간대 환경 변수 설정 (Django 설정 로드 전에 설정)
 os.environ.setdefault("TZ", "Asia/Seoul")
@@ -259,6 +259,7 @@ REDIS_CACHE_DB = int(
     config("REDIS_CACHE_DB", default=0)
 )  # 캐시용 Redis 데이터베이스 인덱스
 REDIS_PASSWORD = config("REDIS_PASSWORD", default=None)
+validate_redis_auth_policy(DJANGO_ENV_NAME, REDIS_PASSWORD)
 REDIS_CACHE_URL = build_redis_url(
     REDIS_HOST,
     REDIS_PORT,
