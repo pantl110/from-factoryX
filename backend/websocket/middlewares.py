@@ -1,8 +1,14 @@
+import logging
+from http.cookies import CookieError, SimpleCookie
+
 import jwt
 from channels.db import database_sync_to_async
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.exceptions import AppRegistryNotReady
-from django.conf import settings
+
+
+logger = logging.getLogger(__name__)
 
 
 class CustomAuthMiddleware:
@@ -10,65 +16,56 @@ class CustomAuthMiddleware:
         self.inner = inner
 
     async def __call__(self, scope, receive, send):
+        scope["user"] = None
+
         try:
-            # 지연 로드로 get_user_model()을 여기서 호출
             User = get_user_model()
-
-            # 쿠키에서 토큰 추출
-            headers = dict(scope["headers"])
-            cookie_header = headers.get(b"cookie", b"").decode()
-
-            # 디버깅: 받은 헤더 정보 로그
-            print(f"🐍 WebSocket Headers: {headers}")
-            print(f"🐍 Cookie Header: {cookie_header}")
-
-            cookies = {}
-            if cookie_header:
-                try:
-                    for cookie in cookie_header.split(";"):
-                        cookie = cookie.strip()
-                        if "=" in cookie:
-                            key, value = cookie.split("=", 1)
-                            cookies[key.strip()] = value.strip()
-                except Exception as cookie_parse_error:
-                    print(f"🐍 Cookie parsing error: {cookie_parse_error}")
-                    cookies = {}
-
-            token = cookies.get("access")
-
-            print(f"🐍 Parsed Cookies: {list(cookies.keys())}")
-            print(f"🐍 Access Token: {'Found' if token else 'Not Found'}")
+            token = self.get_access_token(scope)
 
             if token:
                 try:
-                    # 토큰 검증
                     payload = jwt.decode(
                         token, settings.SECRET_KEY, algorithms=["HS256"]
                     )
-                    user_id = payload["user_id"]
+                    user_id = payload.get("user_id")
+                    if user_id is None:
+                        logger.warning("websocket_auth event=missing_user_claim")
+                        return await self.inner(scope, receive, send)
+
                     user = await self.get_user(User, user_id)
                     if user:
-                        print(f"🐍 User authenticated: {user.email} (ID: {user.id})")
                         scope["user"] = user
+                        logger.info("websocket_auth event=authenticated")
                     else:
-                        print(f"🐍 User not found for ID: {user_id}")
-                        scope["user"] = None
+                        logger.warning("websocket_auth event=user_not_found")
                 except jwt.ExpiredSignatureError:
-                    print("🐍 JWT Token expired")
-                    scope["user"] = None
-                except jwt.InvalidTokenError as e:
-                    print(f"🐍 JWT Token invalid: {e}")
-                    scope["user"] = None
+                    logger.info("websocket_auth event=token_expired")
+                except jwt.InvalidTokenError:
+                    logger.warning("websocket_auth event=invalid_token")
             else:
-                print("🐍 No access token found in cookies")
-                scope["user"] = None
+                logger.info("websocket_auth event=token_missing")
         except AppRegistryNotReady:
-            print("🐍 App registry not ready")
-            scope["user"] = None
-        except Exception as e:
-            print(f"🐍 WebSocket middleware error: {e}")
-            scope["user"] = None
+            logger.warning("websocket_auth event=app_registry_not_ready")
+        except Exception:
+            logger.exception("websocket_auth event=unexpected_error")
         return await self.inner(scope, receive, send)
+
+    @staticmethod
+    def get_access_token(scope):
+        headers = dict(scope.get("headers", []))
+        cookie_header = headers.get(b"cookie", b"")
+        if not cookie_header:
+            return None
+
+        try:
+            cookies = SimpleCookie()
+            cookies.load(cookie_header.decode("latin-1"))
+        except (CookieError, UnicodeDecodeError):
+            logger.warning("websocket_auth event=invalid_cookie_header")
+            return None
+
+        access_cookie = cookies.get("access")
+        return access_cookie.value if access_cookie else None
 
     @database_sync_to_async
     def get_user(self, User, user_id):

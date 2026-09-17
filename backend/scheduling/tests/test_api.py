@@ -105,7 +105,7 @@ class ProjectDeadlineNotificationTestCase(SchedulingAPITestCase):
         with patch(
             "websocket.utils.send_notification_to_factory", new_callable=AsyncMock
         ) as mock_send:
-            response = self.client.get(url, headers=self.headers)
+            response = self.client.post(url, headers=self.headers)
 
             self.assertEqual(response.status_code, 200)
             data = response.json()
@@ -127,7 +127,7 @@ class ProjectDeadlineNotificationTestCase(SchedulingAPITestCase):
         with patch(
             "websocket.utils.send_notification_to_factory", new_callable=AsyncMock
         ) as mock_send:
-            response = self.client.get(url, headers=self.headers)
+            response = self.client.post(url, headers=self.headers)
 
             self.assertEqual(response.status_code, 200)
             data = response.json()
@@ -143,7 +143,7 @@ class ProjectDeadlineNotificationTestCase(SchedulingAPITestCase):
         url = "/v1/scheduling/project/deadline"
         headers = {"HTTP_AUTHORIZATION": f"Bearer {self.token}"}
 
-        response = self.client.get(url, **headers)
+        response = self.client.post(url, **headers)
 
         self.assertEqual(response.status_code, 401)
 
@@ -155,7 +155,7 @@ class ProjectDeadlineNotificationTestCase(SchedulingAPITestCase):
             "X-Scheduling-Key": "invalid_key",
         }
 
-        response = self.client.get(url, headers=headers)
+        response = self.client.post(url, headers=headers)
 
         self.assertEqual(response.status_code, 403)
 
@@ -170,7 +170,7 @@ class ProjectDeadlineNotificationTestCase(SchedulingAPITestCase):
         with patch(
             "websocket.utils.send_notification_to_factory", new_callable=AsyncMock
         ) as mock_send:
-            response = self.client.get(url, headers=self.headers)
+            response = self.client.post(url, headers=self.headers)
 
             self.assertEqual(response.status_code, 200)
             data = response.json()
@@ -192,7 +192,7 @@ class ProjectDeadlineNotificationTestCase(SchedulingAPITestCase):
         with patch(
             "websocket.utils.send_notification_to_factory", new_callable=AsyncMock
         ) as mock_send:
-            response = self.client.get(url, headers=self.headers)
+            response = self.client.post(url, headers=self.headers)
 
             self.assertEqual(response.status_code, 200)
             data = response.json()
@@ -233,7 +233,7 @@ class ProjectDeadlineNotificationTestCase(SchedulingAPITestCase):
                 ) as mock_send:
                     mock_send.return_value = True
 
-                    response = self.client.get(url, headers=self.headers)
+                    response = self.client.post(url, headers=self.headers)
 
                     self.assertEqual(response.status_code, 200)
                     data = response.json()
@@ -259,7 +259,7 @@ class ProjectPlanEndNotificationTestCase(SchedulingAPITestCase):
         ) as mock_send:
             mock_send.return_value = True
 
-            response = self.client.get(url, headers=self.headers)
+            response = self.client.post(url, headers=self.headers)
 
             self.assertEqual(response.status_code, 200)
             data = response.json()
@@ -291,7 +291,7 @@ class ProjectPlanEndNotificationTestCase(SchedulingAPITestCase):
         with patch(
             "websocket.utils.send_notification_to_factory", new_callable=AsyncMock
         ) as mock_send:
-            response = self.client.get(url, headers=self.headers)
+            response = self.client.post(url, headers=self.headers)
 
             self.assertEqual(response.status_code, 200)
             data = response.json()
@@ -313,7 +313,7 @@ class ProjectPlanEndNotificationTestCase(SchedulingAPITestCase):
         with patch(
             "websocket.utils.send_notification_to_factory", new_callable=AsyncMock
         ) as mock_send:
-            response = self.client.get(url, headers=self.headers)
+            response = self.client.post(url, headers=self.headers)
 
             self.assertEqual(response.status_code, 200)
             data = response.json()
@@ -335,7 +335,7 @@ class ProjectPlanEndNotificationTestCase(SchedulingAPITestCase):
         with patch(
             "websocket.utils.send_notification_to_factory", new_callable=AsyncMock
         ) as mock_send:
-            response = self.client.get(url, headers=self.headers)
+            response = self.client.post(url, headers=self.headers)
 
             self.assertEqual(response.status_code, 200)
             data = response.json()
@@ -357,7 +357,7 @@ class ProjectPlanEndNotificationTestCase(SchedulingAPITestCase):
         with patch(
             "websocket.utils.send_notification_to_factory", new_callable=AsyncMock
         ) as mock_send:
-            response = self.client.get(url, headers=self.headers)
+            response = self.client.post(url, headers=self.headers)
 
             self.assertEqual(response.status_code, 200)
             data = response.json()
@@ -373,7 +373,7 @@ class ProjectPlanEndNotificationTestCase(SchedulingAPITestCase):
         url = "/v1/scheduling/project-plan/end"
         headers = {"HTTP_AUTHORIZATION": f"Bearer {self.token}"}
 
-        response = self.client.get(url, **headers)
+        response = self.client.post(url, **headers)
 
         self.assertEqual(response.status_code, 401)
 
@@ -385,7 +385,7 @@ class ProjectPlanEndNotificationTestCase(SchedulingAPITestCase):
             "X-Scheduling-Key": "invalid_key",
         }
 
-        response = self.client.get(url, headers=headers)
+        response = self.client.post(url, headers=headers)
 
         self.assertEqual(response.status_code, 403)
 
@@ -414,7 +414,7 @@ class SchedulingDecoratorsTestCase(TestCase):
         with patch(
             "websocket.utils.send_notification_to_factory", new_callable=AsyncMock
         ):
-            response = self.client.get(url, headers=headers)
+            response = self.client.post(url, headers=headers)
 
             # 401이나 403이 아닌 다른 응답이어야 함 (키 검증 통과)
             self.assertNotEqual(response.status_code, 401)
@@ -424,7 +424,7 @@ class SchedulingDecoratorsTestCase(TestCase):
         url = "/v1/scheduling/project/deadline"
         headers = {"HTTP_AUTHORIZATION": f"Bearer {self.token}"}
 
-        response = self.client.get(url, **headers)
+        response = self.client.post(url, **headers)
 
         self.assertEqual(response.status_code, 401)
 
@@ -436,7 +436,7 @@ class SchedulingDecoratorsTestCase(TestCase):
             "X-Scheduling-Key": "wrong_key",
         }
 
-        response = self.client.get(url, headers=headers)
+        response = self.client.post(url, headers=headers)
         data = response.json()
         self.assertEqual(response.status_code, 403)
 
@@ -506,7 +506,7 @@ class SchedulingIntegrationTestCase(TestCase):
         ) as mock_send:
             mock_send.return_value = True
 
-            response = self.client.get(
+            response = self.client.post(
                 "/v1/scheduling/project/deadline", headers=self.headers
             )
 
@@ -563,7 +563,7 @@ class SchedulingIntegrationTestCase(TestCase):
         ) as mock_send:
             mock_send.return_value = True
 
-            response = self.client.get(
+            response = self.client.post(
                 "/v1/scheduling/project-plan/end", headers=self.headers
             )
 
@@ -644,10 +644,10 @@ class SchedulingIntegrationTestCase(TestCase):
             mock_send.return_value = True
 
             # 3. 두 API 모두 호출
-            deadline_response = self.client.get(
+            deadline_response = self.client.post(
                 "/v1/scheduling/project/deadline", headers=self.headers
             )
-            plan_end_response = self.client.get(
+            plan_end_response = self.client.post(
                 "/v1/scheduling/project-plan/end", headers=self.headers
             )
 

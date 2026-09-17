@@ -101,6 +101,41 @@ class BasicWebSocketTestCase(TransactionTestCase):
             finally:
                 loop.close()
 
+    def test_notification_is_saved_when_realtime_delivery_fails(self):
+        """실시간 전송 실패가 알림 DB 저장을 되돌리지 않는지 확인"""
+        sender = NotificationSender()
+        sender.channel_layer = AsyncMock()
+        sender.channel_layer.group_send.side_effect = ConnectionError(
+            "Redis unavailable"
+        )
+
+        import asyncio
+
+        async def send_notification():
+            return await sender.send_notification_to_user(
+                user_id=self.user1.id,
+                factory_id=self.factory.id,
+                notification_type="warning",
+                notification_case="material_lack",
+                content="실시간 전송 실패 테스트",
+            )
+
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        try:
+            result = loop.run_until_complete(send_notification())
+        finally:
+            loop.close()
+
+        self.assertTrue(result)
+        self.assertTrue(
+            Notification.objects.filter(
+                receiver=self.member1,
+                content="실시간 전송 실패 테스트",
+            ).exists()
+        )
+        sender.channel_layer.group_send.assert_awaited_once()
+
     def test_factory_member_exists(self):
         """공장 멤버가 존재하는지 테스트"""
         member = FactoryMember.objects.filter(user=self.user1).first()

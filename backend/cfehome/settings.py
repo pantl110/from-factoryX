@@ -302,6 +302,20 @@ CHANNEL_LAYERS = {
     },
 }
 
+# Django 테스트는 외부 Redis 상태와 분리한다. Redis 통합 검증은 별도 환경에서 실행한다.
+if "test" in sys.argv:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "pantle110-tests",
+        }
+    }
+    CHANNEL_LAYERS = {
+        "default": {
+            "BACKEND": "channels.layers.InMemoryChannelLayer",
+        }
+    }
+
 # AWS SES Email Settings
 USE_SES = config("USE_SES", default=False, cast=bool)
 
@@ -409,6 +423,8 @@ TOSS_PAYMENTS_BASE_URL = "https://api.tosspayments.com"
 
 # Scheduling
 SCHEDULING_SECRET_KEY = config("SCHEDULING_SECRET_KEY", default=None)
+if "test" in sys.argv and not SCHEDULING_SECRET_KEY:
+    SCHEDULING_SECRET_KEY = "test-scheduling-key"
 
 # send-email with attachment
 DATA_UPLOAD_MAX_MEMORY_SIZE = 30 * 1024 * 1024  # 30MB

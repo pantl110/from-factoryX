@@ -1784,7 +1784,7 @@ class QuotationProductAPITestCase(TestCase):
         product = Product.objects.create(
             factory=self.factory,
             name="테스트 제품",
-            code="TEST001",
+            code="TEST003",
             unit="개",
             spec="테스트 규격",
             average_production_time=1800,  # 30분

@@ -1,4 +1,5 @@
-from django.test import TestCase
+from django.test import TestCase, override_settings
+from unittest.mock import AsyncMock, MagicMock, patch
 from user.api import router as user_router
 from aws.api import router
 from ninja.testing import TestAsyncClient
@@ -35,10 +36,22 @@ class TestAWS(TestCase):
             "Authorization": f"Bearer {data['access_token']}",
         }
 
-    async def test_upload_file(self):
+    @override_settings(
+        AWS_STORAGE_BUCKET_NAME="test-bucket",
+        AWS_CLOUDFRONT_URL="https://cdn.example.com",
+    )
+    @patch("aws.api.get_boto3_s3_client", new_callable=AsyncMock)
+    async def test_upload_file(self, mock_get_s3_client):
         """
-        S3 파일 업로드 테스트
+        실제 AWS 연결 없이 S3 업로드 서명 응답 계약을 테스트
         """
+        s3_client = MagicMock()
+        s3_client.generate_presigned_post.return_value = {
+            "url": "https://s3.example.com/test-bucket",
+            "fields": {"key": "objects/test/test_image.png"},
+        }
+        mock_get_s3_client.return_value = s3_client
+
         headers = await self.authenticate()
         payload = {
             "file_name": "test_image.png",
@@ -46,4 +59,11 @@ class TestAWS(TestCase):
         response = await self.client.post("/upload", headers=headers, json=payload)
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        # print("🐍 File: tests/test_apis.py | Line: 49 | setUp ~ data", data)
+        self.assertEqual(
+            data["upload_url"]["url"],
+            s3_client.generate_presigned_post.return_value["url"],
+        )
+        self.assertTrue(
+            data["object_url"].startswith("https://cdn.example.com/objects/")
+        )
+        s3_client.generate_presigned_post.assert_called_once()

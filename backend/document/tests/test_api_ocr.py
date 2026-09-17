@@ -3,6 +3,7 @@ from ninja.testing import TestAsyncClient
 from pathlib import Path
 import aiofiles
 import base64
+from unittest.mock import AsyncMock, patch
 
 from user.api import router as user_router
 from document.api_quotation import router as quotation_router
@@ -67,8 +68,20 @@ class TestDocumentOCR(TestCase):
             "Authorization": f"Bearer {tokens['access_token']}",
         }
 
-    async def test_ocr_pdf_upload(self):
+    @patch("document.api_quotation.content_ocr_document_parse", new_callable=AsyncMock)
+    async def test_ocr_pdf_upload(self, mock_ocr):
         """PDF 파일 OCR 업로드 기본 동작 테스트 (썸네일 옵션 없이)"""
+        mock_ocr.return_value = {
+            "client_info": {"company_name": "테스트 거래처"},
+            "request_items": [
+                {
+                    "item_name": "테스트 제품",
+                    "unit": "EA",
+                    "quantity": "1",
+                    "unit_price": "1000",
+                }
+            ],
+        }
         headers = await self.authenticate()
         async with aiofiles.open(self.pdf_file_path, "rb") as f:
             content = await f.read()
@@ -86,8 +99,22 @@ class TestDocumentOCR(TestCase):
         self.assertIn("client_info", data)
         self.assertIn("request_items", data)
 
-    async def test_ocr_pdf_upload_with_thumbnail(self):
+    @patch("document.api_quotation.render_pdf_first_page_to_image")
+    @patch("document.api_quotation.content_ocr_document_parse", new_callable=AsyncMock)
+    async def test_ocr_pdf_upload_with_thumbnail(self, mock_ocr, mock_render):
         """PDF 파일 OCR 업로드 + 썸네일 생성 옵션 테스트"""
+        mock_ocr.return_value = {
+            "client_info": {"company_name": "테스트 거래처"},
+            "request_items": [
+                {
+                    "item_name": "테스트 제품",
+                    "unit": "EA",
+                    "quantity": "1",
+                    "unit_price": "1000",
+                }
+            ],
+        }
+        mock_render.return_value = b"test-thumbnail"
         headers = await self.authenticate()
         async with aiofiles.open(self.pdf_file_path, "rb") as f:
             content = await f.read()
@@ -106,3 +133,7 @@ class TestDocumentOCR(TestCase):
         self.assertIn("request_items", data)
         # 썸네일 필드는 존재해야 하며, 생성 실패 시 None 일 수 있음
         self.assertIn("thumbnail_image", data)
+        self.assertEqual(
+            data["thumbnail_image"],
+            base64.b64encode(b"test-thumbnail").decode("ascii"),
+        )
