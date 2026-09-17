@@ -108,6 +108,12 @@ class TestUser(TestCase):
         self.assertTrue(await sync_to_async(user.check_password)("new-password123!"))
         self.assertTrue(user.marketing_agreement)
 
+        login_response = await self.client.post(
+            "/login", json={"email": email, "password": "new-password123!"}
+        )
+        self.assertEqual(login_response.status_code, 200)
+        self.assertIn("access_token", login_response.json())
+
     async def test_signup_with_invite_token(self):
         """
         초대 토큰을 사용한 회원가입 테스트
