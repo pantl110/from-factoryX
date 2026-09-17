@@ -1443,7 +1443,7 @@
             "rop": "ROP",
             "maxStock": "적정 재고",
             "stockStatus": "재고 상태",
-            "expiryWarningDays": "유통기한 경고일"
+            "expiryWarningDays": "유통기한"
           },
           "placeholders": {
             "materialName": "(필수) 자재명을 입력하세요.",
