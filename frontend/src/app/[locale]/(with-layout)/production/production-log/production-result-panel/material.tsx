@@ -38,6 +38,7 @@ export const Material = ({
   onRegisterGetCurrentDataHandler,
 }: MaterialProps) => {
   const tCommon = useTranslations('common');
+  const tMaterialUsage = useTranslations('production.materialUsage');
   const { control, watch, reset, setValue, formState } =
     useForm<MaterialFormModel>({
       defaultValues: {
@@ -89,6 +90,7 @@ export const Material = ({
               : (item.usage_amount ?? 0),
           material_history_id: item.material_history_id ?? null,
           material_repackaging_id: item.material_repackaging_id ?? null,
+          lot_available_quantity: item.lot_available_quantity ?? null,
         })
       );
       replace(initialFormData);
@@ -106,6 +108,7 @@ export const Material = ({
           usage_amount: 0,
           material_history_id: null,
           material_repackaging_id: null,
+          lot_available_quantity: null,
         };
         append(emptyFormData);
         // append()는 비동기이므로 다음 렌더링에서 reset()을 호출하도록 플래그 설정
@@ -129,6 +132,7 @@ export const Material = ({
       usage_amount: 0,
       material_history_id: null,
       material_repackaging_id: null,
+      lot_available_quantity: null,
     });
   };
 
@@ -139,6 +143,7 @@ export const Material = ({
         usage_amount: 0,
         material_history_id: null,
         material_repackaging_id: null,
+        lot_available_quantity: null,
       },
     ]);
   };
@@ -204,6 +209,20 @@ export const Material = ({
     onRegisterSaveHandler(async () => {
       const currentFormData = watch('usages');
 
+      const shortage = currentFormData.find(
+        (usage) =>
+          usage.lot_available_quantity !== null &&
+          usage.usage_amount > usage.lot_available_quantity
+      );
+      if (shortage) {
+        throw new Error(
+          tMaterialUsage('lotQuantityExceeded', {
+            quantity: Number(shortage.lot_available_quantity).toLocaleString(),
+            unit: material.material_unit ?? '',
+          })
+        );
+      }
+
       // material_history_id가 null이고 material_repackaging_id가 null이고 usage_amount가 0인 항목은 제외
       const payloads: MaterialUsageModel[] = currentFormData
         .filter(
@@ -226,7 +245,14 @@ export const Material = ({
 
       return payloads;
     });
-  }, [onRegisterSaveHandler, planId, material.material_id, watch]);
+  }, [
+    onRegisterSaveHandler,
+    planId,
+    material.material_id,
+    material.material_unit,
+    tMaterialUsage,
+    watch,
+  ]);
 
   // 현재 데이터 가져오기 핸들러 등록
   useEffect(() => {
@@ -301,6 +327,8 @@ export const Material = ({
                             initialData.material_history_lot_number ?? null,
                           material_repackaging_lot_number:
                             initialData.material_repackaging_lot_number ?? null,
+                          lot_available_quantity:
+                            initialData.lot_available_quantity ?? null,
                         }
                       : undefined
                   }

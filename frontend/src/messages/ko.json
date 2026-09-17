@@ -1210,7 +1210,8 @@
       "title": "자재 투입량 정보"
     },
     "lotDropdown": {
-      "noAvailableLots": "사용 가능한 LOT가 없습니다."
+      "noAvailableLots": "사용 가능한 LOT가 없습니다.",
+      "remaining": "잔량 {quantity}{unit}"
     },
     "materialUsage": {
       "materialName": "(대체)자재명",
@@ -1219,6 +1220,7 @@
       "actualInput": "실제 투입량",
       "actualInputPlaceholder": "투입량을 입력하세요.",
       "actualInputMessage": "작업자가 실제로 공정에 넣은 양",
+      "lotQuantityExceeded": "선택한 LOT 잔량은 {quantity}{unit}입니다. 부족분은 자재 사용 행을 추가해 다른 LOT에서 입력하세요.",
       "cannotDeleteFirst": "첫 번째 자재 사용 정보는 삭제할 수 없습니다."
     },
     "productionInfo": {

@@ -16,6 +16,7 @@ export interface MaterialUsageFormModel {
   usage_amount: number;
   material_history_id: number | null;
   material_repackaging_id: number | null;
+  lot_available_quantity: number | null;
 }
 
 interface MaterialUsageProps {
@@ -33,6 +34,7 @@ interface MaterialUsageProps {
     material_name?: string;
     material_history_lot_number?: string | null;
     material_repackaging_lot_number?: string | null;
+    lot_available_quantity?: number | null;
   };
   onDelete?: () => void;
   canDelete?: boolean;
@@ -77,6 +79,7 @@ export const MaterialUsage = ({
             : (initialData?.usage_amount ?? 0),
         material_history_id: initialData?.material_history_id ?? null,
         material_repackaging_id: initialData?.material_repackaging_id ?? null,
+        lot_available_quantity: initialData?.lot_available_quantity ?? null,
       },
     });
 
@@ -115,6 +118,7 @@ export const MaterialUsage = ({
         usage_amount: initialUsageAmount,
         material_history_id: initialData.material_history_id ?? null,
         material_repackaging_id: initialData.material_repackaging_id ?? null,
+        lot_available_quantity: initialData.lot_available_quantity ?? null,
       });
 
       // 초기 데이터의 자재 이름 업데이트
@@ -161,7 +165,9 @@ export const MaterialUsage = ({
       prevData.material_id !== currentData.material_id ||
       prevData.usage_amount !== currentData.usage_amount ||
       prevData.material_history_id !== currentData.material_history_id ||
-      prevData.material_repackaging_id !== currentData.material_repackaging_id
+      prevData.material_repackaging_id !==
+        currentData.material_repackaging_id ||
+      prevData.lot_available_quantity !== currentData.lot_available_quantity
     ) {
       prevFormDataRef.current = { ...currentData };
       onChange?.(currentData);
@@ -178,6 +184,9 @@ export const MaterialUsage = ({
     }
     return '';
   });
+  const lotAvailableQuantity = watch('lot_available_quantity');
+  const hasLotShortage =
+    lotAvailableQuantity !== null && usageAmount > lotAvailableQuantity;
 
   useEffect(() => {
     if (usageAmount > 0) {
@@ -219,6 +228,9 @@ export const MaterialUsage = ({
                 setValue('material_repackaging_id', null, {
                   shouldDirty: true,
                 });
+                setValue('lot_available_quantity', null, {
+                  shouldDirty: true,
+                });
                 setIsDropdownOpen(false);
               }}
               onClose={() => setIsDropdownOpen(false)}
@@ -239,6 +251,7 @@ export const MaterialUsage = ({
             <LotDropdown
               width="w-full"
               materialId={currentMaterialId}
+              unit={unit}
               onClose={() => setIsLotDropdownOpen(false)}
               onSelect={(item) => {
                 setSelectedLotNumber(item.name);
@@ -250,6 +263,9 @@ export const MaterialUsage = ({
                   'material_repackaging_id',
                   item.source === 'repackaging' ? item.id : null
                 );
+                setValue('lot_available_quantity', item.availableQuantity, {
+                  shouldDirty: true,
+                });
                 setIsLotDropdownOpen(false);
               }}
             />
@@ -265,6 +281,15 @@ export const MaterialUsage = ({
               label={t('actualInput')}
               placeholder={t('actualInputPlaceholder')}
               message={t('actualInputMessage')}
+              showError={hasLotShortage}
+              errorMessage={
+                hasLotShortage
+                  ? t('lotQuantityExceeded', {
+                      quantity: Number(lotAvailableQuantity).toLocaleString(),
+                      unit,
+                    })
+                  : undefined
+              }
               type="text"
               value={usageAmountDisplay}
               onChange={(e) => {

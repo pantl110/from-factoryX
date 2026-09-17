@@ -1209,7 +1209,8 @@
       "title": "Material Input Info"
     },
     "lotDropdown": {
-      "noAvailableLots": "No available LOTs."
+      "noAvailableLots": "No available LOTs.",
+      "remaining": "Remaining {quantity}{unit}"
     },
     "materialUsage": {
       "materialName": "(Substitute) Material Name",
@@ -1218,6 +1219,7 @@
       "actualInput": "Actual Input",
       "actualInputPlaceholder": "Enter input quantity",
       "actualInputMessage": "Actual quantity put into process",
+      "lotQuantityExceeded": "This LOT has {quantity}{unit} remaining. Add another material usage row and enter the shortage from a different LOT.",
       "cannotDeleteFirst": "The first material usage information cannot be deleted."
     },
     "productionInfo": {

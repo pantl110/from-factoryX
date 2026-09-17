@@ -2043,6 +2043,7 @@ export interface MaterialUsageResponseModel {
   material_history_lot_number?: string | null;
   material_repackaging_id?: number | null;
   material_repackaging_lot_number?: string | null;
+  lot_available_quantity?: number | null;
   created_at: string;
   updated_at: string;
 }

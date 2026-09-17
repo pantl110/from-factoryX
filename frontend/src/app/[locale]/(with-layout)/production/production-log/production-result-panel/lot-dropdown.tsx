@@ -14,7 +14,9 @@ interface LotDropdownProps {
     id: number;
     name: string;
     source: 'history' | 'repackaging';
+    availableQuantity: number;
   }) => void;
+  unit: string;
 }
 
 export const LotDropdown = ({
@@ -22,6 +24,7 @@ export const LotDropdown = ({
   materialId,
   onClose,
   onSelect,
+  unit,
 }: LotDropdownProps) => {
   const t = useTranslations('production.lotDropdown');
   const [page, setPage] = useState(1);
@@ -69,12 +72,16 @@ export const LotDropdown = ({
         lots.map((lot) => (
           <DropdownItem
             key={`${lot.source}-${lot.id}`}
-            text={lot.lot_number}
+            text={`${lot.lot_number} · ${t('remaining', {
+              quantity: Number(lot.available_quantity).toLocaleString(),
+              unit,
+            })}`}
             onClick={() =>
               onSelect({
                 id: lot.id,
                 name: lot.lot_number,
                 source: lot.source,
+                availableQuantity: Number(lot.available_quantity),
               })
             }
           />
