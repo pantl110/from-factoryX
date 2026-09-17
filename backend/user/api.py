@@ -195,8 +195,6 @@ async def signup(request, data: UserSignupIn):
         pass
 
     if user:
-        if user.status == User.UserStatusChoice.withdraw:
-            raise HttpError(400, "탈퇴한 회원입니다. 고객센터에 문의해주세요.")
         if user.status == User.UserStatusChoice.active:
             raise HttpError(400, "이미 가입된 이메일입니다.")
 
@@ -227,7 +225,7 @@ async def signup(request, data: UserSignupIn):
         except Factory.DoesNotExist:
             raise HttpError(400, "존재하지 않는 팩토리입니다.")
 
-    # 4. 신규 사용자 생성 (기존 사용자가 없을 경우)
+    # 4. 신규 사용자 생성 또는 탈퇴 계정 재가입 처리
     if user is None:
         user = await sync_to_async(User.objects.create_user)(
             email=data.email,
@@ -237,6 +235,15 @@ async def signup(request, data: UserSignupIn):
             marketing_agreement=data.marketing_agreement,
         )
         user = await User.objects.aget(id=user.id)
+    elif user.status == User.UserStatusChoice.withdraw:
+        # 탈퇴 이력이 있더라도 이메일 재인증과 약관 재동의가 끝난 경우에만
+        # 같은 계정을 활성화해 재가입을 허용한다.
+        user.status = User.UserStatusChoice.active
+        user.set_password(data.password)
+        user.terms_of_service = data.terms_of_service
+        user.privacy_policy_agreement = data.privacy_policy_agreement
+        user.marketing_agreement = data.marketing_agreement
+        await sync_to_async(user.save)()
 
     # 6. 초대 팩토리 확인 및 검증
     if data.factory_id:

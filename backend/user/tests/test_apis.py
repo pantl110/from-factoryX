@@ -72,6 +72,42 @@ class TestUser(TestCase):
         data = response.json()
         self.assertEqual(response.status_code, 200)
 
+    async def test_withdrawn_user_can_rejoin_after_signup_verification(self):
+        """탈퇴 이메일은 재인증·약관 동의 후 새 비밀번호로 재가입할 수 있다."""
+        email = "withdrawn-rejoin@example.com"
+        user = await User.objects.acreate(
+            email=email,
+            status=User.UserStatusChoice.withdraw,
+            terms_of_service=True,
+            privacy_policy_agreement=True,
+        )
+        user.set_password("old-password123!")
+        await sync_to_async(user.save)()
+        await EmailVerification.objects.acreate(
+            email=email,
+            code="123456",
+            verification_type=EmailVerification.TypeChoice.SIGNUP,
+            is_verified=True,
+        )
+
+        response = await self.client.post(
+            "/signup",
+            json={
+                "email": email,
+                "password": "new-password123!",
+                "password_confirm": "new-password123!",
+                "terms_of_service": True,
+                "privacy_policy_agreement": True,
+                "marketing_agreement": True,
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        await user.arefresh_from_db()
+        self.assertEqual(user.status, User.UserStatusChoice.active)
+        self.assertTrue(await sync_to_async(user.check_password)("new-password123!"))
+        self.assertTrue(user.marketing_agreement)
+
     async def test_signup_with_invite_token(self):
         """
         초대 토큰을 사용한 회원가입 테스트
