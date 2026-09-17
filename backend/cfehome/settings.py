@@ -16,6 +16,8 @@ from zeep import Client
 import sys
 import os
 
+from cfehome.redis import build_redis_url
+
 # 시간대 환경 변수 설정 (Django 설정 로드 전에 설정)
 os.environ.setdefault("TZ", "Asia/Seoul")
 
@@ -257,10 +259,16 @@ REDIS_CACHE_DB = int(
     config("REDIS_CACHE_DB", default=0)
 )  # 캐시용 Redis 데이터베이스 인덱스
 REDIS_PASSWORD = config("REDIS_PASSWORD", default=None)
+REDIS_CACHE_URL = build_redis_url(
+    REDIS_HOST,
+    REDIS_PORT,
+    REDIS_DB,
+    REDIS_PASSWORD,
+)
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": f"redis://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}",
+        "LOCATION": REDIS_CACHE_URL,
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "IGNORE_EXCEPTIONS": True,  # 캐시 오류 시 애플리케이션 계속 실행
@@ -272,12 +280,12 @@ CACHES = {
         "TIMEOUT": 300,  # 기본 캐시 만료 시간(초)
     }
 }
-if REDIS_PASSWORD:
-    CHANNEL_REDIS_URL = (
-        f"redis://:{REDIS_PASSWORD}@{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
-    )
-else:
-    CHANNEL_REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/{REDIS_DB}"
+CHANNEL_REDIS_URL = build_redis_url(
+    REDIS_HOST,
+    REDIS_PORT,
+    REDIS_DB,
+    REDIS_PASSWORD,
+)
 
 CHANNEL_LAYERS = {
     "default": {
