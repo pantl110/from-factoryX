@@ -17,6 +17,9 @@ interface StockSelectDropdownProps<T extends string> {
   options: readonly StockSelectOptionModel<T>[];
   onChange: (value: T) => void;
   width?: string;
+  height?: string;
+  padding?: string;
+  textStyle?: string;
 }
 
 const StockSelectDropdown = <T extends string>({
@@ -25,6 +28,9 @@ const StockSelectDropdown = <T extends string>({
   options,
   onChange,
   width = 'w-[120px]',
+  height = 'h-10',
+  padding = 'px-4',
+  textStyle = 'Me_Body-3',
 }: StockSelectDropdownProps<T>) => {
   const [isOpen, setIsOpen] = useState(false);
   const selectedOption =
@@ -43,6 +49,9 @@ const StockSelectDropdown = <T extends string>({
         iconPosition="right"
         justifyBetween
         width={width}
+        height={height}
+        padding={padding}
+        textStyle={textStyle}
         onClick={() => setIsOpen(!isOpen)}
       />
       {isOpen && (

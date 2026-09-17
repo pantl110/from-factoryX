@@ -2,6 +2,7 @@ import { Minus, Plus, X } from '@phosphor-icons/react';
 import { useState, useRef, useEffect } from 'react';
 import { handleQuantityInput } from '@/utils/format-number';
 import { useTranslations } from 'next-intl';
+import StockSelectDropdown from '../stock-select-dropdown';
 
 interface ConnetionItemProps {
   name: string;
@@ -153,18 +154,19 @@ const ConnetionItem = ({
           </button>
         </div>
         {unitOptions && unitOptions.length > 1 && onUnitChange ? (
-          <select
-            aria-label={tCommon('unit')}
-            className="Me_body-1 text-dg bg-wh border border-lg rounded-[6px] px-2 h-8"
+          <StockSelectDropdown
+            ariaLabel={tCommon('unit')}
             value={selectedUnit || unit}
-            onChange={(event) => onUnitChange(event.target.value)}
-          >
-            {unitOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
+            options={unitOptions.map((option) => ({
+              value: option,
+              label: option,
+            }))}
+            onChange={onUnitChange}
+            width="w-[88px]"
+            height="h-8"
+            padding="px-2"
+            textStyle="Re_Body-2"
+          />
         ) : (
           <p className="Me_body-1 text-dg">{unit}</p>
         )}

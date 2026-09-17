@@ -34,9 +34,9 @@ export const MaterialNameDropdown = ({
       setIsLoading(true);
       try {
         const response = await getMaterialList({
-          q: searchTerm,
+          q: searchTerm.trim() || undefined,
           page: 1,
-          page_size: 5,
+          page_size: 10,
         });
 
         // 컴포넌트가 언마운트되었거나 새로운 요청이 시작된 경우 무시
@@ -65,9 +65,7 @@ export const MaterialNameDropdown = ({
       }
     };
 
-    if (searchTerm) {
-      fetchInitialData();
-    }
+    fetchInitialData();
 
     // cleanup: 새로운 요청이 시작되거나 컴포넌트가 언마운트되면 이전 요청 무시
     return () => {
@@ -87,9 +85,9 @@ export const MaterialNameDropdown = ({
 
     try {
       const response = await getMaterialList({
-        q: searchTerm,
+        q: searchTerm.trim() || undefined,
         page: currentPage + 1,
-        page_size: 5,
+        page_size: 10,
       });
       const newMaterials = response?.data?.data || [];
       const nextPage =
@@ -117,7 +115,7 @@ export const MaterialNameDropdown = ({
     <Dropdown
       onClose={onClose}
       width={width}
-      maxHeight="max-h-[180px]"
+      maxHeight="max-h-[304px]"
       onLoadMore={loadMoreMaterials}
       hasMore={hasMore}
       isLoading={isLoading}

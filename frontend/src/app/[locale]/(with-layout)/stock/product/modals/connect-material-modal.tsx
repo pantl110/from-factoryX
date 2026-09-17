@@ -412,20 +412,12 @@ const ConnectMaterialModal = ({
               value={input}
               onChange={(value) => {
                 setInput(value);
-                if (value.length > 0) {
-                  setIsDropdownOpen(true);
-                } else {
-                  setIsDropdownOpen(false);
-                }
+                setIsDropdownOpen(true);
               }}
-              onFocus={() => {
-                if (input.length > 0) {
-                  setIsDropdownOpen(true);
-                }
-              }}
+              onFocus={() => setIsDropdownOpen(true)}
               onBlur={() => setTimeout(() => setIsDropdownOpen(false), 150)}
             />
-            {isDropdownOpen && input && (
+            {isDropdownOpen && (
               <div className="absolute left-0 top-14 z-10 w-full">
                 <MaterialNameDropdown
                   searchTerm={input}
