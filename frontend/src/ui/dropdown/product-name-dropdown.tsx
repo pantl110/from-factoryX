@@ -38,9 +38,9 @@ export const ProductNameDropdown = ({
       setIsLoading(true);
       try {
         const response = await getProductList({
-          q: searchTerm || undefined,
+          q: searchTerm.trim() || undefined,
           page: 1,
-          page_size: 5,
+          page_size: 10,
         });
 
         // 컴포넌트가 언마운트되었거나 새로운 요청이 시작된 경우 무시
@@ -88,9 +88,9 @@ export const ProductNameDropdown = ({
 
     try {
       const response = await getProductList({
-        q: searchTerm || undefined,
+        q: searchTerm.trim() || undefined,
         page: currentPage + 1,
-        page_size: 5,
+        page_size: 10,
       });
       const newProducts = response?.data?.data || [];
       const nextPage = response?.data?.nextPage;
@@ -115,7 +115,7 @@ export const ProductNameDropdown = ({
     <Dropdown
       onClose={onClose}
       width={width}
-      maxHeight="max-h-[180px]"
+      maxHeight="max-h-[304px]"
       onLoadMore={loadMoreProducts}
       hasMore={hasMore}
       isLoading={isLoading}

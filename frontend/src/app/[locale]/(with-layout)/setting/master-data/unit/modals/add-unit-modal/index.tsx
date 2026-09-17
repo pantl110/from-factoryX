@@ -199,30 +199,16 @@ export const AddUnitModal = ({
                   const { value } = e.target;
                   if (addUnitType === 'material') {
                     setMaterialSearchInput(value);
-                    if (value.length > 0) {
-                      setIsMaterialDropdownOpen(true);
-                    } else {
-                      setIsMaterialDropdownOpen(false);
-                    }
+                    setIsMaterialDropdownOpen(true);
                   } else {
                     setProductSearchInput(value);
-                    if (value.length > 0) {
-                      setIsProductDropdownOpen(true);
-                    } else {
-                      setIsProductDropdownOpen(false);
-                    }
+                    setIsProductDropdownOpen(true);
                   }
                 }}
                 onFocus={() => {
-                  if (
-                    addUnitType === 'material' &&
-                    materialSearchInput.length > 0
-                  ) {
+                  if (addUnitType === 'material') {
                     setIsMaterialDropdownOpen(true);
-                  } else if (
-                    addUnitType === 'product' &&
-                    productSearchInput.length > 0
-                  ) {
+                  } else {
                     setIsProductDropdownOpen(true);
                   }
                 }}
@@ -236,30 +222,27 @@ export const AddUnitModal = ({
                   }, 150);
                 }}
               />
-              {addUnitType === 'material' &&
-                isMaterialDropdownOpen &&
-                materialSearchInput.length > 0 && (
-                  <div className="absolute top-full left-0 z-50 mt-2 w-full">
-                    <MaterialNameDropdown
-                      searchTerm={materialSearchInput}
-                      onSelect={handleSelectMaterial}
-                      onClose={() => setIsMaterialDropdownOpen(false)}
-                      width="w-full"
-                    />
-                  </div>
-                )}
-              {addUnitType === 'product' &&
-                isProductDropdownOpen &&
-                productSearchInput.length > 0 && (
-                  <div className="absolute top-full left-0 z-50 mt-2 w-full">
-                    <ProductNameDropdown
-                      searchTerm={productSearchInput}
-                      onSelect={handleSelectProduct}
-                      onClose={() => setIsProductDropdownOpen(false)}
-                      width="w-full"
-                    />
-                  </div>
-                )}
+              {addUnitType === 'material' && isMaterialDropdownOpen && (
+                <div className="absolute top-full left-0 z-50 mt-2 w-full">
+                  <MaterialNameDropdown
+                    searchTerm={materialSearchInput}
+                    onSelect={handleSelectMaterial}
+                    onClose={() => setIsMaterialDropdownOpen(false)}
+                    width="w-full"
+                  />
+                </div>
+              )}
+              {addUnitType === 'product' && isProductDropdownOpen && (
+                <div className="absolute top-full left-0 z-50 mt-2 w-full">
+                  <ProductNameDropdown
+                    searchTerm={productSearchInput}
+                    onSelect={handleSelectProduct}
+                    onClose={() => setIsProductDropdownOpen(false)}
+                    width="w-full"
+                    showAllOnEmpty
+                  />
+                </div>
+              )}
             </div>
 
             <div className="flex-1">
