@@ -69,6 +69,7 @@ OCR_REQUEST_ITEM_KEYS = ("item_name", "item_code", "spec", "unit", "quantity", "
 OCR_PARSE_ERROR_MESSAGE = (
     "OCR 결과를 정리하는 중 오류가 발생했습니다. "
 )
+LOCAL_OCR_TEST_DOCUMENT_MARKER = "PANTLE110 OCR TEST DOCUMENT"
 
 
 def _ocr_filename_and_content_type(content: bytes) -> Tuple[str, str]:
@@ -109,6 +110,85 @@ def render_pdf_first_page_to_image(
     pix = page.get_pixmap(matrix=mat)
 
     return pix.tobytes("png")
+
+
+def _parse_local_test_order_text(
+    text: str, document_type: str
+) -> Dict[str, Any] | None:
+    """개발 환경의 H 검증용 PDF에서만 주문 정보를 추출한다.
+
+    외부 OCR 키가 없는 로컬 환경에서 이후 거래처·제품 연결 흐름을 검증하기
+    위한 제한된 폴백이다. 일반 문서나 이미지에는 사용하지 않는다.
+    """
+    if (
+        document_type != "order"
+        or LOCAL_OCR_TEST_DOCUMENT_MARKER not in text
+    ):
+        return None
+
+    party_pattern = re.compile(
+        r"(?P<company>[^\n]+)\n"
+        r"사업자등록번호:\s*(?P<registration_number>[^\n]+)\n"
+        r"대표자:\s*(?P<ceo_name>[^\n]+)\n"
+        r"주소:\s*(?P<address>[^\n]+)\n"
+        r"담당자:\s*(?P<manager_name>[^/\n]+?)\s*/\s*(?P<call_number>[^\n]+)\n"
+        r"이메일:\s*(?P<email>[^\n]+)"
+    )
+    parties = list(party_pattern.finditer(text))
+    if len(parties) < 2:
+        return None
+
+    item_match = re.search(
+        r"\n1\n(?P<item_code>[^\n]+)\n(?P<item_name>[^\n]+)\n"
+        r"(?P<spec>[^\n]+)\n(?P<unit>[^\n]+)\n"
+        r"(?P<quantity>[\d,.]+)\n(?P<unit_price>[\d,.]+)\n(?P<amount>[\d,.]+)",
+        text,
+    )
+    if not item_match:
+        return None
+
+    buyer = parties[0].groupdict()
+    due_date_match = re.search(r"납기요청일\s*(\d{4}-\d{2}-\d{2})", text)
+    return {
+        "client_info": {
+            "company_name": buyer["company"].strip(),
+            "registration_number": buyer["registration_number"].strip(),
+            "ceo_name": buyer["ceo_name"].strip(),
+            "delivery_date": due_date_match.group(1) if due_date_match else "",
+            "business_type": "",
+            "category": "",
+            "address": buyer["address"].strip(),
+            "manager_name": buyer["manager_name"].strip(),
+            "email": buyer["email"].strip(),
+            "fax_number": "",
+            "call_number": buyer["call_number"].strip(),
+        },
+        "request_items": [
+            {
+                key: value.strip()
+                for key, value in item_match.groupdict().items()
+                if key != "amount"
+            }
+        ],
+    }
+
+
+def _parse_local_test_order_pdf(
+    file: bytes, document_type: str
+) -> Dict[str, Any] | None:
+    if not file.startswith(b"%PDF"):
+        return None
+
+    try:
+        document = fitz.open(stream=file, filetype="pdf")
+        text = "\n".join(page.get_text("text") for page in document)
+    except Exception:
+        return None
+    finally:
+        if "document" in locals():
+            document.close()
+
+    return _parse_local_test_order_text(text, document_type)
 
 
 def extract_text_from_upstage(digitize_json: Dict[str, Any]) -> str:
@@ -321,6 +401,20 @@ async def content_ocr_document_parse(
     document-parse는 표 구조를 HTML로 반환하여 LLM 파싱 정확도가 높음.
     """
     api_key = os.getenv("UPSTAGE_API_KEY")
+    openai_api_key = os.getenv("OPENAI_API_KEY")
+
+    # 외부 비밀키 없이 현재 로컬에서 H 검증용 PDF의 후속 흐름을 확인할 수
+    # 있도록 개발 모드에서만 제한적인 텍스트 PDF 폴백을 허용한다.
+    if not api_key or not openai_api_key:
+        if os.getenv("DJANGO_DEBUG", "").lower() == "true":
+            fallback_result = _parse_local_test_order_pdf(file, document_type)
+            if fallback_result is not None:
+                return fallback_result
+        raise HttpError(
+            503,
+            "외부 OCR 환경변수(UPSTAGE_API_KEY, OPENAI_API_KEY)가 설정되지 않았습니다.",
+        )
+
     url = "https://api.upstage.ai/v1/document-digitization"
     headers = {"Authorization": f"Bearer {api_key}"}
 

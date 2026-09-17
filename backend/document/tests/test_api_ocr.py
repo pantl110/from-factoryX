@@ -13,6 +13,7 @@ from user.models import User
 from user.models import EmailVerification
 from factory.models import Factory, FactoryMember
 from stock.models import Product
+from document.utils import _parse_local_test_order_text
 
 
 class TestDocumentOCR(TestCase):
@@ -77,6 +78,42 @@ class TestDocumentOCR(TestCase):
         return {
             "Authorization": f"Bearer {tokens['access_token']}",
         }
+
+    def test_local_test_order_text_parser_uses_buyer_and_item_code(self):
+        """외부 OCR 키가 없는 로컬 H 검증용 PDF의 텍스트 폴백을 확인한다."""
+        text = """PANTLE110 OCR TEST DOCUMENT
+발주자 (구매자 / 수주처)
+공급자 (판매자 / 제조자)
+에이치 테스트 유통 주식회사
+사업자등록번호: 321-86-54321
+대표자: 김하나
+주소: 서울특별시 강남구 테헤란로 123
+담당자: 박구매 / 02-3456-7890
+이메일: purchase@h-test.example
+앰플랩 테스트 제조 주식회사
+사업자등록번호: 110-81-00001
+대표자: 이공급
+주소: 경기도 성남시 판교로 110
+담당자: 최영업 / 031-110-0110
+이메일: sales@ample-test.example
+납기요청일 2026-09-25
+1
+P-EXEMPT-001
+흰우유 면세 테스트
+1L
+EA
+10
+2,500
+25,000
+"""
+
+        result = _parse_local_test_order_text(text, "order")
+
+        self.assertIsNotNone(result)
+        self.assertEqual(result["client_info"]["company_name"], "에이치 테스트 유통 주식회사")
+        self.assertEqual(result["client_info"]["call_number"], "02-3456-7890")
+        self.assertEqual(result["request_items"][0]["item_code"], "P-EXEMPT-001")
+        self.assertEqual(result["request_items"][0]["item_name"], "흰우유 면세 테스트")
 
     @patch("document.api_quotation.content_ocr_document_parse", new_callable=AsyncMock)
     async def test_ocr_pdf_upload(self, mock_ocr):
