@@ -288,7 +288,7 @@ class MaterialUsageAPITestCase(TestCase):
         self.assertEqual(len(data), 1)
         self.assertEqual(data[0]["plan_id"], self.plan.id)
         self.assertEqual(data[0]["material_id"], self.material.id)
-        self.assertEqual(str(data[0]["usage_amount"]), "10.50")
+        self.assertEqual(str(data[0]["usage_amount"]), "10.5000")
 
         self.material_history.refresh_from_db()
         self.assertEqual(self.material_history.remaining_quantity, Decimal("39.50"))
@@ -436,7 +436,7 @@ class MaterialUsageAPITestCase(TestCase):
         data = response.json()
         self.assertEqual(len(data), 1)
         self.assertEqual(data[0]["id"], usage1["id"])
-        self.assertEqual(str(data[0]["usage_amount"]), "12.00")
+        self.assertEqual(str(data[0]["usage_amount"]), "12.0000")
 
         # usage2가 삭제되었는지 확인
         self.assertFalse(MaterialUsage.objects.filter(id=usage2["id"]).exists())
@@ -444,5 +444,4 @@ class MaterialUsageAPITestCase(TestCase):
         # usage2의 LOT 잔량이 복원되었는지 확인
         history2.refresh_from_db()
         self.assertEqual(history2.remaining_quantity, Decimal("150.00"))
-
 

@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.contrib.auth import get_user_model
 from factory.models import Factory, FactoryMember
 from stock.models import Material, Product, MaterialProduct
+from unit_conversion.models import UnitConversion
 import json
 import jwt
 from django.conf import settings
@@ -133,6 +134,85 @@ class MaterialProductAPITestCase(TestCase):
 
         glass_connection = connections.get(material=self.material3)
         self.assertEqual(float(glass_connection.quantity), 20.0)
+
+    def test_create_connection_converts_grams_to_material_kilograms(self):
+        UnitConversion.objects.create(
+            factory=self.factory,
+            material=self.material1,
+            from_unit="g",
+            to_unit="kg",
+            from_quantity=1000,
+            to_quantity=1,
+        )
+        url = f"/v1/stock/materialproduct?factory_id={self.factory.id}"
+        payload = {
+            "type": "product",
+            "target_id": self.product1.id,
+            "connections": [
+                {"id": self.material1.id, "quantity": "1", "unit": "g"}
+            ],
+        }
+
+        response = self.client.post(
+            url,
+            data=json.dumps(payload),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {self.token}",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        connection = MaterialProduct.objects.get(
+            product=self.product1, material=self.material1
+        )
+        self.assertEqual(str(connection.quantity), "0.0010")
+
+    def test_create_connection_rejects_unconfigured_unit(self):
+        url = f"/v1/stock/materialproduct?factory_id={self.factory.id}"
+        payload = {
+            "type": "product",
+            "target_id": self.product1.id,
+            "connections": [
+                {"id": self.material1.id, "quantity": "1000", "unit": "ml"}
+            ],
+        }
+
+        response = self.client.post(
+            url,
+            data=json.dumps(payload),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {self.token}",
+        )
+
+        self.assertEqual(response.status_code, 400)
+        self.assertIn("변환하는 단위 정보가 없습니다", response.json()["detail"])
+
+    def test_update_connection_converts_selected_unit(self):
+        UnitConversion.objects.create(
+            factory=self.factory,
+            material=self.material1,
+            from_unit="g",
+            to_unit="kg",
+            from_quantity=1000,
+            to_quantity=1,
+        )
+        connection = MaterialProduct.objects.create(
+            product=self.product1, material=self.material1, quantity=1
+        )
+        url = (
+            f"/v1/stock/materialproduct/connection/{connection.id}"
+            f"?factory_id={self.factory.id}"
+        )
+
+        response = self.client.patch(
+            url,
+            data=json.dumps({"quantity": "250", "unit": "g"}),
+            content_type="application/json",
+            HTTP_AUTHORIZATION=f"Bearer {self.token}",
+        )
+
+        self.assertEqual(response.status_code, 200)
+        connection.refresh_from_db()
+        self.assertEqual(str(connection.quantity), "0.2500")
 
     def test_create_material_product_connections_material_type(self):
         """원자재 기준으로 제품 연결 생성 테스트"""

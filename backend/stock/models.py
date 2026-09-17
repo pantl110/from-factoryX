@@ -42,29 +42,29 @@ class Material(BaseModel):
         help_text="기존 데이터의 과세 유형 확인 필요 여부",
     )
     current_stock = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
+        max_digits=14,
+        decimal_places=4,
         default=Decimal("0.00"),
         null=True,
         help_text="현재 재고",
     )
     standard_stock = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
+        max_digits=14,
+        decimal_places=4,
         null=True,
         blank=True,
         help_text="안전 재고",
     )
     rop = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
+        max_digits=14,
+        decimal_places=4,
         null=True,
         blank=True,
         help_text="재주문점 (Reorder Point)",
     )
     max_stock = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
+        max_digits=14,
+        decimal_places=4,
         null=True,
         blank=True,
         help_text="적정 재고(최대 재고)",
@@ -118,8 +118,8 @@ class MaterialHistory(BaseModel):
         help_text="고객 (원자재 구매 시에만 입력)",
     )
     quantity = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
+        max_digits=14,
+        decimal_places=4,
         help_text="재고 변동 수량",
     )
     price = models.IntegerField(
@@ -145,8 +145,8 @@ class MaterialHistory(BaseModel):
         help_text="유통기한",
     )
     remaining_quantity = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
+        max_digits=14,
+        decimal_places=4,
         null=True,
         blank=True,
         help_text="현재 잔량",
@@ -160,8 +160,8 @@ class MaterialHistory(BaseModel):
         help_text="연결된 현금영수증",
     )
     total_stock = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
+        max_digits=14,
+        decimal_places=4,
         help_text="재고 변동 후 재고",
     )
 
@@ -337,7 +337,7 @@ class MaterialProduct(BaseModel):
         Material, related_name="material_products", on_delete=models.CASCADE
     )
     quantity = models.DecimalField(
-        max_digits=10, decimal_places=2, help_text="제품 1개 생산에 필요한 원자재 수량"
+        max_digits=14, decimal_places=4, help_text="제품 1개 생산에 필요한 원자재 수량"
     )
 
 
@@ -381,7 +381,7 @@ class MaterialUsage(BaseModel):
         help_text="사용한 자재 소분 내역 (MaterialHistory 또는 MaterialRepackaging 중 하나만 설정)",
     )
     usage_amount = models.DecimalField(
-        max_digits=10, decimal_places=2, help_text="실제 투입량"
+        max_digits=14, decimal_places=4, help_text="실제 투입량"
     )
 
     class Meta:

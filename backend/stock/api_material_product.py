@@ -9,6 +9,7 @@ from stock.schemas.outbound import (
     MaterialProductConnectionOut,
 )
 from stock.models import Material, Product, MaterialProduct
+from stock.unit_conversion import normalize_material_quantity
 from stock.utils import get_material_status
 from factory.utils import is_factory_member
 from project.utils import check_material_availability
@@ -71,6 +72,10 @@ async def create_material_product_connections(
 
     for connection_item in payload.connections:
         if payload.type == "material":
+            material = target
+            normalized_quantity = await normalize_material_quantity(
+                material, connection_item.quantity, connection_item.unit
+            )
             existing = await sync_to_async(
                 MaterialProduct.objects.filter(
                     material_id=payload.target_id, product_id=connection_item.id
@@ -83,9 +88,13 @@ async def create_material_product_connections(
             material_product = await sync_to_async(MaterialProduct.objects.create)(
                 material=target,
                 product=next(c for c in connections if c.id == connection_item.id),
-                quantity=connection_item.quantity,
+                quantity=normalized_quantity,
             )
         else:
+            material = next(c for c in connections if c.id == connection_item.id)
+            normalized_quantity = await normalize_material_quantity(
+                material, connection_item.quantity, connection_item.unit
+            )
             existing = await sync_to_async(
                 MaterialProduct.objects.filter(
                     product_id=payload.target_id, material_id=connection_item.id
@@ -97,8 +106,8 @@ async def create_material_product_connections(
 
             material_product = await sync_to_async(MaterialProduct.objects.create)(
                 product=target,
-                material=next(c for c in connections if c.id == connection_item.id),
-                quantity=connection_item.quantity,
+                material=material,
+                quantity=normalized_quantity,
             )
 
         connection_out = MaterialProductConnectionOut(
@@ -236,11 +245,15 @@ async def update_material_product_connection(
     await is_factory_member(int(factory_id), user)
 
     try:
-        connection = await sync_to_async(MaterialProduct.objects.get)(id=connection_id)
+        connection = await sync_to_async(
+            MaterialProduct.objects.select_related("material").get
+        )(id=connection_id, material__factory_id=int(factory_id))
     except MaterialProduct.DoesNotExist:
         raise HttpError(404, "해당 연결을 찾을 수 없습니다.")
 
-    connection.quantity = payload.quantity
+    connection.quantity = await normalize_material_quantity(
+        connection.material, payload.quantity, payload.unit
+    )
     await sync_to_async(connection.save)()
     return 200, {
         "message": "연결이 성공적으로 수정되었습니다.",

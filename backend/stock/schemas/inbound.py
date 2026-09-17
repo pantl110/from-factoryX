@@ -28,7 +28,8 @@ class MaterialAssignmentIn(Schema):
 # Material Product Info
 class MaterialProductConnectionIn(Schema):
     id: int
-    quantity: float
+    quantity: Decimal
+    unit: Optional[str] = None
 
 
 # ------------------------------------------------------------
@@ -174,7 +175,8 @@ class MaterialProductConnectIn(Schema):
 
 # (PATCH) Update Material Product Connection
 class MaterialProductUpdateIn(Schema):
-    quantity: float
+    quantity: Decimal
+    unit: Optional[str] = None
 
 
 # ------------------------------------------------------------
