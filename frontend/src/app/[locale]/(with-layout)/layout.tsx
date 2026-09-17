@@ -64,8 +64,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       {/* Reflow 온보딩 가이드 위젯: 키가 설정된 환경에서만 로드 */}
       {process.env.NEXT_PUBLIC_REFLOW_KEY && (
         <Script
-          src="https://cdn.reflowguide.com/v0.1.12/embed.js"
-          integrity="sha384-VvAJHpHXxABg2cPcuY/SsiZ+CjRKEwswXOzTsi2TsuzsLf3VERCQwVcbAhIZHAcH"
+          src="https://cdn.reflowguide.com/v0.1.13/embed.js"
+          integrity="sha384-eWhB3s8sXJFvbSM1PgJsbS8Cy84CzDOImAWiIsFZ/K4duoytPqczgCld8mTRqM5Z"
           crossOrigin="anonymous"
           data-key={process.env.NEXT_PUBLIC_REFLOW_KEY}
           strategy="afterInteractive"
