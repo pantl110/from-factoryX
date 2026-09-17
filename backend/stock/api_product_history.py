@@ -2,6 +2,7 @@ from ninja import Router, Query
 from ninja.pagination import paginate
 from ninja.errors import HttpError
 from api.permissions import require_factory_access
+from api.pagination import PartnerPageNumberPagination
 from api.security import api_key_auth, jwt_auth
 from api.throttling import PartnerApiKeyThrottle
 from asgiref.sync import sync_to_async
@@ -77,7 +78,7 @@ async def create_product_history(request, payload: ProductHistoryCreateIn):
     auth=[jwt_auth, api_key_auth],
     throttle=[PartnerApiKeyThrottle()],
 )
-@paginate
+@paginate(PartnerPageNumberPagination)
 async def list_product_histories(request, filters: ProductHistoryFilter = Query(...), factory_id: int = Query(...)):
     factory_id = request.GET.get('factory_id')
     if not factory_id:

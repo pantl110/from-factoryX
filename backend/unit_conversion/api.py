@@ -2,6 +2,7 @@ from ninja import Router, Query
 from ninja.errors import HttpError
 from ninja.pagination import paginate
 from api.permissions import require_factory_access
+from api.pagination import PartnerPageNumberPagination
 from api.security import api_key_auth, jwt_auth
 from api.throttling import PartnerApiKeyThrottle
 from factory.models import Factory
@@ -93,7 +94,7 @@ async def create_unit_conversion(request, payload: UnitConversionCreateSchema):
     auth=[jwt_auth, api_key_auth],
     throttle=[PartnerApiKeyThrottle()],
 )
-@paginate
+@paginate(PartnerPageNumberPagination)
 async def list_unit_conversions(
     request,
     factory_id: int,

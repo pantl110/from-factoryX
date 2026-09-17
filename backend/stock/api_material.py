@@ -7,6 +7,7 @@ from asgiref.sync import sync_to_async
 from django.db import IntegrityError
 from django.db.models import F
 from api.permissions import require_factory_access
+from api.pagination import PartnerPageNumberPagination
 from api.security import api_key_auth, jwt_auth
 from api.throttling import PartnerApiKeyThrottle
 from typing import List
@@ -214,7 +215,7 @@ async def assign_material(request, payload: AssignMaterialIn):
     throttle=[PartnerApiKeyThrottle()],
     response={200: List[MaterialSummaryOut], 404: dict, 500: dict},
 )
-@paginate
+@paginate(PartnerPageNumberPagination)
 async def get_materials_by_factory(
     request,
     q: str = None,
@@ -314,7 +315,7 @@ async def get_materials_by_factory(
     throttle=[PartnerApiKeyThrottle()],
     response={200: List[ExpiryRiskMaterialOut], 404: dict, 500: dict},
 )
-@paginate
+@paginate(PartnerPageNumberPagination)
 async def get_expiry_risk_materials(request, q: str = None, factory_id: int = Query(...)):
     factory_id = request.GET.get("factory_id")
     if not factory_id:

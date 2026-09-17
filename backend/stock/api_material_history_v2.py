@@ -5,6 +5,7 @@ from asgiref.sync import sync_to_async
 from typing import List
 from datetime import datetime
 from api.permissions import require_factory_access
+from api.pagination import PartnerPageNumberPagination
 from api.security import api_key_auth, jwt_auth
 from api.throttling import PartnerApiKeyThrottle
 
@@ -25,7 +26,7 @@ router = Router(tags=["MaterialHistory V2"], auth=jwt_auth)
     throttle=[PartnerApiKeyThrottle()],
     response=List[MaterialAvailableLotOut],
 )
-@paginate
+@paginate(PartnerPageNumberPagination)
 async def list_available_lots(
     request,
     material_id: int = Query(..., description="원자재 ID"),
@@ -219,4 +220,3 @@ async def update_material_history(
         raise HttpError(
             500, f"원자재 이력 수정 중 오류가 발생했습니다: {str(e)}"
         )
-

@@ -2,6 +2,7 @@ from ninja import Router, Query
 from ninja.errors import HttpError
 from ninja.pagination import paginate
 from api.permissions import require_factory_access
+from api.pagination import PartnerPageNumberPagination
 from api.security import api_key_auth, jwt_auth
 from api.throttling import PartnerApiKeyThrottle
 from asgiref.sync import sync_to_async
@@ -33,7 +34,7 @@ router = Router(
     throttle=[PartnerApiKeyThrottle()],
     response=list[WorkInstructionModelOut],
 )
-@paginate
+@paginate(PartnerPageNumberPagination)
 async def get_work_instructions(
     request,
     order_by: str = Query("-created_at"),

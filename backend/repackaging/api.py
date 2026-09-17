@@ -6,6 +6,7 @@ from asgiref.sync import sync_to_async
 from typing import List, Optional
 from django.db.models import F
 from api.permissions import require_factory_access
+from api.pagination import PartnerPageNumberPagination
 from api.security import api_key_auth, jwt_auth
 from api.throttling import PartnerApiKeyThrottle
 
@@ -102,7 +103,7 @@ async def create_material_repackaging(
     throttle=[PartnerApiKeyThrottle()],
     response=List[MaterialRepackagingOut],
 )
-@paginate
+@paginate(PartnerPageNumberPagination)
 async def list_material_repackagings(
     request,
     material_id: int = Query(..., description="원자재 ID"),
@@ -313,4 +314,3 @@ async def delete_material_repackaging(request, repackaging_id: int):
     await sync_to_async(repackaging.delete)()
 
     return 204, None
-

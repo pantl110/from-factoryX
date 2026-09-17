@@ -3,6 +3,7 @@ from ninja.errors import HttpError
 from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
 from api.permissions import require_factory_access
+from api.pagination import PartnerPageNumberPagination
 from api.security import api_key_auth, jwt_auth
 from api.throttling import PartnerApiKeyThrottle
 from project.models import Project, ProjectLog
@@ -110,7 +111,7 @@ async def create_project_log(request, payload: ProjectLogCreateIn):
     throttle=[PartnerApiKeyThrottle()],
     response={200: List[ProjectLogDetailOut], 404: dict, 500: dict},
 )
-@paginate
+@paginate(PartnerPageNumberPagination)
 async def list_project_logs(request, project_id: int = Query(...), factory_id: int = Query(...)):
     factory_id = request.GET.get("factory_id")
     if not factory_id:

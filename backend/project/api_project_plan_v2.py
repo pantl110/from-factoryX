@@ -28,8 +28,8 @@ router = Router(tags=["ProjectPlan V2"], auth=jwt_auth)
 )
 async def get_mobile_dashboard_counts(
     request,
-    base_date: str | None = Query(
-        None, description="납품 예정 품목 조회 기준 날짜 (YYYY-MM-DD)"
+    base_date: str = Query(
+        ..., description="납품 예정 품목 조회 기준 날짜 (YYYY-MM-DD)"
     ),
     factory_id: int = Query(...),
 ):
@@ -133,5 +133,4 @@ async def get_mobile_dashboard_counts(
         raise HttpError(
             500, f"모바일 대시보드 지표 조회 중 오류가 발생했습니다: {str(e)}"
         )
-
 

@@ -6,6 +6,7 @@ from ninja.errors import HttpError
 from django.http import JsonResponse
 from django.db import IntegrityError
 from api.permissions import require_factory_access
+from api.pagination import PartnerPageNumberPagination
 from api.security import api_key_auth, jwt_auth
 from api.throttling import PartnerApiKeyThrottle
 from asgiref.sync import sync_to_async
@@ -229,7 +230,7 @@ async def assign_product(request, payload: AssignProductIn):
     auth=[jwt_auth, api_key_auth],
     throttle=[PartnerApiKeyThrottle()],
 )
-@paginate
+@paginate(PartnerPageNumberPagination)
 async def list_products(request, filters: ProductFilter = Query(None), q: str = None, factory_id: int = Query(...)):
     factory_id = request.GET.get('factory_id')
     if not factory_id:
@@ -383,4 +384,3 @@ async def delete_product(request, product_id: int):
         raise HttpError(404, "해당 제품을 찾을 수 없습니다.")
     await product.adelete()
     return 204, None
-

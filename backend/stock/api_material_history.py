@@ -4,6 +4,7 @@ from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
 from typing import List
 from api.permissions import require_factory_access
+from api.pagination import PartnerPageNumberPagination
 from api.security import api_key_auth, jwt_auth
 from api.throttling import PartnerApiKeyThrottle
 from stock.models import Material, MaterialHistory
@@ -228,7 +229,7 @@ async def create_material_history(request, payload: MaterialHistoryCreateIn):
     throttle=[PartnerApiKeyThrottle()],
     response=List[MaterialHistoryItemOut],
 )
-@paginate
+@paginate(PartnerPageNumberPagination)
 async def get_material_history(
     request,
     filters: MaterialHistoryDetailFilter = Query(...),
@@ -369,5 +370,4 @@ async def get_material_history(
         return result
 
     return await get_histories()
-
 

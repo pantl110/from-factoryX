@@ -817,6 +817,7 @@ class ProjectAPITestCase(TestCase):
         )
 
         self.assertEqual(response.status_code, 400)
+        self.assertIn("factory_id를 입력해야 합니다.", response.json()["detail"])
 
     def test_list_progress_project_empty_result(self):
         """빈 결과 조회 테스트"""

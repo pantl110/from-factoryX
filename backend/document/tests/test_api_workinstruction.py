@@ -15,6 +15,8 @@ User = get_user_model()
 
 class TestWorkInstructionAPI(TestCase):
     def setUp(self):
+        original_router_api = router.api
+        self.addCleanup(router.set_api_instance, original_router_api)
         self.client = TestAsyncClient(router)
         self.user = User.objects.create_user(
             username="testuser", email="test@example.com", password="testpass123"
@@ -128,8 +130,8 @@ class TestWorkInstructionAPI(TestCase):
         """factory_id 누락 테스트"""
         response = await self.client.get("", headers=self._get_auth_headers())
 
-        self.assertEqual(response.status_code, 400)
-        self.assertIn("factory_id를 입력해야 합니다.", response.json()["detail"])
+        self.assertEqual(response.status_code, 422)
+        self.assertIn("factory_id", str(response.json()))
 
     async def test_get_work_instructions_with_order_by_created_at_desc(self):
         """생성일 역순 정렬 테스트 (기본값)"""
@@ -594,8 +596,8 @@ class TestWorkInstructionAPI(TestCase):
             headers=self._get_auth_headers(),
         )
         
-        self.assertEqual(response.status_code, 400)
-        self.assertIn("factory_id를 입력해야 합니다.", response.json()["detail"])
+        self.assertEqual(response.status_code, 422)
+        self.assertIn("factory_id", str(response.json()))
 
     async def test_get_work_instruction_history_different_factory(self):
         """다른 공장의 작업지시서 이력 조회 테스트"""

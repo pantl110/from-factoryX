@@ -1000,7 +1000,7 @@ class TestMaterialAPI(TestCase):
         # 기존 원자재들을 모두 삭제하고 새로 시작
         await sync_to_async(Material.objects.filter(factory=self.factory).delete)()
 
-        # 테스트용 원자재 정확히 12개 생성 (기본 page_size=5보다 많게)
+        # 테스트용 원자재 정확히 12개 생성 (PARTNER 기본 page_size=10보다 많게)
         for i in range(12):
             await sync_to_async(Material.objects.create)(
                 factory=self.factory,
@@ -1014,7 +1014,7 @@ class TestMaterialAPI(TestCase):
 
         headers = await self.authenticate()
 
-        # 첫 번째 페이지 테스트 (기본 page_size=5)
+        # 첫 번째 페이지 테스트 (PARTNER 기본 page_size=10)
         response = await self.client.get(
             f"?factory_id={self.factory.id}&page=1", headers=headers
         )
@@ -1026,11 +1026,11 @@ class TestMaterialAPI(TestCase):
         self.assertIn("totalCnt", data)
         self.assertIn("pageCnt", data)
         self.assertIn("curPage", data)
-        self.assertEqual(len(data["data"]), 5)  # 기본 page_size=5
+        self.assertEqual(len(data["data"]), 10)  # PARTNER 기본 page_size=10
 
-        self.assertEqual(data["count"], 5)
+        self.assertEqual(data["count"], 10)
         self.assertEqual(data["totalCnt"], 12)  # 새로 생성한 12개
-        self.assertEqual(data["pageCnt"], 3)  # 12개를 5개씩 = 3페이지
+        self.assertEqual(data["pageCnt"], 2)  # 12개를 10개씩 = 2페이지
         self.assertEqual(data["curPage"], 1)
 
         # 두 번째 페이지 테스트
@@ -1040,24 +1040,11 @@ class TestMaterialAPI(TestCase):
         self.assertEqual(response.status_code, 200)
 
         data = response.json()
-        self.assertEqual(len(data["data"]), 5)  # 두 번째 페이지도 5개
-        self.assertEqual(data["count"], 5)
-        self.assertEqual(data["totalCnt"], 12)
-        self.assertEqual(data["pageCnt"], 3)
-        self.assertEqual(data["curPage"], 2)
-
-        # 세 번째 페이지 테스트 (마지막 페이지)
-        response = await self.client.get(
-            f"?factory_id={self.factory.id}&page=3", headers=headers
-        )
-        self.assertEqual(response.status_code, 200)
-
-        data = response.json()
         self.assertEqual(len(data["data"]), 2)  # 마지막 페이지는 2개
         self.assertEqual(data["count"], 2)
         self.assertEqual(data["totalCnt"], 12)
-        self.assertEqual(data["pageCnt"], 3)
-        self.assertEqual(data["curPage"], 3)
+        self.assertEqual(data["pageCnt"], 2)
+        self.assertEqual(data["curPage"], 2)
 
     async def test_get_materials_by_factory_exclude_substitutes_with_material_id(self):
         """material_id로 검색 시 대체자재 제외 테스트"""
