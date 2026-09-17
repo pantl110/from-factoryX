@@ -21,6 +21,7 @@ import NoHistoryBox from '@/ui/no-history-box';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import { useTranslations } from 'next-intl';
+import StockSelectDropdown from '../stock-select-dropdown';
 
 interface MaterialProps {
   setIsMaterialDetailOpen: (v: boolean) => void;
@@ -261,40 +262,37 @@ const Material = ({
             value={search}
             onChange={handleSearch}
           />
-          <select
-            aria-label={t('taxManagement.filterLabel')}
-            className="h-12 rounded-lg border border-lg bg-wh px-3 Me_Body-3 text-dg outline-none transition-colors hover:border-primary focus:border-primary"
+          <StockSelectDropdown
+            ariaLabel={t('taxManagement.filterLabel')}
             value={taxTypeFilter}
-            onChange={(event) =>
-              handleTaxTypeFilter(
-                event.target.value as '' | 'taxable' | 'exempt'
-              )
-            }
-          >
-            <option value="">{t('taxManagement.all')}</option>
-            <option value="taxable">{t('taxManagement.taxable')}</option>
-            <option value="exempt">{t('taxManagement.exempt')}</option>
-          </select>
+            options={[
+              { value: '', label: t('taxManagement.all') },
+              { value: 'taxable', label: t('taxManagement.taxable') },
+              { value: 'exempt', label: t('taxManagement.exempt') },
+            ]}
+            onChange={handleTaxTypeFilter}
+          />
         </div>
         {materialList.length > 0 && !isViewer && hasSubscription() && (
           <div className="flex flex-wrap items-center gap-1">
             {checkedCount > 0 && (
               <>
-                <select
-                  aria-label={t('taxManagement.bulkLabel')}
-                  className="h-10 rounded-md border border-lg bg-wh px-3 Me_Body-3 text-dg outline-none transition-colors hover:border-primary focus:border-primary"
+                <StockSelectDropdown
+                  ariaLabel={t('taxManagement.bulkLabel')}
                   value={bulkTaxType}
-                  onChange={(event) =>
-                    setBulkTaxType(event.target.value as 'taxable' | 'exempt')
-                  }
-                >
-                  <option value="taxable">
-                    {t('taxManagement.changeToTaxable')}
-                  </option>
-                  <option value="exempt">
-                    {t('taxManagement.changeToExempt')}
-                  </option>
-                </select>
+                  options={[
+                    {
+                      value: 'taxable',
+                      label: t('taxManagement.changeToTaxable'),
+                    },
+                    {
+                      value: 'exempt',
+                      label: t('taxManagement.changeToExempt'),
+                    },
+                  ]}
+                  onChange={setBulkTaxType}
+                  width="w-[144px]"
+                />
                 <MiniBtn
                   variant="primary"
                   text={t('taxManagement.applySelected', {

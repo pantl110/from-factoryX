@@ -1334,8 +1334,8 @@
       "taxManagement": {
         "filterLabel": "Material tax classification filter",
         "all": "Classification",
-        "taxable": "Taxable only",
-        "exempt": "Exempt only",
+        "taxable": "Taxable",
+        "exempt": "Exempt",
         "bulkLabel": "Change selected material tax classification",
         "changeToTaxable": "Change to taxable",
         "changeToExempt": "Change to exempt",
@@ -1681,8 +1681,8 @@
       "taxManagement": {
         "filterLabel": "Product tax classification filter",
         "all": "Classification",
-        "taxable": "Taxable only",
-        "exempt": "Exempt only",
+        "taxable": "Taxable",
+        "exempt": "Exempt",
         "bulkLabel": "Change selected product tax classification",
         "changeToTaxable": "Change to taxable",
         "changeToExempt": "Change to exempt",

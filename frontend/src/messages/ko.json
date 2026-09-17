@@ -1335,8 +1335,8 @@
       "taxManagement": {
         "filterLabel": "원자재 과세 구분 필터",
         "all": "구분",
-        "taxable": "과세만",
-        "exempt": "면세만",
+        "taxable": "과세",
+        "exempt": "면세",
         "bulkLabel": "선택 원자재 과세 구분 변경",
         "changeToTaxable": "과세로 변경",
         "changeToExempt": "면세로 변경",
@@ -1682,8 +1682,8 @@
       "taxManagement": {
         "filterLabel": "제품 과세 구분 필터",
         "all": "구분",
-        "taxable": "과세만",
-        "exempt": "면세만",
+        "taxable": "과세",
+        "exempt": "면세",
         "bulkLabel": "선택 제품 과세 구분 변경",
         "changeToTaxable": "과세로 변경",
         "changeToExempt": "면세로 변경",
