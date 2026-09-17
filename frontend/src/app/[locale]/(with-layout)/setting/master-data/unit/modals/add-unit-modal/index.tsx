@@ -280,14 +280,23 @@ export const AddUnitModal = ({
         <div className="flex flex-col gap-3">
           <div className="flex gap-2">
             <Input
-              label={tUnit('standardUnit')}
+              label={
+                addUnitType === 'material'
+                  ? tUnit('inputUnit')
+                  : tUnit('productUnit')
+              }
               placeholder={
                 addUnitType === 'material'
-                  ? tUnit('placeholders.standardUnit')
+                  ? tUnit('placeholders.inputUnit')
                   : ''
               }
               value={watchedUnit || ''}
               disabled={addUnitType === 'product'}
+              message={
+                addUnitType === 'product'
+                  ? tUnit('help.productUnitAuto')
+                  : undefined
+              }
               {...(addUnitType === 'material'
                 ? register('unit', { required: true })
                 : {})}
@@ -295,12 +304,21 @@ export const AddUnitModal = ({
             <Input
               placeholder={
                 addUnitType === 'material'
-                  ? ''
-                  : tUnit('placeholders.conversionUnit')
+                  ? tUnit('placeholders.selectMaterialFirst')
+                  : tUnit('placeholders.deliveryUnit')
               }
-              label={tUnit('conversionUnit')}
+              label={
+                addUnitType === 'material'
+                  ? tUnit('inventoryUnitAuto')
+                  : tUnit('deliveryUnit')
+              }
               value={watchedConversionUnit || ''}
               disabled={addUnitType === 'material'}
+              message={
+                addUnitType === 'material'
+                  ? tUnit('help.materialUnitAuto')
+                  : undefined
+              }
               {...(addUnitType === 'product'
                 ? register('conversionUnit', { required: true })
                 : {})}

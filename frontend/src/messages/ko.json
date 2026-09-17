@@ -2032,12 +2032,23 @@
         "title": "단위 변환",
         "standardUnit": "기준단위",
         "conversionUnit": "변환단위",
+        "inputUnit": "입력 단위",
+        "inventoryUnitAuto": "재고 단위(자동)",
+        "productUnit": "제품 단위(자동)",
+        "deliveryUnit": "납품 단위",
         "conversionFormula": "변환식",
         "convert": "단위 변환 추가",
         "placeholders": {
           "standardUnit": "기준단위를 입력하세요.",
           "conversionUnit": "변환단위를 입력하세요.",
+          "inputUnit": "입력 단위를 입력하세요.",
+          "deliveryUnit": "납품 단위를 입력하세요.",
+          "selectMaterialFirst": "자재를 먼저 선택하세요.",
           "search": "자재명, 품목명을 입력해 검색하세요."
+        },
+        "help": {
+          "materialUnitAuto": "선택한 자재의 재고 단위가 자동으로 적용됩니다.",
+          "productUnitAuto": "선택한 제품의 제품 단위가 자동으로 적용됩니다."
         },
         "errors": {
           "enterConversionValue": "변환식 값을 입력해주세요.",

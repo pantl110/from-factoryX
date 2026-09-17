@@ -2031,12 +2031,23 @@
         "title": "Unit Conversion",
         "standardUnit": "Standard Unit",
         "conversionUnit": "Conversion Unit",
+        "inputUnit": "Input Unit",
+        "inventoryUnitAuto": "Inventory Unit (Auto)",
+        "productUnit": "Product Unit (Auto)",
+        "deliveryUnit": "Delivery Unit",
         "conversionFormula": "Conversion Formula",
         "convert": "Convert Unit",
         "placeholders": {
           "standardUnit": "Enter standard unit.",
           "conversionUnit": "Enter conversion unit.",
+          "inputUnit": "Enter input unit.",
+          "deliveryUnit": "Enter delivery unit.",
+          "selectMaterialFirst": "Select a material first.",
           "search": "Search by material name or product name."
+        },
+        "help": {
+          "materialUnitAuto": "The selected material's inventory unit is applied automatically.",
+          "productUnitAuto": "The selected product's unit is applied automatically."
         },
         "errors": {
           "enterConversionValue": "Please enter conversion value.",
