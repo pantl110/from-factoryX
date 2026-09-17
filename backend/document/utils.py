@@ -169,9 +169,23 @@ def _normalize_parsed_quote(data: Dict[str, Any]) -> Dict[str, Any]:
 
 
 def parse_quote_text(
-    text: str, model_name: str = "gpt-3.5-turbo", temperature: float = 0
+    text: str,
+    document_type: str = "quotation",
+    model_name: str = "gpt-3.5-turbo",
+    temperature: float = 0,
 ) -> Dict[str, Any]:
     """Return structured JSON as python dict from free-form quote text."""
+    if document_type == "order":
+        client_role_instructions = """
+    • 이 문서는 주문서입니다. client_info에는 발주자·구매자, 즉 우리 공장 관점의 수주처 정보만 추출하십시오.
+      공급자·판매자·제조자 정보는 client_info에 넣지 마십시오.
+      company_name부터 주소, 대표자, 담당자, 연락처까지 모든 필드는 반드시 같은 발주자 업체의 정보여야 하며 서로 다른 업체 정보를 섞지 마십시오.
+    """
+    else:
+        client_role_instructions = """
+    • client_info에는 견적을 요청한 고객사, 즉 우리 공장 관점의 수주처 정보만 추출하십시오.
+      우리 공장·공급자 정보와 고객사 정보를 섞지 마십시오.
+    """
     response_schemas: List[ResponseSchema] = [
         ResponseSchema(
             name="client_info",
@@ -201,7 +215,9 @@ def parse_quote_text(
             (
                 "human",
                 """
-    다음 문서(견적서 OCR 결과)에서 거래처 정보(client_info)와 요청 정보(request_items)를 추출하여 JSON 으로만 응답하십시오.
+    다음 문서 OCR 결과에서 거래처 정보(client_info)와 요청 정보(request_items)를 추출하여 JSON 으로만 응답하십시오.
+
+    {client_role_instructions}
 
     • client_info 는 업체당 1개의 dict 로, 아래 키를 모두 포함합니다.
       company_name, registration_number, ceo_name, delivery_date, business_type,
@@ -211,6 +227,7 @@ def parse_quote_text(
     • request_items 는 품목별 dict 들의 리스트이며, 각 dict 는 다음 키를 포함합니다.
       item_name, item_code, spec, unit, quantity, unit_price
       값이 없으면 빈 문자열로 설정합니다.
+      item_name과 item_code는 문서의 품명·품번을 임의로 줄이거나 바꾸지 말고 가능한 그대로 복사하십시오.
 
     • 숫자 처리 및 컬럼 매핑 규칙 (quantity, unit_price)
       - quantity 와 unit_price 에는 문서에 적힌 숫자 문자열을 그대로 복사합니다.
@@ -241,7 +258,13 @@ def parse_quote_text(
 
     llm = ChatOpenAI(model_name=model_name, temperature=temperature)
     chain = prompt | llm
-    result = chain.invoke({"document": text, "format_instructions": format_instructions})
+    result = chain.invoke(
+        {
+            "document": text,
+            "format_instructions": format_instructions,
+            "client_role_instructions": client_role_instructions,
+        }
+    )
 
     raw = getattr(result, "content", str(result))
 
@@ -265,7 +288,9 @@ def _is_ocr_parse_error(err_msg: str) -> bool:
     )
 
 
-async def content_ocr(file: bytes) -> Dict[str, Any]:
+async def content_ocr(
+    file: bytes, document_type: str = "quotation"
+) -> Dict[str, Any]:
     """업로드 파일을 Upstage OCR 후 LLM으로 견적서 구조화. PDF·이미지 지원."""
     api_key = os.getenv("UPSTAGE_API_KEY")
     url = "https://api.upstage.ai/v1/document-digitization"
@@ -279,7 +304,7 @@ async def content_ocr(file: bytes) -> Dict[str, Any]:
         response = requests.post(url, headers=headers, files=files, data=data)
         digitize_json = response.json()
         text = extract_text_from_upstage(digitize_json)
-        return parse_quote_text(text)
+        return parse_quote_text(text, document_type=document_type)
     except HttpError:
         raise
     except Exception as e:
@@ -288,7 +313,9 @@ async def content_ocr(file: bytes) -> Dict[str, Any]:
         raise HttpError(500, f"OCR error: {str(e)}") from e
 
 
-async def content_ocr_document_parse(file: bytes) -> Dict[str, Any]:
+async def content_ocr_document_parse(
+    file: bytes, document_type: str = "quotation"
+) -> Dict[str, Any]:
     """업로드 파일을 Upstage document-parse 후 LLM으로 견적서 구조화. PDF·이미지 지원.
 
     document-parse는 표 구조를 HTML로 반환하여 LLM 파싱 정확도가 높음.
@@ -305,7 +332,7 @@ async def content_ocr_document_parse(file: bytes) -> Dict[str, Any]:
         response = requests.post(url, headers=headers, files=files, data=data)
         digitize_json = response.json()
         text = extract_text_from_upstage_document_parse(digitize_json)
-        return parse_quote_text(text)
+        return parse_quote_text(text, document_type=document_type)
     except HttpError:
         raise
     except Exception as e:

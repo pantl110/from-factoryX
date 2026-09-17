@@ -6,8 +6,10 @@ from document.utils import content_ocr_document_parse, render_pdf_first_page_to_
 from document.schemas.inbound import OcrIn, QuotationEmailSendIn
 from document.schemas.outbound import QuotationDetailOut, OCRResultOut
 from document.models import Quotation, QuotationProduct
+from stock.models import Product
 from typing import Dict, Any
 import base64
+import unicodedata
 from ninja.errors import HttpError
 from factory.utils import is_factory_member, get_factory_by_id
 from factory.utils import send_email_with_attachments
@@ -15,6 +17,57 @@ from asgiref.sync import sync_to_async
 
 
 router = Router(tags=["Quotation"], auth=jwt_auth)
+
+
+def _normalize_product_match(value: str | None) -> str:
+    """화면과 동일하게 앞뒤 공백과 전각 문자를 정규화한다."""
+    return unicodedata.normalize("NFKC", value or "").strip()
+
+
+async def _attach_products_to_ocr_items(data: Dict[str, Any], factory_id: int) -> None:
+    """OCR 품목을 제품 마스터에 보수적으로 연결한다.
+
+    제품코드는 정확히 일치할 때, 제품명은 공장 안에서 같은 이름이 하나뿐일 때만
+    연결한다. 연결된 행은 제품 ID와 기준 정보를 반환해 화면 재렌더링 뒤에도
+    선택 상태가 유지되게 한다.
+    """
+    products = await sync_to_async(list)(
+        Product.objects.filter(factory_id=factory_id).values(
+            "id", "code", "name", "spec", "unit"
+        )
+    )
+    by_code = {
+        _normalize_product_match(product["code"]): product
+        for product in products
+        if _normalize_product_match(product["code"])
+    }
+    by_name: Dict[str, list[Dict[str, Any]]] = {}
+    for product in products:
+        normalized_name = _normalize_product_match(product["name"])
+        if normalized_name:
+            by_name.setdefault(normalized_name, []).append(product)
+
+    for item in data.get("request_items", []):
+        product = None
+        normalized_code = _normalize_product_match(item.get("item_code"))
+        if normalized_code:
+            product = by_code.get(normalized_code)
+        if product is None:
+            name_matches = by_name.get(
+                _normalize_product_match(item.get("item_name")), []
+            )
+            if len(name_matches) == 1:
+                product = name_matches[0]
+        if product is not None:
+            item.update(
+                {
+                    "product_id": product["id"],
+                    "item_code": product["code"],
+                    "item_name": product["name"],
+                    "spec": product["spec"],
+                    "unit": product["unit"],
+                }
+            )
 
 
 @router.post(
@@ -47,7 +100,10 @@ async def upload_file(request, payload: OcrIn):
         content = base64.b64decode(file_content)
 
         # OCR 결과 (client_info / request_items)
-        data = await content_ocr_document_parse(content)
+        data = await content_ocr_document_parse(
+            content, document_type=payload.document_type
+        )
+        await _attach_products_to_ocr_items(data, int(factory_id))
 
         # PDF인 경우에는 항상 썸네일 생성 시도
         try:

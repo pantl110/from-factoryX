@@ -4,6 +4,7 @@ from pathlib import Path
 import aiofiles
 import base64
 from unittest.mock import AsyncMock, patch
+from asgiref.sync import sync_to_async
 
 from user.api import router as user_router
 from document.api_quotation import router as quotation_router
@@ -11,6 +12,7 @@ from document.api_quotation import router as quotation_router
 from user.models import User
 from user.models import EmailVerification
 from factory.models import Factory, FactoryMember
+from stock.models import Product
 
 
 class TestDocumentOCR(TestCase):
@@ -40,6 +42,14 @@ class TestDocumentOCR(TestCase):
             role='admin',
             status='active',
             invited_by=self.user
+        )
+
+        self.product = Product.objects.create(
+            factory=self.factory,
+            code="P-001",
+            name="테스트 제품",
+            spec="10kg",
+            unit="EA",
         )
         
         self.verification = EmailVerification.objects.create(
@@ -137,3 +147,80 @@ class TestDocumentOCR(TestCase):
             data["thumbnail_image"],
             base64.b64encode(b"test-thumbnail").decode("ascii"),
         )
+
+    @patch("document.api_quotation.content_ocr_document_parse", new_callable=AsyncMock)
+    async def test_order_ocr_passes_document_role(self, mock_ocr):
+        """주문서 OCR은 발주자를 수주처로 판별할 수 있게 문서 유형을 전달한다."""
+        mock_ocr.return_value = {
+            "client_info": {"company_name": "발주 고객사"},
+            "request_items": [
+                {
+                    "item_name": "테스트 제품",
+                    "item_code": "Ｐ-001",
+                    "spec": "OCR 규격",
+                    "unit": "BOX",
+                    "quantity": "2",
+                    "unit_price": "1000",
+                }
+            ],
+        }
+        headers = await self.authenticate()
+        async with aiofiles.open(self.pdf_file_path, "rb") as f:
+            content = await f.read()
+
+        response = await self.quotation_client.post(
+            f"/ocr?factory_id={self.factory.id}",
+            headers=headers,
+            json={
+                "data": base64.b64encode(content).decode("utf-8"),
+                "document_type": "order",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        mock_ocr.assert_awaited_once_with(content, document_type="order")
+        item = response.json()["request_items"][0]
+        self.assertEqual(item["product_id"], self.product.id)
+        self.assertEqual(item["item_code"], self.product.code)
+        self.assertEqual(item["item_name"], self.product.name)
+        self.assertEqual(item["spec"], self.product.spec)
+        self.assertEqual(item["unit"], self.product.unit)
+
+    @patch("document.api_quotation.content_ocr_document_parse", new_callable=AsyncMock)
+    async def test_ocr_does_not_match_ambiguous_product_names(self, mock_ocr):
+        """동명 제품이 여러 개면 제품명만으로 임의 연결하지 않는다."""
+        await sync_to_async(Product.objects.create)(
+            factory=self.factory,
+            code="P-002",
+            name=self.product.name,
+            spec="20kg",
+            unit="BOX",
+        )
+        mock_ocr.return_value = {
+            "client_info": {"company_name": "발주 고객사"},
+            "request_items": [
+                {
+                    "item_name": self.product.name,
+                    "item_code": "",
+                    "spec": "",
+                    "unit": "EA",
+                    "quantity": "1",
+                    "unit_price": "1000",
+                }
+            ],
+        }
+        headers = await self.authenticate()
+        async with aiofiles.open(self.pdf_file_path, "rb") as f:
+            content = await f.read()
+
+        response = await self.quotation_client.post(
+            f"/ocr?factory_id={self.factory.id}",
+            headers=headers,
+            json={
+                "data": base64.b64encode(content).decode("utf-8"),
+                "document_type": "order",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertIsNone(response.json()["request_items"][0]["product_id"])

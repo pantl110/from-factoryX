@@ -1,5 +1,5 @@
 from ninja import Schema, Field, FilterSchema, ModelSchema
-from typing import List, Optional
+from typing import List, Literal, Optional
 from document.models import WorkInstruction
 
 
@@ -47,6 +47,7 @@ class QuotationProductDraftIn(Schema):
 # (POST) OCR
 class OcrIn(Schema):
     data: str
+    document_type: Literal["quotation", "order"] = "quotation"
 
 
 # ------------------------------------------------------------

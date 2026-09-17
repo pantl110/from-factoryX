@@ -138,6 +138,7 @@ class TodayProductionPlanOut(Schema):
 
 # OCR 결과 아이템 스키마
 class OCRRequestItemOut(Schema):
+    product_id: Optional[int] = None  # 제품 마스터 연결 ID
     item_name: str  # 품목명
     item_code: Optional[str] = ""  # 품목코드
     spec: Optional[str] = ""  # 규격
