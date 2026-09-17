@@ -7,7 +7,7 @@ import { MaterialHistoryListResponseModel } from '@/types/data-model';
 import useMemberStore from '@/store/member-store';
 
 export interface GetMaterialHistoryOptionModel {
-  type?: 'purchase' | 'consumption';
+  type?: 'purchase' | 'initial_stock' | 'stock_in' | 'consumption';
   start_date?: string;
   end_date?: string;
   is_linked?: boolean;

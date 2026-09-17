@@ -43,6 +43,7 @@ const ExcelUploadModal = ({
     specification: t('excelColumns.specification'),
     unit: t('excelColumns.unit'),
     currentStock: t('excelColumns.currentStock'),
+    initialStock: t('excelColumns.initialStock'),
     minStock: t('excelColumns.minStock'),
     avgProductionTime: t('excelColumns.avgProductionTime'),
     note: t('excelColumns.note'),
@@ -73,7 +74,15 @@ const ExcelUploadModal = ({
     ).trim(),
     spec: String(row[excelColumns.specification] ?? '').trim(),
     unit: String(row[excelColumns.unit] ?? '').trim(),
-    currentStock: String(row[excelColumns.currentStock] ?? '').trim(),
+    currentStock: String(
+      row[
+        type === 'material'
+          ? excelColumns.initialStock
+          : excelColumns.currentStock
+      ] ??
+        (type === 'material' ? row[excelColumns.currentStock] : '') ??
+        ''
+    ).trim(),
     minStock: String(row[excelColumns.minStock] ?? '').trim(),
     avgProductionTime: String(row[excelColumns.avgProductionTime] ?? '').trim(),
     note: String(row[excelColumns.note] ?? '').trim(),
@@ -201,10 +210,12 @@ const ExcelUploadModal = ({
       const productData = data
         .filter((row) => !isEmptyRow(row))
         .map((row) => {
-          const { name, code, unit, spec, taxExempt } = readRow(row);
-          const currentStock = extractRoundedInt(
-            row[excelColumns.currentStock]
-          );
+          const { name, code, unit, spec, currentStock, taxExempt } =
+            readRow(row);
+          const parsedCurrentStock =
+            type === 'material'
+              ? extractNumber(currentStock)
+              : extractRoundedInt(currentStock);
           const avgProductionTime =
             type === 'product'
               ? extractRoundedInt(row[excelColumns.avgProductionTime])
@@ -220,7 +231,9 @@ const ExcelUploadModal = ({
             unit,
             spec,
             tax_type: getTaxType(taxExempt) ?? 'taxable',
-            ...(currentStock > 0 ? { current_stock: currentStock } : {}),
+            ...(parsedCurrentStock > 0
+              ? { current_stock: parsedCurrentStock }
+              : {}),
             ...(type === 'product' &&
             avgProductionTime !== null &&
             avgProductionTime > 0
@@ -318,21 +331,28 @@ const ExcelUploadModal = ({
               <Spinner />
             </div>
           ) : (
-            <DropzoneArea
-              onClose={onClose}
-              fileCount={1}
-              onComplete={handleComplete}
-              onFileUpload={onFileUpload}
-              accept={{
-                'application/vnd.ms-excel': ['.xls'],
-                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
-                  ['.xlsx'],
-                'application/excel': ['.xls', '.xlsx'],
-                'application/vnd.apple.numbers': ['.numbers'],
-                'text/csv': ['.csv'],
-                'application/csv': ['.csv'],
-              }}
-            />
+            <>
+              {type === 'material' && (
+                <p className="mb-3 rounded-[8px] bg-yellow-8 px-4 py-3 Re_body-3 text-dg">
+                  {t('initialStockNotice')}
+                </p>
+              )}
+              <DropzoneArea
+                onClose={onClose}
+                fileCount={1}
+                onComplete={handleComplete}
+                onFileUpload={onFileUpload}
+                accept={{
+                  'application/vnd.ms-excel': ['.xls'],
+                  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+                    ['.xlsx'],
+                  'application/excel': ['.xls', '.xlsx'],
+                  'application/vnd.apple.numbers': ['.numbers'],
+                  'text/csv': ['.csv'],
+                  'application/csv': ['.csv'],
+                }}
+              />
+            </>
           )}
         </div>
       </Modal>

@@ -108,7 +108,7 @@ export const MaterialStockInDetailModal = ({
         await queryClient.invalidateQueries({
           queryKey: getMaterialHistoryQueryKey(factoryId, {
             material_id: materialId,
-            type: 'purchase',
+            type: 'stock_in',
           }),
         });
       }

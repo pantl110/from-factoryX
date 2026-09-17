@@ -1533,6 +1533,7 @@
             "hasFiles": "파일이 맞는지 확인 후, 업로드를 눌러주세요.",
             "noFiles": "샘플 파일 양식에 맞춰 작성한 후 업로드해 주세요."
           },
+          "initialStockNotice": "엑셀의 기초 재고는 구매 입고가 아닙니다. 거래처·매입단가 없이 기초재고 LOT로 등록되며, 이후 구매 등록은 실제로 추가 입고된 수량만 입력해 주세요.",
           "toast": {
             "productRegistrationFailed": "제품 등록에 실패했습니다.",
             "materialRegistrationFailed": "자재 등록에 실패했습니다."
@@ -1559,6 +1560,7 @@
             "specification": "규격",
             "unit": "단위",
             "currentStock": "현재 재고",
+            "initialStock": "기초 재고(구매 입고 아님)",
             "minStock": "최소 재고",
             "avgProductionTime": "평균 생산 시간(초)",
             "note": "비고",

@@ -37,11 +37,11 @@ export const MaterialStockIn = ({
   const factoryId = useMemberStore((state) => state.factoryId);
   const [currentPage, setCurrentPage] = useState(1);
 
-  // 구매 타입의 material history만 가져오기
+  // 구매 입고와 엑셀에서 생성된 기초재고 LOT를 함께 가져오기
   const { data: histories, isLoading } = useQuery({
     queryKey: getMaterialHistoryQueryKey(factoryId, {
       material_id: materialId,
-      type: 'purchase',
+      type: 'stock_in',
       page: currentPage,
       page_size: PAGE_SIZE,
     }),
@@ -51,7 +51,7 @@ export const MaterialStockIn = ({
       }
       return getMaterialHistoryQueryFn(factoryId, {
         material_id: materialId,
-        type: 'purchase',
+        type: 'stock_in',
         page: currentPage,
         page_size: PAGE_SIZE,
       });

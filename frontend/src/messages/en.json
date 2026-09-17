@@ -1524,6 +1524,7 @@
             "hasFiles": "Please verify the file and click upload.",
             "noFiles": "Please fill out according to the sample file format and upload."
           },
+          "initialStockNotice": "Initial stock in the spreadsheet is not a purchase receipt. It is saved as an opening-stock LOT without a supplier or purchase price. Enter only quantities that actually arrive later when recording a purchase.",
           "toast": {
             "productRegistrationFailed": "Product registration failed.",
             "materialRegistrationFailed": "Material registration failed."
@@ -1550,6 +1551,7 @@
             "specification": "Specification",
             "unit": "Unit",
             "currentStock": "Current Stock",
+            "initialStock": "Initial Stock (Not Purchase Receipt)",
             "minStock": "Min Stock",
             "avgProductionTime": "Average Cycle Time (sec)",
             "note": "Notes",
