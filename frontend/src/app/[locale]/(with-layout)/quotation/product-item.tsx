@@ -11,7 +11,10 @@ interface ProductItemProps {
   data?: QuotationProductDetailResponseModel;
   onClick?: () => void;
   canDelete?: boolean;
-  onChange?: (field: 'quantity' | 'unit_price', value: string) => void;
+  onChange?: (
+    field: 'product_code' | 'spec' | 'unit' | 'quantity' | 'unit_price',
+    value: string
+  ) => void;
   onDelete?: () => void;
   onDropdownShow?: (searchTerm: string, rect?: DOMRect) => void;
   onDropdownHide?: () => void;
@@ -101,18 +104,46 @@ const ProductItem = ({
             />
           )}
         </td>
-        <td className="flex-1 px-3 min-w-0">
-          <p
-            className="w-full truncate min-w-0"
-            title={data?.product_code || ''}
-          >
-            {data?.product_code || ''}
-          </p>
+        <td
+          className="flex-1 px-3 min-w-0"
+          onClick={!onlyRead ? (e) => e.stopPropagation() : undefined}
+        >
+          {onlyRead ? (
+            <p
+              className="w-full truncate min-w-0"
+              title={data?.product_code || ''}
+            >
+              {data?.product_code || ''}
+            </p>
+          ) : (
+            <input
+              type="text"
+              placeholder={tCommon('required')}
+              className="w-full outline-none min-w-0"
+              value={data?.product_code || ''}
+              onChange={(e) => onChange?.('product_code', e.target.value)}
+              disabled={isViewer || !hasSubscription()}
+            />
+          )}
         </td>
-        <td className="flex-1 px-3 min-w-0">
-          <p className="w-full truncate min-w-0" title={data?.spec || ''}>
-            {data?.spec || ''}
-          </p>
+        <td
+          className="flex-1 px-3 min-w-0"
+          onClick={!onlyRead ? (e) => e.stopPropagation() : undefined}
+        >
+          {onlyRead ? (
+            <p className="w-full truncate min-w-0" title={data?.spec || ''}>
+              {data?.spec || ''}
+            </p>
+          ) : (
+            <input
+              type="text"
+              placeholder={tCommon('required')}
+              className="w-full outline-none min-w-0"
+              value={data?.spec || ''}
+              onChange={(e) => onChange?.('spec', e.target.value)}
+              disabled={isViewer || !hasSubscription()}
+            />
+          )}
         </td>
 
         <td
@@ -151,10 +182,24 @@ const ProductItem = ({
             />
           )}
         </td>
-        <td className="flex-[0.8] px-3 min-w-0">
-          <p className="w-full truncate min-w-0" title={data?.unit || ''}>
-            {data?.unit || ''}
-          </p>
+        <td
+          className="flex-[0.8] px-3 min-w-0"
+          onClick={!onlyRead ? (e) => e.stopPropagation() : undefined}
+        >
+          {onlyRead ? (
+            <p className="w-full truncate min-w-0" title={data?.unit || ''}>
+              {data?.unit || ''}
+            </p>
+          ) : (
+            <input
+              type="text"
+              placeholder={tCommon('required')}
+              className="w-full outline-none min-w-0"
+              value={data?.unit || ''}
+              onChange={(e) => onChange?.('unit', e.target.value)}
+              disabled={isViewer || !hasSubscription()}
+            />
+          )}
         </td>
         <td
           className="flex-1 px-3 min-w-0"

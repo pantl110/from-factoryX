@@ -499,6 +499,9 @@ const QuotationPageContent = () => {
 
       return (
         initialProduct.productId !== currentProduct.productId ||
+        initialProduct.product_code !== currentProduct.product_code ||
+        initialProduct.spec !== currentProduct.spec ||
+        initialProduct.unit !== currentProduct.unit ||
         initialProduct.quantity !== currentProduct.quantity ||
         initialProduct.unit_price !== currentProduct.unit_price
       );

@@ -197,18 +197,23 @@ const RequestInfo = ({
   }, [fields, setHasQuotationProducts, onProductsChange]);
 
   // 제작수량이나 단가가 변경될 때 금액 자동 계산
-  const handleQuantityOrPriceChange = (
+  const handleProductFieldChange = (
     index: number,
-    field: 'quantity' | 'unit_price',
+    field: 'product_code' | 'spec' | 'unit' | 'quantity' | 'unit_price',
     value: string
   ) => {
-    const numericValue = value ? parseInt(value.replace(/[^0-9]/g, '')) : null;
+    const nextValue =
+      field === 'quantity' || field === 'unit_price'
+        ? value
+          ? parseInt(value.replace(/[^0-9]/g, ''))
+          : null
+        : value;
 
     // 현재 필드의 값을 가져와서 업데이트
     const currentField = fields[index];
     const updatedField = {
       ...currentField,
-      [field]: numericValue,
+      [field]: nextValue,
     };
 
     update(index, updatedField);
@@ -345,7 +350,7 @@ const RequestInfo = ({
                       onClick={() => onProductClick(item.productId || 0)}
                       canDelete={true}
                       onChange={(field, value) => {
-                        handleQuantityOrPriceChange(index, field, value);
+                        handleProductFieldChange(index, field, value);
                       }}
                       onDelete={() => handleDeleteProduct(index)}
                       onDropdownShow={(searchTerm, rect) => {

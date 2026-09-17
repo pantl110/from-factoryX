@@ -991,6 +991,10 @@ export interface ProductionDataModel {
   };
   products: Array<{
     product_id: number;
+    product_name?: string;
+    product_code?: string;
+    spec?: string;
+    unit?: string;
     quantity: number;
     unit_price: number;
     is_delivery: boolean;
@@ -1022,6 +1026,10 @@ export interface SaveDraftDataModel {
   };
   products: Array<{
     product_id: number | null;
+    product_name?: string;
+    product_code?: string;
+    spec?: string;
+    unit?: string;
     quantity: number;
     unit_price: number;
     is_delivery: boolean;
