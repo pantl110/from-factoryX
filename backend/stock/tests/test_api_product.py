@@ -115,7 +115,8 @@ class TestProductAPI(TestCase):
             "name": "테스트 품목",
             "code": "PROD001",
             "spec": "규격1",
-            "unit": "EA"
+            "unit": "EA",
+            "average_production_time": 120,
         }
         response = await self.client.post(f"/single?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 201)
@@ -125,8 +126,8 @@ class TestProductAPI(TestCase):
 
         # DB에 실제로 생성되었는지 확인
         from stock.models import Product
-        product_exists = await sync_to_async(Product.objects.filter(id=data["product_id"]).exists)()
-        self.assertTrue(product_exists)
+        product = await Product.objects.aget(id=data["product_id"])
+        self.assertEqual(product.average_production_time, 120)
 
     async def test_create_single_product_duplicate_code(self):
         """중복된 품목 코드로 생성 시도시 실패 테스트"""
@@ -227,7 +228,10 @@ class TestProductAPI(TestCase):
     async def test_update_product(self):
         """[U] 제품 수정 테스트"""
         headers = await self.authenticate()
-        payload = {"name": "Updated Product Name"}
+        payload = {
+            "name": "Updated Product Name",
+            "average_production_time": 180,
+        }
         response = await self.client.patch(
             f"/{self.product.id}?factory_id={self.factory.id}", headers=headers, json=payload
         )
@@ -235,6 +239,9 @@ class TestProductAPI(TestCase):
         data = response.json()
         self.assertEqual(data["id"], self.product.id)
         self.assertEqual(data["name"], payload["name"])
+        self.assertEqual(data["average_production_time"], 180)
+        await sync_to_async(self.product.refresh_from_db)()
+        self.assertEqual(self.product.average_production_time, 180)
         # created_at, updated_at 필드는 응답에서 제외되었으므로 더 이상 검증하지 않음
 
     async def test_updating_tax_type_clears_legacy_review_flag(self):
