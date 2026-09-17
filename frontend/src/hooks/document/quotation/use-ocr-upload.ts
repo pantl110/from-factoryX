@@ -35,15 +35,24 @@ const useOcrUpload = () => {
     }
 
     let imageUrl: string | undefined;
+    const isLocalApi =
+      process.env.NEXT_PUBLIC_API_URL?.includes('127.0.0.1') ||
+      process.env.NEXT_PUBLIC_API_URL?.includes('localhost');
 
     try {
       // 1. 먼저 이미지를 S3에 업로드
       const uploadResult = await uploadFile(file);
       if (!uploadResult.success || !uploadResult.object_url) {
-        throw new Error(uploadResult.error || '이미지 업로드에 실패했습니다.');
+        // 로컬 검증은 원본 파일 보관 설정이 없어도 OCR 후속 흐름을 확인할 수 있다.
+        // 배포 환경에서는 기존처럼 업로드 실패를 즉시 오류로 처리한다.
+        if (!isLocalApi) {
+          throw new Error(
+            uploadResult.error || '이미지 업로드에 실패했습니다.'
+          );
+        }
+      } else {
+        imageUrl = uploadResult.object_url;
       }
-
-      imageUrl = uploadResult.object_url;
 
       // 2. Convert file to base64 for OCR
       const base64Data = await new Promise<string>((resolve, reject) => {
