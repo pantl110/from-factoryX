@@ -1,7 +1,6 @@
 import { QuotationProductDetailResponseModel } from '@/types/data-model';
 import { X } from '@phosphor-icons/react';
 import { useState } from 'react';
-import { usePortalDropdown } from '@/hooks/use-portal-dropdown';
 import { ArrowLineUpRight } from '@phosphor-icons/react/dist/ssr';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
@@ -17,7 +16,6 @@ interface ProductItemProps {
   ) => void;
   onDelete?: () => void;
   onDropdownShow?: (searchTerm: string, rect?: DOMRect) => void;
-  onDropdownHide?: () => void;
   onProductDetailClick?: (productId: number | null) => void;
   onlyRead?: boolean;
 }
@@ -29,7 +27,6 @@ const ProductItem = ({
   onChange,
   onDelete,
   onDropdownShow,
-  onDropdownHide,
   onProductDetailClick,
   onlyRead = false,
 }: ProductItemProps) => {
@@ -42,16 +39,14 @@ const ProductItem = ({
   );
 
   const [searchTerm, setSearchTerm] = useState('');
-  const { openDropdown, anchorRect } = usePortalDropdown();
 
   // 검색어 변경 시 드롭다운 표시
-  const handleSearchTermChange = (value: string) => {
+  const handleSearchTermChange = (value: string, anchor: HTMLElement) => {
     setSearchTerm(value);
-    if (value.length > 0) {
-      onDropdownShow?.(value, anchorRect || undefined);
-    } else {
-      onDropdownHide?.();
-    }
+    const rect =
+      anchor.closest('td')?.getBoundingClientRect() ||
+      anchor.getBoundingClientRect();
+    onDropdownShow?.(value, rect);
   };
 
   return (
@@ -71,7 +66,10 @@ const ProductItem = ({
             !onlyRead
               ? (e) => {
                   e.stopPropagation();
-                  openDropdown(e);
+                  onDropdownShow?.(
+                    data?.product_name ? '' : searchTerm,
+                    e.currentTarget.getBoundingClientRect()
+                  );
                 }
               : undefined
           }
@@ -98,7 +96,13 @@ const ProductItem = ({
               className="w-full outline-none min-w-0"
               value={searchTerm}
               onChange={(e) => {
-                handleSearchTermChange(e.target.value);
+                handleSearchTermChange(e.target.value, e.currentTarget);
+              }}
+              onFocus={(e) => {
+                const rect =
+                  e.currentTarget.closest('td')?.getBoundingClientRect() ||
+                  e.currentTarget.getBoundingClientRect();
+                onDropdownShow?.(searchTerm, rect);
               }}
               disabled={isViewer || !hasSubscription()}
             />

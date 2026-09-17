@@ -358,11 +358,6 @@ const RequestInfo = ({
                         setDropdownSearchTerm(searchTerm);
                         setDropdownRect(rect || null);
                       }}
-                      onDropdownHide={() => {
-                        setActiveDropdownIndex(null);
-                        setDropdownSearchTerm('');
-                        setDropdownRect(null);
-                      }}
                       onProductDetailClick={(productId) => {
                         setSelectedProductDetailId(productId);
                       }}
@@ -390,7 +385,7 @@ const RequestInfo = ({
       )}
 
       {/* 포털 드롭다운 */}
-      {activeDropdownIndex !== null && dropdownSearchTerm && dropdownRect && (
+      {activeDropdownIndex !== null && dropdownRect && (
         <div
           className="fixed z-10"
           style={{
@@ -430,6 +425,7 @@ const RequestInfo = ({
               setDropdownRect(null);
             }}
             width="100%"
+            showAllOnEmpty
           />
         </div>
       )}
