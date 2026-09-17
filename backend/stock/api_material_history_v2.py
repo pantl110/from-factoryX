@@ -47,11 +47,14 @@ async def list_available_lots(
         def get_available_lots():
             lots: list[dict] = []
 
-            # 1) 구매 이력 중 remaining_quantity > 0인 로트
+            # 1) 구매·기초재고 이력 중 remaining_quantity > 0인 로트
             history_qs = MaterialHistory.objects.filter(
                 material_id=material.id,
                 material__factory_id=int(factory_id),
-                type=MaterialHistory.MaterialHistoryType.purchase,
+                type__in=[
+                    MaterialHistory.MaterialHistoryType.purchase,
+                    MaterialHistory.MaterialHistoryType.initial_stock,
+                ],
                 remaining_quantity__gt=0,
             )
             for h in history_qs:
@@ -211,4 +214,3 @@ async def update_material_history(
         raise HttpError(
             500, f"원자재 이력 수정 중 오류가 발생했습니다: {str(e)}"
         )
-

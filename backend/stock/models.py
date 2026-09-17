@@ -99,6 +99,7 @@ class Material(BaseModel):
 class MaterialHistory(BaseModel):
     class MaterialHistoryType(models.TextChoices):
         purchase = ("purchase", "구매")
+        initial_stock = ("initial_stock", "기초재고")
         consumption = ("consumption", "소모") # v2에는 사용되지 않고 소모의 경우는 material_usage에서 처리
 
     type = models.CharField(
@@ -173,7 +174,10 @@ class MaterialHistory(BaseModel):
         if self.total_stock is None:
             current_stock = self.material.current_stock or Decimal("0")
             quantity = self.quantity or Decimal("0")
-            if self.type == self.MaterialHistoryType.purchase:
+            if self.type in {
+                self.MaterialHistoryType.purchase,
+                self.MaterialHistoryType.initial_stock,
+            }:
                 self.total_stock = current_stock + quantity
             else:  # consumption
                 self.total_stock = current_stock - quantity
@@ -210,7 +214,10 @@ class MaterialHistory(BaseModel):
         self.material.current_stock = self.total_stock
         self.material.save(update_fields=["current_stock"])
 
-        if self.type == self.MaterialHistoryType.purchase:
+        if self.type in {
+            self.MaterialHistoryType.purchase,
+            self.MaterialHistoryType.initial_stock,
+        }:
             if self.remaining_quantity is None:
                 self.remaining_quantity = self.quantity or Decimal("0")
         else:

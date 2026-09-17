@@ -250,7 +250,14 @@ async def get_material_history(
             material__factory_id=factory_id
         ).select_related("client", "material")
         # type 파라미터 필터링 (영어 값으로 저장되어 있음)
-        if filters.type:
+        if filters.type == "stock_in":
+            queryset = queryset.filter(
+                type__in=[
+                    MaterialHistory.MaterialHistoryType.purchase,
+                    MaterialHistory.MaterialHistoryType.initial_stock,
+                ]
+            )
+        elif filters.type:
             queryset = queryset.filter(type=filters.type)
 
         # material_id 필터링
@@ -322,7 +329,11 @@ async def get_material_history(
             # 구매 타입이고 잔량이 있는 경우 다음 소분 로트 번호 계산
             next_repackaging_lot_number = None
             if (
-                history.type == MaterialHistory.MaterialHistoryType.purchase
+                history.type
+                in {
+                    MaterialHistory.MaterialHistoryType.purchase,
+                    MaterialHistory.MaterialHistoryType.initial_stock,
+                }
                 and history.remaining_quantity
                 and history.remaining_quantity > 0
                 and history.lot_number
@@ -364,5 +375,4 @@ async def get_material_history(
         return result
 
     return await get_histories()
-
 

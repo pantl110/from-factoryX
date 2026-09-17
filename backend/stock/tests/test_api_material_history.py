@@ -592,6 +592,43 @@ class TestMaterialHistoryAPI(TestCase):
         )
         self.assertEqual(response.status_code, 401)
 
+    async def test_get_material_history_stock_in_includes_initial_stock(self):
+        """입고 목록은 구매 이력과 기초재고 LOT만 함께 반환한다."""
+        await sync_to_async(MaterialHistory.objects.create)(
+            material=self.material,
+            client=None,
+            type=MaterialHistory.MaterialHistoryType.initial_stock,
+            quantity=10,
+            remaining_quantity=10,
+        )
+        await sync_to_async(MaterialHistory.objects.create)(
+            material=self.material,
+            client=self.client_obj,
+            type=MaterialHistory.MaterialHistoryType.purchase,
+            quantity=5,
+            price=1000,
+            remaining_quantity=5,
+        )
+        await sync_to_async(MaterialHistory.objects.create)(
+            material=self.material,
+            client=None,
+            type=MaterialHistory.MaterialHistoryType.consumption,
+            quantity=1,
+        )
+        headers = await self.authenticate()
+
+        response = await self.client.get(
+            (
+                f"/?factory_id={self.factory.id}&material_id={self.material.id}"
+                "&type=stock_in&page_size=20"
+            ),
+            headers=headers,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        history_types = {item["type"] for item in response.json()["data"]}
+        self.assertEqual(history_types, {"purchase", "initial_stock"})
+
     # async def test_get_material_history_data_validation(self):
     #     """원자재 히스토리 데이터 검증 테스트 (/single 의존으로 테스트 중단)"""
     #     headers = await self.authenticate()

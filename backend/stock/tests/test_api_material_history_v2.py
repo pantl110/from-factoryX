@@ -207,6 +207,34 @@ class TestMaterialHistoryV2API(TestCase):
         self.assertGreater(len(data["data"]), 0)
         self.assertIn("lot_number", data["data"][0])
 
+    async def test_list_available_lots_includes_initial_stock(self):
+        initial_history = await sync_to_async(MaterialHistory.objects.create)(
+            material=self.material,
+            client=None,
+            type=MaterialHistory.MaterialHistoryType.initial_stock,
+            quantity=Decimal("15.5000"),
+            price=None,
+            lot_number="OPENING-LOT-001",
+            remaining_quantity=Decimal("15.5000"),
+        )
+        headers = await self.authenticate()
+
+        response = await self.client.get(
+            f"/available-lots?material_id={self.material.id}&factory_id={self.factory.id}",
+            headers=headers,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        lots = response.json()["data"]
+        self.assertTrue(
+            any(
+                lot["id"] == initial_history.id
+                and lot["lot_number"] == "OPENING-LOT-001"
+                and Decimal(str(lot["available_quantity"])) == Decimal("15.5000")
+                for lot in lots
+            )
+        )
+
     async def test_list_available_lots_material_not_found(self):
         headers = await self.authenticate()
         response = await self.client.get(
@@ -221,4 +249,3 @@ class TestMaterialHistoryV2API(TestCase):
             f"/available-lots?material_id={self.material.id}", headers=headers
         )
         self.assertEqual(response.status_code, 400)
-

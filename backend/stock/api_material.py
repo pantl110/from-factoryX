@@ -1,15 +1,16 @@
 import logging
+from decimal import Decimal
 
 from ninja import Router
 from ninja.errors import HttpError
 from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
-from django.db import IntegrityError
+from django.db import IntegrityError, transaction
 from django.db.models import F
 from api.security import jwt_auth
 from typing import List, Literal
 
-from stock.models import Material, MaterialProduct, Product
+from stock.models import Material, MaterialHistory, MaterialProduct, Product
 from stock.schemas.inbound import (
     MaterialUpdateIn,
     AssignMaterialIn,
@@ -38,6 +39,34 @@ from factory.utils import is_factory_member
 logger = logging.getLogger(__name__)
 
 router = Router(tags=["Material"], auth=jwt_auth)
+
+
+@sync_to_async
+def _create_material_with_initial_stock(factory, data):
+    """자재와 엑셀 기초재고 LOT를 한 트랜잭션으로 생성합니다."""
+    with transaction.atomic():
+        initial_stock = data.pop("current_stock", None)
+        initial_stock = (
+            Decimal(str(initial_stock)) if initial_stock is not None else Decimal("0")
+        )
+
+        material = Material.objects.create(
+            factory=factory,
+            current_stock=Decimal("0"),
+            **data,
+        )
+
+        if initial_stock > 0:
+            MaterialHistory.objects.create(
+                type=MaterialHistory.MaterialHistoryType.initial_stock,
+                material=material,
+                client=None,
+                quantity=initial_stock,
+                price=None,
+                remaining_quantity=initial_stock,
+            )
+
+        return material.id
 
 
 @router.post(
@@ -103,8 +132,8 @@ async def create_materials(request, payload: List[SingleMaterialCreateIn]):
         )
 
         try:
-            material = await Material.objects.acreate(factory=factory, **data)
-            material_ids.append(material.id)
+            material_id = await _create_material_with_initial_stock(factory, data)
+            material_ids.append(material_id)
             processed_codes.add(code)  # 성공적으로 처리된 코드 추가
         except IntegrityError:
             # 중복은 위에서 이미 걸러졌으므로, 여기 걸리는 건 실제 DB 제약 위반이다.

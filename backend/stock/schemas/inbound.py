@@ -129,7 +129,9 @@ class SingleMaterialCreateIn(Schema):
     code: str = Field(..., description="원자재 코드")
     spec: str = Field(..., description="원자재 사양")
     unit: Optional[str] = Field(None, description="원자재 단위")
-    current_stock: Optional[Decimal] = Field(None, description="현재 재고")
+    current_stock: Optional[Decimal] = Field(
+        None, ge=0, description="기초 재고 (구매 입고가 아님)"
+    )
     standard_stock: Optional[Decimal] = Field(None, description="안전 재고")
     rop: Optional[Decimal] = Field(None, description="재주문점")
     max_stock: Optional[Decimal] = Field(None, description="적정 재고(최대 재고)")

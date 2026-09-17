@@ -93,11 +93,21 @@ class TestMaterialAPI(TestCase):
         self.assertEqual(data["message"], "1개의 원자재가 성공적으로 생성되었습니다.")
         self.assertEqual(len(data["material_ids"]), 1)
 
-        # DB에 실제로 생성되었는지 확인
-        material_exists = await sync_to_async(
-            Material.objects.filter(id=data["material_ids"][0]).exists
-        )()
-        self.assertTrue(material_exists)
+        # 기초재고는 자재 필드에 직접 쓰지 않고 LOT 이력으로 남긴다.
+        material = await sync_to_async(Material.objects.get)(
+            id=data["material_ids"][0]
+        )
+        history = await sync_to_async(MaterialHistory.objects.get)(material=material)
+        self.assertEqual(material.current_stock, Decimal("25"))
+        self.assertEqual(
+            history.type, MaterialHistory.MaterialHistoryType.initial_stock
+        )
+        self.assertEqual(history.quantity, Decimal("25"))
+        self.assertEqual(history.remaining_quantity, Decimal("25"))
+        self.assertEqual(history.total_stock, Decimal("25"))
+        self.assertTrue(history.lot_number)
+        self.assertIsNone(history.client_id)
+        self.assertIsNone(history.price)
 
     async def test_create_materials_duplicate_code(self):
         """중복된 원자재 코드로 생성 시도시 건너뛰기 테스트"""
@@ -143,6 +153,44 @@ class TestMaterialAPI(TestCase):
         self.assertEqual(material.current_stock, 0)  # 모델 기본값 사용
         self.assertIsNone(material.standard_stock)  # null=True로 변경됨
         self.assertIsNone(material.expiry_days)  # 기본값 None
+        history_count = await sync_to_async(
+            MaterialHistory.objects.filter(material=material).count
+        )()
+        self.assertEqual(history_count, 0)
+
+    async def test_create_materials_reupload_does_not_duplicate_initial_stock(self):
+        """같은 엑셀 행을 재업로드해도 기초재고 LOT와 현재고가 중복되지 않는다."""
+        headers = await self.authenticate()
+        payload = [
+            {
+                "name": "기초재고 자재",
+                "code": "OPENING001",
+                "spec": "규격",
+                "unit": "KG",
+                "current_stock": "12.3456",
+            }
+        ]
+
+        first = await self.client.post(
+            f"?factory_id={self.factory.id}", headers=headers, json=payload
+        )
+        second = await self.client.post(
+            f"?factory_id={self.factory.id}", headers=headers, json=payload
+        )
+
+        self.assertEqual(first.status_code, 201)
+        self.assertEqual(second.status_code, 201)
+        self.assertEqual(second.json()["material_ids"], [])
+        self.assertEqual(second.json()["duplicate_codes"], ["OPENING001"])
+
+        material = await sync_to_async(Material.objects.get)(
+            factory=self.factory, code="OPENING001"
+        )
+        history_count = await sync_to_async(
+            MaterialHistory.objects.filter(material=material).count
+        )()
+        self.assertEqual(material.current_stock, Decimal("12.3456"))
+        self.assertEqual(history_count, 1)
 
     async def test_create_materials_unauthorized(self):
         """인증되지 않은 사용자 요청 실패 테스트"""
