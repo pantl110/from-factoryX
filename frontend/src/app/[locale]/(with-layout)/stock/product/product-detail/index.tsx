@@ -427,11 +427,19 @@ const ProductDetail = ({
             currentFormData.current_stock === null
               ? undefined
               : currentFormData.current_stock,
+          average_production_time:
+            currentFormData.average_production_time === undefined ||
+            currentFormData.average_production_time === null
+              ? undefined
+              : currentFormData.average_production_time,
         };
         // undefined를 null로 변환해서 보냄
         const payload = { ...createData };
         if (payload.current_stock === undefined) {
           delete payload.current_stock;
+        }
+        if (payload.average_production_time === undefined) {
+          delete payload.average_production_time;
         }
         const result = await createSingleProduct(payload);
         if (result && result.success) {

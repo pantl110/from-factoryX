@@ -8,6 +8,9 @@ interface CreateSingleProductModel {
   code: string;
   spec: string;
   unit: string;
+  tax_type?: 'taxable' | 'exempt';
+  current_stock?: number;
+  average_production_time?: number;
 }
 
 interface CreateSingleProductResponseModel {

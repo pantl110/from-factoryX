@@ -31,6 +31,10 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
 
     const [isStockEditing, setIsStockEditing] = useState(false);
     const [stockInputValue, setStockInputValue] = useState<string>('');
+    const [isProductionTimeEditing, setIsProductionTimeEditing] =
+      useState(false);
+    const [productionTimeInputValue, setProductionTimeInputValue] =
+      useState<string>('');
 
     const {
       control,
@@ -263,20 +267,46 @@ const ProductInfo = forwardRef<ProductInfoModel, ProductInfoProps>(
             <Controller
               name="average_production_time"
               control={control}
-              render={({ field }) => (
-                <InfoLabelValue
-                  label={tCommon('averageProductionTime')}
-                  value={
-                    field.value === undefined ||
-                    field.value === null ||
-                    (typeof field.value === 'string' && field.value === '')
-                      ? '-'
-                      : `${field.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}${tCommon('seconds')}`
-                  }
-                  isEditing={!isViewer && hasSubscription()}
-                  inputType="text"
-                />
-              )}
+              render={({ field }) => {
+                const displayValue = isProductionTimeEditing
+                  ? productionTimeInputValue
+                  : field.value === undefined ||
+                      field.value === null ||
+                      (typeof field.value === 'string' && field.value === '')
+                    ? ''
+                    : `${field.value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}${tCommon('seconds')}`;
+
+                return (
+                  <InfoLabelValue
+                    label={tCommon('averageProductionTime')}
+                    value={displayValue}
+                    isEditing={!isViewer && hasSubscription()}
+                    inputType="text"
+                    onFocus={() => {
+                      setIsProductionTimeEditing(true);
+                      setProductionTimeInputValue(
+                        field.value === undefined || field.value === null
+                          ? ''
+                          : String(field.value)
+                      );
+                    }}
+                    onChange={(e) => {
+                      const numericValue = e.target.value.replace(
+                        /[^0-9]/g,
+                        ''
+                      );
+                      setProductionTimeInputValue(numericValue);
+                      field.onChange(
+                        numericValue === '' ? undefined : Number(numericValue)
+                      );
+                    }}
+                    onBlur={() => {
+                      setIsProductionTimeEditing(false);
+                      setProductionTimeInputValue('');
+                    }}
+                  />
+                );
+              }}
             />
           </div>
           <Controller
