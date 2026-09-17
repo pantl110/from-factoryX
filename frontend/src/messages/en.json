@@ -232,18 +232,18 @@
     "moveToDeliveryFailed": "Failed to move to delivery stage."
   },
   "cloudUpload": {
-    "subtitle": "Selecting an upload location will save files to that repository.",
+    "subtitle": "Storage policies and file uploads are being prepared.",
     "title": "Upload File",
     "uploadLocation": "Upload Location",
     "internalRepository": "Internal Repository",
-    "internalRepositoryDesc": "Saved to the internal repository",
+    "internalRepositoryDesc": "Planned location for future internal uploads",
     "clientRepository": "Client Repository",
-    "clientRepositoryDesc": "Saved to the selected client's repository",
+    "clientRepositoryDesc": "Planned location for future client uploads",
     "searchClientPlaceholder": "Search for a client",
     "selectFile": "Select File",
-    "uploading": "Uploading...",
-    "selectClientAlert": "Please select a client.",
-    "uploadFailed": "Upload failed."
+    "unavailableTitle": "Files are not saved yet.",
+    "unavailableDescription": "File uploads are still being prepared. Files selected here are not sent to the server or any repository.",
+    "unavailableButton": "Upload coming soon"
   },
   "dropzone": {
     "dragAndDrop": "You can drag and drop files\nor upload them using the button below.",
@@ -1478,7 +1478,9 @@
           "searchPlaceholder": "Search by material name or code.",
           "empty": "No materials to link.",
           "errors": {
-            "fetchFailed": "Failed to fetch material list:"
+            "fetchFailed": "Failed to fetch material list:",
+            "linkFailed": "Could not link the substitute materials.",
+            "retry": "Your selections are still here. Please try again shortly."
           },
           "modal": {
             "title": "Substitute Materials"

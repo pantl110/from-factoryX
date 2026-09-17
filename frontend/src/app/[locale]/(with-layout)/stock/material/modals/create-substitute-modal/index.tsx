@@ -1,13 +1,17 @@
 import { useTranslations } from 'next-intl';
 import { useState, useEffect } from 'react';
+import axios from 'axios';
+import { WarningCircle } from '@phosphor-icons/react';
 import Modal from '@/ui/modal/modal';
 import SearchInput from '@/ui/search-input';
 import Checkbox from '@/ui/checkbox';
 import MiniBtn from '@/ui/mini-btn';
+import Toast from '@/ui/toast';
 import MaterialItem from './material-item';
 import {
   useGetMaterialListMutation,
   useCreateSubstituteMutation,
+  useToast,
 } from '@/hooks';
 import { MaterialResponseModel } from '@/types/data-model';
 import NoHistoryBox from '@/ui/no-history-box';
@@ -19,6 +23,25 @@ interface CreateSubstituteModalProps {
   onSuccess?: () => void;
 }
 
+const getUserDisplayableError = (error: unknown): string | null => {
+  if (!axios.isAxiosError(error) || !error.response) return null;
+  if (error.response.status >= 500) return null;
+
+  const { data } = error.response;
+  const candidate =
+    typeof data === 'string'
+      ? data
+      : typeof data?.detail === 'string'
+        ? data.detail
+        : typeof data?.message === 'string'
+          ? data.message
+          : null;
+
+  if (!candidate) return null;
+  const normalized = candidate.replace(/\s+/g, ' ').trim();
+  return normalized.length > 0 && normalized.length <= 300 ? normalized : null;
+};
+
 const CreateSubstituteModal = ({
   materialId,
   onClose,
@@ -28,6 +51,8 @@ const CreateSubstituteModal = ({
   const tCommon = useTranslations('common');
   const getMaterialListMutation = useGetMaterialListMutation();
   const createSubstituteMutation = useCreateSubstituteMutation();
+  const { isToastOpen, isVisible, showToast } = useToast(3500);
+  const [toastText, setToastText] = useState('');
 
   const [searchTerm, setSearchTerm] = useState('');
   const [materials, setMaterials] = useState<MaterialResponseModel[]>([]);
@@ -202,8 +227,11 @@ const CreateSubstituteModal = ({
                 // 성공 시 모달 닫기 및 부모 컴포넌트에 알림
                 onSuccess?.();
                 onClose();
-              } catch {
-                // TODO: 에러 메시지 표시 (토스트 등)
+              } catch (error) {
+                setToastText(
+                  getUserDisplayableError(error) ?? t('errors.linkFailed')
+                );
+                showToast();
               }
             }}
             disabled={
@@ -213,6 +241,15 @@ const CreateSubstituteModal = ({
           />
         </div>
       </div>
+      {isToastOpen && (
+        <Toast
+          icon={<WarningCircle size={20} className="text-red" />}
+          text={toastText}
+          subtext={t('errors.retry')}
+          type="red"
+          isVisible={isVisible}
+        />
+      )}
     </Modal>
   );
 };

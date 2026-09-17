@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import Modal from '@/ui/modal/modal';
 import MiniBtn from '@/ui/mini-btn';
@@ -10,7 +10,6 @@ import { ClientNameDropdown } from '@/ui/dropdown/client-name-dropdown';
 import SearchInput from '@/ui/search-input';
 import IconBtn from '@/ui/icon-btn';
 import { X } from '@phosphor-icons/react';
-import Spinner from '@/ui/spinner';
 
 interface CloudUploadModalProps {
   onClose: () => void;
@@ -27,20 +26,6 @@ const CloudUploadModal = ({ onClose }: CloudUploadModalProps) => {
     useState<ClientResponseModel | null>(null);
   const [clientSearchTerm, setClientSearchTerm] = useState('');
   const [isClientDropdownOpen, setIsClientDropdownOpen] = useState(false);
-  const [, setFiles] = useState<File[]>([]);
-  const [isUploading, setIsUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [hasFiles, setHasFiles] = useState(false);
-  const dropzoneFilesRef = useRef<File[]>([]);
-
-  // 파일 크기 포맷팅 함수 (향후 표시용으로 사용 가능)
-  const _formatFileSize = (bytes: number): string => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
-  };
 
   // 거래처 선택 핸들러
   const handleClientSelect = (client: ClientResponseModel) => {
@@ -49,66 +34,8 @@ const CloudUploadModal = ({ onClose }: CloudUploadModalProps) => {
     setIsClientDropdownOpen(false);
   };
 
-  // 파일 선택 핸들러
-  const handleFileUpload = (hasFilesSelected: boolean) => {
-    setHasFiles(hasFilesSelected);
-  };
-
-  // DropzoneArea에서 파일이 선택되었을 때
-  const handleFilesSelected = (selectedFiles: File[]) => {
-    dropzoneFilesRef.current = selectedFiles;
-    setFiles(selectedFiles);
-    setHasFiles(selectedFiles.length > 0);
-  };
-
-  // 업로드 핸들러
-  const handleUpload = async () => {
-    const selectedFiles = dropzoneFilesRef.current;
-    if (selectedFiles.length === 0) return;
-
-    // 거래처 클라우드 선택 시 거래처가 선택되지 않았으면 업로드 불가
-    if (uploadTarget === 'client' && !selectedClient) {
-      alert(t('selectClientAlert'));
-      return;
-    }
-
-    setIsUploading(true);
-    setUploadProgress(0);
-
-    try {
-      // TODO: 실제 업로드 API 호출
-      // 현재는 시뮬레이션
-      for (let i = 0; i < selectedFiles.length; i++) {
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        setUploadProgress(((i + 1) / selectedFiles.length) * 100);
-      }
-
-      // 업로드 완료 후 모달 닫기
-      setTimeout(() => {
-        onClose();
-        // 상태 초기화
-        setFiles([]);
-        setHasFiles(false);
-        setIsUploading(false);
-        setUploadProgress(0);
-        setSelectedClient(null);
-        setClientSearchTerm('');
-        setUploadTarget('factory');
-      }, 500);
-    } catch (error) {
-      console.error('Upload failed:', error);
-      alert(t('uploadFailed'));
-      setIsUploading(false);
-      setUploadProgress(0);
-    }
-  };
-
   // 모달 닫기 시 상태 초기화
   const handleClose = () => {
-    setFiles([]);
-    setHasFiles(false);
-    setIsUploading(false);
-    setUploadProgress(0);
     setSelectedClient(null);
     setClientSearchTerm('');
     setUploadTarget('factory');
@@ -135,6 +62,16 @@ const CloudUploadModal = ({ onClose }: CloudUploadModalProps) => {
       scroll={true}
     >
       <div className="mt-4 mx-6 pb-6 flex flex-col">
+        <div
+          className="mb-5 rounded-lg border border-primary bg-secondary p-4"
+          role="status"
+        >
+          <p className="Me_Body-2 text-dg">{t('unavailableTitle')}</p>
+          <p className="Re_Body-2 mt-1 text-gr">
+            {t('unavailableDescription')}
+          </p>
+        </div>
+
         {/* 1단계: 업로드 대상 선택 */}
         <div className="flex flex-col gap-3">
           <h4 className="Heading-4 text-dg">{t('uploadLocation')}</h4>
@@ -277,60 +214,30 @@ const CloudUploadModal = ({ onClose }: CloudUploadModalProps) => {
         </div>
 
         {/* 2단계: 파일 선택 영역 */}
-        {!isUploading && (
-          <div className="flex flex-col gap-3 mt-5">
-            <h4 className="Heading-4 text-dg">{t('selectFile')}</h4>
-            <div className="max-h-[calc(85vh-536px)] overflow-y-auto">
-              <DropzoneArea
-                variant="default"
-                onFileUpload={handleFileUpload}
-                onComplete={handleFilesSelected}
-                accept={undefined}
-                hideUploadButton={true}
-              />
-            </div>
+        <div className="flex flex-col gap-3 mt-5">
+          <h4 className="Heading-4 text-dg">{t('selectFile')}</h4>
+          <div className="max-h-[calc(85vh-536px)] overflow-y-auto">
+            <DropzoneArea
+              variant="default"
+              accept={undefined}
+              hideUploadButton={true}
+            />
           </div>
-        )}
-
-        {/* 3단계: 업로드 진행 */}
-        {isUploading && (
-          <div className="flex flex-col gap-3">
-            <h4 className="Heading-4 text-dg">{t('uploading')}</h4>
-            <div className="flex flex-col gap-2">
-              <div className="w-full bg-bg rounded-full h-2">
-                <div
-                  className="bg-primary h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${uploadProgress}%` }}
-                />
-              </div>
-              <div className="flex items-center justify-center gap-2">
-                <Spinner />
-                <span className="Me_Body-2 text-gr">
-                  {Math.round(uploadProgress)}%
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
+        </div>
 
         {/* 버튼 영역 */}
-        {!isUploading && (
-          <div className="flex justify-end gap-1.5 mt-5">
-            <MiniBtn
-              text={tCommon('cancel')}
-              variant="white"
-              onClick={handleClose}
-            />
-            <MiniBtn
-              text={tCommon('upload')}
-              variant="secondary"
-              onClick={handleUpload}
-              disabled={
-                !hasFiles || (uploadTarget === 'client' && !selectedClient)
-              }
-            />
-          </div>
-        )}
+        <div className="flex justify-end gap-1.5 mt-5">
+          <MiniBtn
+            text={tCommon('cancel')}
+            variant="white"
+            onClick={handleClose}
+          />
+          <MiniBtn
+            text={t('unavailableButton')}
+            variant="secondary"
+            disabled={true}
+          />
+        </div>
       </div>
     </Modal>
   );

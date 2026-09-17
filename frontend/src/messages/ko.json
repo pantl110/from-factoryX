@@ -232,18 +232,18 @@
     "moveToDeliveryFailed": "납품 단계로 이동하는데 실패했습니다."
   },
   "cloudUpload": {
-    "subtitle": "파일을 업로드할 위치를 선택하면 해당 자료실에 저장됩니다.",
+    "subtitle": "저장소 정책과 업로드 기능을 준비하고 있습니다.",
     "title": "파일 업로드",
     "uploadLocation": "업로드 위치",
     "internalRepository": "내부 자료실",
-    "internalRepositoryDesc": "내부 자료실에 저장됩니다",
+    "internalRepositoryDesc": "내부 자료실은 향후 업로드 예정 위치입니다",
     "clientRepository": "거래처 자료실",
-    "clientRepositoryDesc": "선택한 거래처의 자료실에 저장됩니다",
+    "clientRepositoryDesc": "거래처 자료실은 향후 업로드 예정 위치입니다",
     "searchClientPlaceholder": "거래처를 검색하세요",
     "selectFile": "파일 선택",
-    "uploading": "업로드 중...",
-    "selectClientAlert": "거래처를 선택해주세요.",
-    "uploadFailed": "업로드에 실패했습니다."
+    "unavailableTitle": "아직 파일이 저장되지 않습니다.",
+    "unavailableDescription": "현재 업로드 기능을 준비 중입니다. 여기서 선택한 파일은 서버나 자료실에 전송되지 않습니다.",
+    "unavailableButton": "업로드 준비 중"
   },
   "dropzone": {
     "dragAndDrop": "파일을 끌어다 놓거나,\n아래 버튼으로 업로드 할 수 있어요.",
@@ -1482,7 +1482,9 @@
             "title": "대체자재"
           },
           "errors": {
-            "fetchFailed": "자재 목록 조회 실패:"
+            "fetchFailed": "자재 목록 조회 실패:",
+            "linkFailed": "대체 자재를 연결하지 못했어요.",
+            "retry": "선택한 자재는 그대로 유지됩니다. 잠시 후 다시 시도해주세요."
           }
         },
         "clientInfo": {
