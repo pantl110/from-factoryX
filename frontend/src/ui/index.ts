@@ -9,6 +9,7 @@ export { default as InfoLabelValue } from './info-label-value';
 export { default as InputDatepicker } from './input-datepicker';
 export { default as Input } from './input';
 export { default as MiniBtn } from './mini-btn';
+export { default as ButtonSelectDropdown } from './button-select-dropdown';
 export { default as MoBottomNavigation } from './mo-bottom-navigation';
 export { default as MoBtn } from './mo-btn';
 export { default as MoChip } from './mo-chip';

@@ -20,7 +20,7 @@ import NoHistoryBox from '@/ui/no-history-box';
 import useMemberStore from '@/store/member-store';
 import useSubscriptionStore from '@/store/subscription-store';
 import { useTranslations } from 'next-intl';
-import StockSelectDropdown from '../stock-select-dropdown';
+import ButtonSelectDropdown from '@/ui/button-select-dropdown';
 
 interface ProductProps {
   setSelectedProductIdToParent?: (setter: (id: number | null) => void) => void;
@@ -222,7 +222,7 @@ const Product = ({
             onChange={handleSearch}
             placeholder={t('searchPlaceholder')}
           />
-          <StockSelectDropdown
+          <ButtonSelectDropdown
             ariaLabel={t('taxManagement.filterLabel')}
             value={taxTypeFilter}
             options={[
@@ -237,7 +237,7 @@ const Product = ({
           <div className="flex flex-wrap items-center gap-1">
             {checkedCount > 0 && (
               <>
-                <StockSelectDropdown
+                <ButtonSelectDropdown
                   ariaLabel={t('taxManagement.bulkLabel')}
                   value={bulkTaxType}
                   options={[

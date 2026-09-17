@@ -1,6 +1,7 @@
 import { MasterTaxType } from '@/types/status-type';
 import { useTranslations } from 'next-intl';
 import { Info } from '@phosphor-icons/react';
+import ButtonSelectDropdown from '@/ui/button-select-dropdown';
 
 interface MasterTaxTypeFieldProps {
   value: MasterTaxType;
@@ -28,17 +29,20 @@ const MasterTaxTypeField = ({
         </span>
       </div>
       <div className="flex flex-1 items-center px-3">
-        <select
+        <ButtonSelectDropdown
+          ariaLabel={t('taxClassification')}
           value={value}
-          onChange={(event) =>
-            handleChange(event.target.value as MasterTaxType)
-          }
+          options={[
+            { value: 'taxable', label: t('taxable') },
+            { value: 'exempt', label: t('taxExempt') },
+          ]}
+          onChange={handleChange}
           disabled={disabled}
-          className="h-9 w-full rounded-md border border-lg bg-white px-3 text-dg outline-none disabled:cursor-not-allowed disabled:bg-bg"
-        >
-          <option value="taxable">{t('taxable')}</option>
-          <option value="exempt">{t('taxExempt')}</option>
-        </select>
+          width="w-full"
+          height="h-9"
+          padding="px-3"
+          className="w-full"
+        />
       </div>
     </div>
   );

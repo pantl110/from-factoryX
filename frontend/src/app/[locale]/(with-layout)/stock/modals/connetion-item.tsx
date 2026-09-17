@@ -2,7 +2,7 @@ import { Minus, Plus, X } from '@phosphor-icons/react';
 import { useState, useRef, useEffect } from 'react';
 import { handleQuantityInput } from '@/utils/format-number';
 import { useTranslations } from 'next-intl';
-import StockSelectDropdown from '../stock-select-dropdown';
+import ButtonSelectDropdown from '@/ui/button-select-dropdown';
 
 interface ConnetionItemProps {
   name: string;
@@ -154,7 +154,7 @@ const ConnetionItem = ({
           </button>
         </div>
         {unitOptions && unitOptions.length > 1 && onUnitChange ? (
-          <StockSelectDropdown
+          <ButtonSelectDropdown
             ariaLabel={tCommon('unit')}
             value={selectedUnit || unit}
             options={unitOptions.map((option) => ({

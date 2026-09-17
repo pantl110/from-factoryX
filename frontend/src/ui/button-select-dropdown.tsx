@@ -6,23 +6,25 @@ import DropdownItem from '@/ui/dropdown/dropdown-item';
 import MiniBtn from '@/ui/mini-btn';
 import { useState } from 'react';
 
-interface StockSelectOptionModel<T extends string> {
+interface ButtonSelectOptionModel<T extends string> {
   value: T;
   label: string;
 }
 
-interface StockSelectDropdownProps<T extends string> {
+interface ButtonSelectDropdownProps<T extends string> {
   ariaLabel: string;
   value: T;
-  options: readonly StockSelectOptionModel<T>[];
+  options: readonly ButtonSelectOptionModel<T>[];
   onChange: (value: T) => void;
   width?: string;
   height?: string;
   padding?: string;
   textStyle?: string;
+  className?: string;
+  disabled?: boolean;
 }
 
-const StockSelectDropdown = <T extends string>({
+const ButtonSelectDropdown = <T extends string>({
   ariaLabel,
   value,
   options,
@@ -31,13 +33,15 @@ const StockSelectDropdown = <T extends string>({
   height = 'h-10',
   padding = 'px-4',
   textStyle = 'Me_Body-3',
-}: StockSelectDropdownProps<T>) => {
+  className = '',
+  disabled = false,
+}: ButtonSelectDropdownProps<T>) => {
   const [isOpen, setIsOpen] = useState(false);
   const selectedOption =
     options.find((option) => option.value === value) ?? options[0];
 
   return (
-    <div className="relative">
+    <div className={`relative ${className}`}>
       <MiniBtn
         type="button"
         aria-label={ariaLabel}
@@ -52,10 +56,13 @@ const StockSelectDropdown = <T extends string>({
         height={height}
         padding={padding}
         textStyle={textStyle}
-        onClick={() => setIsOpen(!isOpen)}
+        disabled={disabled}
+        onClick={() => {
+          if (!disabled) setIsOpen(!isOpen);
+        }}
       />
-      {isOpen && (
-        <div className="absolute left-0 top-full z-40 mt-2">
+      {isOpen && !disabled && (
+        <div className="absolute left-0 top-full z-40 mt-2 w-full">
           <Dropdown onClose={() => setIsOpen(false)} width={width} maxHeight="">
             {options.map((option) => (
               <DropdownItem
@@ -74,4 +81,4 @@ const StockSelectDropdown = <T extends string>({
   );
 };
 
-export default StockSelectDropdown;
+export default ButtonSelectDropdown;
