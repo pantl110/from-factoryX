@@ -296,6 +296,13 @@ class MaterialUsageOut(Schema):
     material_history_lot_number: Optional[str] = None
     material_repackaging_id: Optional[int] = None
     material_repackaging_lot_number: Optional[str] = None
+    lot_available_quantity: Optional[Decimal] = None
     client_name: Optional[str] = None
     created_at: datetime.datetime
     updated_at: datetime.datetime
+
+    @field_serializer("lot_available_quantity")
+    def serialize_lot_available_quantity(
+        self, value: Optional[Decimal]
+    ) -> Optional[float]:
+        return float(value) if value is not None else None

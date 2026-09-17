@@ -22,13 +22,22 @@ def build_material_usage_out(usage: MaterialUsage) -> MaterialUsageOut:
     lot_number = None
     material_history_id = None
     material_repackaging_id = None
+    lot_available_quantity = None
 
     if usage.material_history:
         lot_number = usage.material_history.lot_number
         material_history_id = usage.material_history.id
+        lot_available_quantity = (
+            (usage.material_history.remaining_quantity or Decimal("0"))
+            + (usage.usage_amount or Decimal("0"))
+        )
     elif usage.material_repackaging:
         lot_number = usage.material_repackaging.lot_number
         material_repackaging_id = usage.material_repackaging.id
+        lot_available_quantity = (
+            (usage.material_repackaging.quantity or Decimal("0"))
+            + (usage.usage_amount or Decimal("0"))
+        )
 
     plan_product_name = None
     if usage.plan and usage.plan.product and usage.plan.product.product:
@@ -68,6 +77,7 @@ def build_material_usage_out(usage: MaterialUsage) -> MaterialUsageOut:
         material_history_lot_number=lot_number if material_history_id else None,
         material_repackaging_id=material_repackaging_id,
         material_repackaging_lot_number=lot_number if material_repackaging_id else None,
+        lot_available_quantity=lot_available_quantity,
         client_name=client_name,
         created_at=usage.created_at,
         updated_at=usage.updated_at,
@@ -202,6 +212,5 @@ def reallocate_lot_on_update(
 
     if new_history or new_repackaging:
         apply_lot_allocation(new_history, new_repackaging, new_amount)
-
 
 

@@ -307,6 +307,60 @@ class MaterialUsageAPITestCase(TestCase):
         response = self._post(payload)
         self.assertEqual(response.status_code, 400)
 
+    def test_create_usage_split_across_multiple_lots(self):
+        """단일 LOT 잔량보다 큰 투입량을 여러 LOT 행으로 나누어 저장한다."""
+        self.material_history.remaining_quantity = Decimal("300.00")
+        self.material_history.save(update_fields=["remaining_quantity"])
+        second_history = MaterialHistory.objects.create(
+            material=self.material,
+            client=self.client_company,
+            type=MaterialHistory.MaterialHistoryType.purchase,
+            quantity=Decimal("200.00"),
+            price=1200,
+            lot_number="LOT-2024-002",
+            total_stock=Decimal("500.00"),
+            remaining_quantity=Decimal("200.00"),
+        )
+        payload = [
+            {
+                "plan_id": self.plan.id,
+                "material_id": self.material.id,
+                "original_material_id": self.material.id,
+                "usage_amount": "300.00",
+                "material_history_id": self.material_history.id,
+            },
+            {
+                "plan_id": self.plan.id,
+                "material_id": self.material.id,
+                "original_material_id": self.material.id,
+                "usage_amount": "200.00",
+                "material_history_id": second_history.id,
+            },
+        ]
+
+        response = self._post(payload)
+
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(len(response.json()), 2)
+        self.assertEqual(
+            MaterialUsage.objects.filter(plan=self.plan, material=self.material).count(),
+            2,
+        )
+        self.material_history.refresh_from_db()
+        second_history.refresh_from_db()
+        self.assertEqual(self.material_history.remaining_quantity, Decimal("0.00"))
+        self.assertEqual(second_history.remaining_quantity, Decimal("0.00"))
+
+    def test_list_returns_editable_lot_available_quantity(self):
+        """기존 투입 행은 현재 잔량과 기존 배정량을 합한 수정 가능 수량을 반환한다."""
+        usage = self._create_usage_api("20.00")
+
+        response = self._get()
+
+        self.assertEqual(response.status_code, 200)
+        row = next(item for item in response.json() if item["id"] == usage["id"])
+        self.assertEqual(row["lot_available_quantity"], 50.0)
+
     def test_update_usage_adjusts_lot_quantity(self):
         """수정 시 기존 LOT 복원 후 차감"""
         usage = self._create_usage_api("10.00")
@@ -444,4 +498,3 @@ class MaterialUsageAPITestCase(TestCase):
         # usage2의 LOT 잔량이 복원되었는지 확인
         history2.refresh_from_db()
         self.assertEqual(history2.remaining_quantity, Decimal("150.00"))
-
