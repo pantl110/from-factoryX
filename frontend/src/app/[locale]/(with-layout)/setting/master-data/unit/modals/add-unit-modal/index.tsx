@@ -78,14 +78,17 @@ export const AddUnitModal = ({
       initialUnit.from_quantity !== undefined &&
       initialUnit.from_quantity !== null
     ) {
-      const formatted = handleQuantityInput(String(initialUnit.from_quantity));
+      const formatted = handleQuantityInput(
+        String(initialUnit.from_quantity),
+        4
+      );
       setValue('unitValue', formatted.displayValue);
     }
     if (
       initialUnit.to_quantity !== undefined &&
       initialUnit.to_quantity !== null
     ) {
-      const formatted = handleQuantityInput(String(initialUnit.to_quantity));
+      const formatted = handleQuantityInput(String(initialUnit.to_quantity), 4);
       setValue('conversionValue', formatted.displayValue);
     }
   }, [initialUnit, addUnitType, setValue]);
@@ -111,8 +114,6 @@ export const AddUnitModal = ({
         return;
       }
 
-      const conversionRate = Math.round((toValue / fromValue) * 10000) / 10000; // 소수점 4자리까지 반올림
-
       await createMutation.mutateAsync({
         // id 가 있으면 수정 모드, 없으면 null 로 전송
         id: initialUnit?.id ?? null,
@@ -123,7 +124,6 @@ export const AddUnitModal = ({
         // 변환식 숫자도 함께 전송
         from_quantity: fromValue,
         to_quantity: toValue,
-        conversion_rate: conversionRate,
       });
 
       // useCreateUnitConversionMutation의 onSuccess에서 이미 쿼리를 invalidate하므로
@@ -141,7 +141,7 @@ export const AddUnitModal = ({
   const handleNumberChange =
     (fieldName: string) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      const result = handleQuantityInput(e.target.value);
+      const result = handleQuantityInput(e.target.value, 4);
       setValue(fieldName, result.displayValue);
     };
 

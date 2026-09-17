@@ -7,6 +7,7 @@ interface StagedMaterialModel {
   code: string;
   spec: string;
   unit: string;
+  quantityUnit?: string;
   quantity: number;
 }
 
@@ -24,6 +25,7 @@ export const useStagedMaterials = () => {
       const connections = stagedMaterials.map((m) => ({
         id: m.id,
         quantity: m.quantity ?? 0,
+        unit: m.quantityUnit || m.unit,
       }));
 
       await createMaterialProduct({

@@ -27,6 +27,7 @@ interface BOMProps {
     code: string;
     spec: string;
     unit: string;
+    quantityUnit?: string;
     quantity: number;
   }>;
   quantityChanges: Record<number, number>;
@@ -122,7 +123,7 @@ const Bom = ({
                 material_name: m.name,
                 material_code: m.code,
                 material_spec: m.spec,
-                material_unit: m.unit,
+                material_unit: m.quantityUnit || m.unit,
                 quantity: m.quantity,
               })) as unknown as ConnectionModelType[])
         }

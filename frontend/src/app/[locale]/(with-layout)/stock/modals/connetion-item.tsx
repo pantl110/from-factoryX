@@ -6,6 +6,9 @@ import { useTranslations } from 'next-intl';
 interface ConnetionItemProps {
   name: string;
   unit: string;
+  unitOptions?: string[];
+  selectedUnit?: string;
+  onUnitChange?: (unit: string) => void;
   quantity: number;
   onDelete: () => void;
   onQuantityChange: (newQuantity: number) => void;
@@ -14,6 +17,9 @@ interface ConnetionItemProps {
 const ConnetionItem = ({
   name,
   unit,
+  unitOptions,
+  selectedUnit,
+  onUnitChange,
   quantity,
   onDelete,
   onQuantityChange,
@@ -146,7 +152,22 @@ const ConnetionItem = ({
             <Plus size={16} className="text-dg" />
           </button>
         </div>
-        <p className="Me_body-1 text-dg">{unit}</p>
+        {unitOptions && unitOptions.length > 1 && onUnitChange ? (
+          <select
+            aria-label={tCommon('unit')}
+            className="Me_body-1 text-dg bg-wh border border-lg rounded-[6px] px-2 h-8"
+            value={selectedUnit || unit}
+            onChange={(event) => onUnitChange(event.target.value)}
+          >
+            {unitOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
+        ) : (
+          <p className="Me_body-1 text-dg">{unit}</p>
+        )}
         <button
           onClick={onDelete}
           className="cursor-pointer w-9 h-9 flex justify-center items-center rounded-[8px] hover:bg-bg"

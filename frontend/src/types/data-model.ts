@@ -674,7 +674,7 @@ export interface MaterialCreateExcelModel {
 export interface CreateMaterialProductModel {
   type: 'material' | 'product'; // 연결 타입 (material: 원자재 기준, product: 제품 기준)
   target_id: number; // 기준이 되는 ID (type이 material이면 Material ID, type이 product이면 Product ID)
-  connections: Array<{ id: number; quantity: number }>;
+  connections: Array<{ id: number; quantity: number; unit?: string }>;
   // - id: 연결할 ID (type이 material이면 Product ID, type이 product이면 Material ID)
   // - quantity: 제품 1개 생산에 필요한 원자재 수량
 }

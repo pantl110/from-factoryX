@@ -234,7 +234,8 @@ export const handleIntegerInput = (
 
 // 실시간 수량 입력 포맷팅 함수 (입력 중에 콤마 표시, 소수점 한자리까지 허용)
 export const handleQuantityInput = (
-  inputValue: string
+  inputValue: string,
+  maxFractionDigits = 1
 ): {
   displayValue: string;
   numericValue: number;
@@ -271,14 +272,19 @@ export const handleQuantityInput = (
       ? finalParts[0] + '.' + finalParts.slice(1).join('')
       : numericOnly;
 
-  // 소수점이 있는 경우 소수점 이하 한자리로 제한
+  const fractionDigits = Math.max(0, Math.floor(maxFractionDigits));
+
+  // 소수점이 있는 경우 호출 화면이 허용한 자릿수로 제한
   let formattedValue = finalCleanValue;
   if (finalCleanValue.includes('.')) {
     const [integerPart, decimalPart] = finalCleanValue.split('.');
     // 정수 부분의 앞의 0 제거 (단, "0"만 남으면 유지)
     const cleanedIntegerPart = integerPart.replace(/^0+/, '') || '0';
-    if (decimalPart && decimalPart.length > 1) {
-      formattedValue = cleanedIntegerPart + '.' + decimalPart.slice(0, 1);
+    if (fractionDigits === 0) {
+      formattedValue = cleanedIntegerPart;
+    } else if (decimalPart && decimalPart.length > fractionDigits) {
+      formattedValue =
+        cleanedIntegerPart + '.' + decimalPart.slice(0, fractionDigits);
     } else {
       formattedValue = cleanedIntegerPart + '.' + (decimalPart || '');
     }

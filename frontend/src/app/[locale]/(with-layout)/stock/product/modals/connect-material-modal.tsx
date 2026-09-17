@@ -4,12 +4,17 @@ import SearchInput from '@/ui/search-input';
 import { MaterialNameDropdown } from '@/ui/dropdown/material-name-dropdown';
 import { useState } from 'react';
 import ManualAddMaterial from '../../material/modals/manual-add-material';
-import { MaterialItemModel, MaterialResponseModel } from '@/types/data-model';
+import {
+  MaterialItemModel,
+  MaterialResponseModel,
+  UnitConversionModel,
+} from '@/types/data-model';
 import {
   useGetMaterial,
   useMaterialProduct,
   useCreateMaterial,
   useToast,
+  useUnitConversionApi,
 } from '@/hooks';
 import Toast from '@/ui/toast';
 import { WarningCircle } from '@phosphor-icons/react';
@@ -29,6 +34,7 @@ interface ConnectMaterialModalProps {
       code: string;
       spec: string;
       unit: string;
+      quantityUnit?: string;
       quantity: number;
     }>
   ) => void;
@@ -51,6 +57,7 @@ const ConnectMaterialModal = ({
   const { createMaterialProduct, isLoading: isConnecting } =
     useMaterialProduct();
   const { createMaterial, isLoading: isCreating } = useCreateMaterial();
+  const { getByMaterial } = useUnitConversionApi();
 
   // 토스트
   const { isToastOpen, isVisible, showToast } = useToast();
@@ -65,6 +72,31 @@ const ConnectMaterialModal = ({
   const [selectedMaterials, setSelectedMaterials] = useState<
     MaterialItemModel[]
   >([]);
+  const [conversionUnits, setConversionUnits] = useState<
+    Record<number, string[]>
+  >({});
+  const [selectedQuantityUnits, setSelectedQuantityUnits] = useState<
+    Record<string, string>
+  >({});
+
+  const loadMaterialConversionUnits = async (
+    material: MaterialResponseModel
+  ) => {
+    const result = await getByMaterial(material.id);
+    const units = new Set<string>([material.unit]);
+
+    if (result.success && result.data) {
+      result.data.forEach((conversion: UnitConversionModel) => {
+        if (conversion.from_unit) units.add(conversion.from_unit);
+        if (conversion.to_unit) units.add(conversion.to_unit);
+      });
+    }
+
+    setConversionUnits((prev) => ({
+      ...prev,
+      [material.id]: Array.from(units),
+    }));
+  };
 
   // 자재 코드 중복 검사 함수 (비동기 - 자재 코드로 검색)
   const checkDuplicateMaterialCode = async (
@@ -143,11 +175,21 @@ const ConnectMaterialModal = ({
       }
       return prev;
     });
+    setSelectedQuantityUnits((prev) => ({
+      ...prev,
+      [item.code]: prev[item.code] || item.unit,
+    }));
+    void loadMaterialConversionUnits(item);
     setIsDropdownOpen(false);
   };
 
   const handleRemoveMaterial = (code: string) => {
     setSelectedMaterials((prev) => prev.filter((mat) => mat.code !== code));
+    setSelectedQuantityUnits((prev) => {
+      const next = { ...prev };
+      delete next[code];
+      return next;
+    });
   };
 
   const handleRemoveNewMaterial = (code: string) => {
@@ -194,6 +236,7 @@ const ConnectMaterialModal = ({
         code: string;
         spec: string;
         unit: string;
+        quantityUnit?: string;
         quantity: number;
       }> = [];
 
@@ -208,6 +251,7 @@ const ConnectMaterialModal = ({
               code: m.code,
               spec: m.spec,
               unit: m.unit,
+              quantityUnit: selectedQuantityUnits[m.code] || m.unit,
               quantity: m.quantity ?? 0,
             }))
         );
@@ -253,6 +297,7 @@ const ConnectMaterialModal = ({
             code: src.code,
             spec: src.spec,
             unit: src.unit,
+            quantityUnit: src.unit,
             quantity: src.quantity ?? 0,
           });
         });
@@ -264,7 +309,8 @@ const ConnectMaterialModal = ({
     }
 
     try {
-      const allMaterialIds: { id: number; quantity: number }[] = [];
+      const allMaterialIds: { id: number; quantity: number; unit: string }[] =
+        [];
 
       // 1. 새로운 원자재 생성
       if (newMaterials.length > 0) {
@@ -306,6 +352,7 @@ const ConnectMaterialModal = ({
           ...createdMaterialIds.map((materialId: number, index: number) => ({
             id: materialId,
             quantity: (newMaterials[index] as MaterialItemModel)?.quantity || 0,
+            unit: (newMaterials[index] as MaterialItemModel)?.unit || '',
           }))
         );
       }
@@ -315,6 +362,7 @@ const ConnectMaterialModal = ({
         const existingMaterialIds = selectedMaterials.map((material) => ({
           id: material.id || 0,
           quantity: material.quantity || 0,
+          unit: selectedQuantityUnits[material.code] || material.unit,
         }));
         allMaterialIds.push(...existingMaterialIds);
       }
@@ -429,6 +477,18 @@ const ConnectMaterialModal = ({
                     key={mat.code}
                     name={mat.name}
                     unit={mat.unit}
+                    unitOptions={
+                      typeof mat.id === 'number'
+                        ? conversionUnits[mat.id] || [mat.unit]
+                        : [mat.unit]
+                    }
+                    selectedUnit={selectedQuantityUnits[mat.code] || mat.unit}
+                    onUnitChange={(unit) =>
+                      setSelectedQuantityUnits((prev) => ({
+                        ...prev,
+                        [mat.code]: unit,
+                      }))
+                    }
                     quantity={mat.quantity || 0}
                     onDelete={() => handleRemoveMaterial(mat.code)}
                     onQuantityChange={(newQuantity: number) =>

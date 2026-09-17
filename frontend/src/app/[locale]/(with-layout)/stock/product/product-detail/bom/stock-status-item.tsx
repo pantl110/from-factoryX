@@ -69,7 +69,7 @@ const StockStatusItem = ({
       if (value === null || value === undefined || value === 0) return '';
       return value.toLocaleString('en-US', {
         minimumFractionDigits: 0,
-        maximumFractionDigits: 1,
+        maximumFractionDigits: 4,
       });
     },
     []
@@ -100,8 +100,10 @@ const StockStatusItem = ({
 
   // 수량 변경 처리
   const handleQuantityChangeLocal = (inputValue: string) => {
-    const { displayValue, numericValue, isValid } =
-      handleQuantityInput(inputValue);
+    const { displayValue, numericValue, isValid } = handleQuantityInput(
+      inputValue,
+      4
+    );
 
     // displayValue를 실시간으로 업데이트 (콤마 포함된 포맷팅 적용)
     setDisplayValue(displayValue);

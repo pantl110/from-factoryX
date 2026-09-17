@@ -22,8 +22,6 @@ export interface UnitConversionCreatePayloadModel {
   // 변환식 왼쪽/오른쪽 숫자
   from_quantity?: number;
   to_quantity?: number;
-  // 백엔드에서 conversion_rate 로도 계산하지만, 함께 전송
-  conversion_rate?: number;
 }
 
 type HttpMethodType = 'GET' | 'POST' | 'PATCH' | 'DELETE';
@@ -196,7 +194,6 @@ const useUnitConversionApi = () => {
         to_unit: payload.to_unit ?? null,
         from_quantity: payload.from_quantity,
         to_quantity: payload.to_quantity,
-        conversion_rate: payload.conversion_rate ?? 1,
       };
       return call<UnitConversionModel>('create', { method: 'POST', body });
     },
@@ -274,7 +271,8 @@ const useUnitConversionApi = () => {
         product_id: payload.product_id,
         from_unit: payload.from_unit,
         to_unit: payload.to_unit,
-        conversion_rate: payload.conversion_rate,
+        from_quantity: payload.from_quantity,
+        to_quantity: payload.to_quantity,
       };
       return call<UnitConversionModel>('update', {
         method: 'PATCH',
