@@ -24,6 +24,10 @@ class FactoryClientInfoIn(Schema):
 # Quotation Product Field (확정용)
 class QuotationProductInfoIn(Schema):
     product_id: int
+    product_name: Optional[str] = None
+    product_code: Optional[str] = None
+    spec: Optional[str] = None
+    unit: Optional[str] = None
     quantity: int
     unit_price: int
     is_delivery: bool = False
@@ -33,6 +37,10 @@ class QuotationProductInfoIn(Schema):
 # Quotation Product Field (임시저장용)
 class QuotationProductDraftIn(Schema):
     product_id: Optional[int] = None
+    product_name: Optional[str] = None
+    product_code: Optional[str] = None
+    spec: Optional[str] = None
+    unit: Optional[str] = None
     quantity: Optional[int] = None
     unit_price: Optional[int] = None
     is_delivery: bool = False

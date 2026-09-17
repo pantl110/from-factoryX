@@ -33,6 +33,21 @@ from factory.schemas.outbound import FactoryClientRowOut, FactoryRowOut
 router = Router(tags=["QuotationProduct"], auth=jwt_auth)
 
 
+def _build_product_snapshot(product: Product, payload_product) -> dict:
+    """제품 연결은 유지하면서 견적·주문 행의 표시값을 별도 보존한다."""
+    snapshot = ProductRowOut.from_orm(product).dict()
+    overrides = {
+        "name": payload_product.product_name,
+        "code": payload_product.product_code,
+        "spec": payload_product.spec,
+        "unit": payload_product.unit,
+    }
+    for field_name, value in overrides.items():
+        if value is not None:
+            snapshot[field_name] = value.strip()
+    return snapshot
+
+
 @router.post(
     "/save",
     summary="견적서 생성 & 임시 저장 & 주문 확정",
@@ -223,7 +238,7 @@ async def save_draft_quotation(request, payload: QuotationDraftIn):
                         quotation=quotation,
                         product=product,
                         # 상품이 변경되어도 변경되지 않는 product의 정보를 저장
-                        product_info=ProductRowOut.from_orm(product).dict(),
+                        product_info=_build_product_snapshot(product, prod),
                         quantity=quantity,
                         unit_price=unit_price,
                         is_delivery=prod.is_delivery,
@@ -373,12 +388,15 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
                 if not product_id:
                     raise HttpError(400, "제품 ID는 필수입니다.")
 
-                product = await sync_to_async(get_object_or_404)(Product, id=product_id)
+                product = await sync_to_async(get_object_or_404)(
+                    Product.objects.prefetch_related("location"), id=product_id
+                )
             except Http404:
                 raise HttpError(404, "해당 제품을 찾을 수 없습니다.")
             quotation_product = QuotationProduct(
                 quotation=quotation,
                 product=product,
+                product_info=_build_product_snapshot(product, prod),
                 quantity=prod.quantity,
                 unit_price=prod.unit_price,
             )
@@ -464,12 +482,13 @@ async def confirm_order(request, payload: QuotationConfirmedIn):
             print(f"[SAVE] Updating quotation products_info...")
             products_info = []
             for qp in quotation_products:
+                snapshot = qp.product_info or {}
                 product_info = {
                     "id": qp.product.id,
-                    "name": qp.product.name,
-                    "code": qp.product.code,
-                    "spec": qp.product.spec,
-                    "unit": qp.product.unit,
+                    "name": snapshot.get("name", qp.product.name),
+                    "code": snapshot.get("code", qp.product.code),
+                    "spec": snapshot.get("spec", qp.product.spec),
+                    "unit": snapshot.get("unit", qp.product.unit),
                     "quantity": qp.quantity,
                     "unit_price": qp.unit_price,
                     "total_price": qp.quantity * qp.unit_price,

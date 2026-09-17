@@ -278,15 +278,16 @@ async def get_quotation_detail(request, quotation_id: int):
             quotation=quotation
         ):
             product = qp.product
+            snapshot = qp.product_info or {}
             supply_amount = (qp.quantity or 0) * (qp.unit_price or 0)
             tax_amount = int(supply_amount * 0.1)
             products.append(
                 {
                     "productId": product.id,
-                    "product_code": product.code,
-                    "product_name": product.name,
-                    "spec": product.spec,
-                    "unit": product.unit,
+                    "product_code": snapshot.get("code", product.code),
+                    "product_name": snapshot.get("name", product.name),
+                    "spec": snapshot.get("spec", product.spec),
+                    "unit": snapshot.get("unit", product.unit),
                     "quantity": qp.quantity,
                     "unit_price": qp.unit_price,
                     "supply_amount": supply_amount,

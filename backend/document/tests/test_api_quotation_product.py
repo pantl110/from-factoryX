@@ -197,6 +197,53 @@ class QuotationProductAPITestCase(TestCase):
         self.project.refresh_from_db()
         self.assertEqual(self.project.status, "quotation")
 
+    def test_save_draft_preserves_edited_product_snapshot(self):
+        """제품 마스터 연결은 유지하고 주문 행의 수정값은 별도 보존한다."""
+        draft_data = {
+            "quotation_id": self.quotation.id,
+            "products": [
+                {
+                    "product_id": self.product1.id,
+                    "product_name": self.product1.name,
+                    "product_code": "ORDER-001",
+                    "spec": "주문 전용 규격",
+                    "unit": "BOX",
+                    "quantity": 15,
+                    "unit_price": 1500,
+                }
+            ],
+        }
+
+        response = self.client.post(
+            f"/v1/document/quotation/product/save?factory_id={self.factory.id}",
+            data=json.dumps(draft_data),
+            content_type="application/json",
+            **self.get_auth_headers(),
+        )
+
+        self.assertEqual(response.status_code, 200)
+        quotation_product = QuotationProduct.objects.get(quotation=self.quotation)
+        self.assertEqual(quotation_product.product_id, self.product1.id)
+        self.assertEqual(quotation_product.product_info["code"], "ORDER-001")
+        self.assertEqual(quotation_product.product_info["spec"], "주문 전용 규격")
+        self.assertEqual(quotation_product.product_info["unit"], "BOX")
+
+        self.product1.refresh_from_db()
+        self.assertEqual(self.product1.code, "TEST001")
+        self.assertEqual(self.product1.spec, "10x10x10")
+        self.assertEqual(self.product1.unit, "개")
+
+        detail_response = self.client.get(
+            f"/v1/document/quotation/{self.quotation.id}?factory_id={self.factory.id}",
+            **self.get_auth_headers(),
+        )
+        self.assertEqual(detail_response.status_code, 200)
+        detail_product = detail_response.json()["products"][0]
+        self.assertEqual(detail_product["productId"], self.product1.id)
+        self.assertEqual(detail_product["product_code"], "ORDER-001")
+        self.assertEqual(detail_product["spec"], "주문 전용 규격")
+        self.assertEqual(detail_product["unit"], "BOX")
+
     def test_save_draft_quotation_without_client(self):
         """클라이언트 정보 없이 임시 저장 테스트"""
         draft_data = {
@@ -628,7 +675,15 @@ class QuotationProductAPITestCase(TestCase):
                 "fax": "02-1234-5679",
             },
             "products": [
-                {"product_id": self.product1.id, "quantity": 100, "unit_price": 1000}
+                {
+                    "product_id": self.product1.id,
+                    "product_name": self.product1.name,
+                    "product_code": "CONFIRMED-001",
+                    "spec": "확정 규격",
+                    "unit": "BOX",
+                    "quantity": 100,
+                    "unit_price": 1000,
+                }
             ],
             "due_date": "2025-08-15",
         }
@@ -656,6 +711,16 @@ class QuotationProductAPITestCase(TestCase):
         # 생산 계획이 생성되었는지 확인
         project_plans = ProjectPlan.objects.filter(project=self.project)
         self.assertEqual(project_plans.count(), 1)
+
+        quotation_product = QuotationProduct.objects.get(quotation=self.quotation)
+        self.assertEqual(quotation_product.product_id, self.product1.id)
+        self.assertEqual(quotation_product.product_info["code"], "CONFIRMED-001")
+        self.assertEqual(quotation_product.product_info["spec"], "확정 규격")
+        self.assertEqual(quotation_product.product_info["unit"], "BOX")
+        self.quotation.refresh_from_db()
+        self.assertEqual(self.quotation.products_info[0]["code"], "CONFIRMED-001")
+        self.assertEqual(self.quotation.products_info[0]["spec"], "확정 규격")
+        self.assertEqual(self.quotation.products_info[0]["unit"], "BOX")
 
     def test_confirm_order_existing_client_update(self):
         """확정된 견적서에서 기존 클라이언트 정보 업데이트 테스트"""
