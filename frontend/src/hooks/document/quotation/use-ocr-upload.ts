@@ -5,6 +5,7 @@ import { useUploadFile } from '@/hooks';
 
 interface OcrUploadModel {
   data: string; // base64 encoded file content
+  document_type: 'quotation' | 'order';
 }
 
 interface OcrUploadResponseModel {
@@ -21,7 +22,10 @@ const useOcrUpload = () => {
   const { factoryId } = useMemberStore();
   const { uploadFile } = useUploadFile();
 
-  const uploadOcr = async (file: File): Promise<OcrUploadResponseModel> => {
+  const uploadOcr = async (
+    file: File,
+    documentType: 'quotation' | 'order'
+  ): Promise<OcrUploadResponseModel> => {
     setIsLoading(true);
     setError(null);
 
@@ -56,6 +60,7 @@ const useOcrUpload = () => {
 
       const payload: OcrUploadModel = {
         data: base64Data,
+        document_type: documentType,
       };
 
       const response = await fetch(

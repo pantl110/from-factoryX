@@ -16,12 +16,14 @@ interface UploadModalProps {
     thumbnailUrl?: string
   ) => void;
   documentTitle: string;
+  documentType: 'quotation' | 'order';
 }
 
 const ExcelUploadModal = ({
   onClose,
   onComplete,
   documentTitle,
+  documentType,
 }: UploadModalProps) => {
   const t = useTranslations('document.excelUpload');
   const [hasFiles, setHasFiles] = useState(false);
@@ -31,7 +33,7 @@ const ExcelUploadModal = ({
   const handleComplete = async (file?: File) => {
     if (file) {
       try {
-        const result = await uploadOcr(file);
+        const result = await uploadOcr(file, documentType);
         if (result.status === 'success') {
           // OCR 성공 시 데이터 반환
           onComplete(result.data, result.imageUrl, result.thumbnailUrl);

@@ -884,6 +884,7 @@ export interface ProjectStatusResponseModel {
 
 // OCR 결과 요청 아이템 스키마
 export interface OcrRequestItemModel {
+  product_id?: number; // 제품 마스터 연결 ID
   item_name: string; // 제품명
   item_code?: string; // 제품코드
   spec?: string; // 규격

@@ -147,6 +147,7 @@ const ImagePreview = ({
       )}
       {isUploadModalOpen && (
         <ExcelUploadModal
+          documentType={projectStatus === 'confirmed' ? 'order' : 'quotation'}
           documentTitle={
             projectStatus === 'confirmed'
               ? tDocumentType('orderDocument')

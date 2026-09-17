@@ -114,12 +114,20 @@ const RequestInfo = ({
 
       // OCR 데이터로 제품 목록 생성
       const ocrProducts = ocrRequestData.map((item: OcrRequestItemModel) => {
-        // 1단계: 품목코드로 기존 제품 찾기 (양쪽 정규화 후 비교)
+        // 1단계: 백엔드가 확정한 제품 ID로 기존 제품 찾기
         let existingProduct = productList?.find(
-          (p) => normalizeForMatch(p.code) === normalizeForMatch(item.item_code)
+          (p) => p.id === item.product_id
         );
 
-        // 2단계: 없으면 제품명으로 후보 조회 (정확히 1개일 때만 매칭)
+        // 2단계: 품목코드로 기존 제품 찾기 (양쪽 정규화 후 비교)
+        if (!existingProduct) {
+          existingProduct = productList?.find(
+            (p) =>
+              normalizeForMatch(p.code) === normalizeForMatch(item.item_code)
+          );
+        }
+
+        // 3단계: 없으면 제품명으로 후보 조회 (정확히 1개일 때만 매칭)
         if (!existingProduct && productList) {
           const byName = productList.filter(
             (p) =>

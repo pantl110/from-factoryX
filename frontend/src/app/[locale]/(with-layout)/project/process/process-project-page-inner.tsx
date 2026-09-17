@@ -365,6 +365,7 @@ const ProcessProjectPageInner = () => {
       {/* 견적요청서/주문서 파일 업로드 모달 */}
       {(isUploadModalOpen || isOrderUploadModalOpen) && (
         <ExcelUploadModal
+          documentType={isOrderUploadModalOpen ? 'order' : 'quotation'}
           documentTitle={
             isUploadModalOpen
               ? tDocumentType('quotationRequest')
