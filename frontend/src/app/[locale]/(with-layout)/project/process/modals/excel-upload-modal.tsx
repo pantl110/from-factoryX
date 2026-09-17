@@ -27,11 +27,13 @@ const ExcelUploadModal = ({
 }: UploadModalProps) => {
   const t = useTranslations('document.excelUpload');
   const [hasFiles, setHasFiles] = useState(false);
+  const [ocrErrorMessage, setOcrErrorMessage] = useState('');
   const { uploadOcr, isLoading } = useOcrUpload();
   const { isToastOpen, isVisible, showToast } = useToast();
 
   const handleComplete = async (file?: File) => {
     if (file) {
+      setOcrErrorMessage('');
       try {
         const result = await uploadOcr(file, documentType);
         if (result.status === 'success') {
@@ -39,15 +41,15 @@ const ExcelUploadModal = ({
           onComplete(result.data, result.imageUrl, result.thumbnailUrl);
           onClose(); // 모달 닫기 추가
         } else {
-          // OCR 실패 시 토스트로 에러 안내
+          // OCR 실패 시 업로드 창을 유지해 원인 확인과 재시도가 가능하게 함
+          setOcrErrorMessage(result.message || t('errors.ocrFailed'));
           showToast();
-          onComplete(undefined, result.imageUrl, result.thumbnailUrl); // OCR 실패 시에도 업로드된 파일 URL·썸네일 전달
-          onClose(); // 모달 닫기 추가
         }
       } catch (err) {
-        alert(t('errors.uploadError') + (err ? ' ' + String(err) : ''));
-        onComplete();
-        onClose(); // 모달 닫기 추가
+        setOcrErrorMessage(
+          t('errors.uploadError') + (err ? ' ' + String(err) : '')
+        );
+        showToast();
       }
     } else {
       // 파일이 없는 경우 빈 데이터 반환
@@ -104,7 +106,7 @@ const ExcelUploadModal = ({
         <Toast
           icon={<WarningCircle size={20} className="text-red" />}
           text={t('errors.ocrFailed')}
-          subtext=""
+          subtext={ocrErrorMessage}
           type="red"
           isVisible={isVisible}
         />
