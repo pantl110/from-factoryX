@@ -13,6 +13,7 @@ interface LocationItemProps {
   email?: string;
   role?: string;
   location?: string;
+  detailLocation?: string;
   memo?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -25,6 +26,7 @@ const LocationItem = ({
   email,
   role,
   location,
+  detailLocation,
   memo,
   createdAt,
   updatedAt,
@@ -109,7 +111,12 @@ const LocationItem = ({
             )}
           </div>
         </div>
-        <p className="m-Body-2 text-bl w-full truncate">{location || '-'}</p>
+        <p
+          className="m-Body-2 text-bl w-full truncate"
+          title={[location, detailLocation].filter(Boolean).join(' · ') || '-'}
+        >
+          {[location, detailLocation].filter(Boolean).join(' · ') || '-'}
+        </p>
         <p className="m-Body-3 text-sv line-clamp-2 w-full min-h-[3rem]">
           {memo || '-'}
         </p>

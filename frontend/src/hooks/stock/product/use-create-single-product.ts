@@ -11,6 +11,7 @@ interface CreateSingleProductModel {
   tax_type?: 'taxable' | 'exempt';
   current_stock?: number;
   average_production_time?: number;
+  note?: string;
 }
 
 interface CreateSingleProductResponseModel {

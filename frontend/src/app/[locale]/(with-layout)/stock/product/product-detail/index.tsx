@@ -432,6 +432,7 @@ const ProductDetail = ({
             currentFormData.average_production_time === null
               ? undefined
               : currentFormData.average_production_time,
+          note: currentFormData.note?.trim() || undefined,
         };
         // undefined를 null로 변환해서 보냄
         const payload = { ...createData };
@@ -440,6 +441,9 @@ const ProductDetail = ({
         }
         if (payload.average_production_time === undefined) {
           delete payload.average_production_time;
+        }
+        if (payload.note === undefined) {
+          delete payload.note;
         }
         const result = await createSingleProduct(payload);
         if (result && result.success) {
@@ -703,6 +707,7 @@ const ProductDetail = ({
                           email={loc.email}
                           role={loc.role}
                           location={loc.location || ''}
+                          detailLocation={loc.detail_location}
                           memo={loc.memo}
                           createdAt={loc.created_at}
                           updatedAt={loc.updated_at}
@@ -731,6 +736,7 @@ const ProductDetail = ({
                         email={userInfo?.email}
                         role={role || undefined}
                         location={loc.location || ''}
+                        detailLocation={loc.detail_location}
                         memo={loc.memo}
                         onDelete={() => removeStagedLocation(loc.tempId)}
                       />
@@ -751,6 +757,7 @@ const ProductDetail = ({
                       email={userInfo?.email}
                       role={role || undefined}
                       location={loc.location || ''}
+                      detailLocation={loc.detail_location}
                       memo={loc.memo}
                       onDelete={() => removeStagedLocation(loc.tempId)}
                     />

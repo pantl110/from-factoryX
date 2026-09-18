@@ -28,6 +28,7 @@ interface LocationFormModel {
   locations: {
     id?: number;
     location: string;
+    detail_location?: string;
     images: (string | File)[];
     email?: string;
     role?: string;

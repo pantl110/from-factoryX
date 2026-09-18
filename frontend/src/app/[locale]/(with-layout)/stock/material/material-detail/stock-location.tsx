@@ -15,6 +15,7 @@ interface LocationFormModel {
   locations: {
     id?: number;
     location: string;
+    detail_location?: string;
     images: (string | File)[];
     email?: string;
     role?: string;
@@ -97,6 +98,7 @@ const StockLocation = ({
                 image={firstImage}
                 length={images.length}
                 location={location}
+                detailLocation={locations?.[index]?.detail_location}
                 email={locations?.[index]?.email}
                 role={locations?.[index]?.role}
                 memo={locations?.[index]?.memo}
