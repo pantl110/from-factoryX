@@ -47,6 +47,7 @@ class SingleProductCreateIn(Schema):
     tax_type: Literal["taxable", "exempt"] = "taxable"
     current_stock: Optional[int] = None
     average_production_time: Optional[int] = None
+    note: Optional[str] = None
 
 
 # (POST) Create Product History

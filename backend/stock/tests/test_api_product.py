@@ -116,7 +116,9 @@ class TestProductAPI(TestCase):
             "code": "PROD001",
             "spec": "규격1",
             "unit": "EA",
+            "current_stock": 25,
             "average_production_time": 120,
+            "note": "최초 등록 비고",
         }
         response = await self.client.post(f"/single?factory_id={self.factory.id}", headers=headers, json=payload)
         self.assertEqual(response.status_code, 201)
@@ -127,7 +129,9 @@ class TestProductAPI(TestCase):
         # DB에 실제로 생성되었는지 확인
         from stock.models import Product
         product = await Product.objects.aget(id=data["product_id"])
+        self.assertEqual(product.current_stock, 25)
         self.assertEqual(product.average_production_time, 120)
+        self.assertEqual(product.note, "최초 등록 비고")
 
     async def test_create_single_product_duplicate_code(self):
         """중복된 품목 코드로 생성 시도시 실패 테스트"""
