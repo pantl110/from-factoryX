@@ -810,6 +810,7 @@ class ProjectPlanAPITestCase(TestCase):
         response = self.client.get(f"{url}", HTTP_AUTHORIZATION=f"Bearer {self.token}")
 
         self.assertEqual(response.status_code, 400)
+        self.assertIn("factory_id를 입력해야 합니다.", response.json()["detail"])
 
     def test_list_today_production_plans_without_auth(self):
         """인증 없이 오늘 생산 시작인 프로젝트 계획 조회 테스트"""

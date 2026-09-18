@@ -15,10 +15,13 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 
+from django.conf import settings
 from django.contrib import admin
 from django.urls import path
 from ninja import NinjaAPI
+from ninja.errors import ValidationError
 from api.docs import MixedDocs
+from api.throttling import PartnerApiKeyThrottle
 from aws.api import router as aws_router
 from user.api import router as user_router
 from stock.api import router as stock_router
@@ -61,14 +64,48 @@ from django.contrib.admin.views.decorators import staff_member_required
 from cfehome.views import websocket_test, websocket_test_local
 
 
+def docs_auth_decorator(view):
+    if settings.DEBUG:
+        return view  # 개발 환경에서는 그냥 통과
+    return staff_member_required(view)  # 운영에서는 관리자만
+
+
 base_api = NinjaAPI(
     title="Factory X API",
     version="0.1.0",
     description="공장 관리 시스템 API",
     docs_url="/<engine>/",
-    # docs_decorator=staff_member_required,  # 개발용으로 주석 처리
+    docs_decorator=docs_auth_decorator,
     docs=MixedDocs(),
 )
+
+
+@base_api.exception_handler(ValidationError)
+def validation_error_handler(request, exc):
+    resolver_match = getattr(request, "resolver_match", None)
+    path_view = getattr(getattr(resolver_match, "func", None), "__self__", None)
+    is_partner_api = any(
+        request.method in operation.methods
+        and any(
+            isinstance(throttle, PartnerApiKeyThrottle)
+            for throttle in operation.throttle_objects
+        )
+        for operation in getattr(path_view, "operations", ())
+    )
+
+    for error in exc.errors:
+        if (
+            is_partner_api
+            and error.get("type") == "missing"
+            and tuple(error.get("loc", ())) == ("query", "factory_id")
+        ):
+            return base_api.create_response(
+                request,
+                {"detail": "factory_id를 입력해야 합니다."},
+                status=400,
+            )
+
+    return base_api.create_response(request, {"detail": exc.errors}, status=422)
 
 
 @base_api.get("", include_in_schema=False)

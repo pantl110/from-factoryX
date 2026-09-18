@@ -4,7 +4,10 @@ from ninja.pagination import paginate
 from django.db.models import Exists, OuterRef
 from asgiref.sync import sync_to_async
 from datetime import date, timedelta, datetime
-from api.security import jwt_auth
+from api.permissions import require_factory_access
+from api.pagination import PartnerPageNumberPagination
+from api.security import api_key_auth, jwt_auth
+from api.throttling import PartnerApiKeyThrottle
 from typing import List
 from django.conf import settings
 
@@ -398,19 +401,22 @@ async def get_project_status(request, project_id: int):
     "",
     summary="[C] 진행, 보관된 프로젝트 조회",
     description="진행 또는 보관 중인 프로젝트를 조회, 검색합니다.",
+    auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response={200: List[ListProgressProjectOut], 400: dict, 500: dict},
 )
-@paginate
+@paginate(PartnerPageNumberPagination)
 async def list_project(
     request,
     filters: ProjectListFilter = Query(...),
+    factory_id: int = Query(...),
 ):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     try:
         if not factory_id:
@@ -420,6 +426,8 @@ async def list_project(
 
         @sync_to_async
         def get_projects():
+            status = filters.status
+
             # 공장과 연결된 프로젝트들을 먼저 가져옴
             factory_projects = Project.objects.filter(
                 quotations__factory_id=int(factory_id)
@@ -451,7 +459,7 @@ async def list_project(
             abandoned_ids = list(abandoned_qs.values_list("pk", flat=True))
 
             # 상태별 분기
-            if filters.status.value == "progress":
+            if status == "progress":
                 # 완료/중단 제외
                 base_qs = factory_projects.exclude(status="completed")
                 base_qs = base_qs.exclude(
@@ -459,7 +467,7 @@ async def list_project(
                 )  # 자동 중단된 프로젝트도 제외
                 if abandoned_ids:
                     base_qs = base_qs.exclude(pk__in=abandoned_ids)
-            elif filters.status.value == "archived":
+            elif status == "archived":
                 # 완료 + 중단 + abandoned
                 completed_qs = factory_projects.filter(status="completed")
                 suspended_qs = factory_projects.filter(status="suspended")
@@ -474,9 +482,9 @@ async def list_project(
                 if abandoned_ids:
                     project_ids.extend(abandoned_ids)
                 base_qs = Project.objects.filter(pk__in=project_ids)
-            elif filters.status.value == "completed":
+            elif status == "completed":
                 base_qs = factory_projects.filter(status="completed")
-            elif filters.status.value == "suspended":
+            elif status == "suspended":
                 # 중단: status가 "suspended"이거나 abandoned_ids에 해당하는 프로젝트만
                 suspended_qs = factory_projects.filter(status="suspended")
                 abandoned_qs = (
@@ -488,11 +496,13 @@ async def list_project(
                 if abandoned_ids:
                     project_ids.extend(abandoned_ids)
                 base_qs = Project.objects.filter(pk__in=project_ids)
-            else:
+            elif status:
                 # 개별 상태별 직접 필터링
-                base_qs = factory_projects.filter(status=filters.status.value)
+                base_qs = factory_projects.filter(status=status)
                 if abandoned_ids:
                     base_qs = base_qs.exclude(pk__in=abandoned_ids)
+            else:
+                base_qs = factory_projects
 
             if filters.search:
                 qs1 = base_qs.filter(quotations__client__name__icontains=filters.search)
@@ -539,7 +549,7 @@ async def list_project(
                     if project.tax_invoice:
                         publish_status = project.tax_invoice.publish_status
                     is_abandoned = False
-                    if filters.status.value in ["archived", "suspended"]:
+                    if filters.status in ["archived", "suspended"]:
                         is_abandoned = (
                             project.pk in abandoned_ids or project.status == "suspended"
                         )

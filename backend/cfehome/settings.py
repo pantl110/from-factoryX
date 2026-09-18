@@ -79,6 +79,7 @@ INSTALLED_APPS = [
     "user",
     "commando",
     "common",
+    "apikey",
     "factory",
     "document",
     "project",

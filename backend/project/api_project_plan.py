@@ -1,7 +1,9 @@
-from ninja import Router
+from ninja import Router, Query
 from ninja.errors import HttpError
 from asgiref.sync import sync_to_async
-from api.security import jwt_auth
+from api.permissions import require_factory_access
+from api.security import api_key_auth, jwt_auth
+from api.throttling import PartnerApiKeyThrottle
 from django.db import models
 from django.conf import settings
 from datetime import date, timedelta
@@ -376,15 +378,17 @@ async def create_or_update_project_plan(request, payload: ProjectPlanCreateOrUpd
     "/today",
     summary="[C] 오늘 생산 시작인 프로젝트 계획 조회",
     description="오늘이 생산 시작인 프로젝트 계획을 조회합니다.",
+    auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response={200: list[TodayProductionPlanOut], 400: dict, 404: dict, 500: dict},
 )
-async def list_today_production_plans(request):
+async def list_today_production_plans(request, factory_id: int = Query(...)):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     try:
         # Django 설정의 TIME_ZONE 기준으로 오늘 날짜 계산
@@ -692,18 +696,20 @@ async def get_profit_list_api(request):
     "",
     summary="[C] 프로젝트 생산 계획 조회",
     description="project_id로 해당 프로젝트의 모든 생산 계획을 조회합니다.",
+    auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response={200: List[ProjectPlanDetailWithRelationsOut], 404: dict, 500: dict},
 )
-async def list_project_plans(request, project_id: int):
+async def list_project_plans(request, project_id: int, factory_id: int = Query(...)):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     try:
-        project = await Project.objects.aget(id=project_id)
+        project = await Project.objects.aget(id=project_id, quotations__factory_id=int(factory_id))
     except Project.DoesNotExist:
         raise HttpError(404, "해당 프로젝트를 찾을 수 없습니다.")
 

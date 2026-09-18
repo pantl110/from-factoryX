@@ -1,7 +1,10 @@
 from ninja import Router, Query
 from ninja.errors import HttpError
 from ninja.pagination import paginate
-from api.security import jwt_auth
+from api.permissions import require_factory_access
+from api.pagination import PartnerPageNumberPagination
+from api.security import api_key_auth, jwt_auth
+from api.throttling import PartnerApiKeyThrottle
 from asgiref.sync import sync_to_async
 from typing import List, Optional
 from datetime import timedelta
@@ -22,9 +25,11 @@ router = Router(
     "",
     summary="[C] 진행, 보관된 프로젝트 조회",
     description="진행 또는 보관 중인 프로젝트를 조회, 검색합니다.",
+    auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response=List[ProjectModelOut],
 )
-@paginate
+@paginate(PartnerPageNumberPagination)
 async def list_projects(
     request,
     filters: ProjectFilter = Query(...),
@@ -32,13 +37,14 @@ async def list_projects(
         "start_date",
         description="정렬 필드(-start_date, -printed_at, -pending_at 등)",
     ),
+    factory_id: int = Query(...),
 ):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     @sync_to_async
     def get_projects():
@@ -75,15 +81,17 @@ async def list_projects(
     "/stale-confirmed",
     summary="[R] 7일 이상 경과한 주문 확정 프로젝트 조회",
     description="confirmed 상태이면서 confirmed_at이 7일 이상 지난 프로젝트 목록을 조회합니다.",
+    auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response={200: List[StaleConfirmedProjectOut], 400: dict, 500: dict},
 )
-async def list_stale_confirmed_projects(request):
+async def list_stale_confirmed_projects(request, factory_id: int = Query(...)):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     today = date.today()
     cutoff_date = today - timedelta(days=7)

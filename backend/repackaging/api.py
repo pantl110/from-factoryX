@@ -5,7 +5,10 @@ from ninja.pagination import paginate
 from asgiref.sync import sync_to_async
 from typing import List, Optional
 from django.db.models import F
-from api.security import jwt_auth
+from api.permissions import require_factory_access
+from api.pagination import PartnerPageNumberPagination
+from api.security import api_key_auth, jwt_auth
+from api.throttling import PartnerApiKeyThrottle
 
 from stock.models import MaterialHistory, Material
 from repackaging.models import MaterialRepackaging
@@ -96,23 +99,26 @@ async def create_material_repackaging(
     "",
     summary="[R] 원자재 소분 내역 조회",
     description="material_id로 특정 원자재의 소분 내역을 조회합니다. order_by 파라미터로 정렬 옵션을 선택할 수 있습니다 (expiration_date: 유통기한순, lot_number: 입고순).",
+    auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response=List[MaterialRepackagingOut],
 )
-@paginate
+@paginate(PartnerPageNumberPagination)
 async def list_material_repackagings(
     request,
     material_id: int = Query(..., description="원자재 ID"),
     order_by: Optional[str] = Query(
-        "expiration_date", 
+        "expiration_date",
         description="정렬 기준: 'expiration_date' (유통기한순, 기본값), 'lot_number' (입고순)"
     ),
+    factory_id: int = Query(...),
 ):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     # 원자재 존재 및 소유권 확인
     try:
@@ -162,15 +168,17 @@ async def list_material_repackagings(
     "/{repackaging_id}",
     summary="[R] 원자재 소분 내역 상세 조회",
     description="소분 내역 ID로 상세 정보를 조회합니다.",
+    auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response={200: MaterialRepackagingOut, 400: dict, 404: dict, 500: dict},
 )
-async def get_material_repackaging_detail(request, repackaging_id: int):
+async def get_material_repackaging_detail(request, repackaging_id: int, factory_id: int = Query(...)):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     # 소분 내역 조회
     try:
@@ -306,4 +314,3 @@ async def delete_material_repackaging(request, repackaging_id: int):
     await sync_to_async(repackaging.delete)()
 
     return 204, None
-

@@ -11,7 +11,7 @@ class CustomPageNumberPagination(PageNumberPagination):
 
     class Input(Schema):
         page: int = Field(1, ge=1)
-        page_size: int = Field(5, ge=1)
+        page_size: int = Field(5, ge=1, le=100)
 
     class Output(Schema):
         count: int
@@ -76,3 +76,14 @@ class CustomPageNumberPagination(PageNumberPagination):
             return await queryset.acount()
         except AttributeError:
             return len(queryset)
+
+
+class PartnerPageNumberPagination(CustomPageNumberPagination):
+    """PARTNER API 문서 규격: 기본 10개, 최대 100개."""
+
+    class Input(Schema):
+        page: int = Field(1, ge=1)
+        page_size: int = Field(10, ge=1, le=100)
+
+    def __init__(self, page_size: int = 10, **kwargs: Any) -> None:
+        super().__init__(page_size=page_size, **kwargs)

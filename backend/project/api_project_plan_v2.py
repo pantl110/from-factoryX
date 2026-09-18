@@ -1,7 +1,9 @@
 from ninja import Router, Query
 from ninja.errors import HttpError
 from asgiref.sync import sync_to_async
-from api.security import jwt_auth
+from api.permissions import require_factory_access
+from api.security import api_key_auth, jwt_auth
+from api.throttling import PartnerApiKeyThrottle
 from django.db import models
 from django.conf import settings
 from datetime import datetime, timedelta, date
@@ -20,20 +22,23 @@ router = Router(tags=["ProjectPlan V2"], auth=jwt_auth)
     "/dashboard-mobile",
     summary="[C] 모바일 대시보드 지표 조회",
     description="모바일 대시보드에서 필요한 핵심 지표 수량을 반환합니다.",
+    auth=[jwt_auth, api_key_auth],
+    throttle=[PartnerApiKeyThrottle()],
     response={200: MobileDashboardCountOut, 400: dict, 500: dict},
 )
 async def get_mobile_dashboard_counts(
     request,
-    base_date: str | None = Query(
-        None, description="납품 예정 품목 조회 기준 날짜 (YYYY-MM-DD)"
+    base_date: str = Query(
+        ..., description="납품 예정 품목 조회 기준 날짜 (YYYY-MM-DD)"
     ),
+    factory_id: int = Query(...),
 ):
     factory_id = request.GET.get("factory_id")
     if not factory_id:
         raise HttpError(400, "factory_id를 입력해야 합니다.")
 
     user = request.auth
-    await is_factory_member(int(factory_id), user)
+    await require_factory_access(int(factory_id), user)
 
     if not base_date:
         raise HttpError(400, "base_date를 입력해야 합니다.")
@@ -128,5 +133,4 @@ async def get_mobile_dashboard_counts(
         raise HttpError(
             500, f"모바일 대시보드 지표 조회 중 오류가 발생했습니다: {str(e)}"
         )
-
 
