@@ -69,7 +69,6 @@ const InputSection = ({
       formatBusinessNumber(String(item.business_registration_number ?? ''))
     );
     setValue('representative_name', item.representative_name);
-    setValue('due_date', '');
     setValue('business_type', item.business_type || '');
     setValue('business_category', item.business_category || '');
     setValue('address', item.address || '');
